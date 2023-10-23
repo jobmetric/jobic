@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Installation\IntroController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,3 +15,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::middleware('installation.check')->group(function (){
+    Route::get('/', [IntroController::class, 'index'])->name('intro');
+});
