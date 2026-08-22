@@ -11,22 +11,16 @@ class Install
     /**
      * Handle an incoming request.
      *
-     * @param Closure(Request): (Response) $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $env = base_path('.env');
-
-        if(false === file_exists($env)) {
-            setcookie('step-install', 'configuration', strtotime("+1 year"), '/');
-            return redirect()->route('installation.intro');
+        if ('' !== (string) env('INSTALLATION', '')) {
+            return $next($request);
         }
 
-        if('' === env('INSTALLATION', '')) {
-            setcookie('step-install', 'configuration', strtotime("+1 year"), '/');
-            return redirect()->route('installation.intro');
-        }
+        setcookie('step-install', 'configuration', strtotime('+1 year'), '/');
 
-        return $next($request);
+        return redirect()->route('installation.intro');
     }
 }
