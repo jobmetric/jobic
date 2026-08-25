@@ -1,0 +1,117 @@
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary);
+}
+
+.brand__mark {
+    display: block;
+    width: 42px;
+    height: 42px;
+}
+
+.brand__mark-right { fill: hsl(166 61% 35%); }
+.brand__mark-left { fill: hsl(166 61% 57%); }
+.brand__mark-bottom { fill: var(--primary); }
+
+.brand__name {
+    color: var(--text);
+    font-size: 1.1rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.brand--compact .brand__mark {
+    width: 38px;
+    height: 38px;
+}
+
+.icon-button {
+    position: relative;
+    display: inline-grid;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    place-items: center;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.icon-button:hover {
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.icon-button:active {
+    transform: scale(0.94);
+}
+
+.icon-button--small {
+    width: 32px;
+    height: 32px;
+}
+
+.theme-toggle__moon,
+:root[data-theme='dark'] .theme-toggle__sun {
+    display: none;
+}
+
+:root[data-theme='dark'] .theme-toggle__moon {
+    display: block;
+}
+
+.button {
+    display: inline-flex;
+    min-height: 46px;
+    padding-inline: 26px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.button--primary {
+    color: #fff;
+    background: var(--primary);
+    box-shadow: 0 8px 18px rgb(var(--primary-rgb) / 20%);
+}
+
+.button--primary:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 10px 24px rgb(var(--primary-rgb) / 28%);
+    transform: translateY(-1px);
+}
+
+.alert {
+    display: grid;
+    gap: 3px;
+    padding: 14px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: 0.84rem;
+    line-height: 1.7;
+}
+
+.alert--danger {
+    color: var(--danger);
+    background: var(--danger-soft);
+    border-color: rgb(230 88 110 / 18%);
+}
+
+.text-button {
+    padding: 4px;
+    color: var(--primary);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-size: 0.76rem;
+    font-weight: 650;
+}

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', fn () => auth()->check()
+    ? redirect()->route('vuero.admin.dashboard')
+    : redirect()->route('vuero.login'))->name('home');
+
+require __DIR__.'/vuero.php';

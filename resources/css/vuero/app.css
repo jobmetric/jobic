@@ -1,0 +1,15 @@
+@import './admin/tokens.css';
+@import './admin/base.css';
+@import './admin/components.css';
+@import './admin/auth.css';
+@import './admin/dashboard.css';
+@import './admin/dashboard-pages.css';
+@import './admin/profile-settings.css';
+@import './admin/navigation.css';
+@import './admin/business.css';
+@import './admin/lifestyle.css';
+@import './admin/ecommerce.css';
+@import './admin/food-delivery.css';
+@import './admin/maps.css';
+@import './admin/inbox.css';
+@import './admin/messaging.css';

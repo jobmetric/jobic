@@ -1,0 +1,3 @@
+import { initializeDashboard } from '../dashboard-runtime';
+
+initializeDashboard('personal-1');

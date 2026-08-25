@@ -11,11 +11,11 @@ class Check
     /**
      * Handle an incoming request.
      *
-     * @param Closure(Request): (Response) $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if('' !== env('INSTALLATION', '')) {
+        if (! config('installation.enabled') || config('installation.completed')) {
             return redirect()->route('home');
         }
 

@@ -1,0 +1,34 @@
+@php
+    $messages = [
+        ['id' => 2, 'name' => 'Jonathan Krugger', 'email' => 'jonathan@vuero.io', 'avatar' => 32, 'subject' => "I couldn't catch up on last time's dinner", 'date' => 'Oct 22', 'sent_at' => 'Oct 22 2020, at 09:46am', 'unread' => true, 'mailboxes' => ['inbox', 'spam'], 'greeting' => 'Hey Erik,', 'body' => ["I'm sorry I couldn't make it to our dinner last time. A customer call ran much longer than expected and I completely lost track of time.", 'Let me make it up to you next week. I found a quiet place downtown that should be perfect for catching up.'], 'attachments' => []],
+        ['id' => 1, 'name' => 'Melany Wallace', 'email' => 'melany@vuero.io', 'avatar' => 25, 'subject' => 'Important project review next thursday', 'date' => 'Oct 21', 'sent_at' => 'Oct 21 2020, at 02:33pm', 'unread' => false, 'mailboxes' => ['inbox'], 'greeting' => 'Hey man,', 'body' => ['Lorem ipsum dolor sit amet, consectetur adipiscing elit. Haec igitur Epicuri non probo, inquam. Nihil sane. Efficiens dici potest. Urgent tamen et nihil remittunt. Ea possunt paria non esse.', 'Tum Triarius: Posthac quidem, inquit, audacius. Quodsi ipsam honestatem undique perfectam atque absolutam. Comprehensum, quod cognitum non habet?', 'Nonne igitur tibi videntur, inquit, mala? Poterat autem inpune; Nunc omni virtuti vitium contrario nomine opponitur.'], 'attachments' => ['budget_draft.xlsx', 'project-notes.docx']],
+        ['id' => 3, 'name' => 'Greta Kroppfer', 'email' => 'greta@vuero.io', 'avatar' => 19, 'subject' => "Don't forget to send me those budget notes", 'date' => 'Oct 20', 'sent_at' => 'Oct 20 2020, at 04:18pm', 'unread' => false, 'mailboxes' => ['inbox', 'drafts'], 'greeting' => 'Hi Erik,', 'body' => ['Just a quick reminder about the budget notes we discussed during yesterday’s call.', 'The finance team needs them before tomorrow morning so we can finish the quarterly review on time.'], 'attachments' => ['budget-notes.pdf']],
+        ['id' => 4, 'name' => 'Elizabeth Fisher', 'email' => 'elizabeth@vuero.io', 'avatar' => 21, 'subject' => 'Meeting with the new customer on Monday', 'date' => 'Oct 19', 'sent_at' => 'Oct 19 2020, at 11:05am', 'unread' => false, 'mailboxes' => ['inbox', 'trash'], 'greeting' => 'Hello Erik,', 'body' => ['Our first meeting with the new customer is confirmed for Monday at 10:30am.', 'I attached the discovery brief. Please review the objectives and add any questions you would like us to cover.'], 'attachments' => ['discovery-brief.docx']],
+        ['id' => 5, 'name' => 'Carmen Escudero', 'email' => 'carmen@vuero.io', 'avatar' => 27, 'subject' => 'I got some new delightful stuff that you absolutely must see', 'date' => 'Oct 19', 'sent_at' => 'Oct 19 2020, at 08:42am', 'unread' => false, 'mailboxes' => ['inbox', 'sent'], 'greeting' => 'Hey!', 'body' => ['The design team has prepared a fresh set of interactions for the new onboarding flow.', 'They are subtle, fast, and much closer to the direction we discussed. I would love to get your thoughts today.'], 'attachments' => ['onboarding-preview.fig']],
+        ['id' => 6, 'name' => 'Irina Vierbovsky', 'email' => 'irina@vuero.io', 'avatar' => 23, 'subject' => "This month's lead generation report", 'date' => 'Oct 18', 'sent_at' => 'Oct 18 2020, at 05:29pm', 'unread' => false, 'mailboxes' => ['inbox', 'drafts'], 'greeting' => 'Hi Erik,', 'body' => ['The lead generation report is ready. Overall acquisition is up and the new landing pages are performing above expectations.', 'I highlighted the channels that need attention and added a short recommendation for the next campaign.'], 'attachments' => ['lead-report.xlsx', 'channel-notes.pdf']],
+        ['id' => 7, 'name' => 'Alejandro Badajoz', 'email' => 'alejandro@vuero.io', 'avatar' => 39, 'subject' => 'New design ideas from the user experience team', 'date' => 'Oct 18', 'sent_at' => 'Oct 18 2020, at 12:16pm', 'unread' => false, 'mailboxes' => ['inbox', 'sent', 'spam'], 'greeting' => 'Hello,', 'body' => ['We explored three new directions for the dashboard navigation and tested them with a small group of users.', 'The attached summary includes the strongest option and the reasoning behind our recommendation.'], 'attachments' => ['ux-directions.pdf']],
+        ['id' => 8, 'name' => 'Edouard Falant', 'email' => 'edouard@vuero.io', 'avatar' => 28, 'subject' => 'Customer dashboard february bug report', 'date' => 'Oct 17', 'sent_at' => 'Oct 17 2020, at 03:57pm', 'unread' => false, 'mailboxes' => ['inbox', 'trash'], 'greeting' => 'Hi team,', 'body' => ['I consolidated the issues reported on the customer dashboard and added reproduction steps for each one.', 'Two items are high priority. The remaining issues are visual and can be included in the next regular release.'], 'attachments' => ['bug-report.csv']],
+        ['id' => 9, 'name' => 'Sandrine Coulart', 'email' => 'sandrine@vuero.io', 'avatar' => 24, 'subject' => "You didn't answer my last email!", 'date' => 'Oct 17', 'sent_at' => 'Oct 17 2020, at 09:08am', 'unread' => true, 'mailboxes' => ['inbox', 'spam'], 'greeting' => 'Erik,', 'body' => ['I wanted to make sure my last message did not get lost. We still need your approval before publishing the campaign.', 'Could you take a quick look and let me know whether we can proceed?'], 'attachments' => []],
+        ['id' => 10, 'name' => 'Kelly Marston', 'email' => 'kelly@vuero.io', 'avatar' => 11, 'subject' => 'Hop in for the next project review', 'date' => 'Oct 16', 'sent_at' => 'Oct 16 2020, at 06:25pm', 'unread' => false, 'mailboxes' => ['inbox', 'sent'], 'greeting' => 'Hey Erik,', 'body' => ['We are holding the next project review on Friday afternoon and it would be great to have you there.', 'The agenda is short: current progress, open risks, and the final tasks for the upcoming release.'], 'attachments' => ['review-agenda.docx']],
+    ];
+
+    $contacts = [
+        ['name' => 'Alice Carasca', 'email' => 'alice@vuero.io', 'avatar' => 7],
+        ['name' => 'Melany Wallace', 'email' => 'melany@vuero.io', 'avatar' => 25],
+        ['name' => 'Esteban Castellanos', 'email' => 'esteban@vuero.io', 'avatar' => 18],
+        ['name' => 'Jonathan Krugger', 'email' => 'jonathan@vuero.io', 'avatar' => 32],
+        ['name' => 'Christie Dallas', 'email' => 'christie@vuero.io', 'avatar' => 38],
+    ];
+    $selected = collect($messages)->firstWhere('id', 1);
+@endphp
+
+<div class="vuero-inbox" data-inbox-app>
+    <script type="application/json" data-inbox-data>@json($messages)</script>
+    <div class="vuero-inbox__inner">
+        <x-vuero.dashboard.apps.inbox.sidebar :contacts="$contacts" />
+        <x-vuero.dashboard.apps.inbox.message-list :messages="$messages" />
+        <div class="vuero-inbox__loader" data-inbox-loader aria-hidden="true"><span></span></div>
+        <x-vuero.dashboard.apps.inbox.detail :message="$selected" />
+    </div>
+    <x-vuero.dashboard.apps.inbox.compose />
+</div>

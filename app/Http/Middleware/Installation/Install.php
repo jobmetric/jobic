@@ -15,7 +15,7 @@ class Install
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ('' !== (string) env('INSTALLATION', '')) {
+        if (! config('installation.enabled') || config('installation.completed')) {
             return $next($request);
         }
 

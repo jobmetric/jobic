@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Database\Seeders\Vuero\AdminUserSeeder;
 use Illuminate\Database\Seeder;
 use JobMetric\Setting\Models\Setting;
 
@@ -13,7 +13,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory(10)->create();
+        $this->call(AdminUserSeeder::class);
+
         Setting::factory(10)->create();
     }
 }

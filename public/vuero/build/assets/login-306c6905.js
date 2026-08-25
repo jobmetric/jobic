@@ -1,0 +1,1 @@
+import{j as t}from"./jquery-fde43e1f.js";t(()=>{const s=t("[data-password-input]");t("[data-password-toggle]").on("click",function(){const a=s.attr("type")==="password";s.attr("type",a?"text":"password"),t(this).attr("aria-pressed",String(a)).attr("aria-label",a?"پنهان کردن رمز عبور":"نمایش رمز عبور"),s.trigger("focus")})});
