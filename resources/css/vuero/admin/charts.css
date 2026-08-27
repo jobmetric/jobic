@@ -1,0 +1,185 @@
+.vuero-charts-page {
+    width: 100%;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity .28s ease, transform .28s ease;
+}
+
+.vuero-charts-page.is-ready {
+    opacity: 1;
+    transform: none;
+}
+
+.vuero-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.vuero-chart-card {
+    position: relative;
+    min-width: 0;
+    min-height: 306px;
+    padding: 12px;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.vuero-chart-card__canvas {
+    width: 100%;
+    min-width: 0;
+    min-height: 280px;
+}
+
+.vuero-chart-card__canvas > div,
+.vuero-chart-card__canvas > svg,
+.vuero-chart-card .apexcharts-canvas,
+.vuero-chart-card .bb {
+    max-width: 100%;
+}
+
+.vuero-chart-card__loader {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--surface);
+    opacity: 1;
+    pointer-events: none;
+    transition: opacity .24s ease, visibility .24s ease;
+}
+
+.vuero-chart-card.is-rendered .vuero-chart-card__loader,
+.vuero-chart-card.is-error .vuero-chart-card__loader {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.vuero-chart-card__loader span {
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--primary-soft);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: vuero-chart-spin .7s linear infinite;
+}
+
+.vuero-chart-card.is-error::after {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--danger);
+    content: 'Chart could not be rendered';
+    font-size: 12px;
+}
+
+@keyframes vuero-chart-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ApexCharts inherits Vuero's light and dark palettes instead of painting its own canvas. */
+.vuero-chart-card .apexcharts-svg,
+.vuero-chart-card .apexcharts-canvas {
+    width: 100% !important;
+    background: transparent !important;
+}
+
+.vuero-chart-card .apexcharts-title-text,
+.vuero-chart-card .apexcharts-legend-text,
+.vuero-chart-card .apexcharts-text,
+.vuero-chart-card .apexcharts-datalabel-label,
+.vuero-chart-card .apexcharts-datalabel-value {
+    font-family: var(--font-sans) !important;
+}
+
+.vuero-chart-card .apexcharts-title-text {
+    fill: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.vuero-chart-card .apexcharts-legend-text,
+.vuero-chart-card .apexcharts-xaxis-label,
+.vuero-chart-card .apexcharts-yaxis-label,
+.vuero-chart-card .apexcharts-radar-series text {
+    color: var(--muted) !important;
+    fill: var(--muted) !important;
+}
+
+.vuero-chart-card .apexcharts-gridline,
+.vuero-chart-card .apexcharts-radar-series polygon {
+    stroke: var(--border);
+}
+
+.vuero-chart-card .apexcharts-tooltip,
+.vuero-chart-card .apexcharts-xaxistooltip,
+.vuero-chart-card .apexcharts-yaxistooltip {
+    color: var(--text);
+    background: var(--surface-raised);
+    border-color: var(--border);
+    box-shadow: var(--shadow-md);
+}
+
+.vuero-chart-card .apexcharts-tooltip-title {
+    background: var(--surface-soft) !important;
+    border-color: var(--border) !important;
+}
+
+/* BillboardJS uses SVG text and HTML tooltips, both mapped to the same Vuero tokens. */
+.vuero-chart-card .bb text,
+.vuero-chart-card .bb-axis text,
+.vuero-chart-card .bb-chart-arcs-title,
+.vuero-chart-card .bb-title {
+    fill: var(--muted);
+    font-family: var(--font-sans);
+}
+
+.vuero-chart-card .bb-title {
+    fill: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.vuero-chart-card .bb-axis path,
+.vuero-chart-card .bb-axis line,
+.vuero-chart-card .bb-grid line,
+.vuero-chart-card .bb-radar-levels polygon,
+.vuero-chart-card .bb-radar-axis line {
+    stroke: var(--border);
+}
+
+.vuero-chart-card .bb-legend-item text,
+.vuero-chart-card .bb-chart-arcs text,
+.vuero-chart-card .bb-chart-radars text {
+    fill: var(--muted);
+}
+
+.vuero-chart-card .bb-tooltip-container {
+    z-index: 6;
+    color: var(--text);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+}
+
+.vuero-chart-card .bb-tooltip {
+    color: var(--text);
+    background: var(--surface-raised);
+}
+
+.vuero-chart-card .bb-tooltip th,
+.vuero-chart-card .bb-tooltip td {
+    color: var(--text);
+    background: transparent;
+    border-color: var(--border);
+}
+
+@media (max-width: 767px) {
+    .vuero-charts-grid { grid-template-columns: minmax(0, 1fr); }
+    .vuero-chart-card { min-height: 300px; padding: 8px; }
+    .vuero-chart-card__canvas { min-height: 280px; }
+}

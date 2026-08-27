@@ -2,6 +2,9 @@
     'title' => 'Dashboard',
     'script' => null,
     'chrome' => 'default',
+    'layout' => null,
+    'starter' => null,
+    'openNavigation' => false,
 ])
 
 <!doctype html>
@@ -23,13 +26,19 @@
         @vite($script, 'vuero/build')
     @endif
 </head>
-<body class="cms-page cms-page--admin cms-page--{{ $chrome }}">
+<body class="cms-page cms-page--admin cms-page--{{ $chrome }} {{ $starter ? 'cms-page--starter' : '' }}">
     <x-vuero.icon-sprite />
 
-    <div class="admin-shell" data-admin-shell>
+    <div
+        class="admin-shell"
+        data-admin-shell
+        @if ($layout) data-initial-layout="{{ $layout }}" @endif
+        @if ($openNavigation) data-open-navigation="true" @endif
+        @if ($starter) data-starter-shell="{{ $starter['slug'] }}" @endif
+    >
         @if ($chrome !== 'immersive')
             <x-vuero.navigation.mobile-navbar />
-            <x-vuero.navigation.sidebar />
+            <x-vuero.navigation.sidebar :starter="$starter" />
         @endif
         @if ($chrome === 'default')
             <x-vuero.navigation.desktop-navbar :title="$title" />

@@ -1,5 +1,7 @@
+@props(['starter' => null])
+
 @php
-    $dashboardActive = request()->routeIs('vuero.admin.dashboard', 'vuero.admin.dashboards.*');
+    $dashboardActive = request()->routeIs('vuero.admin.dashboard', 'vuero.admin.dashboards.*', 'vuero.admin.wizard', 'vuero.admin.starters.*');
     $settingsActive = request()->routeIs('vuero.admin.profile-settings');
     $sections = [
         'dashboard' => ['label' => 'Dashboards', 'icon' => 'activity', 'active' => $dashboardActive],
@@ -12,25 +14,54 @@
     $dashboardMenus = collect(config('vuero.dashboards.groups'))->map(function (array $group): array {
         return [
             'label' => $group['label'],
-            'children' => collect($group['pages'])->map(function (string $label, string $slug): array {
+            'children' => collect($group['pages'])->map(function (string $label, string $slug) use ($group): array {
                 $isAnalyticsHome = $slug === 'analytics' && request()->routeIs('vuero.admin.dashboard');
+                $navigation = $group['navigation'][$slug] ?? [];
 
                 return [
-                    'label' => $label,
+                    'label' => $navigation['label'] ?? $label,
                     'url' => $isAnalyticsHome ? route('vuero.admin.dashboard') : route('vuero.admin.dashboards.show', $slug),
                     'active' => $isAnalyticsHome || request()->routeIs('vuero.admin.dashboards.show') && request()->route('dashboard') === $slug,
+                    'icon' => $navigation['icon'] ?? 'activity',
+                    'tag' => $navigation['tag'] ?? null,
                 ];
             })->values()->all(),
         ];
-    })->values()->all();
+    });
+
+    $starterChildren = [];
+
+    foreach (config('vuero.starters') as $family => $group) {
+        if ($starterChildren !== []) {
+            $starterChildren[] = ['type' => 'divider'];
+        }
+
+        foreach ($group['pages'] as $slug => $page) {
+            $starterChildren[] = [
+                'label' => $page['menu'],
+                'url' => route('vuero.admin.starters.show', $slug),
+                'active' => request()->routeIs('vuero.admin.starters.show') && request()->route('starter') === $slug,
+                'icon' => str_starts_with($slug, 'navbar-') ? 'layout-navbar' : 'layout',
+                'tag' => str_starts_with($slug, 'sideblock-') ? 'v2.2' : null,
+            ];
+        }
+    }
+
+    $starterMenu = [
+        'label' => 'Starters',
+        'active' => request()->routeIs('vuero.admin.starters.show'),
+        'children' => $starterChildren,
+    ];
 
     $menus = [
         'dashboard' => [
-            ...$dashboardMenus,
-            ['label' => 'Wizard', 'url' => '#', 'separator' => true],
-            ['label' => 'Charts', 'url' => '#', 'chevron' => true],
-            ['label' => 'Widgets', 'url' => '#', 'chevron' => true],
-            ['label' => 'Starters', 'url' => '#', 'chevron' => true],
+            ...$dashboardMenus->only(['personal', 'finance', 'banking', 'business', 'lifestyle', 'ecommerce', 'apps'])->values()->all(),
+            ['type' => 'divider'],
+            ['label' => 'Wizard', 'url' => route('vuero.admin.wizard'), 'active' => request()->routeIs('vuero.admin.wizard')],
+            ['type' => 'divider'],
+            $dashboardMenus->get('charts'),
+            $dashboardMenus->get('widgets'),
+            $starterMenu,
         ],
         'layouts' => [
             ['label' => 'Lists', 'children' => [['label' => 'List View V1'], ['label' => 'List View V2'], ['label' => 'List View V3']]],
@@ -96,25 +127,51 @@
         <h2>Vuero</h2>
     </header>
 
-    <nav class="admin-sideblock__nav">
-        @foreach ($sections as $id => $section)
-            <section class="admin-sideblock__group {{ $section['active'] ? 'is-open' : '' }}" data-sideblock-group>
-                <button type="button" aria-expanded="{{ $section['active'] ? 'true' : 'false' }}" aria-controls="sideblock-panel-{{ $id }}" data-sideblock-group-toggle>
-                    <span class="admin-sideblock__group-icon"><x-vuero.icon :name="$section['icon']" size="20" /></span>
-                    <span>{{ $section['label'] }}</span>
-                    <x-vuero.icon name="chevron-right" size="17" />
-                </button>
-                <div class="admin-sideblock__children" id="sideblock-panel-{{ $id }}" @if (! $section['active']) hidden @endif>
-                    <x-vuero.navigation.menu :items="$menus[$id]" />
-                </div>
-            </section>
-        @endforeach
-    </nav>
+    @if ($starter)
+        <nav class="admin-sideblock__nav starter-sideblock__nav" aria-label="Starter navigation">
+            @foreach ([
+                ['dashboard', 'Dashboard', 'apps', route('vuero.admin.dashboard')],
+                ['projects', 'Projects', 'briefcase', '#'],
+                ['messages', 'Messages', 'message', '#', 3],
+                ['collections', 'Collections', 'box', '#'],
+                ['users', 'Users', 'users', '#'],
+                ['reports', 'Reports', 'briefcase', '#', null, true],
+                ['inbox', 'Inbox', 'mail', '#'],
+                ['settings', 'Settings', 'settings', '#', null, true, true],
+                ['starters', 'Starters', 'energy', route('vuero.admin.starters.show', 'sideblock-blank-page-1'), null, true],
+            ] as $item)
+                <a class="starter-sideblock__link {{ ($item[6] ?? false) ? 'has-separator' : '' }}" href="{{ $item[3] }}" @if ($item[3] === '#') data-ui-message="{{ $item[1] }} navigation selected." @endif>
+                    <x-vuero.icon :name="$item[2]" size="17" /><span>{{ $item[1] }}</span>
+                    @if ($item[4] ?? null)<b>{{ $item[4] }}</b>@endif
+                    @if ($item[5] ?? false)<x-vuero.icon name="chevron-right" size="14" />@endif
+                </a>
+            @endforeach
+        </nav>
+        <footer class="admin-sideblock__footer starter-sideblock__footer">
+            <x-vuero.navigation.profile-dropdown />
+            <button class="admin-sideblock__action" type="button" aria-label="Search" aria-controls="search-panel" aria-expanded="false" data-panel-open="search"><x-vuero.icon name="search" size="19" /><span>Search</span></button>
+        </footer>
+    @else
+        <nav class="admin-sideblock__nav">
+            @foreach ($sections as $id => $section)
+                <section class="admin-sideblock__group {{ $section['active'] ? 'is-open' : '' }}" data-sideblock-group>
+                    <button type="button" aria-expanded="{{ $section['active'] ? 'true' : 'false' }}" aria-controls="sideblock-panel-{{ $id }}" data-sideblock-group-toggle>
+                        <span class="admin-sideblock__group-icon"><x-vuero.icon :name="$section['icon']" size="20" /></span>
+                        <span>{{ $section['label'] }}</span>
+                        <x-vuero.icon name="chevron-right" size="17" />
+                    </button>
+                    <div class="admin-sideblock__children" id="sideblock-panel-{{ $id }}" @if (! $section['active']) hidden @endif>
+                        <x-vuero.navigation.menu :items="$menus[$id]" />
+                    </div>
+                </section>
+            @endforeach
+        </nav>
 
-    <footer class="admin-sideblock__footer">
-        <button class="admin-sideblock__action" type="button" aria-label="Select Layout" aria-controls="layout-switcher" aria-expanded="false" data-modal-open="layout-switcher"><x-vuero.icon name="panel" size="19" /><span>Select Layout</span></button>
-        <button class="admin-sideblock__action" type="button" aria-label="Search" aria-controls="search-panel" aria-expanded="false" data-panel-open="search"><x-vuero.icon name="search" size="19" /><span>Search</span></button>
-        <a class="admin-sideblock__action {{ $settingsActive ? 'is-active' : '' }}" href="{{ route('vuero.admin.profile-settings') }}" aria-label="Profile Settings"><x-vuero.icon name="settings" size="19" /><span>Profile Settings</span></a>
-        <x-vuero.navigation.profile-dropdown />
-    </footer>
+        <footer class="admin-sideblock__footer">
+            <button class="admin-sideblock__action" type="button" aria-label="Select Layout" aria-controls="layout-switcher" aria-expanded="false" data-modal-open="layout-switcher"><x-vuero.icon name="panel" size="19" /><span>Select Layout</span></button>
+            <button class="admin-sideblock__action" type="button" aria-label="Search" aria-controls="search-panel" aria-expanded="false" data-panel-open="search"><x-vuero.icon name="search" size="19" /><span>Search</span></button>
+            <a class="admin-sideblock__action {{ $settingsActive ? 'is-active' : '' }}" href="{{ route('vuero.admin.profile-settings') }}" aria-label="Profile Settings"><x-vuero.icon name="settings" size="19" /><span>Profile Settings</span></a>
+            <x-vuero.navigation.profile-dropdown />
+        </footer>
+    @endif
 </aside>

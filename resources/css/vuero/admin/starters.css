@@ -1,0 +1,86 @@
+.cms-page--starter::before {
+    position: fixed;
+    z-index: 200;
+    inset: 0 0 auto;
+    height: 2px;
+    background: var(--primary);
+    content: '';
+    pointer-events: none;
+}
+
+.vuero-starter-page {
+    min-height: calc(100vh - var(--topbar-height) - 70px);
+    opacity: 0;
+    transition: opacity .22s ease;
+}
+
+.vuero-starter-page.is-ready { opacity: 1; }
+
+.starter-sideblock__nav { padding: 14px 22px 20px; }
+
+.starter-sideblock__link {
+    display: grid;
+    min-height: 42px;
+    padding: 0 9px;
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+    align-items: center;
+    color: var(--muted);
+    border-radius: 7px;
+    gap: 7px;
+    font-size: 12px;
+    transition: color .18s ease, background-color .18s ease, transform .18s ease;
+}
+
+.starter-sideblock__link:hover,
+.starter-sideblock__link:focus-visible {
+    color: var(--primary);
+    background: var(--primary-soft);
+    transform: translateX(2px);
+}
+
+.starter-sideblock__link.has-separator {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+}
+
+.starter-sideblock__link b {
+    display: grid;
+    width: 21px;
+    height: 21px;
+    place-items: center;
+    color: #fff;
+    background: var(--primary);
+    border-radius: 50%;
+    font-size: 8px;
+}
+
+.starter-sideblock__link > .ui-icon:last-child { color: var(--muted); }
+
+.starter-sideblock__footer { justify-content: space-between; padding-inline: 30px; }
+.starter-sideblock__footer .profile-dropdown { margin: 0; }
+.starter-sideblock__footer .admin-sideblock__action { margin-left: auto; }
+
+[data-selected-layout='sideblock-color'] .starter-sideblock__link,
+[data-selected-layout='sideblock-color-curved'] .starter-sideblock__link { color: #aeb3c6; }
+
+[data-selected-layout='sideblock-color'] .starter-sideblock__link:hover,
+[data-selected-layout='sideblock-color-curved'] .starter-sideblock__link:hover { color: #fff; background: rgb(255 255 255 / 7%); }
+
+.admin-navbar-clean__team span img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+
+.cms-page--starter .project-avatar--navbar {
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+@media (max-width: 820px) {
+    .cms-page--starter::before { display: none; }
+    .vuero-starter-page { min-height: calc(100dvh - 90px); }
+    .cms-page--starter [data-selected-layout^='navbar-'] .admin-topbar { display: flex; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vuero-starter-page, .starter-sideblock__link { transition: none; }
+}

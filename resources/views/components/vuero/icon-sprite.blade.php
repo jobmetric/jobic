@@ -77,6 +77,7 @@
     <symbol id="icon-tv" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m8 2 4 3 4-3M8 22h8" /></symbol>
     <symbol id="icon-twitter" viewBox="0 0 24 24"><path d="M22 5.9a8.4 8.4 0 0 1-2.4.7A4.2 4.2 0 0 0 12.4 10 12 12 0 0 1 3.7 5.6a4.2 4.2 0 0 0 1.3 5.6 4.1 4.1 0 0 1-1.9-.5v.1a4.2 4.2 0 0 0 3.4 4.1 4.3 4.3 0 0 1-1.9.1 4.2 4.2 0 0 0 3.9 2.9A8.4 8.4 0 0 1 3.3 20 11.8 11.8 0 0 0 9.7 22c7.7 0 11.9-6.4 11.9-11.9v-.5A8.5 8.5 0 0 0 24 7.4a8.2 8.2 0 0 1-2.4.7A4.2 4.2 0 0 0 23.4 5a8.6 8.6 0 0 1-2.7 1 4.2 4.2 0 0 0-7.2 3.8" /></symbol>
     <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5" /><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 9M5.5 15A7 7 0 0 0 17.8 17.8L20 15" /></symbol>
+    <symbol id="icon-cogs" viewBox="0 0 24 24"><circle cx="9" cy="10" r="3" /><path d="M9 4v2M9 14v2M3 10h2M13 10h2M4.8 5.8l1.4 1.4M11.8 12.8l1.4 1.4M4.8 14.2l1.4-1.4M11.8 7.2l1.4-1.4" /><circle cx="17" cy="17" r="2.5" /><path d="M17 12.5v2M17 19.5v2M12.5 17h2M19.5 17h2M13.8 13.8l1.4 1.4M18.8 18.8l1.4 1.4M13.8 20.2l1.4-1.4M18.8 15.2l1.4-1.4" /></symbol>
     <symbol id="icon-energy" viewBox="0 0 24 24"><path d="m13 2-8 12h7l-1 8 8-12h-7l1-8Z" /></symbol>
     <symbol id="icon-gold" viewBox="0 0 24 24"><path d="m6 9 2-5h8l2 5M4 9h16l2 10H2L4 9Z" /><path d="M8 14h8" /></symbol>
     <symbol id="icon-real-estate" viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13M8 21v-5h8v5M8 10h2M14 10h2" /></symbol>
@@ -101,7 +102,21 @@
     <symbol id="icon-user-check" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><path d="m17 11 2 2 4-4" /></symbol>
     <symbol id="icon-frown" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M8 9h.01M16 9h.01M8 17c1-2 2.3-3 4-3s3 1 4 3" /></symbol>
     <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></symbol>
+    <symbol id="icon-flag" viewBox="0 0 24 24"><path d="M5 22V4M5 5c5-3 8 3 14 0v10c-6 3-9-3-14 0" /></symbol>
     <symbol id="icon-plane" viewBox="0 0 24 24"><path d="M22 2 9.5 14.5M22 2l-7 20-4-8-8-4 19-8Z" /></symbol>
+    <symbol id="icon-bank" viewBox="0 0 24 24"><path d="m3 9 9-6 9 6M5 10v8M10 10v8M14 10v8M19 10v8M3 21h18M2 18h20" /></symbol>
+    <symbol id="icon-pie-chart" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9v9h9Z" /><path d="M15 3.5A9 9 0 0 1 20.5 9H15V3.5Z" /></symbol>
+    <symbol id="icon-chart-bar" viewBox="0 0 24 24"><path d="M4 20V10h4v10H4ZM10 20V4h4v16h-4ZM16 20v-7h4v7h-4Z" /></symbol>
+    <symbol id="icon-graduation" viewBox="0 0 24 24"><path d="m2 9 10-5 10 5-10 5L2 9Z" /><path d="M6 11.5V16c2.6 2.7 9.4 2.7 12 0v-4.5M22 9v6" /></symbol>
+    <symbol id="icon-cloud-sun" viewBox="0 0 24 24"><path d="M12 5a4 4 0 0 1 7.4 2M17 2v2M21.2 3.8l-1.4 1.4M22 8h-2" /><path d="M7 19h11a4 4 0 0 0 .4-8A6 6 0 0 0 7 12a3.5 3.5 0 0 0 0 7Z" /></symbol>
+    <symbol id="icon-hospital" viewBox="0 0 24 24"><path d="M4 21V4h16v17M2 21h20M9 8h6M12 5v6M8 21v-5h8v5" /></symbol>
+    <symbol id="icon-book-open" viewBox="0 0 24 24"><path d="M3 5.5A7 7 0 0 1 12 7v13a7 7 0 0 0-9-1.5v-13ZM21 5.5A7 7 0 0 0 12 7v13a7 7 0 0 1 9-1.5v-13Z" /></symbol>
+    <symbol id="icon-shirt" viewBox="0 0 24 24"><path d="m8 4-5 3 2 5 3-1v10h8V11l3 1 2-5-5-3a4 4 0 0 1-8 0Z" /></symbol>
+    <symbol id="icon-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.2 10.5a2 2 0 0 0 2 1.5h7.7a2 2 0 0 0 2-1.6L20 8H6M10 21h.01M17 21h.01" /></symbol>
+    <symbol id="icon-pizza" viewBox="0 0 24 24"><path d="M5 3c7.7 0 13 5.3 16 16L3 21 5 3Z" /><path d="M5 8c5.2-.1 9.1 3.3 11.5 11.5M9 11h.01M12 16h.01" /></symbol>
+    <symbol id="icon-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6ZM9 3v15M15 6v15" /></symbol>
+    <symbol id="icon-layout" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M9 9v11" /></symbol>
+    <symbol id="icon-layout-navbar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /></symbol>
     <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></symbol>
     <symbol id="icon-dollar" viewBox="0 0 24 24"><path d="M12 2v20M17 5.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></symbol>
     <symbol id="icon-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></symbol>

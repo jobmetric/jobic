@@ -18,6 +18,7 @@ $(() => {
     const $shell = $('[data-admin-shell]');
     const $circularMenu = $('[data-circular-menu]');
     const mobileQuery = window.matchMedia('(max-width: 820px)');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     let activeMobilePanel = String($('[data-sidebar-panel-target].is-active').first().data('sidebar-panel-target') || 'dashboard');
     let lastPanelTrigger = null;
     let lastModalTrigger = null;
@@ -228,7 +229,7 @@ $(() => {
         window.setTimeout(() => $modal.find('.vuero-modal').trigger('focus'), 160);
     };
 
-    const selectLayout = (layoutId, shouldNotify = true) => {
+    const selectLayout = (layoutId, shouldNotify = true, shouldPersist = true) => {
         layoutId = legacyLayouts[layoutId] || layoutId;
         const $option = $(`[data-layout-option="${layoutId}"]`).first();
 
@@ -262,7 +263,9 @@ $(() => {
             $shell.removeAttr('data-sidebar-theme');
         }
 
-        localStorage.setItem(layoutStorageKey, layoutId);
+        if (shouldPersist) {
+            localStorage.setItem(layoutStorageKey, layoutId);
+        }
         closeDesktopNavbarMenus();
 
         if (shouldNotify) {
@@ -496,12 +499,47 @@ $(() => {
     });
 
     $document.on('click', '[data-accordion-toggle]', function () {
-        const $accordion = $(this).closest('[data-accordion]');
+        const $button = $(this);
+        const $accordion = $button.closest('[data-accordion]');
+        const $scope = $accordion.closest('[data-accordion-scope]');
+        const $content = $accordion.children('[data-accordion-content]').first();
         const isOpen = $accordion.hasClass('is-open');
+        const duration = reducedMotionQuery.matches ? 0 : 180;
 
-        $accordion.toggleClass('is-open', !isOpen);
-        $(this).attr('aria-expanded', String(!isOpen));
-        $accordion.find('[data-accordion-content]').prop('hidden', isOpen);
+        const closeAccordion = ($item) => {
+            const $itemButton = $item.children('[data-accordion-toggle]').first();
+            const $itemContent = $item.children('[data-accordion-content]').first();
+
+            $item.removeClass('is-open');
+            $itemButton.attr('aria-expanded', 'false');
+
+            if (duration && !$itemContent.prop('hidden')) {
+                $itemContent.stop(true, true).slideUp(duration, () => {
+                    $itemContent.prop('hidden', true).removeAttr('style');
+                });
+            } else {
+                $itemContent.stop(true, true).prop('hidden', true).removeAttr('style');
+            }
+        };
+
+        $scope.children('[data-accordion]').not($accordion).filter('.is-open').each(function () {
+            closeAccordion($(this));
+        });
+
+        if (isOpen) {
+            closeAccordion($accordion);
+            return;
+        }
+
+        $accordion.addClass('is-open');
+        $button.attr('aria-expanded', 'true');
+        $content.stop(true, true).prop('hidden', false);
+
+        if (duration) {
+            $content.hide().slideDown(duration, () => $content.removeAttr('style'));
+        } else {
+            $content.removeAttr('style');
+        }
     });
 
     $document.on('click', '[data-language-option]', function () {
@@ -623,7 +661,12 @@ $(() => {
     $('[data-sideblock]').prop('inert', true);
     syncMobileNavigation();
     selectLanguage(localStorage.getItem(languageStorageKey) || 'en', false);
-    selectLayout(localStorage.getItem(layoutStorageKey) || 'sidebar-default', false);
+    const forcedLayout = String($shell.attr('data-initial-layout') || '');
+    const initialLayout = forcedLayout || localStorage.getItem(layoutStorageKey) || 'sidebar-default';
+    selectLayout(initialLayout, false, !forcedLayout);
+    if ($shell.is('[data-open-navigation]') && !mobileQuery.matches) {
+        openSubsidebar('dashboard');
+    }
     updateThemeControls();
     syncCircularMenu();
 });

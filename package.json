@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "apexcharts": "^3.40.0",
+        "billboard.js": "3.8.1",
         "jquery": "^4.0.0",
         "leaflet": "^1.9.4",
         "tiny-slider": "^2.9.4"

@@ -201,7 +201,7 @@ export const initializeInteractions = ($dashboard, slug, actions, charts) => {
 
     $dashboard.on('click.dashboardPage', 'button, a', function (event) {
         const $button = $(this);
-        if ($button.closest('[data-lifestyle],[data-ecommerce]').length) return;
+        if ($button.closest('[data-lifestyle],[data-ecommerce],.vuero-widgets-page').length) return;
         const label = normalise($button.text());
         if (!label || $button.closest('.period-tabs,.flight-deals,.stock-categories,.food-categories,.dashboard-calendar,.match-table nav').length) return;
 

@@ -1,0 +1,18 @@
+<section class="wizard-step" data-wizard-step="7" aria-labelledby="wizard-step-7-title" hidden>
+    <div class="wizard-step__content">
+        <header class="wizard-step__title"><h1 id="wizard-step-7-title">Make sure everything is good</h1><p>You can go back to previous steps if you need to edit anything.</p></header>
+        <div class="wizard-review">
+            <header class="wizard-review__header"><div class="wizard-review__avatar"><span data-review-initial>P</span><img src="" alt="" data-review-logo hidden></div><h2><span data-review-name>Project Title Goes Here</span><button type="button" data-wizard-edit="2" aria-label="Edit project information"><x-vuero.icon name="edit" size="15" /></button></h2></header>
+            <div class="wizard-review__grid">
+                <article class="wizard-review-card wizard-review-card--wide"><h3>Description</h3><button type="button" data-wizard-edit="2" aria-label="Edit description"><x-vuero.icon name="edit" size="14" /></button><p data-review-description>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quis negat? Tamen a proposito, inquam, aberramus. Deinde dolorem quem maximum? Quae duo sunt, unum facit. Quod vestri non item.</p></article>
+                <article class="wizard-review-card wizard-review-card--half"><button type="button" data-wizard-edit="1" aria-label="Edit project type"><x-vuero.icon name="edit" size="14" /></button><div class="wizard-review-media"><i class="is-warning">✎</i><span><strong data-review-related>UI/UX Design</strong><small>Project Type</small></span></div></article>
+                <article class="wizard-review-card wizard-review-card--half"><button type="button" data-wizard-edit="3" aria-label="Edit customer"><x-vuero.icon name="edit" size="14" /></button><div class="wizard-review-media" data-review-customer-empty><span class="wizard-review-empty">No selected customer</span></div><div class="wizard-review-media" data-review-customer hidden><img src="" alt="" data-review-customer-image><span><strong data-review-customer-name></strong><small>Project Customer</small></span></div></article>
+                <article class="wizard-review-card wizard-review-card--third"><button type="button" data-wizard-edit="3" aria-label="Edit budget"><x-vuero.icon name="edit" size="14" /></button><div class="wizard-review-stat"><strong data-review-budget>&lt; 5K</strong><span>Estimated Budget</span></div></article>
+                <article class="wizard-review-card wizard-review-card--third"><button type="button" data-wizard-edit="3" aria-label="Edit due date"><x-vuero.icon name="edit" size="14" /></button><div class="wizard-review-stat"><strong data-review-date>—</strong><span>Estimated Due Date</span></div></article>
+                <article class="wizard-review-card wizard-review-card--third"><button type="button" data-wizard-edit="4" aria-label="Edit attachments"><x-vuero.icon name="edit" size="14" /></button><div class="wizard-review-stat"><strong data-review-files>No</strong><span>Attachments</span></div></article>
+                <article class="wizard-review-card wizard-review-card--half"><h3>Team</h3><button type="button" data-wizard-edit="5" aria-label="Edit team"><x-vuero.icon name="edit" size="14" /></button><div class="wizard-review-list" data-review-team><span class="wizard-review-empty">No selected teammate</span></div></article>
+                <article class="wizard-review-card wizard-review-card--half"><h3>Tools</h3><button type="button" data-wizard-edit="6" aria-label="Edit tools"><x-vuero.icon name="edit" size="14" /></button><div class="wizard-review-list" data-review-tools><span class="wizard-review-empty">No selected tools</span></div></article>
+            </div>
+        </div>
+    </div>
+</section>

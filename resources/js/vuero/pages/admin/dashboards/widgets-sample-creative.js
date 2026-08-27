@@ -1,0 +1,4 @@
+import { initializeDashboard } from '../dashboard-runtime';
+import { initializeWidgetInteractions } from '../dashboard/widgets';
+
+initializeDashboard('widgets-sample-creative', initializeWidgetInteractions);

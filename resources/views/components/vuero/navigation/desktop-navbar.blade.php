@@ -25,7 +25,7 @@
 
         <div class="admin-navbar__inline-search" data-navbar-inline-search hidden>
             <x-vuero.icon name="search" size="18" />
-            <input type="search" placeholder="Search..." aria-label="Search navigation">
+                <input type="search" placeholder="Search records..." aria-label="Search navigation">
             <button type="button" data-navbar-search-close aria-label="Close search">&times;</button>
         </div>
 
@@ -89,21 +89,21 @@
 
             <label class="admin-navbar-clean__search">
                 <x-vuero.icon name="search" size="18" />
-                <input type="search" placeholder="Search..." aria-label="Search">
+                <input type="search" placeholder="Search records..." aria-label="Search">
             </label>
 
             <x-vuero.navigation.navbar-toolbar />
         </div>
 
         <div class="admin-navbar-clean__lower">
-            <time datetime="2026-08-23">August 23, 2026</time>
+            <time datetime="2021-02-22">February 22, 2021</time>
             <nav aria-label="Workspace">
                 @foreach (['Dashboard', 'Projects', 'Team', 'Reports', 'Settings'] as $label)
                     <a class="{{ $loop->first ? 'is-active' : '' }}" href="{{ $loop->first ? $dashboardUrl : ($loop->last ? $profileUrl : '#') }}">{{ $label }}</a>
                 @endforeach
             </nav>
             <div class="admin-navbar-clean__team" aria-label="Team members">
-                @foreach (['EL', 'JS', 'MW'] as $initials)<span>{{ $initials }}</span>@endforeach
+                @foreach ([13, 5, 31] as $avatar)<span><img src="{{ asset('vuero/images/admin/business/avatars/'.$avatar.'.svg') }}" alt="Team member"></span>@endforeach
                 <button type="button" data-ui-message="New workspace action is ready." aria-label="Add">+</button>
             </div>
         </div>

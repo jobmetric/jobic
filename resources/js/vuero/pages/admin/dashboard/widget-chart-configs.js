@@ -1,0 +1,20 @@
+export const widgetChartConfigs = (theme) => {
+    const font = 'Roboto, sans-serif';
+    const common = { chart: { toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 650 }, fontFamily: font, foreColor: theme.muted }, dataLabels: { enabled: false }, grid: { borderColor: theme.border }, tooltip: { theme: theme.dark ? 'dark' : 'light' } };
+    const sparkData = [472,454,547,385,562,247,652,318,379,391,622,515,355,415,358,271,932,534,615,278,546,435,192,465];
+    const sparkColors = [theme.primary, theme.info, theme.accent, theme.purple];
+    const configs = {};
+    for (let index = 1; index <= 4; index += 1) {
+        const rotated = sparkData.slice(index * 3).concat(sparkData.slice(0, index * 3));
+        configs[`spark-${index}`] = { ...common, chart: { ...common.chart, height: 60, type: 'area', sparkline: { enabled: true } }, series: [{ name: 'Value', data: rotated }], colors: [sparkColors[index - 1]], stroke: { width: 1.7, curve: 'straight' }, fill: { opacity: .18 }, yaxis: { min: 0 }, xaxis: { type: 'numeric' } };
+    }
+    configs.trend = { ...common, chart: { ...common.chart, height: 96, type: 'line', sparkline: { enabled: true } }, series: [{ name: 'Sales', data: [31,40,28,51,42,109,100] }], colors: [theme.primary], stroke: { width: 2, curve: 'smooth' }, fill: { opacity: 0 }, grid: { show: false } };
+    configs['line-revenue'] = { ...common, chart: { ...common.chart, height: 245, type: 'line', zoom: { enabled: false } }, series: [{ name: 'Revenue', data: [10835,40214,36257,51411,45697,61221,65295,91512,75648] }], colors: [theme.accent], stroke: { width: 2, curve: 'smooth' }, xaxis: { categories: ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'], axisBorder: { color: theme.border }, labels: { style: { colors: theme.muted } } }, yaxis: { labels: { style: { colors: theme.muted }, formatter: (value) => Math.round(value) } }, tooltip: { ...common.tooltip, y: { formatter: (value) => `$${value.toLocaleString()}` } } };
+    configs['area-revenue'] = { ...common, chart: { ...common.chart, height: 245, type: 'area' }, series: [{ name: 'Returning', data: [318,407,284,517,452,1209,1010] },{ name: 'Newcomers', data: [112,324,457,312,342,527,414] },{ name: 'Abandoned', data: [787,534,365,107,145,54,27] }], colors: [theme.accent, theme.info, theme.primary], stroke: { width: 2, curve: 'smooth' }, fill: { opacity: .22 }, legend: { show: false }, xaxis: { categories: ['19 Sep','20 Sep','21 Sep','22 Sep','23 Sep','24 Sep','25 Sep'], labels: { style: { colors: theme.muted } }, axisBorder: { color: theme.border } }, yaxis: { labels: { style: { colors: theme.muted } } } };
+    const radial = (series, colors, stripes = false) => ({ ...common, chart: { ...common.chart, height: 205, type: 'radialBar' }, series, colors, plotOptions: { radialBar: { startAngle: stripes ? -135 : 0, endAngle: stripes ? 135 : 360, hollow: { size: stripes ? '55%' : '67%' }, track: { background: theme.soft }, dataLabels: { name: { show: false }, value: { color: colors[0], fontSize: '16px', fontWeight: 600, offsetY: 5, formatter: (value) => `${value}%` } } } }, stroke: stripes ? { dashArray: 4 } : {}, labels: ['Progress'] });
+    configs['radial-circle'] = radial([65], [theme.purple]);
+    configs['radial-stripes'] = radial([65], [theme.info], true);
+    [31,53,84].forEach((value, index) => { configs[`group-circle-${index + 1}`] = { ...radial([value], [[theme.info, theme.orange, theme.primary][index]]), chart: { ...common.chart, height: 120, type: 'radialBar' }, plotOptions: { radialBar: { hollow: { size: '35%' }, track: { background: theme.soft }, dataLabels: { show: false } } } }; });
+    [57,36,88].forEach((value, index) => { configs[`group-gauge-${index + 1}`] = { ...radial([value], [[theme.accent, theme.orange, theme.primary][index]], true), chart: { ...common.chart, height: 120, type: 'radialBar', sparkline: { enabled: true } }, plotOptions: { radialBar: { startAngle: -90, endAngle: 90, hollow: { size: '35%' }, track: { background: theme.soft }, dataLabels: { show: false } } } }; });
+    return configs;
+};

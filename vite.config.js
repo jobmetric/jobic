@@ -16,6 +16,8 @@ export default defineConfig({
                 'resources/js/vuero/pages/auth/login.js',
                 'resources/js/vuero/pages/admin/dashboard.js',
                 'resources/js/vuero/pages/admin/profile-settings.js',
+                'resources/js/vuero/pages/admin/wizard.js',
+                'resources/js/vuero/pages/admin/starter.js',
                 ...dashboardScripts,
             ],
             refresh: true,
@@ -26,7 +28,8 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    charts: ['apexcharts'],
+                    apexcharts: ['apexcharts'],
+                    billboard: ['billboard.js'],
                 },
             },
         },

@@ -40,17 +40,24 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
 .project-avatar { display: grid; width: 36px; height: 36px; place-items: center; color: #fff; background: var(--primary); border-radius: 50%; font-family: var(--font-alt); font-size: 14px; font-weight: 600; }
 .admin-subsidebar__header h2 { margin-left: 12px; font-family: var(--font-alt); font-size: 13px; font-weight: 600; }
 .admin-subsidebar__header button { width: 34px; height: 34px; margin-left: auto; color: var(--muted); background: transparent; border: 0; cursor: pointer; font-size: 25px; font-weight: 300; }
-.admin-subsidebar__body { height: calc(100vh - 60px); padding: 16px 20px 28px; overflow-y: auto; }
+.admin-subsidebar__body { height: calc(100vh - 60px); padding: 10px 0 28px; overflow-x: hidden; overflow-y: auto; }
 .subsidebar-menu, .subsidebar-menu ul { margin: 0; padding: 0; list-style: none; }
-.subsidebar-menu__item > button, .subsidebar-menu__link { display: flex; width: 100%; min-height: 35px; padding: 0; align-items: center; justify-content: space-between; color: var(--text-soft); background: transparent; border: 0; cursor: pointer; font-size: 13px; text-align: left; }
-.subsidebar-menu__item > button span { font-family: var(--font-alt); font-size: 12px; font-weight: 600; }
-.subsidebar-menu__item > button svg { transition: transform .2s ease; }
-.subsidebar-menu__item.is-open > button svg { transform: rotate(90deg); }
-.subsidebar-menu__children { padding: 3px 0 8px !important; }
-.subsidebar-menu__children a { display: flex; min-height: 30px; padding-left: 10px; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.subsidebar-menu__children a svg { opacity: 0; }
+.subsidebar-menu__item[data-accordion] { min-height: 36px; margin-bottom: 4px; }
+.subsidebar-menu__item > button, .subsidebar-menu__link { display: flex; width: 100%; min-height: 36px; padding: 0 20px; align-items: center; justify-content: space-between; color: var(--text-soft); background: transparent; border: 0; cursor: pointer; font-family: var(--font-alt); font-size: 14px; font-weight: 500; text-align: left; transition: color .2s ease; }
+.subsidebar-menu__item > button:hover, .subsidebar-menu__item > button:focus-visible { color: var(--text); }
+.subsidebar-menu__item > button svg { position: relative; top: 1px; flex: none; color: var(--text-soft); transition: color .3s ease, transform .3s ease; }
+.subsidebar-menu__item.is-open > button { color: var(--text); font-weight: 600; }
+.subsidebar-menu__item.is-open > button > svg { transform: rotate(90deg); }
+.subsidebar-menu__children { padding: 0 !important; overflow: hidden; }
+.subsidebar-menu__children li { display: flex; min-height: 32px; align-items: center; }
+.subsidebar-menu__children a { display: flex; width: 100%; min-height: 32px; padding: 0 20px 0 32px; align-items: center; gap: 10px; color: var(--muted); font-family: var(--font-sans); font-size: 14px; font-weight: 400; }
+.subsidebar-menu__children a .subsidebar-menu__item-icon { width: 19px; height: 19px; flex: none; opacity: 1; }
 .subsidebar-menu__children a:hover, .subsidebar-menu__children a.is-active, .subsidebar-menu__link:hover, .subsidebar-menu__link.is-active { color: var(--primary); }
-.subsidebar-menu__children a.is-active svg { opacity: 1; }
+.subsidebar-menu__children a.is-active { font-weight: 500; }
+.subsidebar-menu__tag { min-width: 31px; margin-left: auto; padding: 2px 6px; color: var(--primary); background: transparent; border: 1px solid var(--primary); border-radius: 999px; font-size: .62rem; font-weight: 500; line-height: 1.25; text-align: center; }
+.subsidebar-menu__children .subsidebar-menu__child-divider { display: flex; min-height: 32px; align-items: center; pointer-events: none; }
+.subsidebar-menu__child-divider > span { display: block; width: 75%; height: 1px; margin: 0 auto; background: var(--border); }
+.subsidebar-menu__divider { display: block; height: 10px; margin: 5px 20px 10px; border-bottom: 1px solid var(--border); pointer-events: none; }
 .subsidebar-menu__item.has-separator { margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--border); }
 .subsidebar-group > button, .subsidebar-single { display: flex; width: 100%; min-height: 35px; padding: 0; align-items: center; justify-content: space-between; color: var(--text-soft); background: transparent; border: 0; cursor: pointer; font-size: 13px; text-align: left; }
 .subsidebar-group > button span { font-family: var(--font-alt); font-size: 12px; font-weight: 600; }
@@ -79,8 +86,9 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
 .admin-sideblock__group.is-open > button > svg:last-child { color: var(--primary); transform: rotate(90deg); }
 .admin-sideblock__children { padding: 7px 32px 10px 46px; }
 .admin-sideblock__children .subsidebar-menu__item > button,
-.admin-sideblock__children .subsidebar-menu__link { min-height: 34px; }
-.admin-sideblock__children .subsidebar-menu__children a { min-height: 29px; }
+.admin-sideblock__children .subsidebar-menu__link { min-height: 34px; padding-inline: 0; }
+.admin-sideblock__children .subsidebar-menu__children a { min-height: 29px; padding-inline: 10px 0; }
+.admin-sideblock__children .subsidebar-menu__divider { margin-inline: 0; }
 .admin-sideblock__footer { display: flex; min-height: 68px; padding: 10px 20px; flex: none; align-items: center; gap: 3px; border-top: 1px solid var(--border); }
 .admin-sideblock__action { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; color: var(--muted); background: transparent; border: 0; border-radius: 50%; cursor: pointer; }
 .admin-sideblock__action:hover,
@@ -561,7 +569,7 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
     .admin-subsidebar__header .project-avatar,
     .admin-subsidebar__header button { display: none; }
     .admin-subsidebar__header h2 { margin: 0; color: var(--muted); font-size: 18px; font-weight: 500; }
-    .admin-subsidebar__body { height: calc(100dvh - 120px); padding: 10px 20px max(24px,env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+    .admin-subsidebar__body { height: calc(100dvh - 120px); padding: 10px 0 max(24px,env(safe-area-inset-bottom)); overscroll-behavior: contain; }
     .subsidebar-menu__item > button,
     .subsidebar-menu__link { min-height: 44px; }
     .subsidebar-menu__children a { min-height: 40px; }

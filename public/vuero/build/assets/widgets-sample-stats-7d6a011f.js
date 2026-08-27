@@ -1,0 +1,1 @@
+import{i as r}from"./dashboard-runtime-49b67cb7.js";import{i as a}from"./widgets-be7b39ba.js";import{i as o}from"./widget-charts-3f6690cf.js";import"./jquery-fde43e1f.js";import"./apexcharts-e66b3859.js";import"./chart-theme-40715f27.js";r("widgets-sample-stats",(i,t)=>{a(i,t),o(i)});
