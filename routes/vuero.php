@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Vuero\Admin\DashboardController;
+use App\Http\Controllers\Vuero\Admin\LayoutController;
 use App\Http\Controllers\Vuero\Admin\ProfileSettingsController;
 use App\Http\Controllers\Vuero\Admin\StarterController;
 use App\Http\Controllers\Vuero\Admin\WizardController;
@@ -33,6 +34,9 @@ Route::prefix('vuero')
             ->group(function (): void {
                 Route::get('/', DashboardController::class)->name('dashboard');
                 Route::get('/wizard', WizardController::class)->name('wizard');
+                Route::get('/layouts/{layout}', [LayoutController::class, 'show'])
+                    ->where('layout', 'list-view-v[1-3]')
+                    ->name('layouts.show');
                 Route::get('/starters/{starter}', StarterController::class)
                     ->where('starter', '(sidebar|sideblock|navbar)-blank-page-[1-8]')
                     ->name('starters.show');

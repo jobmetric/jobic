@@ -2,10 +2,11 @@
 
 @php
     $dashboardActive = request()->routeIs('vuero.admin.dashboard', 'vuero.admin.dashboards.*', 'vuero.admin.wizard', 'vuero.admin.starters.*');
+    $layoutsActive = request()->routeIs('vuero.admin.layouts.*');
     $settingsActive = request()->routeIs('vuero.admin.profile-settings');
     $sections = [
         'dashboard' => ['label' => 'Dashboards', 'icon' => 'activity', 'active' => $dashboardActive],
-        'layouts' => ['label' => 'Layouts', 'icon' => 'apps', 'active' => $settingsActive],
+        'layouts' => ['label' => 'Layouts', 'icon' => 'apps', 'active' => $layoutsActive || $settingsActive],
         'elements' => ['label' => 'Elements', 'icon' => 'box', 'active' => false],
         'components' => ['label' => 'Components', 'icon' => 'cpu', 'active' => false],
         'messaging' => ['label' => 'Messaging', 'icon' => 'message', 'active' => false],
@@ -64,7 +65,11 @@
             $starterMenu,
         ],
         'layouts' => [
-            ['label' => 'Lists', 'children' => [['label' => 'List View V1'], ['label' => 'List View V2'], ['label' => 'List View V3']]],
+            ['label' => 'Lists', 'open' => $layoutsActive, 'children' => [
+                ['label' => 'List View V1', 'url' => route('vuero.admin.layouts.show', 'list-view-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v1', 'icon' => 'layout'],
+                ['label' => 'List View V2', 'url' => route('vuero.admin.layouts.show', 'list-view-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v2', 'icon' => 'layout'],
+                ['label' => 'List View V3', 'url' => route('vuero.admin.layouts.show', 'list-view-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v3', 'icon' => 'layout'],
+            ]],
             ['label' => 'Grids', 'children' => [['label' => 'Cards Grid'], ['label' => 'Tiles Grid'], ['label' => 'Users Grid']]],
             ['label' => 'Profiles', 'children' => [['label' => 'Profile View'], ['label' => 'Profile Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive]]],
             ['label' => 'Search', 'children' => [['label' => 'Search Results'], ['label' => 'Empty Search']]],

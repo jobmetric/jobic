@@ -132,4 +132,8 @@
     <symbol id="icon-help-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M9.8 9a2.5 2.5 0 1 1 4.4 1.6c-1.3 1.2-2.2 1.4-2.2 3.4M12 18h.01" /></symbol>
     <symbol id="icon-video" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2" /><path d="m16 10 5-3v10l-5-3v-4Z" /></symbol>
     <symbol id="icon-align-right" viewBox="0 0 24 24"><path d="M10 6h10M4 12h16M8 18h12" /></symbol>
+    <symbol id="icon-car" viewBox="0 0 24 24"><path d="m5 11 2-5h10l2 5M3 11h18v7H3v-7ZM6 18v2M18 18v2" /><circle cx="7" cy="14.5" r="1" /><circle cx="17" cy="14.5" r="1" /></symbol>
+    <symbol id="icon-wifi" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01M2 9a15 15 0 0 1 20 0" /></symbol>
+    <symbol id="icon-wind" viewBox="0 0 24 24"><path d="M3 8h12a3 3 0 1 0-3-3M3 12h17a3 3 0 1 1-3 3M3 16h8" /></symbol>
+    <symbol id="icon-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z" /></symbol>
 </svg>

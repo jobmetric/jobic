@@ -42,6 +42,12 @@
       "_jquery-fde43e1f.js"
     ]
   },
+  "_list-view-runtime-cbda4ae8.js": {
+    "file": "assets/list-view-runtime-cbda4ae8.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ]
+  },
   "_maps-42ecc42d.js": {
     "assets": [
       "assets/layers-1dbbe9d0.png",
@@ -98,7 +104,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-f5e5ba11.css",
+    "file": "assets/app-ed8ebd3b.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
@@ -454,6 +460,32 @@
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/writer.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/list-view-v1.js": {
+    "file": "assets/list-view-v1-d87d234a.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/list-view-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/list-view-v2.js": {
+    "file": "assets/list-view-v2-96e0c448.js",
+    "imports": [
+      "_list-view-runtime-cbda4ae8.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/list-view-v2.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/list-view-v3.js": {
+    "file": "assets/list-view-v3-a7bbf137.js",
+    "imports": [
+      "_list-view-runtime-cbda4ae8.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/list-view-v3.js"
   },
   "resources/js/vuero/pages/admin/profile-settings.js": {
     "file": "assets/profile-settings-52e09422.js",

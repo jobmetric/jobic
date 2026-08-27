@@ -5,6 +5,9 @@ import { readdirSync } from 'node:fs';
 const dashboardScripts = readdirSync(new URL('./resources/js/vuero/pages/admin/dashboards', import.meta.url))
     .filter((file) => file.endsWith('.js'))
     .map((file) => `resources/js/vuero/pages/admin/dashboards/${file}`);
+const layoutScripts = readdirSync(new URL('./resources/js/vuero/pages/admin/layouts', import.meta.url))
+    .filter((file) => file.endsWith('.js') && !file.includes('-runtime'))
+    .map((file) => `resources/js/vuero/pages/admin/layouts/${file}`);
 
 export default defineConfig({
     plugins: [
@@ -19,6 +22,7 @@ export default defineConfig({
                 'resources/js/vuero/pages/admin/wizard.js',
                 'resources/js/vuero/pages/admin/starter.js',
                 ...dashboardScripts,
+                ...layoutScripts,
             ],
             refresh: true,
         }),
