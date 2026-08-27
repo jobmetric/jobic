@@ -42,8 +42,8 @@
       "_jquery-fde43e1f.js"
     ]
   },
-  "_list-view-runtime-cbda4ae8.js": {
-    "file": "assets/list-view-runtime-cbda4ae8.js",
+  "_list-view-runtime-afb96121.js": {
+    "file": "assets/list-view-runtime-afb96121.js",
     "imports": [
       "_jquery-fde43e1f.js"
     ]
@@ -104,7 +104,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-b92fd595.css",
+    "file": "assets/app-e494bcd8.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
@@ -461,6 +461,33 @@
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/writer.js"
   },
+  "resources/js/vuero/pages/admin/layouts/flex-list-v1.js": {
+    "file": "assets/flex-list-v1-7f98beb8.js",
+    "imports": [
+      "_list-view-runtime-afb96121.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/flex-list-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/flex-list-v2.js": {
+    "file": "assets/flex-list-v2-2ea37030.js",
+    "imports": [
+      "_list-view-runtime-afb96121.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/flex-list-v2.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/flex-list-v3.js": {
+    "file": "assets/flex-list-v3-6cefeafa.js",
+    "imports": [
+      "_list-view-runtime-afb96121.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/flex-list-v3.js"
+  },
   "resources/js/vuero/pages/admin/layouts/list-view-v1.js": {
     "file": "assets/list-view-v1-d87d234a.js",
     "imports": [
@@ -470,27 +497,27 @@
     "src": "resources/js/vuero/pages/admin/layouts/list-view-v1.js"
   },
   "resources/js/vuero/pages/admin/layouts/list-view-v2.js": {
-    "file": "assets/list-view-v2-96e0c448.js",
+    "file": "assets/list-view-v2-f56ed0b1.js",
     "imports": [
-      "_list-view-runtime-cbda4ae8.js",
+      "_list-view-runtime-afb96121.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/list-view-v2.js"
   },
   "resources/js/vuero/pages/admin/layouts/list-view-v3.js": {
-    "file": "assets/list-view-v3-a7bbf137.js",
+    "file": "assets/list-view-v3-1ad4309e.js",
     "imports": [
-      "_list-view-runtime-cbda4ae8.js",
+      "_list-view-runtime-afb96121.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/list-view-v3.js"
   },
   "resources/js/vuero/pages/admin/layouts/list-view-v4.js": {
-    "file": "assets/list-view-v4-a262697d.js",
+    "file": "assets/list-view-v4-6d82f2fc.js",
     "imports": [
-      "_list-view-runtime-cbda4ae8.js",
+      "_list-view-runtime-afb96121.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,

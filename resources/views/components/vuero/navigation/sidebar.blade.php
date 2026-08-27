@@ -71,6 +71,11 @@
                 ['label' => 'List View V3', 'url' => route('vuero.admin.layouts.show', 'list-view-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v3', 'icon' => 'layout'],
                 ['label' => 'List View V4', 'url' => route('vuero.admin.layouts.show', 'list-view-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v4', 'icon' => 'layout'],
             ]],
+            ['label' => 'Flex Lists', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['flex-list-v1', 'flex-list-v2', 'flex-list-v3'], true), 'children' => [
+                ['label' => 'Flex List V1', 'url' => route('vuero.admin.layouts.show', 'flex-list-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'flex-list-v1', 'icon' => 'layout'],
+                ['label' => 'Flex List V2', 'url' => route('vuero.admin.layouts.show', 'flex-list-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'flex-list-v2', 'icon' => 'layout'],
+                ['label' => 'Flex List V3', 'url' => route('vuero.admin.layouts.show', 'flex-list-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'flex-list-v3', 'icon' => 'layout'],
+            ]],
             ['label' => 'Grids', 'children' => [['label' => 'Cards Grid'], ['label' => 'Tiles Grid'], ['label' => 'Users Grid']]],
             ['label' => 'Profiles', 'children' => [['label' => 'Profile View'], ['label' => 'Profile Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive]]],
             ['label' => 'Search', 'children' => [['label' => 'Search Results'], ['label' => 'Empty Search']]],

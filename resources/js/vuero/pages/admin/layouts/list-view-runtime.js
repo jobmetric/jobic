@@ -34,6 +34,7 @@ export const initializeListView = (selector, options = {}) => {
             });
             $clear.prop('hidden', !query);
             $panel.find('[data-layout-placeholder="search"]').prop('hidden', visible !== 0 || !query);
+            $panel.find('[data-layout-table]').prop('hidden', visible === 0 && !!query);
             $panel.find('[data-layout-pagination]').prop('hidden', visible <= 5);
         };
 

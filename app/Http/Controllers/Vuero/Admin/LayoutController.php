@@ -9,13 +9,19 @@ class LayoutController extends Controller
 {
     public function show(string $layout): View
     {
-        abort_unless(in_array($layout, ['list-view-v1', 'list-view-v2', 'list-view-v3', 'list-view-v4'], true), 404);
+        abort_unless(in_array($layout, [
+            'list-view-v1', 'list-view-v2', 'list-view-v3', 'list-view-v4',
+            'flex-list-v1', 'flex-list-v2', 'flex-list-v3',
+        ], true), 404);
 
         return view("vuero.admin.layouts.{$layout}", match ($layout) {
             'list-view-v1' => ['users' => $this->users(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v1.js'],
             'list-view-v2' => ['properties' => $this->properties(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v2.js'],
             'list-view-v3' => ['jobs' => $this->jobs(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v3.js'],
             'list-view-v4' => ['recipes' => $this->recipes(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v4.js'],
+            'flex-list-v1' => ['users' => $this->flexUsers(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/flex-list-v1.js'],
+            'flex-list-v2' => ['projects' => $this->flexProjects(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/flex-list-v2.js'],
+            'flex-list-v3' => ['courses' => $this->flexCourses(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/flex-list-v3.js'],
         });
     }
 
@@ -125,6 +131,135 @@ class LayoutController extends Controller
                     return ['initials' => $follower[0], 'color' => $follower[1]];
                 })->all(),
             ];
+        })->all();
+    }
+
+    private function flexUsers(): array
+    {
+        $avatar = fn (?string $file): ?string => match (true) {
+            $file === null => null,
+            str_contains($file, 'vuero-1.svg') => '/vuero/images/layouts/list-view-v1/avatars/vuero-1.svg',
+            default => '/vuero/images/layouts/list-view-v1/avatars/'.basename($file),
+        };
+        $flag = fn (string $country): string => "/vuero/images/layouts/list-view-v1/flags/{$country}.svg";
+
+        $items = [
+            ['Erik K.', 'Product Manager', 'vuero-1.svg', 'united-states-of-america', 'Las Vegas, NV', 'Software', 'Online', [['25.jpg'], ['JP', 'info'], ['vuero-1.svg'], ['5.jpg'], ['SC', 'success']]],
+            ['Jimmy H.', 'Project Manager', '22.jpg', 'united-states-of-america', 'Los Angeles, CA', 'Business', 'Working', [['SC', 'h-purple']]],
+            ['Melany W.', 'Web Developer', '25.jpg', 'united-states-of-america', 'San Jose, CA', 'Design', 'Online', [['BT', 'success'], ['7.jpg'], ['19.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['Joshua S.', 'Backend Developer', '12.jpg', 'united-states-of-america', 'Las Vegas, NV', 'Accounting', 'Suspended', [['13.jpg']]],
+            ['Tara S.', 'UI/UX Designer', '13.jpg', 'united-states-of-america', 'Los Angeles, CA', 'Finance', 'Working', [['25.jpg'], ['11.jpg'], ['5.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['Greta K.', 'Sales Manager', '19.jpg', 'germany', 'Berlin, Germany', 'Business', 'Online', [['25.jpg'], ['AT', 'h-yellow'], ['5.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['Clément D.', 'Software Engineer', '30.jpg', 'france', 'Toulouse, France', 'Software', 'Offline', [['25.jpg'], ['BV', 'h-purple'], ['vuero-1.svg'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['Kelly M.', 'Product Manager', '11.jpg', 'england', 'London, UK', 'Software', 'Online', [['25.jpg'], ['13.jpg'], ['5.jpg']]],
+            ['Alan T.', 'Software Engineer', null, 'united-states-of-america', 'San Francisco, CA', 'Software', 'Offline', [['25.jpg']], 'AT', 'h-yellow'],
+            ['Courtney W.', 'Web Developer', '26.jpg', 'australia', 'Melbourne, Australia', 'Software', 'Offline', [['7.jpg'], ['JD', 'info'], ['27.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+        ];
+
+        return collect($items)->map(function (array $item, int $index) use ($avatar, $flag): array {
+            [$username, $position, $picture, $badge, $location, $industry, $status, $contacts] = $item;
+            $initials = $item[8] ?? null;
+            $color = $item[9] ?? null;
+
+            return [
+                'id' => $index,
+                'username' => $username,
+                'position' => $position,
+                'picture' => $avatar($picture),
+                'initials' => $initials,
+                'color' => $color,
+                'badge' => $flag($badge),
+                'location' => $location,
+                'industry' => $industry,
+                'status' => $status,
+                'contacts' => $this->flexContacts($contacts),
+            ];
+        })->all();
+    }
+
+    private function flexProjects(): array
+    {
+        $picture = fn (int $number): string => "/vuero/images/layouts/flex-list/abstracts/{$number}.png";
+
+        $items = [
+            ['Website Redesign', 'Blake & Mortimer', '3 months', 1, 'HR Vetting', 'In Progress', [['25.jpg'], ['JP', 'info'], ['vuero-1.svg'], ['5.jpg'], ['SC', 'success']]],
+            ['Mobile App Rework', 'Pollos Hermanos', '2 months', 2, 'Food', 'In Progress', [['SC', 'h-purple']]],
+            ['ERP Solution Development', 'Best Mart', '6 months', 3, 'Distribution', 'Paused', [['BT', 'success'], ['7.jpg'], ['19.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['Website Proof Of Concept', 'Los Fragueros', '1 month', 4, 'Clothing', 'In Progress', [['BT', 'success'], ['AT', 'h-yellow'], ['5.jpg']]],
+            ['Add an Accouting Module', 'WorkForce', '3 weeks', 5, 'Software', 'In Progress', [['18.jpg']]],
+            ['New UX Exploration', 'WorkForce', '3 weeks', 6, 'Software', 'In Progress', [['25.jpg'], ['11.jpg'], ['5.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['Ordering App Development', 'Find Your Stuff', '5 months', 7, 'Retail', 'In Progress', [['25.jpg'], ['AT', 'h-yellow'], ['5.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['Learning App for Children', 'Coding Kids', '2 months', 8, 'Education', 'In Progress', [['25.jpg'], ['BV', 'h-purple'], ['vuero-1.svg'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+            ['App Wireframe Implementation', 'Freako', '2 weeks', 9, 'Retail', 'In Progress', [['25.jpg'], ['13.jpg'], ['5.jpg']]],
+            ['Corporate Social Network', 'Publicis', '5 months', 9, 'Media', 'In Progress', [['7.jpg'], ['JD', 'info'], ['27.jpg'], ['SC', 'h-purple'], ['SC', 'h-purple']]],
+        ];
+
+        return collect($items)->map(function (array $item, int $index) use ($picture): array {
+            [$name, $customer, $duration, $image, $industry, $status, $team] = $item;
+
+            return [
+                'id' => $index,
+                'name' => $name,
+                'customer' => $customer,
+                'duration' => $duration,
+                'picture' => $picture($image),
+                'industry' => $industry,
+                'status' => $status,
+                'team' => $this->flexContacts($team),
+            ];
+        })->all();
+    }
+
+    private function flexCourses(): array
+    {
+        $picture = fn (string $file): string => "/vuero/images/layouts/flex-list/courses/{$file}";
+        $avatar = fn (string $file): string => '/vuero/images/layouts/list-view-v1/avatars/'.basename($file);
+
+        $items = [
+            ['Introduction to Html5', '1.jpg', 'Web Development', 1, 26, 'html5', 'Html5', 'vuero-1.svg', 'Erik K.'],
+            ['Mastering VueJS and Typescript', '2.png', 'Web Development', 4, 12, 'nodejs', 'NodeJS', '12.jpg', 'Joshua S.'],
+            ['Discovering CSS3 and Stylesheets', '3.jpg', 'Web Development', 2, 16, 'css3', 'CSS3', '5.jpg', 'Mary L.'],
+            ['Get Started with Laravel 6', '4.png', 'Web Development', 3, 0, 'laravel', 'Laravel', '18.jpg', 'Esteban C.'],
+            ['Python Basics for Beginners', '5.jpeg', 'Web Development', 1, 8, 'python', 'Python', '18.jpg', 'Esteban C.'],
+            ['Mastering State with React Hooks', '6.jpg', 'Web Development', 4, 25, 'react', 'ReactJS', '30.jpg', 'Clément D.'],
+            ['Setting up an Express Server', '7.png', 'Web Development', 3, 12, 'nodejs', 'NodeJS', '38.jpg', 'Christie D.'],
+            ['Learning to use Kubernetes', '9.jpg', 'Web Development', 5, 34, 'kubernetes', 'Kubernetes', '30.jpg', 'Clément D.'],
+            ['Another Angular Crash Course', '11.jpg', 'Web Development', 4, 22, 'angular', 'Angular', '34.jpg', 'Daniel R.'],
+            ['learning Advanced Docker Concepts', '12.jpg', 'Web Development', 5, 35, 'docker', 'Docker', '30.jpg', 'Clément D.'],
+        ];
+
+        return collect($items)->map(function (array $item, int $index) use ($picture, $avatar): array {
+            [$name, $image, $category, $difficulty, $price, $skillSlug, $skillName, $authorAvatar, $authorName] = $item;
+
+            return [
+                'id' => $index,
+                'name' => $name,
+                'picture' => $picture($image),
+                'category' => $category,
+                'difficulty' => $difficulty,
+                'price' => $price,
+                'skill' => ['slug' => $skillSlug, 'name' => $skillName],
+                'author' => [
+                    'username' => $authorName,
+                    'picture' => $avatar($authorAvatar),
+                ],
+            ];
+        })->all();
+    }
+
+    /** @param  list<array{0: string}|list{string}>  $contacts */
+    private function flexContacts(array $contacts): array
+    {
+        return collect($contacts)->map(function (array $contact): array {
+            if (count($contact) === 1 && str_contains($contact[0], '.')) {
+                return ['picture' => '/vuero/images/layouts/list-view-v1/avatars/'.$contact[0]];
+            }
+
+            if (count($contact) === 1 && str_contains($contact[0], 'vuero-1.svg')) {
+                return ['picture' => '/vuero/images/layouts/list-view-v1/avatars/vuero-1.svg'];
+            }
+
+            return ['initials' => $contact[0], 'color' => $contact[1] ?? 'info'];
         })->all();
     }
 }
