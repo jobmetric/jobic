@@ -65,7 +65,7 @@ class ListViewV2V3Test extends TestCase
         $response = $this->actingAs(User::factory()->create(['password' => 'test-password']))
             ->get(route('vuero.admin.layouts.show', 'list-view-v3'));
 
-        foreach (range(1, 3) as $version) {
+        foreach (range(1, 4) as $version) {
             $response
                 ->assertSee("List View V{$version}")
                 ->assertSee(route('vuero.admin.layouts.show', "list-view-v{$version}"), false);

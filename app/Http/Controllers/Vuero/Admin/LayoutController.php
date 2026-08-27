@@ -9,12 +9,13 @@ class LayoutController extends Controller
 {
     public function show(string $layout): View
     {
-        abort_unless(in_array($layout, ['list-view-v1', 'list-view-v2', 'list-view-v3'], true), 404);
+        abort_unless(in_array($layout, ['list-view-v1', 'list-view-v2', 'list-view-v3', 'list-view-v4'], true), 404);
 
         return view("vuero.admin.layouts.{$layout}", match ($layout) {
             'list-view-v1' => ['users' => $this->users(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v1.js'],
             'list-view-v2' => ['properties' => $this->properties(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v2.js'],
             'list-view-v3' => ['jobs' => $this->jobs(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v3.js'],
+            'list-view-v4' => ['recipes' => $this->recipes(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v4.js'],
         });
     }
 
@@ -81,5 +82,49 @@ class LayoutController extends Controller
             'duration' => $item[3], 'requirements' => $item[4],
             'logo' => "/vuero/images/layouts/list-view-v3/brands/{$item[0]}.svg",
         ])->all();
+    }
+
+    private function recipes(): array
+    {
+        $avatar = fn (string $file): string => "/vuero/images/layouts/list-view-v1/avatars/{$file}";
+
+        $icon = fn (int $number): string => "/vuero/images/layouts/list-view-v4/illustrations/cake-{$number}.svg";
+
+        $items = [
+            ['1', 'Strawberry & Cream Cake', 'Cakes', '1h 45m', 3, 'Alice C.', '7.jpg', [['9.jpg'], ['vuero-1.svg']]],
+            ['2', 'Orange & Lemon Cake', 'Cakes', '1h 15m', 2, 'Jimmy H.', '22.jpg', [['12.jpg'], ['27.jpg'], ['40.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['3', 'Three Chocolates Cake', 'Cakes', '2h', 2, 'Hilde V.', '15.jpg', [['19.jpg'], ['24.jpg'], ['34.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['4', 'Wedding Cake', 'Cakes', '3h 30m', 7, 'Courtney W.', '26.jpg', [['19.jpg'], ['24.jpg'], ['34.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['5', 'Vanilla Waffles', 'Waffles', '1h 0m', 2, 'Ryan B.', '14.jpg', [['vuero-1.svg'], ['9.jpg'], ['13.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['6', 'Strawberry Slice', 'Slices', '1h 0m', 2, 'Alice C.', '7.jpg', [['vuero-1.svg'], ['9.jpg'], ['13.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['7', 'Marmelade Donuts', 'Donuts', '2h 15m', 2, 'Elizabeth F.', '21.jpg', [['5.jpg'], ['18.jpg'], ['25.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['8', 'Peanut Butter Sandwich', 'Sandwiches', '15m', 1, 'Joshua S.', '12.jpg', [['9.jpg'], ['28.jpg'], ['36.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['9', 'Peanut Butter Slice', 'Slices', '15m', 1, 'Joshua S.', '12.jpg', [['5.jpg'], ['31.jpg'], ['16.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+            ['10', 'Strawberry Spicy', 'Slices', '1h 15m', 1, 'Kelly M.', '11.jpg', [['24.jpg'], ['23.jpg'], ['13.jpg'], ['SC', 'success'], ['AD', 'info'], ['TF', 'purple'], ['GR', 'orange']]],
+        ];
+
+        return collect($items)->map(function (array $item) use ($avatar, $icon): array {
+            [$id, $name, $category, $duration, $attachments, $authorName, $authorAvatar, $followers] = $item;
+
+            return [
+                'id' => $id,
+                'name' => $name,
+                'category' => $category,
+                'duration' => $duration,
+                'attachments' => $attachments,
+                'icon' => $icon((int) $id === 10 ? 9 : (int) $id),
+                'author' => [
+                    'name' => $authorName,
+                    'avatar' => $avatar($authorAvatar),
+                ],
+                'followers' => collect($followers)->map(function (array $follower) use ($avatar): array {
+                    if (count($follower) === 1) {
+                        return ['picture' => $avatar($follower[0])];
+                    }
+
+                    return ['initials' => $follower[0], 'color' => $follower[1]];
+                })->all(),
+            ];
+        })->all();
     }
 }

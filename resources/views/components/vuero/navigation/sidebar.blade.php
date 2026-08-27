@@ -69,6 +69,7 @@
                 ['label' => 'List View V1', 'url' => route('vuero.admin.layouts.show', 'list-view-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v1', 'icon' => 'layout'],
                 ['label' => 'List View V2', 'url' => route('vuero.admin.layouts.show', 'list-view-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v2', 'icon' => 'layout'],
                 ['label' => 'List View V3', 'url' => route('vuero.admin.layouts.show', 'list-view-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v3', 'icon' => 'layout'],
+                ['label' => 'List View V4', 'url' => route('vuero.admin.layouts.show', 'list-view-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v4', 'icon' => 'layout'],
             ]],
             ['label' => 'Grids', 'children' => [['label' => 'Cards Grid'], ['label' => 'Tiles Grid'], ['label' => 'Users Grid']]],
             ['label' => 'Profiles', 'children' => [['label' => 'Profile View'], ['label' => 'Profile Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive]]],

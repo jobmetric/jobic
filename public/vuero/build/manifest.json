@@ -104,7 +104,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-ed8ebd3b.css",
+    "file": "assets/app-b92fd595.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
@@ -486,6 +486,15 @@
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/list-view-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/list-view-v4.js": {
+    "file": "assets/list-view-v4-a262697d.js",
+    "imports": [
+      "_list-view-runtime-cbda4ae8.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/list-view-v4.js"
   },
   "resources/js/vuero/pages/admin/profile-settings.js": {
     "file": "assets/profile-settings-52e09422.js",

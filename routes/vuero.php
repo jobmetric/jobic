@@ -35,7 +35,7 @@ Route::prefix('vuero')
                 Route::get('/', DashboardController::class)->name('dashboard');
                 Route::get('/wizard', WizardController::class)->name('wizard');
                 Route::get('/layouts/{layout}', [LayoutController::class, 'show'])
-                    ->where('layout', 'list-view-v[1-3]')
+                    ->where('layout', 'list-view-v[1-4]')
                     ->name('layouts.show');
                 Route::get('/starters/{starter}', StarterController::class)
                     ->where('starter', '(sidebar|sideblock|navbar)-blank-page-[1-8]')

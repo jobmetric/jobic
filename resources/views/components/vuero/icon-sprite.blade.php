@@ -136,4 +136,6 @@
     <symbol id="icon-wifi" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01M2 9a15 15 0 0 1 20 0" /></symbol>
     <symbol id="icon-wind" viewBox="0 0 24 24"><path d="M3 8h12a3 3 0 1 0-3-3M3 12h17a3 3 0 1 1-3 3M3 16h8" /></symbol>
     <symbol id="icon-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z" /></symbol>
+    <symbol id="icon-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M10 12h4" /></symbol>
+    <symbol id="icon-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.5 8.5a2.5 2.5 0 0 0 3.5 3.5L19.5 9.5a4.5 4.5 0 0 0-6.4-6.4L4.5 12.1a6.5 6.5 0 0 0 9.2 9.2L20 15" /></symbol>
 </svg>
