@@ -104,7 +104,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-e494bcd8.css",
+    "file": "assets/app-b6fa857a.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
@@ -487,6 +487,33 @@
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/flex-list-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/list-datatable-v1.js": {
+    "file": "assets/list-datatable-v1-f3e83eb1.js",
+    "imports": [
+      "_list-view-runtime-afb96121.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/list-datatable-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/list-datatable-v2.js": {
+    "file": "assets/list-datatable-v2-7b02a846.js",
+    "imports": [
+      "_list-view-runtime-afb96121.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/list-datatable-v2.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/list-datatable-v3.js": {
+    "file": "assets/list-datatable-v3-1ef10c01.js",
+    "imports": [
+      "_list-view-runtime-afb96121.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/list-datatable-v3.js"
   },
   "resources/js/vuero/pages/admin/layouts/list-view-v1.js": {
     "file": "assets/list-view-v1-d87d234a.js",

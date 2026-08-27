@@ -1,0 +1,1 @@
+import{i as e}from"./list-view-runtime-afb96121.js";import{j as l}from"./jquery-fde43e1f.js";e("[data-list-datatable-v3]",{initialize:(a,t)=>{a.on("click","[data-datatable-cta]",()=>{t("New Offer dialog opened.")}),a.on("click","[data-datatable-apply]",function(){const i=String(l(this).data("item-name"));t(`Application submitted for ${i}.`)})}});

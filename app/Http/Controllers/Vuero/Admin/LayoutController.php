@@ -12,6 +12,7 @@ class LayoutController extends Controller
         abort_unless(in_array($layout, [
             'list-view-v1', 'list-view-v2', 'list-view-v3', 'list-view-v4',
             'flex-list-v1', 'flex-list-v2', 'flex-list-v3',
+            'list-datatable-v1', 'list-datatable-v2', 'list-datatable-v3',
         ], true), 404);
 
         return view("vuero.admin.layouts.{$layout}", match ($layout) {
@@ -22,6 +23,9 @@ class LayoutController extends Controller
             'flex-list-v1' => ['users' => $this->flexUsers(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/flex-list-v1.js'],
             'flex-list-v2' => ['projects' => $this->flexProjects(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/flex-list-v2.js'],
             'flex-list-v3' => ['courses' => $this->flexCourses(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/flex-list-v3.js'],
+            'list-datatable-v1' => ['users' => $this->flexUsers(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-datatable-v1.js'],
+            'list-datatable-v2' => ['projects' => $this->flexProjects(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-datatable-v2.js'],
+            'list-datatable-v3' => ['offers' => $this->jobs(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-datatable-v3.js'],
         });
     }
 

@@ -76,6 +76,11 @@
                 ['label' => 'Flex List V2', 'url' => route('vuero.admin.layouts.show', 'flex-list-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'flex-list-v2', 'icon' => 'layout'],
                 ['label' => 'Flex List V3', 'url' => route('vuero.admin.layouts.show', 'flex-list-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'flex-list-v3', 'icon' => 'layout'],
             ]],
+            ['label' => 'Datatable', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['list-datatable-v1', 'list-datatable-v2', 'list-datatable-v3'], true), 'children' => [
+                ['label' => 'Table List V1', 'url' => route('vuero.admin.layouts.show', 'list-datatable-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-datatable-v1', 'icon' => 'layout'],
+                ['label' => 'Table List V2', 'url' => route('vuero.admin.layouts.show', 'list-datatable-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-datatable-v2', 'icon' => 'layout'],
+                ['label' => 'Table List V3', 'url' => route('vuero.admin.layouts.show', 'list-datatable-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-datatable-v3', 'icon' => 'layout'],
+            ]],
             ['label' => 'Grids', 'children' => [['label' => 'Cards Grid'], ['label' => 'Tiles Grid'], ['label' => 'Users Grid']]],
             ['label' => 'Profiles', 'children' => [['label' => 'Profile View'], ['label' => 'Profile Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive]]],
             ['label' => 'Search', 'children' => [['label' => 'Search Results'], ['label' => 'Empty Search']]],
