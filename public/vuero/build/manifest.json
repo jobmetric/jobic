@@ -33,6 +33,12 @@
       "_jquery-fde43e1f.js"
     ]
   },
+  "_form-layout-runtime-0483016e.js": {
+    "file": "assets/form-layout-runtime-0483016e.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ]
+  },
   "_jquery-fde43e1f.js": {
     "file": "assets/jquery-fde43e1f.js"
   },
@@ -104,7 +110,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-b6fa857a.css",
+    "file": "assets/app-8a68af6c.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
@@ -487,6 +493,51 @@
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/flex-list-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/form-layout-v1.js": {
+    "file": "assets/form-layout-v1-9cbed91a.js",
+    "imports": [
+      "_form-layout-runtime-0483016e.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/form-layout-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/form-layout-v2.js": {
+    "file": "assets/form-layout-v2-da3f490e.js",
+    "imports": [
+      "_form-layout-runtime-0483016e.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/form-layout-v2.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/form-layout-v3.js": {
+    "file": "assets/form-layout-v3-4aafa0ca.js",
+    "imports": [
+      "_form-layout-runtime-0483016e.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/form-layout-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/form-layout-v4.js": {
+    "file": "assets/form-layout-v4-728e2a9f.js",
+    "imports": [
+      "_form-layout-runtime-0483016e.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/form-layout-v4.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/form-layout-v5.js": {
+    "file": "assets/form-layout-v5-46c63b14.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-0483016e.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/form-layout-v5.js"
   },
   "resources/js/vuero/pages/admin/layouts/list-datatable-v1.js": {
     "file": "assets/list-datatable-v1-f3e83eb1.js",

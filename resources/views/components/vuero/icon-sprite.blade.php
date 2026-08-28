@@ -115,6 +115,8 @@
     <symbol id="icon-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.2 10.5a2 2 0 0 0 2 1.5h7.7a2 2 0 0 0 2-1.6L20 8H6M10 21h.01M17 21h.01" /></symbol>
     <symbol id="icon-pizza" viewBox="0 0 24 24"><path d="M5 3c7.7 0 13 5.3 16 16L3 21 5 3Z" /><path d="M5 8c5.2-.1 9.1 3.3 11.5 11.5M9 11h.01M12 16h.01" /></symbol>
     <symbol id="icon-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6ZM9 3v15M15 6v15" /></symbol>
+    <symbol id="icon-map-pin" viewBox="0 0 24 24"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="M10 13a4.5 4.5 0 0 0 6.4 0l2.1-2.1a4.5 4.5 0 0 0-6.4-6.4L11 5.6" /><path d="M14 11a4.5 4.5 0 0 0-6.4 0L5.5 13.1a4.5 4.5 0 0 0 6.4 6.4L13 18.4" /></symbol>
     <symbol id="icon-layout" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M9 9v11" /></symbol>
     <symbol id="icon-layout-navbar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /></symbol>
     <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></symbol>
@@ -124,6 +126,7 @@
     <symbol id="icon-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" /></symbol>
     <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6" /></symbol>
     <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+    <symbol id="icon-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6" /></symbol>
     <symbol id="icon-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z" /></symbol>
     <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 2.5 3 6.1 6.7 1-4.9 4.7 1.2 6.7-6-3.2-6 3.2 1.2-6.7-4.9-4.7 6.7-1 3-6.1Z" /></symbol>
     <symbol id="icon-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5" /><path d="m8.5 12-1 9 4.5-2.5 4.5 2.5-1-9" /></symbol>
@@ -138,4 +141,6 @@
     <symbol id="icon-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z" /></symbol>
     <symbol id="icon-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M10 12h4" /></symbol>
     <symbol id="icon-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.5 8.5a2.5 2.5 0 0 0 3.5 3.5L19.5 9.5a4.5 4.5 0 0 0-6.4-6.4L4.5 12.1a6.5 6.5 0 0 0 9.2 9.2L20 15" /></symbol>
+    <symbol id="icon-slack" viewBox="0 0 24 24"><path d="M14.5 10a1.5 1.5 0 1 0 3 0V8.5a1.5 1.5 0 0 0-3 0V10ZM10 14.5a1.5 1.5 0 1 0 0 3H8.5a1.5 1.5 0 0 0 0-3H10ZM13.5 14a1.5 1.5 0 0 0 0 3h1.5a1.5 1.5 0 0 0 0-3H13.5ZM10 6.5A1.5 1.5 0 1 0 10 4H8.5a1.5 1.5 0 0 0 0 3H10ZM6.5 10a1.5 1.5 0 0 0-3 0v1.5a1.5 1.5 0 0 0 3 0V10ZM10 13.5a1.5 1.5 0 0 0-3 0v1.5a1.5 1.5 0 0 0 3 0V13.5Z" /></symbol>
+    <symbol id="icon-passport" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" /><circle cx="10" cy="10" r="2.5" /><path d="M7 16h6M16 7h2M16 11h2" /></symbol>
 </svg>

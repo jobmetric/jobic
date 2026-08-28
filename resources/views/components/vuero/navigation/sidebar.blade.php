@@ -81,6 +81,13 @@
                 ['label' => 'Table List V2', 'url' => route('vuero.admin.layouts.show', 'list-datatable-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-datatable-v2', 'icon' => 'layout'],
                 ['label' => 'Table List V3', 'url' => route('vuero.admin.layouts.show', 'list-datatable-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-datatable-v3', 'icon' => 'layout'],
             ]],
+            ['label' => 'Form Layouts', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['form-layout-v1', 'form-layout-v2', 'form-layout-v3', 'form-layout-v4', 'form-layout-v5'], true), 'children' => [
+                ['label' => 'Form Layout V1', 'url' => route('vuero.admin.layouts.show', 'form-layout-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'form-layout-v1', 'icon' => 'passport'],
+                ['label' => 'Form Layout V2', 'url' => route('vuero.admin.layouts.show', 'form-layout-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'form-layout-v2', 'icon' => 'passport'],
+                ['label' => 'Form Layout V3', 'url' => route('vuero.admin.layouts.show', 'form-layout-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'form-layout-v3', 'icon' => 'passport'],
+                ['label' => 'Form Layout V4', 'url' => route('vuero.admin.layouts.show', 'form-layout-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'form-layout-v4', 'icon' => 'passport'],
+                ['label' => 'Form Layout V5', 'url' => route('vuero.admin.layouts.show', 'form-layout-v5'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'form-layout-v5', 'icon' => 'passport'],
+            ]],
             ['label' => 'Grids', 'children' => [['label' => 'Cards Grid'], ['label' => 'Tiles Grid'], ['label' => 'Users Grid']]],
             ['label' => 'Profiles', 'children' => [['label' => 'Profile View'], ['label' => 'Profile Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive]]],
             ['label' => 'Search', 'children' => [['label' => 'Search Results'], ['label' => 'Empty Search']]],

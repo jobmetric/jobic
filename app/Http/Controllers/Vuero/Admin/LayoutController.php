@@ -13,6 +13,7 @@ class LayoutController extends Controller
             'list-view-v1', 'list-view-v2', 'list-view-v3', 'list-view-v4',
             'flex-list-v1', 'flex-list-v2', 'flex-list-v3',
             'list-datatable-v1', 'list-datatable-v2', 'list-datatable-v3',
+            'form-layout-v1', 'form-layout-v2', 'form-layout-v3', 'form-layout-v4', 'form-layout-v5',
         ], true), 404);
 
         return view("vuero.admin.layouts.{$layout}", match ($layout) {
@@ -26,6 +27,11 @@ class LayoutController extends Controller
             'list-datatable-v1' => ['users' => $this->flexUsers(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-datatable-v1.js'],
             'list-datatable-v2' => ['projects' => $this->flexProjects(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-datatable-v2.js'],
             'list-datatable-v3' => ['offers' => $this->jobs(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-datatable-v3.js'],
+            'form-layout-v1' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/form-layout-v1.js'],
+            'form-layout-v2' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/form-layout-v2.js'],
+            'form-layout-v3' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/form-layout-v3.js'],
+            'form-layout-v4' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/form-layout-v4.js'],
+            'form-layout-v5' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/form-layout-v5.js'],
         });
     }
 

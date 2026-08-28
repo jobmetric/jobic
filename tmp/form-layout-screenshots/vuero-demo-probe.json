@@ -1,0 +1,18 @@
+[
+  {
+    "url": "https://vuero.cssninja.io/sidebar/layouts/form-layouts/form-layout-v1",
+    "error": "Error: page.goto: net::ERR_NAME_NOT_RESOLVED at https://vuero.cssninja.io/sidebar/layouts/form-layouts/form-layout-v1\nCall log:\n  - navigating to \"https://vuero.cssninja.io/sidebar/layouts/form-layouts/form-layout-v1\", waiting until \"domcontentloaded\"\n"
+  },
+  {
+    "url": "https://vuero.cssninja.io/sidebar/layouts/form-layouts/form-layout-1",
+    "error": "Error: page.goto: net::ERR_NAME_NOT_RESOLVED at https://vuero.cssninja.io/sidebar/layouts/form-layouts/form-layout-1\nCall log:\n  - navigating to \"https://vuero.cssninja.io/sidebar/layouts/form-layouts/form-layout-1\", waiting until \"domcontentloaded\"\n"
+  },
+  {
+    "url": "https://vuero.cssninja.io/sidebar/layouts/form-layout-v1",
+    "error": "Error: page.goto: net::ERR_NAME_NOT_RESOLVED at https://vuero.cssninja.io/sidebar/layouts/form-layout-v1\nCall log:\n  - navigating to \"https://vuero.cssninja.io/sidebar/layouts/form-layout-v1\", waiting until \"domcontentloaded\"\n"
+  },
+  {
+    "url": "https://vuero.cssninja.io/sidebar/layouts/profile-edit",
+    "error": "Error: page.goto: net::ERR_NAME_NOT_RESOLVED at https://vuero.cssninja.io/sidebar/layouts/profile-edit\nCall log:\n  - navigating to \"https://vuero.cssninja.io/sidebar/layouts/profile-edit\", waiting until \"domcontentloaded\"\n"
+  }
+]
