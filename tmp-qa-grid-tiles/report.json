@@ -1,0 +1,49 @@
+{
+  "pages": {
+    "grid-tile-v1": {
+      "issues": [
+        "tile border-radius=14px padding=16px bg=rgb(255, 255, 255)",
+        "dropdown marginLeft=0px marginInlineStart=0px"
+      ],
+      "screenshots": [
+        "grid-tile-v1-1440x900-light.png",
+        "grid-tile-v1-1440x900-dark.png",
+        "grid-tile-v1-820x1180-light.png",
+        "grid-tile-v1-820x1180-dark.png",
+        "grid-tile-v1-390x844-light.png",
+        "grid-tile-v1-390x844-dark.png"
+      ]
+    },
+    "grid-tile-v2": {
+      "issues": [
+        "tile border-radius=14px padding=16px bg=rgb(255, 255, 255)",
+        "dropdown marginLeft=0px marginInlineStart=0px"
+      ],
+      "screenshots": [
+        "grid-tile-v2-1440x900-light.png",
+        "grid-tile-v2-1440x900-dark.png",
+        "grid-tile-v2-820x1180-light.png",
+        "grid-tile-v2-820x1180-dark.png",
+        "grid-tile-v2-390x844-light.png",
+        "grid-tile-v2-390x844-dark.png"
+      ]
+    },
+    "grid-tile-v3": {
+      "issues": [
+        "tile border-radius=16px padding=10px bg=rgb(255, 255, 255)",
+        "dropdown marginLeft=0px marginInlineStart=0px",
+        "v3 ancestor display=flex flexDirection=column",
+        "v3 medium maxHeight=132px img maxWidth=110px"
+      ],
+      "screenshots": [
+        "grid-tile-v3-1440x900-light.png",
+        "grid-tile-v3-1440x900-dark.png",
+        "grid-tile-v3-820x1180-light.png",
+        "grid-tile-v3-820x1180-dark.png",
+        "grid-tile-v3-390x844-light.png",
+        "grid-tile-v3-390x844-dark.png"
+      ]
+    }
+  },
+  "consoleErrors": []
+}

@@ -1,10 +1,15 @@
-@props(['picture' => null, 'initials' => null, 'color' => null, 'badge' => null, 'size' => 'medium'])
+@props(['picture' => null, 'initials' => null, 'color' => null, 'badge' => null, 'size' => 'medium', 'squared' => false])
 
 @php
-    $sizeClass = $size === 'small' ? 'is-small' : 'is-medium';
+    $sizeClass = match ($size) {
+        'small' => 'is-small',
+        'big' => 'is-big',
+        'large' => 'is-large',
+        default => 'is-medium',
+    };
 @endphp
 
-<span {{ $attributes->class(['flex-avatar', $sizeClass]) }}>
+<span {{ $attributes->class(['flex-avatar', $sizeClass, 'is-squared' => $squared]) }}>
     @if ($picture)
         <img class="flex-avatar__image" src="{{ $picture }}" alt="">
     @elseif ($initials)

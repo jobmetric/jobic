@@ -15,6 +15,8 @@ class LayoutController extends Controller
             'list-datatable-v1', 'list-datatable-v2', 'list-datatable-v3',
             'form-layout-v1', 'form-layout-v2', 'form-layout-v3', 'form-layout-v4', 'form-layout-v5',
             'placeload-v1', 'placeload-v2', 'placeload-v3', 'placeload-v4',
+            'grid-card-v1', 'grid-card-v2', 'grid-card-v3', 'grid-card-v4',
+            'grid-tile-v1', 'grid-tile-v2', 'grid-tile-v3',
         ], true), 404);
 
         return view("vuero.admin.layouts.{$layout}", match ($layout) {
@@ -37,6 +39,13 @@ class LayoutController extends Controller
             'placeload-v2' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/placeload-v2.js'],
             'placeload-v3' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/placeload-v3.js'],
             'placeload-v4' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/placeload-v4.js'],
+            'grid-card-v1' => ['users' => $this->gridCardUsers(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-card-v1.js'],
+            'grid-card-v2' => ['projects' => $this->gridCardProjects(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-card-v2.js'],
+            'grid-card-v3' => ['projects' => $this->gridCardProjectsV3(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-card-v3.js'],
+            'grid-card-v4' => ['posts' => $this->gridCardPosts(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-card-v4.js'],
+            'grid-tile-v1' => ['users' => $this->tileGridUsers(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-tile-v1.js'],
+            'grid-tile-v2' => ['files' => $this->tileGridFiles(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-tile-v2.js'],
+            'grid-tile-v3' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-tile-v3.js'],
         });
     }
 
@@ -276,5 +285,264 @@ class LayoutController extends Controller
 
             return ['initials' => $contact[0], 'color' => $contact[1] ?? 'info'];
         })->all();
+    }
+
+    private function gridCardSocialLinks(): array
+    {
+        return [
+            ['channel' => 'Linkedin', 'url' => 'https://linkedin.com', 'icon' => 'brand-linkedin'],
+            ['channel' => 'Twitter', 'url' => 'https://twitter.com', 'icon' => 'brand-twitter'],
+            ['channel' => 'Dribbble', 'url' => 'https://dribbble.com', 'icon' => 'brand-dribbble'],
+            ['channel' => 'GitHub', 'url' => 'https://github.com', 'icon' => 'brand-github'],
+        ];
+    }
+
+    private function gridCardBadge(string $file): string
+    {
+        $flags = ['united-states-of-america', 'france', 'germany', 'england', 'australia', 'canada', 'spain'];
+
+        if (in_array($file, $flags, true)) {
+            return "/vuero/images/layouts/list-view-v1/flags/{$file}.svg";
+        }
+
+        return '/vuero/images/layouts/grid-cards/stacks/'.pathinfo($file, PATHINFO_FILENAME).'.svg';
+    }
+
+    private function gridCardUsers(): array
+    {
+        $avatar = fn (string $file): string => '/vuero/images/layouts/list-view-v1/avatars/'.$file;
+        $social = $this->gridCardSocialLinks();
+
+        $items = [
+            ['Tara Svenson', 'UI/UX Designer', 65, '13.jpg', 'united-states-of-america'],
+            ['Helmut Fritz', 'Product Manager', 38, '37.jpg', 'france'],
+            ['Melany Wallace', 'Web Developer', 58, '25.jpg', 'js'],
+            ['Hakeem Calami', 'Software Engineer', 85, '29.jpg', 'python'],
+            ['Alejandro Badajoz', 'Business Analyst', 28, '39.jpg', 'united-states-of-america'],
+            ['Jeanne Marchand', 'Mobile Developer', 67, '40.jpg', 'android'],
+            ['Greta Kroppfer', 'Sales Manager', 56, '19.jpg', 'germany'],
+            ['Ana Baker', 'UI/UX Designer', 12, '9.jpg', 'photoshop'],
+            ['Mary Lebowski', 'Project Manager', 29, '5.jpg', 'united-states-of-america'],
+            ['Jonathan Krugger', 'Product Manager', 91, '32.jpg', 'united-states-of-america'],
+            ['Benoit Leblanc', 'Software Engineer', 44, '36.jpg', 'reactjs'],
+            ['Christie Dallas', 'Web Developer', 61, '38.jpg', 'vuejs'],
+            ['Courtney Wilson', 'Web Developer', 53, '26.jpg', 'html5'],
+            ['Jason Guarank', 'Business Analyst', 78, '16.jpg', 'united-states-of-america'],
+            ['Irina Vierbovsky', 'Project Manager', 36, '23.jpg', 'united-states-of-america'],
+            ['Edouard Falant', 'Web Developer', 49, '28.jpg', 'angular'],
+            ['Alice Carasca', 'Software Engineer', 78, '7.jpg', 'csharp'],
+            ['Dwayne Hicks', 'Product Manager', 17, '22.jpg', 'united-states-of-america'],
+        ];
+
+        return collect($items)->map(fn (array $item): array => [
+            'name' => $item[0],
+            'role' => $item[1],
+            'progress' => $item[2],
+            'avatar' => $avatar($item[3]),
+            'badge' => $this->gridCardBadge($item[4]),
+            'social' => $social,
+        ])->all();
+    }
+
+    private function gridCardProjects(): array
+    {
+        $photo = fn (string $file): string => '/vuero/images/layouts/grid-cards/apps/'.$file;
+        $avatar = fn (string $file): string => str_contains($file, 'vuero-1.svg')
+            ? '/vuero/images/layouts/list-view-v1/avatars/vuero-1.svg'
+            : '/vuero/images/layouts/list-view-v1/avatars/'.$file;
+
+        $items = [
+            ['Delivery App Project', 'August 2020', '3m ago', '1.jpg', '7.jpg', 'Alice C.', [['27.jpg'], ['15.jpg'], ['12.jpg']]],
+            ['Health and Fitness Dashboard', 'October 2020', '5h ago', '2.png', 'vuero-1.svg', 'Erik K.', [['13.jpg'], ['21.jpg']]],
+            ['Learning Tracker Dashboard', 'September 2020', '5h ago', '3.png', '25.jpg', 'Melany W.', [['14.jpg']]],
+            ['Banking and Finance Dashboard', 'October 2020', '5h ago', '4.png', '23.jpg', 'Irina V.', [['13.jpg'], ['21.jpg']]],
+            ['Resume Management Mobile App', 'October 2020', '2h ago', '5.png', '11.jpg', 'Kelly M.', [['30.jpg'], ['39.jpg']]],
+            ['Banking Landing Page', 'December 2020', '3d ago', '6.png', '9.jpg', 'Ana B.', [['15.jpg'], ['40.jpg'], ['vuero-1.svg']]],
+            ['Learning App Design', 'November 2020', '1h ago', '7.png', '25.jpg', 'Melany W.', [['11.jpg']]],
+            ['Educational App Design', 'November 2020', '4d ago', '8.png', '5.jpg', 'Mary L.', [['21.jpg'], ['29.jpg'], ['33.jpg']]],
+            ['Banking Solution Website', 'October 2020', '2h ago', '9.png', '27.jpg', 'Carmen E.', [['30.jpg'], ['19.jpg']]],
+            ['HR Webapp Design', 'August 2020', '2h ago', '10.png', '27.jpg', 'Carmen E.', [['24.jpg'], ['22.jpg']]],
+            ['Ice Cream Delivery Dashboard', 'January 2021', '2h ago', '11.png', '13.jpg', 'Tara S.', [['28.jpg']]],
+            ['Mobile App Landing Page', 'November 2020', '4d ago', '12.jpg', '12.jpg', 'Joshua S.', [['SC', 'h-purple']]],
+            ['Web Marketing Landing Page', 'November 2020', '3m ago', '13.png', '12.jpg', 'Joshua S.', [['vuero-1.svg'], ['15.jpg'], ['40.jpg']]],
+            ['Startup Landing Page', 'November 2020', '3m ago', '14.jpg', '15.jpg', 'Hilde V.', [['31.jpg']]],
+            ['Expense Management System', 'January 2021', '2d ago', '15.png', '39.jpg', 'Alejandro B.', [['5.jpg'], ['24.jpg']]],
+        ];
+
+        return collect($items)->map(function (array $item, int $index) use ($photo, $avatar): array {
+            return [
+                'id' => $index + 1,
+                'name' => $item[0],
+                'dueDate' => $item[1],
+                'updated' => $item[2],
+                'image' => $photo($item[3]),
+                'owner' => [
+                    'name' => $item[5],
+                    'avatar' => $avatar($item[4]),
+                ],
+                'team' => $this->flexContacts($item[6]),
+            ];
+        })->all();
+    }
+
+    private function gridCardProjectsV3(): array
+    {
+        $photo = fn (string $file): string => '/vuero/images/layouts/grid-cards/apps/'.$file;
+        $stack = fn (string $name): string => '/vuero/images/layouts/grid-cards/stacks/'.$name.'.svg';
+
+        $items = [
+            ['Delivery App Project', '3 months', 'illustrator', '1.jpg', true, false, [['BT', 'h-yellow'], ['18.jpg'], ['JD', 'info'], ['7.jpg']]],
+            ['Health and Fitness Dashboard', '2 months', 'reactjs', '2.png', false, false, [['21.jpg'], ['AT', 'success'], ['39.jpg']]],
+            ['Learning Tracker Dashboard', '4 months', 'angular', '3.png', true, true, [['21.jpg'], ['SC', 'h-purple'], ['39.jpg']]],
+            ['Banking and Finance Dashboard', '2 weeks', 'js', '4.png', false, false, [['28.jpg'], ['33.jpg']]],
+            ['Resume Management Mobile App', '1 month', 'csharp', '5.png', true, false, [['AT', 'success'], ['23.jpg']]],
+            ['Banking Landing Page', '3 weeks', 'vuejs', '6.png', false, false, [['BT', 'h-yellow'], ['18.jpg'], ['JD', 'info']]],
+            ['Learning App Design', '5 months', 'swift', '7.png', false, false, [['SC', 'h-purple'], ['27.jpg']]],
+            ['Educational App Design', '2 months', 'android', '8.png', false, false, [['SC', 'h-purple'], ['27.jpg']]],
+            ['Banking Solution Website', '2 months', 'html5', '9.png', false, false, [['AT', 'success'], ['23.jpg']]],
+            ['HR Webapp Design', '2 months', 'photoshop', '10.png', false, false, [['AT', 'success'], ['23.jpg']]],
+            ['Ice Cream Delivery Dashboard', '1 week', 'js', '11.png', false, false, [['BT', 'h-yellow'], ['18.jpg'], ['JD', 'info'], ['7.jpg']]],
+            ['Mobile App Landing Page', '3 months', 'css3', '12.jpg', false, false, [['21.jpg'], ['SC', 'h-purple'], ['39.jpg']]],
+            ['Web Marketing Landing Page', '4 months', 'reactjs', '13.png', false, false, [['BT', 'h-yellow'], ['31.jpg']]],
+            ['Startup Landing Page', '1 month', 'reactjs', '14.jpg', false, false, [['33.jpg'], ['26.jpg']]],
+            ['Expense Management System', '1 month', 'reactjs', '15.png', false, false, [['21.jpg'], ['AT', 'success'], ['39.jpg']]],
+        ];
+
+        return collect($items)->map(function (array $item, int $index) use ($photo, $stack): array {
+            return [
+                'id' => $index + 1,
+                'name' => $item[0],
+                'remaining' => $item[1],
+                'badge' => $stack($item[2]),
+                'image' => $photo($item[3]),
+                'lockable' => $item[4],
+                'locked' => $item[5],
+                'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quo tandem modo? At certe gravius.',
+                'team' => $this->flexContacts($item[6]),
+            ];
+        })->all();
+    }
+
+    private function gridCardPosts(): array
+    {
+        $photo = fn (int $number): string => '/vuero/images/layouts/grid-cards/posts/'.$number.'.jpg';
+        $avatar = fn (string $file): string => str_contains($file, 'vuero-1.svg')
+            ? '/vuero/images/layouts/list-view-v1/avatars/vuero-1.svg'
+            : '/vuero/images/layouts/list-view-v1/avatars/'.$file;
+
+        $items = [
+            ['How to serve coffee at the office the proper way', '30 minutes ago', 11, '39.jpg', 'Alejandro B.'],
+            ['Teamwork can dramatically increase productivity', '4 hours ago', 12, '15.jpg', 'Hilde V.'],
+            ['Is team building a scam or the next thing?', '5 hours ago', 13, '24.jpg', 'Sandrine C.'],
+            ['3 things you should know when applying for developer jobs', '8 hours ago', 14, '27.jpg', 'Carmen E.'],
+            ['The construction business massively invests in mobile apps', '1 day ago', 15, '10.jpg', 'Henry G.'],
+            ['Finding the right spot for your startup', '1 day ago', 17, '22.jpg', 'Jimmy H.'],
+            ['4 tips to make your business lunches awesome', '2 days ago', 18, '22.jpg', 'Jimmy H.'],
+            ['Setting up a design system for your app project', '2 days ago', 18, '26.jpg', 'Courtney W.'],
+            ['Setting up a design system for your app project', '3 days ago', 20, 'vuero-1.svg', 'Erik K.'],
+            ['Have you considered product management training?', '3 days ago', 21, '14.jpg', 'Ryan B.'],
+            ['Using flashy colors in your websites and apps', '3 days ago', 22, '9.jpg', 'Ana B.'],
+            ['Why it pays to profile your customers', '3 days ago', 23, '40.jpg', 'Jeanne M.'],
+            ['Building a consistent and talented team', '3 days ago', 24, '19.jpg', 'Greta K.'],
+            ['Building a consistent and talented team', '3 days ago', 25, '28.jpg', 'Edouard F.'],
+            ['What framework to choose to build a mobile app in 2020?', '3 days ago', 26, '5.jpg', 'Mary L.'],
+            ['Diving into building an e-commerce brand - part 1', '4 days ago', 27, '33.jpg', 'Harvey M.'],
+            ['Diving into building an e-commerce brand - part 2', '4 days ago', 28, '33.jpg', 'Harvey M.'],
+            ['How to make sure to reach the goals you set', '4 days ago', 29, '31.jpg', 'Yasseen A.'],
+        ];
+
+        return collect($items)->map(function (array $item, int $index) use ($photo, $avatar): array {
+            return [
+                'id' => $index + 1,
+                'title' => $item[0],
+                'published' => $item[1],
+                'image' => $photo($item[2]),
+                'author' => [
+                    'name' => $item[4],
+                    'avatar' => $avatar($item[3]),
+                ],
+            ];
+        })->all();
+    }
+
+    private function tileGridUsers(): array
+    {
+        $avatar = fn (?string $file): ?string => match (true) {
+            $file === null => null,
+            str_contains($file, 'vuero-1.svg') => '/vuero/images/layouts/list-view-v1/avatars/vuero-1.svg',
+            default => '/vuero/images/layouts/list-view-v1/avatars/'.basename($file),
+        };
+
+        $items = [
+            ['Hakeem C.', 'Software Engineer', '29.jpg', 'python', 'info', null],
+            ['Elisabeth F.', 'Mobile Developer', '21.jpg', 'england', 'success', null],
+            ['Erik K.', 'Software Engineer', 'vuero-1.svg', 'united-states-of-america', 'purple', null],
+            ['Alice C.', 'Software Engineer', '7.jpg', 'js', 'info', null],
+            ['Betty T.', 'Product Manager', null, 'united-states-of-america', 'warning', 'BT'],
+            ['Irina V.', 'Project Manager', '23.jpg', 'united-states-of-america', 'info', null],
+            ['Helmut F.', 'Product Manager', '37.jpg', 'france', 'purple', null],
+            ['Melany W.', 'Web Developer', '25.jpg', 'js', 'success', null],
+            ['Alejandro B.', 'Business Analyst', '39.jpg', 'python', 'purple', null],
+            ['Greta K.', 'Sales Manager', '19.jpg', 'germany', 'yellow', null],
+            ['Anna B.', 'UI/UX Designer', '9.jpg', 'illustrator', 'info', null],
+            ['Alan T.', 'Software Engineer', null, 'united-states-of-america', 'success', 'AT'],
+            ['Sara C.', 'UI/UX Designer', null, 'united-states-of-america', 'purple', 'SC'],
+            ['Jonathan K.', 'Product Manager', '32.jpg', 'united-states-of-america', 'info', null],
+            ['Benoit B.', 'Software Engineer', '36.jpg', 'reactjs', 'purple', null],
+            ['Christie B.', 'Web Developer', '38.jpg', 'vuejs', 'info', null],
+            ['Courtney W.', 'Web Developer', '26.jpg', 'html5', 'info', null],
+            ['Jason G.', 'Business Analyst', '16.jpg', 'united-states-of-america', 'danger', null],
+            ['Edouard F.', 'Web Developer', '28.jpg', 'angular', 'success', null],
+            ['Dwayne H.', 'Product Manager', '22.jpg', 'united-states-of-america', 'info', null],
+            ['Tara S.', 'UI/UX Designer', '13.jpg', 'illustrator', 'danger', null],
+            ['Sandrine C.', 'HR Manager', '24.jpg', 'france', 'info', null],
+            ['Carmen E.', 'HR Manager', '27.jpg', 'spain', 'yellow', null],
+            ['Kelly M.', 'HR Manager', '11.jpg', 'england', 'success', null],
+            ['Hilde V.', 'Software Engineer', '15.jpg', 'germany', 'info', null],
+            ['Ryan B.', 'Web Developer', '14.jpg', 'england', 'info', null],
+            ['Henry G.', 'Business Analyst', '10.jpg', 'united-states-of-america', 'danger', null],
+            ['Esteban C.', 'UI/UX Designer', '18.jpg', 'united-states-of-america', 'success', null],
+        ];
+
+        return collect($items)->map(fn (array $item): array => [
+            'username' => $item[0],
+            'position' => $item[1],
+            'picture' => $avatar($item[2]),
+            'initials' => $item[5],
+            'color' => $item[4],
+            'badge' => $this->gridCardBadge($item[3]),
+        ])->all();
+    }
+
+    private function tileGridFiles(): array
+    {
+        $icon = fn (string $name): string => '/vuero/images/layouts/grid-tiles/files/'.$name.'.svg';
+
+        $items = [
+            ['Company UX Guide', '2 days ago', '4.7 MB', 'pdf'],
+            ['Tech Summit Expenses', '1 week ago', '34 KB', 'sheet'],
+            ['Project Outline', '2 weeks ago', '77 KB', 'doc-2'],
+            ['UX Presentation', '4 days ago', '2.3 MB', 'ppt'],
+            ['Website Homepage Redesign', '3 hours ago', '4.8 MB', 'ai'],
+            ['UX Ramp Up for Interns', '6 hours ago', '1.8 MB', 'doc-2'],
+            ['2020 Projects Digest', '2 days ago', '8.9 MB', 'pdf'],
+            ['Financial Report - 2020', '2 months ago', '1.2 MB', 'doc-2'],
+            ['2020 Supplier Expenses', '2 weeks ago', '250 KB', 'sheet'],
+            ['Website About Page Redesign', '2 months ago', '3.9 MB', 'ai'],
+            ['Website Pricing Page Redesign', '2 months ago', '2.6 MB', 'ai'],
+            ['Financial Report - 2019', '8 months ago', '1.1 MB', 'doc-2'],
+            ['2019 Supplier Expenses', '8 months ago', '250 KB', 'sheet'],
+            ['Website Contact Page Redesign', '3 months ago', '5.8 MB', 'ai'],
+            ['Company Brand Book', '3 weeks ago', '5.3 MB', 'pdf'],
+            ['2019 Projects Digest', '9 months ago', '4.7 MB', 'pdf'],
+        ];
+
+        return collect($items)->map(fn (array $item, int $index): array => [
+            'id' => $index + 1,
+            'name' => $item[0],
+            'updated' => $item[1],
+            'size' => $item[2],
+            'icon' => $icon($item[3]),
+        ])->all();
     }
 }

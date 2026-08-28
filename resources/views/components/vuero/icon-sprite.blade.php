@@ -87,6 +87,8 @@
     <symbol id="icon-research" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="4" /><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)" /><circle cx="12" cy="12" r="1" /></symbol>
     <symbol id="icon-finance" viewBox="0 0 24 24"><path d="m3 9 9-6 9 6M5 10v8M10 10v8M14 10v8M19 10v8M3 21h18M2 18h20" /></symbol>
     <symbol id="icon-brand-snapchat" viewBox="0 0 24 24"><path d="M8 17c-1 1-2.2 1.4-3.5 1.5 1.8.8 3 1.1 3.6 2 2.5-.8 5.3-.8 7.8 0 .6-.9 1.8-1.2 3.6-2-1.3-.1-2.5-.5-3.5-1.5 1.2-.8 2-2.1 2.5-3.5-1.5.3-2.2-.5-2.6-1.1.2-2.2-.1-6.7-3.9-6.7s-4.1 4.5-3.9 6.7c-.4.6-1.1 1.4-2.6 1.1C6 14.9 6.8 16.2 8 17Z" /></symbol>
+    <symbol id="icon-brand-linkedin" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-12h4v2.3M2 9h4v12H2zM4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" /></symbol>
+    <symbol id="icon-brand-dribbble" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M8 20c6-2 10-6 12-12M4 12c4 0 8-1 12-4M6 4c2 4 4 8 4 14" /></symbol>
     <symbol id="icon-brand-github" viewBox="0 0 24 24"><path d="M15 21v-3.5c.1-1-.3-1.8-.8-2.3 2.7-.3 5.5-1.3 5.5-6A4.7 4.7 0 0 0 18.5 6 4.4 4.4 0 0 0 18.4 3S17.5 2.7 15 4.2a11 11 0 0 0-6 0C6.5 2.7 5.6 3 5.6 3A4.4 4.4 0 0 0 5.5 6a4.7 4.7 0 0 0-1.2 3.2c0 4.7 2.8 5.7 5.5 6-.4.4-.7 1-.8 1.8-2.2 1-2.7-1-2.7-1-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.6 1 1.6 1 .9 1.6 2.3 1.1 2.9.8V21" /></symbol>
     <symbol id="icon-brand-invision" viewBox="0 0 24 24"><path d="M9 8h3l-2 8c-.2.8.8 1 1.2.3l2-3.8c.9-1.8 3.4-1 2.8.9l-.8 2.6c-.2.8.8 1 1.2.3" /><circle cx="11.7" cy="5" r="1" /></symbol>
     <symbol id="icon-brand-facebook" viewBox="0 0 24 24"><path d="M14 21v-8h3l.5-4H14V7c0-1.2.4-2 2-2h2V2.4A25 25 0 0 0 15 2c-3 0-5 1.8-5 5v2H7v4h3v8" /></symbol>
@@ -96,6 +98,7 @@
     <symbol id="icon-brand-algolia" viewBox="0 0 24 24"><circle cx="11" cy="12" r="7" /><path d="m16 7-5 5M18 5l3-2-2 4M16 17l4 4" /></symbol>
     <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
     <symbol id="icon-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" /></symbol>
+    <symbol id="icon-more-vertical" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" /><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none" /></symbol>
     <symbol id="icon-ticket" viewBox="0 0 24 24"><path d="M3 9a3 3 0 0 0 0 6v4h18v-4a3 3 0 0 0 0-6V5H3v4Z" /><path d="M13 5v2M13 10v4M13 17v2" /></symbol>
     <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></symbol>
     <symbol id="icon-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" /><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2" /></symbol>

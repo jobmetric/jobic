@@ -65,7 +65,7 @@
             $starterMenu,
         ],
         'layouts' => [
-            ['label' => 'Lists', 'open' => $layoutsActive, 'children' => [
+            ['label' => 'Lists', 'open' => $layoutsActive && in_array(request()->route('layout'), ['list-view-v1', 'list-view-v2', 'list-view-v3', 'list-view-v4'], true), 'children' => [
                 ['label' => 'List View V1', 'url' => route('vuero.admin.layouts.show', 'list-view-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v1', 'icon' => 'layout'],
                 ['label' => 'List View V2', 'url' => route('vuero.admin.layouts.show', 'list-view-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v2', 'icon' => 'layout'],
                 ['label' => 'List View V3', 'url' => route('vuero.admin.layouts.show', 'list-view-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'list-view-v3', 'icon' => 'layout'],
@@ -94,10 +94,68 @@
                 ['label' => 'Placeload V3', 'url' => route('vuero.admin.layouts.show', 'placeload-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'placeload-v3', 'icon' => 'layout'],
                 ['label' => 'Placeload V4', 'url' => route('vuero.admin.layouts.show', 'placeload-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'placeload-v4', 'icon' => 'layout'],
             ]],
-            ['label' => 'Grids', 'children' => [['label' => 'Cards Grid'], ['label' => 'Tiles Grid'], ['label' => 'Users Grid']]],
-            ['label' => 'Profiles', 'children' => [['label' => 'Profile View'], ['label' => 'Profile Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive]]],
-            ['label' => 'Search', 'children' => [['label' => 'Search Results'], ['label' => 'Empty Search']]],
-            ['label' => 'Utility', 'children' => [['label' => 'Invoice'], ['label' => 'Pricing'], ['label' => 'FAQ']]],
+            ['type' => 'divider'],
+            ['label' => 'Card Grid', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['grid-card-v1', 'grid-card-v2', 'grid-card-v3', 'grid-card-v4'], true), 'children' => [
+                ['label' => 'Card Grid V1', 'url' => route('vuero.admin.layouts.show', 'grid-card-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-card-v1', 'icon' => 'layout'],
+                ['label' => 'Card Grid V2', 'url' => route('vuero.admin.layouts.show', 'grid-card-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-card-v2', 'icon' => 'layout'],
+                ['label' => 'Card Grid V3', 'url' => route('vuero.admin.layouts.show', 'grid-card-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-card-v3', 'icon' => 'layout'],
+                ['label' => 'Card Grid V4', 'url' => route('vuero.admin.layouts.show', 'grid-card-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-card-v4', 'icon' => 'layout'],
+            ]],
+            ['label' => 'Tile Grid', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['grid-tile-v1', 'grid-tile-v2', 'grid-tile-v3'], true), 'children' => [
+                ['label' => 'Tile Grid V1', 'url' => route('vuero.admin.layouts.show', 'grid-tile-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-tile-v1', 'icon' => 'layout'],
+                ['label' => 'Tile Grid V2', 'url' => route('vuero.admin.layouts.show', 'grid-tile-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-tile-v2', 'icon' => 'layout'],
+                ['label' => 'Tile Grid V3', 'url' => route('vuero.admin.layouts.show', 'grid-tile-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-tile-v3', 'icon' => 'layout'],
+            ]],
+            ['label' => 'User Grid', 'children' => [
+                ['label' => 'User Grid V1', 'icon' => 'layout'],
+                ['label' => 'User Grid V2', 'icon' => 'layout'],
+                ['label' => 'User Grid V3', 'icon' => 'layout'],
+                ['label' => 'User Grid V4', 'icon' => 'layout'],
+            ]],
+            ['type' => 'divider'],
+            ['label' => 'Personal', 'children' => [
+                ['label' => 'Profile'],
+                ['label' => 'Edit Profile'],
+                ['label' => 'Notifications'],
+                ['label' => 'Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive, 'icon' => 'settings'],
+            ]],
+            ['label' => 'Pages', 'children' => [
+                ['label' => 'Search Results'],
+                ['label' => 'Empty Search'],
+            ]],
+            ['label' => 'Subpages', 'children' => [
+                ['label' => 'SaaS Billing'],
+                ['label' => 'Action Page V1'],
+                ['label' => 'Action Page V2'],
+            ]],
+            ['label' => 'Projects', 'children' => [
+                ['label' => 'Projects V1'],
+                ['label' => 'Projects V2'],
+                ['label' => 'Projects V3'],
+                ['label' => 'Project Details'],
+                ['label' => 'Kanban Board'],
+            ]],
+            ['type' => 'divider'],
+            ['label' => 'Utility', 'children' => [
+                ['label' => 'Confirm Account'],
+                ['label' => 'Promotion Page'],
+                ['label' => 'Invoice'],
+            ]],
+            ['label' => 'Onboarding', 'children' => [
+                ['label' => 'Onboarding Welcome'],
+                ['label' => 'Onboarding V1'],
+                ['label' => 'Onboarding V2'],
+                ['label' => 'Onboarding V3'],
+                ['label' => 'Onboarding V4'],
+                ['label' => 'Onboarding V5'],
+            ]],
+            ['label' => 'Error Pages', 'children' => [
+                ['label' => 'Error 404 V1'],
+                ['label' => 'Error 404 V2'],
+                ['label' => 'Error 404 V3'],
+                ['label' => 'Error 404 V4'],
+                ['label' => 'Error 500 V1'],
+            ]],
         ],
         'elements' => [
             ['label' => 'Forms', 'children' => [['label' => 'Inputs'], ['label' => 'Selects'], ['label' => 'Checkboxes']]],

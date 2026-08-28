@@ -7,7 +7,7 @@ const closeMultiselect = ($select) => {
     $select.find('[data-form-multiselect-option]').removeClass('is-pointed');
 };
 
-const initFormMultiselects = ($root) => {
+export const initFormMultiselects = ($root) => {
     $root.find('[data-form-multiselect]').each(function () {
         const $select = $(this);
         if ($select.data('multiselect-init')) {
