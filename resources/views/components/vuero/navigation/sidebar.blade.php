@@ -88,6 +88,12 @@
                 ['label' => 'Form Layout V4', 'url' => route('vuero.admin.layouts.show', 'form-layout-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'form-layout-v4', 'icon' => 'passport'],
                 ['label' => 'Form Layout V5', 'url' => route('vuero.admin.layouts.show', 'form-layout-v5'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'form-layout-v5', 'icon' => 'passport'],
             ]],
+            ['label' => 'Placeload', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['placeload-v1', 'placeload-v2', 'placeload-v3', 'placeload-v4'], true), 'children' => [
+                ['label' => 'Placeload V1', 'url' => route('vuero.admin.layouts.show', 'placeload-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'placeload-v1', 'icon' => 'layout'],
+                ['label' => 'Placeload V2', 'url' => route('vuero.admin.layouts.show', 'placeload-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'placeload-v2', 'icon' => 'layout'],
+                ['label' => 'Placeload V3', 'url' => route('vuero.admin.layouts.show', 'placeload-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'placeload-v3', 'icon' => 'layout'],
+                ['label' => 'Placeload V4', 'url' => route('vuero.admin.layouts.show', 'placeload-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'placeload-v4', 'icon' => 'layout'],
+            ]],
             ['label' => 'Grids', 'children' => [['label' => 'Cards Grid'], ['label' => 'Tiles Grid'], ['label' => 'Users Grid']]],
             ['label' => 'Profiles', 'children' => [['label' => 'Profile View'], ['label' => 'Profile Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive]]],
             ['label' => 'Search', 'children' => [['label' => 'Search Results'], ['label' => 'Empty Search']]],

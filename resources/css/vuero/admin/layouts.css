@@ -459,6 +459,8 @@
 .flex-avatar__badge { position: absolute; right: -2px; bottom: -2px; width: 16px; height: 16px; object-fit: cover; border: 2px solid var(--surface-raised); border-radius: 50%; }
 
 .flex-avatar-stack { display: flex; align-items: center; padding-left: 4px; }
+.flex-avatar-stack .placeload-avatar { margin-inline-start: -8px; border: 2px solid var(--surface-raised); }
+.flex-avatar-stack .placeload-avatar:first-child { margin-inline-start: 0; }
 .flex-avatar-stack img, .flex-avatar-stack > span:not(.flex-avatar-stack__more) { display: grid; width: 28px; height: 28px; margin-left: -8px; place-items: center; object-fit: cover; color: #fff; background: var(--primary); border: 2px solid var(--surface-raised); border-radius: 50%; font-size: 9px; font-weight: 600; }
 .flex-avatar-stack > :first-child { margin-left: 0; }
 .flex-avatar-stack > span.is-success { background: #41c38d; }

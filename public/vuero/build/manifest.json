@@ -75,6 +75,12 @@
       "_jquery-fde43e1f.js"
     ]
   },
+  "_placeload-runtime-fbcc5379.js": {
+    "file": "assets/placeload-runtime-fbcc5379.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ]
+  },
   "_widget-charts-3f6690cf.js": {
     "file": "assets/widget-charts-3f6690cf.js",
     "imports": [
@@ -110,7 +116,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-8a68af6c.css",
+    "file": "assets/app-08a4fff5.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
@@ -600,6 +606,42 @@
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/list-view-v4.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/placeload-v1.js": {
+    "file": "assets/placeload-v1-2951fc68.js",
+    "imports": [
+      "_placeload-runtime-fbcc5379.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/placeload-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/placeload-v2.js": {
+    "file": "assets/placeload-v2-065803c6.js",
+    "imports": [
+      "_placeload-runtime-fbcc5379.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/placeload-v2.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/placeload-v3.js": {
+    "file": "assets/placeload-v3-15e63b53.js",
+    "imports": [
+      "_placeload-runtime-fbcc5379.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/placeload-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/placeload-v4.js": {
+    "file": "assets/placeload-v4-00946a6c.js",
+    "imports": [
+      "_placeload-runtime-fbcc5379.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/placeload-v4.js"
   },
   "resources/js/vuero/pages/admin/profile-settings.js": {
     "file": "assets/profile-settings-52e09422.js",

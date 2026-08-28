@@ -1,0 +1,122 @@
+[
+  {
+    "viewport": "desktop",
+    "slug": "placeload-v1",
+    "selector": "[data-placeload-v1]",
+    "loads": 60,
+    "shapes": 60,
+    "avatars": 10,
+    "overflowX": false,
+    "title": "Placeload V1 | Jobic"
+  },
+  {
+    "viewport": "desktop",
+    "slug": "placeload-v2",
+    "selector": "[data-placeload-v2]",
+    "loads": 100,
+    "shapes": 60,
+    "avatars": 40,
+    "overflowX": false,
+    "title": "Placeload V2 | Jobic"
+  },
+  {
+    "viewport": "desktop",
+    "slug": "placeload-v3",
+    "selector": "[data-placeload-v3]",
+    "loads": 200,
+    "shapes": 100,
+    "avatars": 100,
+    "overflowX": false,
+    "title": "Placeload V3 | Jobic"
+  },
+  {
+    "viewport": "desktop",
+    "slug": "placeload-v4",
+    "selector": "[data-placeload-v4]",
+    "loads": 90,
+    "shapes": 60,
+    "avatars": 30,
+    "overflowX": false,
+    "title": "Placeload V4 | Jobic"
+  },
+  {
+    "viewport": "tablet",
+    "slug": "placeload-v1",
+    "selector": "[data-placeload-v1]",
+    "loads": 60,
+    "shapes": 60,
+    "avatars": 10,
+    "overflowX": false,
+    "title": "Placeload V1 | Jobic"
+  },
+  {
+    "viewport": "tablet",
+    "slug": "placeload-v2",
+    "selector": "[data-placeload-v2]",
+    "loads": 100,
+    "shapes": 60,
+    "avatars": 40,
+    "overflowX": false,
+    "title": "Placeload V2 | Jobic"
+  },
+  {
+    "viewport": "tablet",
+    "slug": "placeload-v3",
+    "selector": "[data-placeload-v3]",
+    "loads": 200,
+    "shapes": 100,
+    "avatars": 100,
+    "overflowX": false,
+    "title": "Placeload V3 | Jobic"
+  },
+  {
+    "viewport": "tablet",
+    "slug": "placeload-v4",
+    "selector": "[data-placeload-v4]",
+    "loads": 90,
+    "shapes": 60,
+    "avatars": 30,
+    "overflowX": false,
+    "title": "Placeload V4 | Jobic"
+  },
+  {
+    "viewport": "mobile",
+    "slug": "placeload-v1",
+    "selector": "[data-placeload-v1]",
+    "loads": 60,
+    "shapes": 60,
+    "avatars": 10,
+    "overflowX": false,
+    "title": "Placeload V1 | Jobic"
+  },
+  {
+    "viewport": "mobile",
+    "slug": "placeload-v2",
+    "selector": "[data-placeload-v2]",
+    "loads": 100,
+    "shapes": 60,
+    "avatars": 40,
+    "overflowX": false,
+    "title": "Placeload V2 | Jobic"
+  },
+  {
+    "viewport": "mobile",
+    "slug": "placeload-v3",
+    "selector": "[data-placeload-v3]",
+    "loads": 200,
+    "shapes": 100,
+    "avatars": 100,
+    "overflowX": false,
+    "title": "Placeload V3 | Jobic"
+  },
+  {
+    "viewport": "mobile",
+    "slug": "placeload-v4",
+    "selector": "[data-placeload-v4]",
+    "loads": 90,
+    "shapes": 60,
+    "avatars": 30,
+    "overflowX": false,
+    "title": "Placeload V4 | Jobic"
+  }
+]

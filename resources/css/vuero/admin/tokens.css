@@ -28,6 +28,10 @@
     --radius-sm: 6px;
     --radius: 6px;
     --radius-lg: 10px;
+    --placeload-nuance-from: rgb(0 0 0 / 7%);
+    --placeload-nuance-to: rgb(0 0 0 / 15%);
+    --placeload-dark-nuance-from: rgb(255 255 255 / 15%);
+    --placeload-dark-nuance-to: rgb(255 255 255 / 24%);
     --sidebar-width: 80px;
     --subsidebar-width: 240px;
     --topbar-height: 60px;
@@ -60,6 +64,10 @@
     --orange-soft: rgb(255 159 67 / 12%);
     --green-soft: rgb(5 214 158 / 12%);
     --shadow-md: 0 5px 16px rgb(0 0 0 / 24%);
+    --placeload-nuance-from: rgb(255 255 255 / 15%);
+    --placeload-nuance-to: rgb(255 255 255 / 24%);
+    --placeload-dark-nuance-from: rgb(255 255 255 / 15%);
+    --placeload-dark-nuance-to: rgb(255 255 255 / 24%);
     --auth-art-base: #2a3040;
     --auth-art-surface: #252a38;
     --auth-art-top: #313749;
