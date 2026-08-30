@@ -25,9 +25,14 @@
     --border-strong: #d7d7d7;
     --shadow-sm: none;
     --shadow-md: 0 5px 16px rgb(0 0 0 / 8%);
+    --light-box-shadow: -1px 3px 10px 0 rgb(0 0 0 / 6%);
+    --light-text: hsl(232 14% 68%);
+    --dark-dark-text: hsl(240 6% 68%);
     --radius-sm: 6px;
     --radius: 6px;
     --radius-lg: 10px;
+    --radius-large: 6px;
+    --font: var(--font-sans);
     --placeload-nuance-from: rgb(0 0 0 / 7%);
     --placeload-nuance-to: rgb(0 0 0 / 15%);
     --placeload-dark-nuance-from: rgb(255 255 255 / 15%);

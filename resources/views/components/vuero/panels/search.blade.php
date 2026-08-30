@@ -15,7 +15,7 @@
                 <input type="search" placeholder="Search..." aria-label="Search the admin area" autocomplete="off" data-global-search>
             </label>
 
-            <div class="search-results" data-search-results hidden>
+            <div class="search-results" data-panel-search-results hidden>
                 <h3>Search Results</h3>
                 <div class="search-block">
                     @foreach ([
@@ -29,7 +29,7 @@
                             <span><strong>{{ $name }}</strong><small>{{ $position }}</small></span>
                         </button>
                     @endforeach
-                    <p class="search-empty" data-search-empty hidden>No matching results found.</p>
+                    <p class="search-empty" data-panel-search-empty hidden>No matching results found.</p>
                 </div>
             </div>
 

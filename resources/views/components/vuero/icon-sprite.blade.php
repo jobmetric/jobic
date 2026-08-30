@@ -126,6 +126,7 @@
     <symbol id="icon-dollar" viewBox="0 0 24 24"><path d="M12 2v20M17 5.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></symbol>
     <symbol id="icon-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></symbol>
     <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16" /></symbol>
+    <symbol id="icon-printer" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7Z" /></symbol>
     <symbol id="icon-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" /></symbol>
     <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6" /></symbol>
     <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
@@ -146,4 +147,9 @@
     <symbol id="icon-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.5 8.5a2.5 2.5 0 0 0 3.5 3.5L19.5 9.5a4.5 4.5 0 0 0-6.4-6.4L4.5 12.1a6.5 6.5 0 0 0 9.2 9.2L20 15" /></symbol>
     <symbol id="icon-slack" viewBox="0 0 24 24"><path d="M14.5 10a1.5 1.5 0 1 0 3 0V8.5a1.5 1.5 0 0 0-3 0V10ZM10 14.5a1.5 1.5 0 1 0 0 3H8.5a1.5 1.5 0 0 0 0-3H10ZM13.5 14a1.5 1.5 0 0 0 0 3h1.5a1.5 1.5 0 0 0 0-3H13.5ZM10 6.5A1.5 1.5 0 1 0 10 4H8.5a1.5 1.5 0 0 0 0 3H10ZM6.5 10a1.5 1.5 0 0 0-3 0v1.5a1.5 1.5 0 0 0 3 0V10ZM10 13.5a1.5 1.5 0 0 0-3 0v1.5a1.5 1.5 0 0 0 3 0V13.5Z" /></symbol>
     <symbol id="icon-passport" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" /><circle cx="10" cy="10" r="2.5" /><path d="M7 16h6M16 7h2M16 11h2" /></symbol>
+    <symbol id="icon-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" /></symbol>
+    <symbol id="icon-leaf" viewBox="0 0 24 24"><path d="M20 4C11 4 5 8.8 5 16c0 2.2 1.8 4 4 4 7.2 0 11-7 11-16Z" /><path d="M4 21c2.5-6.2 6.8-10.2 13-13" /></symbol>
+    <symbol id="icon-sort" viewBox="0 0 24 24"><path d="m8 7 4-4 4 4M12 3v18M16 17l-4 4-4-4" /></symbol>
+    <symbol id="icon-sort-up" viewBox="0 0 24 24"><path d="m7 10 5-5 5 5M12 5v14" /></symbol>
+    <symbol id="icon-sort-down" viewBox="0 0 24 24"><path d="m7 14 5 5 5-5M12 19V5" /></symbol>
 </svg>

@@ -558,18 +558,18 @@ $(() => {
         const $items = $panel.find('[data-search-item]');
 
         $panel.find('[data-search-default]').prop('hidden', Boolean(query));
-        $panel.find('[data-search-results]').prop('hidden', !query);
+        $panel.find('[data-panel-search-results]').prop('hidden', !query);
 
         if (!query) {
             $items.prop('hidden', false);
-            $panel.find('[data-search-empty]').prop('hidden', true);
+            $panel.find('[data-panel-search-empty]').prop('hidden', true);
             return;
         }
 
         $items.each(function () {
             $(this).prop('hidden', !String($(this).data('search-text')).includes(query));
         });
-        $panel.find('[data-search-empty]').prop('hidden', $items.filter(':visible').length > 0);
+        $panel.find('[data-panel-search-empty]').prop('hidden', $items.filter(':visible').length > 0);
     });
 
     $document.on('click', '[data-notification-item]', function () {

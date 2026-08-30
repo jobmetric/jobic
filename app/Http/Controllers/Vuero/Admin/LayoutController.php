@@ -17,7 +17,16 @@ class LayoutController extends Controller
             'placeload-v1', 'placeload-v2', 'placeload-v3', 'placeload-v4',
             'grid-card-v1', 'grid-card-v2', 'grid-card-v3', 'grid-card-v4',
             'grid-tile-v1', 'grid-tile-v2', 'grid-tile-v3',
+            'user-grid-v1', 'user-grid-v2', 'user-grid-v3', 'user-grid-v4',
+            'projects-v1', 'projects-v2', 'projects-v3', 'project-details', 'kanban-board',
+            'onboarding-welcome', 'onboarding-v1', 'onboarding-v2', 'onboarding-v3', 'onboarding-v4', 'onboarding-v5',
+            'saas-billing', 'action-page-v1', 'action-page-v2',
+            'utility-account-confirm', 'utility-promotion', 'utility-invoice',
         ], true), 404);
+
+        if (in_array($layout, ['onboarding-v1', 'onboarding-v2', 'onboarding-v3', 'onboarding-v4', 'onboarding-v5'], true)) {
+            return view('vuero.admin.layouts.onboarding-page', $this->onboardingPage(str_replace('onboarding-', '', $layout)));
+        }
 
         return view("vuero.admin.layouts.{$layout}", match ($layout) {
             'list-view-v1' => ['users' => $this->users(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/list-view-v1.js'],
@@ -46,7 +55,89 @@ class LayoutController extends Controller
             'grid-tile-v1' => ['users' => $this->tileGridUsers(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-tile-v1.js'],
             'grid-tile-v2' => ['files' => $this->tileGridFiles(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-tile-v2.js'],
             'grid-tile-v3' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/grid-tile-v3.js'],
+            'user-grid-v1' => ['users' => $this->userGridUsersV1(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/user-grid-v1.js'],
+            'user-grid-v2' => ['users' => $this->userGridUsersV2(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/user-grid-v2.js'],
+            'user-grid-v3' => ['users' => $this->userGridUsersV3(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/user-grid-v3.js'],
+            'user-grid-v4' => ['users' => $this->userGridUsersV4(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/user-grid-v4.js'],
+            'projects-v1' => [
+                'members' => $this->projectMembers(),
+                'recent' => $this->projectRecent(),
+                'users' => $this->projectAdvancedUsers(),
+                'layoutScript' => 'resources/js/vuero/pages/admin/layouts/projects-v1.js',
+            ],
+            'projects-v2' => [
+                'members' => $this->projectMembers(),
+                'stats' => $this->projectHeaderStats(),
+                'projects' => $this->projectCards(),
+                'layoutScript' => 'resources/js/vuero/pages/admin/layouts/projects-v2.js',
+            ],
+            'projects-v3' => [
+                'stats' => $this->projectIllustrationStats(),
+                'recent' => $this->projectRecentBoxes(),
+                'projects' => $this->projectMinimalItems(),
+                'layoutScript' => 'resources/js/vuero/pages/admin/layouts/projects-v3.js',
+            ],
+            'project-details' => [
+                'participants' => $this->projectDetailParticipants(),
+                'features' => $this->projectDetailFeatures(),
+                'files' => $this->projectDetailFiles(),
+                'sideCards' => $this->projectDetailSideCards(),
+                'team' => $this->projectDetailTeam(),
+                'tasks' => $this->projectDetailTasks(),
+                'layoutScript' => 'resources/js/vuero/pages/admin/layouts/project-details.js',
+            ],
+            'kanban-board' => [
+                'participants' => $this->kanbanParticipants(),
+                'columns' => $this->kanbanColumns(),
+                'layoutScript' => 'resources/js/vuero/pages/admin/layouts/kanban-board.js',
+            ],
+            'onboarding-welcome' => [
+                'cards' => $this->onboardingCards('standard'),
+                'layoutScript' => 'resources/js/vuero/pages/admin/layouts/onboarding-welcome.js',
+            ],
+            'saas-billing' => ['plans' => $this->saasBillingPlans(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/saas-billing.js'],
+            'action-page-v1' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/action-page-v1.js'],
+            'action-page-v2' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/action-page-v2.js'],
+            'utility-account-confirm' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/utility-account-confirm.js'],
+            'utility-promotion' => ['layoutScript' => 'resources/js/vuero/pages/admin/layouts/utility-promotion.js'],
+            'utility-invoice' => ['items' => $this->invoiceItems(), 'layoutScript' => 'resources/js/vuero/pages/admin/layouts/utility-invoice.js'],
         });
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function userGridUsersV1(): array
+    {
+        return $this->loadUserGridData('user-grid-v1');
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function userGridUsersV2(): array
+    {
+        return $this->loadUserGridData('user-grid-v2');
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function userGridUsersV3(): array
+    {
+        return $this->loadUserGridData('user-grid-v3');
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function userGridUsersV4(): array
+    {
+        return $this->loadUserGridData('user-grid-v4');
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function loadUserGridData(string $slug): array
+    {
+        $path = resource_path("data/vuero/layouts/{$slug}.json");
+
+        abort_unless(is_file($path), 500, "Missing user grid data: {$slug}");
+
+        $data = json_decode((string) file_get_contents($path), true);
+
+        return is_array($data) ? $data : [];
     }
 
     private function users(): array
@@ -544,5 +635,414 @@ class LayoutController extends Controller
             'size' => $item[2],
             'icon' => $icon($item[3]),
         ])->all();
+    }
+
+    /** @return array<string, mixed> */
+    private function onboardingPage(string $variant): array
+    {
+        return [
+            'variant' => $variant,
+            'cards' => $this->onboardingCards($variant),
+            'layoutScript' => 'resources/js/vuero/pages/admin/layouts/onboarding-page.js',
+        ];
+    }
+
+    private function demoAvatar(string $file): string
+    {
+        if (str_contains($file, 'vuero-1.svg')) {
+            return '/vuero/images/layouts/list-view-v1/avatars/vuero-1.svg';
+        }
+
+        return '/vuero/images/layouts/list-view-v1/avatars/'.basename($file);
+    }
+
+    private function onboardingImage(string $set, int $number): array
+    {
+        $base = "/vuero/images/onboarding/{$set}-{$number}";
+
+        return ['image' => "{$base}.svg", 'dark_image' => "{$base}-dark.svg"];
+    }
+
+    private function onboardingCards(string $variant): array
+    {
+        $cards = match ($variant) {
+            'standard' => [
+                ['title' => 'Configure Shop', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Configure Shop', 'set' => 'set1', 'index' => 1],
+                ['title' => 'Manage Products', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Manage Products', 'set' => 'set1', 'index' => 2],
+                ['title' => 'Setup Payments', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Setup Payments', 'set' => 'set1', 'index' => 3],
+            ],
+            'v1' => [
+                ['title' => 'Explore Posts', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Explore', 'set' => 'set2', 'index' => 1],
+                ['title' => 'Schedule a Meeting', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Schedule', 'set' => 'set2', 'index' => 2],
+                ['title' => 'Chill Out', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Take a Nap', 'set' => 'set2', 'index' => 3],
+            ],
+            'v2' => [
+                ['title' => 'Plan a Trip', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Explore', 'set' => 'set3', 'index' => 1],
+                ['title' => 'Book a Flight', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Book Now', 'set' => 'set3', 'index' => 2],
+                ['title' => 'Browse Destinations', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Browse', 'set' => 'set3', 'index' => 3],
+            ],
+            'v3' => [
+                ['title' => 'Explore Workboard', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Explore', 'set' => 'set4', 'index' => 1],
+                ['title' => 'Add some Tasks', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Add Tasks', 'set' => 'set4', 'index' => 2],
+                ['title' => 'Browse Wiki', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Browse', 'set' => 'set4', 'index' => 3],
+            ],
+            'v4' => [
+                ['title' => 'Plan a Trip', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Explore', 'set' => 'set5', 'index' => 1],
+                ['title' => 'Book a Flight', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Book Now', 'set' => 'set5', 'index' => 2],
+                ['title' => 'Browse Destinations', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt.', 'button' => 'Browse', 'set' => 'set5', 'index' => 3],
+            ],
+            'v5' => [
+                ['title' => 'Configure Shop', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Configure', 'set' => 'set6', 'index' => 1],
+                ['title' => 'Configure Warehouse', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Configure', 'set' => 'set6', 'index' => 2],
+                ['title' => 'Manage Products', 'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Recte dicis; Ita enim vivunt quidam, ut eorum vita refellatur oratio. Sed tament.', 'button' => 'Manage', 'set' => 'set6', 'index' => 3],
+            ],
+            default => [],
+        };
+
+        return collect($cards)->map(function (array $card): array {
+            return [
+                ...$this->onboardingImage($card['set'], $card['index']),
+                'title' => $card['title'],
+                'text' => $card['text'],
+                'button' => $card['button'],
+            ];
+        })->all();
+    }
+
+    private function projectMembers(): array
+    {
+        return collect(['7.jpg', '9.jpg', '12.jpg', 'vuero-1.svg', '25.jpg', '22.jpg'])
+            ->map(fn (string $file): array => ['picture' => $this->demoAvatar($file)])
+            ->all();
+    }
+
+    private function projectRecent(): array
+    {
+        return [
+            ['name' => 'The Slicer project', 'type' => 'Design project', 'logo' => '/vuero/images/icons/logos/slicer.svg', 'progress' => 31],
+            ['name' => 'Metamovies reworked', 'type' => 'Design project', 'logo' => '/vuero/images/icons/logos/metamovies.svg', 'progress' => 84],
+            ['name' => 'Supreme Flights app', 'type' => 'Software project', 'logo' => '/vuero/images/admin/business/flights/company1.svg', 'progress' => 45],
+            ['name' => 'Fastpizza delivery app', 'type' => 'Software project', 'logo' => '/vuero/images/icons/logos/fastpizza.svg', 'progress' => 90],
+            ['name' => 'Drop website redesign', 'type' => 'Design project', 'logo' => '/vuero/images/icons/logos/drop.svg', 'progress' => 12],
+        ];
+    }
+
+    private function projectAdvancedUsers(): array
+    {
+        $flag = fn (string $country): string => "/vuero/images/layouts/list-view-v1/flags/{$country}.svg";
+
+        return [
+            ['username' => 'Erik K.', 'position' => 'Product Manager', 'picture' => '/vuero/images/layouts/list-view-v1/avatars/vuero-1.svg', 'badge' => $flag('united-states-of-america'), 'annualEarnings' => 115000, 'status' => 'Active', 'contacts' => [['picture' => '25.jpg'], ['initials' => 'JP', 'color' => 'info'], ['picture' => 'vuero-1.svg'], ['picture' => '5.jpg'], ['initials' => 'SC', 'color' => 'success']]],
+            ['username' => 'Jimmy H.', 'position' => 'Project Manager', 'picture' => $this->demoAvatar('22.jpg'), 'badge' => $flag('united-states-of-america'), 'annualEarnings' => 110000, 'status' => 'New', 'contacts' => [['initials' => 'SC', 'color' => 'h-purple']]],
+            ['username' => 'Melany W.', 'position' => 'Web Developer', 'picture' => $this->demoAvatar('25.jpg'), 'badge' => $flag('united-states-of-america'), 'annualEarnings' => 90000, 'status' => 'Active', 'contacts' => [['initials' => 'BT', 'color' => 'success'], ['picture' => '7.jpg']]],
+            ['username' => 'Joshua S.', 'position' => 'Backend Developer', 'picture' => $this->demoAvatar('12.jpg'), 'badge' => $flag('united-states-of-america'), 'annualEarnings' => 160000, 'status' => 'Disabled', 'contacts' => [['picture' => '13.jpg']]],
+            ['username' => 'Tina C.', 'position' => 'Business Analyst', 'picture' => $this->demoAvatar('13.jpg'), 'badge' => $flag('united-states-of-america'), 'annualEarnings' => 247000, 'status' => 'Suspended', 'contacts' => [['picture' => '25.jpg'], ['picture' => '11.jpg'], ['picture' => '5.jpg']]],
+        ];
+    }
+
+    private function projectHeaderStats(): array
+    {
+        return [
+            ['icon' => 'chart-bar', 'value' => '147', 'label' => 'Published projects'],
+            ['icon' => 'target', 'value' => '1638', 'label' => 'Completed Tasks'],
+            ['icon' => 'pie-chart', 'value' => '88%', 'label' => 'Team Performance'],
+            ['icon' => 'leaf', 'value' => '17', 'label' => 'Team Members'],
+        ];
+    }
+
+    private function projectCards(): array
+    {
+        $description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Idem iste, inquam, de voluptate quid sentit? Itaque contra est, ac dicitis; Quae cum essent dicta, discessimus. Iam enim adesse poterit. Duo Reges: constructio interrete.';
+        $short = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Idem iste, inquam, de voluptate quid sentit? Itaque contra est, ac dicitis.';
+
+        $items = [
+            ['#118 Agios Inc. Rebranding', [['initials' => 'FE', 'color' => 'primary'], ['initials' => 'SD', 'color' => 'success'], ['initials' => 'NJ', 'color' => 'info']]],
+            ['#117 Sweet Candy Website Updates', [['picture' => '7.jpg'], ['picture' => 'vuero-1.svg'], ['initials' => 'DC', 'color' => 'danger']]],
+            ['#116 Update our Design Plugin', [['picture' => '25.jpg']]],
+            ['#115 Refactor Chat App', [['picture' => '7.jpg'], ['picture' => '23.jpg']]],
+            ['#114 Develop a Marketing Website', [['picture' => '11.jpg'], ['initials' => 'AG', 'color' => 'orange']]],
+            ['#113 Develop a Landing Page', [['picture' => '12.jpg']]],
+            ['#112 Build a Social Mobile App', [['picture' => '24.jpg'], ['picture' => '18.jpg'], ['picture' => '16.jpg']]],
+            ['#111 Bulma Inc. Rebranding', [['initials' => 'ET', 'color' => 'info'], ['initials' => 'BH', 'color' => 'warning']]],
+            ['#110 Develop a Localisation Plugin', [['picture' => '25.jpg'], ['initials' => 'ET', 'color' => 'info']]],
+        ];
+
+        return collect($items)->map(function (array $item, int $index) use ($description, $short): array {
+            return [
+                'title' => $item[0],
+                'description' => $index % 2 === 0 ? $description : $short,
+                'developers' => collect($item[1])->map(function (array $developer): array {
+                    if (isset($developer['picture'])) {
+                        return ['picture' => $this->demoAvatar($developer['picture'])];
+                    }
+
+                    return ['initials' => $developer['initials'], 'color' => $developer['color']];
+                })->all(),
+                'deadline' => 'Aug 7 2020',
+                'budget' => '$15,000',
+                'status' => 'In Progress',
+            ];
+        })->all();
+    }
+
+    private function projectIllustrationStats(): array
+    {
+        return [
+            ['class' => 'is-success', 'value' => '12', 'label' => 'In Progress'],
+            ['class' => 'is-warning', 'value' => '4', 'label' => 'Blocked'],
+            ['class' => 'is-info', 'value' => '89', 'label' => 'Shipped'],
+            ['class' => 'is-primary', 'value' => '141', 'label' => 'Projects Total'],
+        ];
+    }
+
+    private function projectRecentBoxes(): array
+    {
+        return [
+            ['title' => 'Customer Management Dashboard', 'progress' => 55, 'tone' => 'success'],
+            ['title' => 'CandyBar Website and App Redesign', 'progress' => 80, 'tone' => 'danger'],
+            ['title' => 'Marketing and Investment Platform', 'progress' => 28, 'tone' => 'info'],
+        ];
+    }
+
+    private function projectMinimalItems(): array
+    {
+        $text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Idem iste, inquam, de voluptate quid sentit? Itaque contra est, ac dicitis; Quae cum essent dicta, discessimus. Iam enim adesse poterit. Duo Reges: constructio interrete.';
+
+        $items = [
+            ['type' => 'UI/UX Design', 'status' => 'In Progress', 'status_class' => 'is-success', 'title' => 'Finance App Onboarding Revamp', 'tags' => ['Finance', 'Marketing', 'Payments'], 'description' => $text, 'team' => [['picture' => '13.jpg'], ['picture' => '11.jpg']], 'remaining' => '1 month left', 'filter' => 'progress'],
+            ['type' => 'Web Development', 'status' => 'Shipping Soon', 'status_class' => 'is-info', 'title' => 'Ecommerce Website for Sunset Surfers', 'tags' => ['Sports', 'Surf'], 'description' => $text, 'team' => [['picture' => '7.jpg'], ['picture' => '9.jpg'], ['initials' => 'JD', 'color' => 'info'], ['picture' => '12.jpg']], 'remaining' => '3 days left', 'filter' => 'shipping'],
+            ['type' => 'Business', 'status' => 'Overdue', 'status_class' => 'is-warning', 'title' => 'Business Model for Growing Startup', 'tags' => ['Business', 'Startups', 'Management'], 'description' => $text, 'team' => [['picture' => '14.jpg']], 'remaining' => '1 week left', 'filter' => 'progress'],
+            ['type' => 'Web Development', 'status' => 'Blocked', 'status_class' => 'is-danger', 'title' => 'Build a Document Parser with React Hooks', 'tags' => ['Javascript', 'Tesseract'], 'description' => $text, 'team' => [['picture' => 'vuero-1.svg'], ['picture' => '22.jpg'], ['picture' => '12.jpg']], 'remaining' => '2 months left', 'filter' => 'blocked'],
+            ['type' => 'AI', 'status' => 'In Progress', 'status_class' => 'is-success', 'title' => 'Stabilize AI Project and Consolidate Features', 'tags' => ['AI', 'Machine Learning'], 'description' => $text, 'team' => [['picture' => '13.jpg'], ['picture' => '11.jpg'], ['picture' => 'vuero-1.svg']], 'remaining' => '3 months left', 'filter' => 'progress'],
+            ['type' => 'UI/UX Design', 'status' => 'In Progress', 'status_class' => 'is-success', 'title' => 'Rework BigBro Branding and Identity', 'tags' => ['Music', 'Venue', 'Urban'], 'description' => $text, 'team' => [['picture' => '13.jpg'], ['picture' => '11.jpg']], 'remaining' => '2 months left', 'filter' => 'progress'],
+            ['type' => 'UI/UX Design', 'status' => 'In Progress', 'status_class' => 'is-success', 'title' => 'Customer Management Dashboard', 'tags' => ['Business', 'Customers'], 'description' => $text, 'team' => [['picture' => '13.jpg'], ['picture' => '16.jpg'], ['picture' => '10.jpg']], 'remaining' => '2 months left', 'filter' => 'progress'],
+            ['type' => 'Web Development', 'status' => 'Blocked', 'status_class' => 'is-danger', 'title' => 'CandyBar Website and App Redesign', 'tags' => ['Mobile', 'Hybrid'], 'description' => $text, 'team' => [['picture' => '22.jpg'], ['picture' => '10.jpg']], 'remaining' => '5 days left', 'filter' => 'blocked'],
+            ['type' => 'Business', 'status' => 'Shipping Soon', 'status_class' => 'is-info', 'title' => 'Marketing and Investment Platform', 'tags' => ['Business', 'Finance'], 'description' => $text, 'team' => [['picture' => '14.jpg'], ['picture' => '16.jpg']], 'remaining' => '1 week left', 'filter' => 'shipping'],
+        ];
+
+        return collect($items)->map(function (array $item): array {
+            return [
+                ...$item,
+                'team' => collect($item['team'])->map(function (array $member): array {
+                    if (isset($member['picture'])) {
+                        return ['picture' => $this->demoAvatar($member['picture'])];
+                    }
+
+                    return $member;
+                })->all(),
+            ];
+        })->all();
+    }
+
+    private function projectDetailParticipants(): array
+    {
+        return collect(['7.jpg', '9.jpg', '12.jpg', 'vuero-1.svg', '25.jpg'])
+            ->map(fn (string $file): array => ['picture' => $this->demoAvatar($file)])
+            ->all();
+    }
+
+    private function projectDetailFeatures(): array
+    {
+        return [
+            ['icon' => 'edit', 'title' => 'UI/UX Design', 'text' => 'Designing a perfect user experience is in the scope of this project.'],
+            ['icon' => 'clock', 'title' => '1 Week Sprints', 'text' => 'This project development iterations follow a 1 week sprint pattern.'],
+            ['icon' => 'calendar', 'title' => '3 Months', 'text' => 'This project and all related tasks should completed within 3 months.'],
+            ['icon' => 'diamond', 'title' => 'Fixed', 'text' => "This project's budget planning is based on an imutable fixed bid."],
+        ];
+    }
+
+    private function projectDetailFiles(): array
+    {
+        return [
+            ['icon' => '/vuero/images/icons/files/zip-format.svg', 'name' => 'Preliminary Sketches', 'meta' => '3MB · 5 days ago'],
+            ['icon' => '/vuero/images/icons/files/pdf.svg', 'name' => 'Project Scope', 'meta' => '0.8MB · 7 days ago'],
+            ['icon' => '/vuero/images/icons/files/presentation.svg', 'name' => 'Project Presentation', 'meta' => '2.4MB · 7 days ago'],
+            ['icon' => '/vuero/images/icons/files/sheet.svg', 'name' => 'Project Budget', 'meta' => '0.6MB · 8 days ago'],
+            ['icon' => '/vuero/images/icons/files/doc.svg', 'name' => 'Project Notes', 'meta' => '0.4MB · 8 days ago'],
+            ['icon' => '/vuero/images/icons/files/video.svg', 'name' => 'POC Demo', 'meta' => '8.75MB · 8 days ago'],
+        ];
+    }
+
+    private function projectDetailSideCards(): array
+    {
+        $stack = fn (string $file): string => '/vuero/images/layouts/grid-cards/stacks/'.$file;
+
+        return [
+            [
+                'title' => 'Project Tools',
+                'items' => [
+                    ['icon' => '/vuero/images/icons/stacks/sketch.svg', 'title' => 'Sketch', 'subtitle' => 'Design Software'],
+                    ['icon' => $stack('illustrator.svg'), 'title' => 'Illustrator', 'subtitle' => 'Design Software'],
+                    ['icon' => $stack('photoshop.svg'), 'title' => 'Photoshop', 'subtitle' => 'Design Software'],
+                ],
+            ],
+            [
+                'title' => 'Project Stacks',
+                'items' => [
+                    ['icon' => $stack('html5.svg'), 'title' => 'Html5', 'subtitle' => 'Hypertext Markup'],
+                    ['icon' => $stack('css3.svg'), 'title' => 'CSS3', 'subtitle' => 'Cascading Stylesheets'],
+                    ['icon' => $stack('vuejs.svg'), 'title' => 'VueJS', 'subtitle' => 'Javascript Framework'],
+                ],
+            ],
+            [
+                'title' => 'Customer',
+                'items' => [
+                    ['icon' => '/vuero/images/admin/business/flights/company1.svg', 'title' => 'VFlights', 'subtitle' => 'Transportation company'],
+                ],
+            ],
+        ];
+    }
+
+    private function projectDetailTeam(): array
+    {
+        $bio = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Si enim ad populum me vocas, eum. Quod cum dixissent, ille contra. Cur id non ita fit? Duo Reges: constructio interrete.';
+
+        return [
+            ['name' => 'Alice C.', 'role' => 'Software Engineer', 'avatar' => $this->demoAvatar('7.jpg'), 'bio' => $bio],
+            ['name' => 'Anna B.', 'role' => 'UX Designer', 'avatar' => $this->demoAvatar('9.jpg'), 'bio' => $bio],
+            ['name' => 'Joshua S.', 'role' => 'Backend Developer', 'avatar' => $this->demoAvatar('12.jpg'), 'bio' => $bio],
+            ['name' => 'Erik K.', 'role' => 'Product Manager', 'avatar' => $this->demoAvatar('vuero-1.svg'), 'bio' => $bio],
+            ['name' => 'Melany W.', 'role' => 'Web Developer', 'avatar' => $this->demoAvatar('25.jpg'), 'bio' => $bio],
+            ['name' => 'Tara S.', 'role' => 'UI/UX Designer', 'avatar' => $this->demoAvatar('13.jpg'), 'bio' => $bio],
+            ['name' => 'Esteban C.', 'role' => 'UI/UX Designer', 'avatar' => $this->demoAvatar('18.jpg'), 'bio' => $bio],
+            ['name' => 'Mary L.', 'role' => 'Project Manager', 'avatar' => $this->demoAvatar('5.jpg'), 'bio' => $bio],
+        ];
+    }
+
+    private function projectDetailTasks(): array
+    {
+        $items = [
+            ['title' => 'Build a desktop and mobile landing page wireframe', 'progress' => 45, 'tone' => 'info', 'attachments' => '3 attachments', 'team' => [['picture' => '7.jpg'], ['picture' => 'vuero-1.svg'], ['picture' => '5.jpg']]],
+            ['title' => 'Build a custom video player javascript library', 'progress' => 90, 'tone' => 'success', 'attachments' => '1 attachment', 'team' => [['picture' => '12.jpg']]],
+            ['title' => 'Develop a JWT authentication controller', 'progress' => 65, 'tone' => 'danger', 'attachments' => '1 attachment', 'team' => [['picture' => '12.jpg']]],
+            ['title' => 'Design custom illustrations for landing page', 'progress' => 38, 'tone' => 'warning', 'attachments' => '1 attachment', 'team' => [['picture' => '5.jpg'], ['picture' => '7.jpg']]],
+            ['title' => 'Implement sign up with social media', 'progress' => 59, 'tone' => null, 'attachments' => '2 attachments', 'team' => [['picture' => '25.jpg']]],
+            ['title' => 'Implement user management API controller', 'progress' => 78, 'tone' => 'info', 'attachments' => '3 attachments', 'team' => [['picture' => '25.jpg'], ['picture' => '12.jpg']]],
+            ['title' => 'Implement job management API controller', 'progress' => 36, 'tone' => 'success', 'attachments' => '3 attachments', 'team' => [['picture' => '25.jpg'], ['picture' => '12.jpg']]],
+            ['title' => 'Review and refactor server side code', 'progress' => 49, 'tone' => 'danger', 'attachments' => '2 attachments', 'team' => [['picture' => '25.jpg'], ['picture' => '12.jpg']]],
+        ];
+
+        return collect($items)->map(function (array $item): array {
+            return [
+                ...$item,
+                'team' => collect($item['team'])->map(fn (array $member): array => [
+                    'picture' => $this->demoAvatar($member['picture']),
+                ])->all(),
+            ];
+        })->all();
+    }
+
+    private function kanbanParticipants(): array
+    {
+        return collect(['7.jpg', '9.jpg', '12.jpg', 'vuero-1.svg', '25.jpg', '13.jpg', '16.jpg', '18.jpg'])
+            ->map(fn (string $file): array => ['picture' => $this->demoAvatar($file)])
+            ->all();
+    }
+
+    private function kanbanColumns(): array
+    {
+        $board = fn (string $name): array => [
+            'light' => "/vuero/images/projects/board/{$name}.svg",
+            'dark' => "/vuero/images/projects/board/{$name}-dark.svg",
+        ];
+
+        $participant = fn (string $file, ?string $color = null): array => [
+            'picture' => $this->demoAvatar($file),
+            'color' => $color,
+        ];
+
+        $tasks = [
+            ['id' => '1', 'state' => 'new', 'title' => 'Create prototype with JWT authentication', 'dueDate' => '3 weeks', 'participants' => [$participant('7.jpg', 'warning')]],
+            ['id' => '2', 'state' => 'new', 'title' => 'Design a todo list component using React', 'dueDate' => '3 weeks', 'participants' => [$participant('vuero-1.svg', 'info')]],
+            ['id' => '3', 'state' => 'progress', 'title' => 'Implement the users REST API', 'dueDate' => '3 days', 'participants' => [$participant('12.jpg', 'danger'), $participant('26.jpg'), $participant('19.jpg')]],
+            ['id' => '4', 'state' => 'progress', 'title' => 'Review project wireframes', 'dueDate' => '1 week', 'participants' => [$participant('13.jpg', 'success')]],
+            ['id' => '5', 'state' => 'progress', 'title' => 'Implement new footer in all pages', 'dueDate' => '5 days', 'participants' => [$participant('16.jpg', 'info')]],
+            ['id' => '6', 'state' => 'ready', 'title' => 'Implement the projects REST API', 'dueDate' => '2 days', 'participants' => [$participant('vuero-1.svg', 'warning')]],
+            ['id' => '7', 'state' => 'completed', 'title' => 'Landing page redesign', 'dueDate' => 'On time', 'participants' => [$participant('12.jpg', 'success')]],
+            ['id' => '8', 'state' => 'completed', 'title' => 'Projects REST API Implementation', 'dueDate' => 'On time', 'participants' => [$participant('18.jpg', 'danger'), $participant('9.jpg')]],
+            ['id' => '9', 'state' => 'completed', 'title' => 'Database replication setup', 'dueDate' => 'On time', 'participants' => [$participant('13.jpg', 'primary')]],
+            ['id' => '10', 'state' => 'completed', 'title' => 'Firebase demo application setup', 'dueDate' => 'On time', 'participants' => [$participant('16.jpg', 'warning')]],
+        ];
+
+        $columns = [
+            ['state' => 'new', 'label' => 'New', 'draggable' => false, 'droppable' => false, 'empty' => array_merge(['text' => 'There are no new tasks to approve for now.'], $board('new'))],
+            ['state' => 'progress', 'label' => 'In Progress', 'draggable' => true, 'droppable' => true, 'empty' => array_merge(['text' => 'There are no tasks in progress at the moment.'], $board('progress'))],
+            ['state' => 'ready', 'label' => 'Ready', 'draggable' => true, 'droppable' => true, 'empty' => array_merge(['text' => '<span>There are no tasks marked as ready for now.</span>'], $board('ready'))],
+            ['state' => 'review', 'label' => 'In Review', 'draggable' => true, 'droppable' => true, 'empty' => array_merge(['text' => 'No tasks are being reviewed at the moment.'], $board('test'))],
+            ['state' => 'completed', 'label' => 'Completed', 'draggable' => false, 'droppable' => false, 'empty' => array_merge(['text' => 'You have no completed bounties.'], $board('complete'))],
+        ];
+
+        return collect($columns)->map(function (array $column) use ($tasks): array {
+            return [
+                ...$column,
+                'tasks' => collect($tasks)->where('state', $column['state'])->values()->all(),
+            ];
+        })->all();
+    }
+
+    private function saasBillingPlans(): array
+    {
+        $icon = fn (string $file): string => "/vuero/images/logos/logo/{$file}";
+        $logo = fn (string $name): array => [
+            'light' => "/vuero/images/logos/pricing/{$name}.svg",
+            'dark' => "/vuero/images/logos/pricing/{$name}-dark.svg",
+        ];
+
+        return [
+            [
+                'id' => 'starter',
+                'name' => 'Vuero Starter',
+                'slogan' => 'Plan for starters',
+                'intro' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Utilitatis causa amicitia est quaesita.',
+                'summary' => 'Vuero has incredible features and each plan perfectly adapts to your company, wether it is a small business or a bigger one. Vuero can also scale with you, as your business grows.',
+                'icon' => $icon('logo.svg'),
+                'logo' => $logo('vuero-starter'),
+                'costs' => ['monthly' => '$45', 'yearly' => '$530'],
+                'limits' => ['seats' => '3', 'projects' => '20', 'storage' => '20GB', 'addons' => '1'],
+            ],
+            [
+                'id' => 'pro',
+                'name' => 'Vuero Pro',
+                'slogan' => 'For professionals',
+                'intro' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Utilitatis causa amicitia est quaesita.',
+                'summary' => 'Vuero has incredible features and each plan perfectly adapts to your company, wether it is a small business or a bigger one. Vuero can also scale with you, as your business grows.',
+                'icon' => $icon('logo-secondary.svg'),
+                'logo' => $logo('vuero-pro'),
+                'costs' => ['monthly' => '$99', 'yearly' => '$1080'],
+                'limits' => ['seats' => '8', 'projects' => '150', 'storage' => '100GB', 'addons' => '3'],
+            ],
+            [
+                'id' => 'business',
+                'name' => 'Vuero Business',
+                'slogan' => 'For serious people',
+                'intro' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Utilitatis causa amicitia est quaesita.',
+                'summary' => 'Vuero has incredible features and each plan perfectly adapts to your company, wether it is a small business or a bigger one. Vuero can also scale with you, as your business grows.',
+                'icon' => $icon('logo-accent.svg'),
+                'logo' => $logo('vuero-business'),
+                'costs' => ['monthly' => '$149', 'yearly' => '$1590'],
+                'limits' => ['seats' => '20', 'projects' => 'Unlimited', 'storage' => '500GB', 'addons' => '5'],
+            ],
+            [
+                'id' => 'enterprise',
+                'name' => 'Vuero Enterprise',
+                'slogan' => 'For big companies',
+                'intro' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Utilitatis causa amicitia est quaesita.',
+                'summary' => 'Vuero has incredible features and each plan perfectly adapts to your company, wether it is a small business or a bigger one. Vuero can also scale with you, as your business grows.',
+                'icon' => $icon('logo-platinum.svg'),
+                'logo' => $logo('vuero-enterprise'),
+                'costs' => ['monthly' => '$199', 'yearly' => '$2230'],
+                'limits' => ['seats' => '40', 'projects' => 'Unlimited', 'storage' => 'Unlimited', 'addons' => 'Unlimited'],
+            ],
+        ];
+    }
+
+    /** @return list<array{name: string, unit: string, quantity: int, rate: int}> */
+    private function invoiceItems(): array
+    {
+        return [
+            ['name' => 'Website Redesign', 'unit' => 'hrs', 'quantity' => 54, 'rate' => 24],
+            ['name' => 'Logo Design', 'unit' => 'hrs', 'quantity' => 12, 'rate' => 24],
+            ['name' => 'Custom Illustrations', 'unit' => 'hrs', 'quantity' => 7, 'rate' => 32],
+        ];
     }
 }

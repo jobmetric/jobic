@@ -4,10 +4,21 @@
     $menuId = 'flex-table-menu-'.uniqid();
     $items = match ($type) {
         'project' => [
-            ['icon' => 'briefcase', 'label' => 'View', 'description' => 'View project details', 'action' => 'view'],
-            ['icon' => 'edit', 'label' => 'Edit', 'description' => 'Edit project details', 'action' => 'edit'],
-            ['icon' => 'plus', 'label' => 'New Task', 'description' => 'Add a new task', 'action' => 'task'],
-            ['icon' => 'trash', 'label' => 'Remove', 'description' => 'Remove from list', 'action' => 'remove', 'danger' => true],
+            ['icon' => 'eye', 'label' => 'View', 'description' => 'View this project', 'action' => 'view'],
+            ['icon' => 'edit', 'label' => 'Edit', 'description' => 'Edit this project', 'action' => 'edit'],
+            ['icon' => 'archive', 'label' => 'Archive', 'description' => 'Archive this project', 'action' => 'archive', 'divider' => true],
+        ],
+        'file' => [
+            ['icon' => 'download', 'label' => 'Download', 'description' => 'Download this file', 'action' => 'download'],
+            ['icon' => 'check-circle', 'label' => 'View Task', 'description' => 'View related task', 'action' => 'view-task'],
+            ['icon' => 'upload', 'label' => 'Update', 'description' => 'Upload a new version', 'action' => 'update', 'divider' => true],
+            ['icon' => 'trash', 'label' => 'Delete', 'description' => 'Delete this file', 'action' => 'delete'],
+        ],
+        'team' => [
+            ['icon' => 'eye', 'label' => 'View', 'description' => 'View member profile', 'action' => 'view'],
+            ['icon' => 'edit', 'label' => 'Edit Role', 'description' => 'Edit member role', 'action' => 'edit-role'],
+            ['icon' => 'message', 'label' => 'Message', 'description' => 'Send a message', 'action' => 'message', 'divider' => true],
+            ['icon' => 'trash', 'label' => 'Remove', 'description' => 'Remove from team', 'action' => 'remove'],
         ],
         default => [
             ['icon' => 'eye', 'label' => 'View', 'description' => 'View user details', 'action' => 'view'],
@@ -34,7 +45,7 @@
     <div class="dropdown-menu" id="{{ $menuId }}" role="menu" data-dropdown-menu hidden>
         <div class="dropdown-content">
             @foreach ($items as $item)
-                @if ($item['danger'] ?? false)
+                @if (($item['divider'] ?? false) || ($item['danger'] ?? false))
                     <hr class="dropdown-divider">
                 @endif
                 <button

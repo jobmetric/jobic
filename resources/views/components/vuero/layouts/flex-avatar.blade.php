@@ -5,6 +5,7 @@
         'small' => 'is-small',
         'big' => 'is-big',
         'large' => 'is-large',
+        'xl' => 'is-xl',
         default => 'is-medium',
     };
 @endphp

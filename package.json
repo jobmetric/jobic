@@ -3,9 +3,12 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "test:browser": "playwright test tests/Browser/vuero-layouts-qa.spec.js",
+        "test:browser:ui": "playwright test tests/Browser/vuero-layouts-qa.spec.js --ui"
     },
     "devDependencies": {
+        "@playwright/test": "^1.62.1",
         "axios": "^1.1.2",
         "laravel-vite-plugin": "^0.8.0",
         "vite": "^4.0.0"

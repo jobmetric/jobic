@@ -1,0 +1,619 @@
+[
+    {
+        "id": 13,
+        "username": "Tara S.",
+        "fullName": "Tara Svenson",
+        "initials": "TS",
+        "color": "danger",
+        "location": "New York, NY",
+        "position": "UI/UX Designer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/grid-cards/stacks/illustrator.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/13.jpg",
+        "status": "synced",
+        "tasksPending": 37,
+        "team": [
+            {
+                "id": 148,
+                "picture": null,
+                "name": "Betty T.",
+                "initials": "BT",
+                "color": "h-yellow"
+            },
+            {
+                "id": 18,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/18.jpg",
+                "name": "Esteban C.",
+                "initials": "EC",
+                "color": "h-purple"
+            },
+            {
+                "id": 159,
+                "picture": null,
+                "name": "John D.",
+                "initials": "JD",
+                "color": "info"
+            },
+            {
+                "id": 7,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/7.jpg",
+                "name": "Alice C.",
+                "initials": "AC",
+                "color": "success"
+            }
+        ]
+    },
+    {
+        "id": 37,
+        "username": "Helmut F.",
+        "fullName": "Helmut Fritz",
+        "initials": "HF",
+        "color": "h-purple",
+        "location": "Paris, France",
+        "position": "Product Manager",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/france.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/37.jpg",
+        "status": "overdue",
+        "tasksPending": 59,
+        "team": [
+            {
+                "id": 21,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/21.jpg",
+                "name": "Elizabet F.",
+                "initials": "EF",
+                "color": "warning"
+            },
+            {
+                "id": 189,
+                "picture": null,
+                "name": "Alan T.",
+                "initials": "AT",
+                "color": "success"
+            },
+            {
+                "id": 39,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/39.jpg",
+                "name": "Alejandro B.",
+                "initials": "AB",
+                "color": "danger"
+            }
+        ]
+    },
+    {
+        "id": 25,
+        "username": "Melany W.",
+        "fullName": "Melany Wallace",
+        "initials": "MW",
+        "color": "success",
+        "location": "San Diego, CA",
+        "position": "Web Developer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/grid-cards/stacks/js.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/25.jpg",
+        "status": "synced",
+        "tasksPending": 21,
+        "team": [
+            {
+                "id": 21,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/21.jpg",
+                "name": "Elizabet F.",
+                "initials": "EF",
+                "color": "warning"
+            },
+            {
+                "id": 198,
+                "picture": null,
+                "name": "Sarah C.",
+                "initials": "SC",
+                "color": "h-purple"
+            },
+            {
+                "id": 39,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/39.jpg",
+                "name": "Alejandro B.",
+                "initials": "AB",
+                "color": "danger"
+            }
+        ]
+    },
+    {
+        "id": 29,
+        "username": "Hakeem C.",
+        "fullName": "Hakeem Calami",
+        "initials": "HC",
+        "color": "info",
+        "location": "Berlin, Germany",
+        "position": "Software Engineer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/grid-cards/stacks/python.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/29.jpg",
+        "status": "synced",
+        "tasksPending": 11,
+        "team": [
+            {
+                "id": 28,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/28.jpg",
+                "name": "Edouard F.",
+                "initials": "EF",
+                "color": "info"
+            },
+            {
+                "id": 33,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/33.jpg",
+                "name": "Harvey M.",
+                "initials": "HM",
+                "color": "warning"
+            }
+        ]
+    },
+    {
+        "id": 39,
+        "username": "Alejandro B.",
+        "fullName": "Alejandro Badajoz",
+        "initials": "AB",
+        "color": "h-purple",
+        "location": "New York, NY",
+        "position": "Business Analyst",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/grid-cards/stacks/python.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/39.jpg",
+        "status": "blocked",
+        "tasksPending": 17,
+        "team": [
+            {
+                "id": 189,
+                "picture": null,
+                "name": "Alan T.",
+                "initials": "AT",
+                "color": "success"
+            },
+            {
+                "id": 23,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/23.jpg",
+                "name": "Irina V.",
+                "initials": "IV",
+                "color": "danger"
+            }
+        ]
+    },
+    {
+        "id": 40,
+        "username": "Jeanne M.",
+        "fullName": "Jeanne Marchand",
+        "initials": "JM",
+        "color": "info",
+        "location": "Paris, France",
+        "position": "Mobile Developer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/grid-cards/stacks/android.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/40.jpg",
+        "status": "synced",
+        "tasksPending": 14,
+        "team": [
+            {
+                "id": 148,
+                "picture": null,
+                "name": "Betty T.",
+                "initials": "BT",
+                "color": "h-yellow"
+            },
+            {
+                "id": 18,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/18.jpg",
+                "name": "Esteban C.",
+                "initials": "EC",
+                "color": "h-purple"
+            },
+            {
+                "id": 159,
+                "picture": null,
+                "name": "John D.",
+                "initials": "JD",
+                "color": "info"
+            }
+        ]
+    },
+    {
+        "id": 19,
+        "username": "Greta K.",
+        "fullName": "Greta Kroppfer",
+        "initials": "GK",
+        "color": "h-yellow",
+        "location": "Los Angeles, CA",
+        "position": "Sales Manager",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/germany.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/19.jpg",
+        "status": "synced",
+        "tasksPending": 18,
+        "team": [
+            {
+                "id": 198,
+                "picture": null,
+                "name": "Sarah C.",
+                "initials": "SC",
+                "color": "h-purple"
+            },
+            {
+                "id": 27,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/27.jpg",
+                "name": "Carmen E.",
+                "initials": "CE",
+                "color": "info"
+            }
+        ]
+    },
+    {
+        "id": 9,
+        "username": "Anna B.",
+        "fullName": "Anna Baker",
+        "initials": "AB",
+        "color": "info",
+        "location": "San Francisco, CA",
+        "position": "UI/UX Designer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/9.jpg",
+        "status": "synced",
+        "tasksPending": 27,
+        "team": [
+            {
+                "id": 189,
+                "picture": null,
+                "name": "Alan T.",
+                "initials": "AT",
+                "color": "success"
+            },
+            {
+                "id": 23,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/23.jpg",
+                "name": "Irina V.",
+                "initials": "IV",
+                "color": "danger"
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "username": "Mary L.",
+        "fullName": "Mary Lebowski",
+        "initials": "ML",
+        "color": "h-yellow",
+        "location": "San Diego, CA",
+        "position": "Project Manager",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/5.jpg",
+        "status": "synced",
+        "tasksPending": 31,
+        "team": [
+            {
+                "id": 148,
+                "picture": null,
+                "name": "Betty T.",
+                "initials": "BT",
+                "color": "h-yellow"
+            },
+            {
+                "id": 18,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/18.jpg",
+                "name": "Esteban C.",
+                "initials": "EC",
+                "color": "h-purple"
+            },
+            {
+                "id": 159,
+                "picture": null,
+                "name": "John D.",
+                "initials": "JD",
+                "color": "info"
+            },
+            {
+                "id": 7,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/7.jpg",
+                "name": "Alice C.",
+                "initials": "AC",
+                "color": "success"
+            }
+        ]
+    },
+    {
+        "id": 32,
+        "username": "Jonathan K.",
+        "fullName": "Jonathan Krugger",
+        "initials": "JK",
+        "color": "info",
+        "location": "Los Angeles, CA",
+        "position": "Product Manager",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/32.jpg",
+        "status": "synced",
+        "tasksPending": 9,
+        "team": [
+            {
+                "id": 21,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/21.jpg",
+                "name": "Elizabet F.",
+                "initials": "EF",
+                "color": "warning"
+            },
+            {
+                "id": 198,
+                "picture": null,
+                "name": "Sarah C.",
+                "initials": "SC",
+                "color": "h-purple"
+            },
+            {
+                "id": 39,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/39.jpg",
+                "name": "Alejandro B.",
+                "initials": "AB",
+                "color": "danger"
+            }
+        ]
+    },
+    {
+        "id": 36,
+        "username": "Benoit L.",
+        "fullName": "Benoit Leblanc",
+        "initials": "BL",
+        "color": "h-purple",
+        "location": "Paris, France",
+        "position": "Software Engineer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/france.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/36.jpg",
+        "status": "synced",
+        "tasksPending": 22,
+        "team": [
+            {
+                "id": 148,
+                "picture": null,
+                "name": "Betty T.",
+                "initials": "BT",
+                "color": "h-yellow"
+            },
+            {
+                "id": 31,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/31.jpg",
+                "name": "Yasseen A.",
+                "initials": "YA",
+                "color": "h-purple"
+            }
+        ]
+    },
+    {
+        "id": 38,
+        "username": "Christie D.",
+        "fullName": "Christie Dallas",
+        "initials": "CD",
+        "color": "info",
+        "location": "Los Angeles, CA",
+        "position": "Web Developer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/38.jpg",
+        "status": "overdue",
+        "tasksPending": 43,
+        "team": [
+            {
+                "id": 33,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/33.jpg",
+                "name": "Harvey M.",
+                "initials": "HM",
+                "color": "warning"
+            },
+            {
+                "id": 26,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/26.jpg",
+                "name": "Courtney W.",
+                "initials": "CW",
+                "color": "info"
+            }
+        ]
+    },
+    {
+        "id": 26,
+        "username": "Courtney W.",
+        "fullName": "Courtney Wilson",
+        "initials": "CW",
+        "color": "info",
+        "location": "Melbourne, AU",
+        "position": "Web Developer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/australia.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/26.jpg",
+        "status": "synced",
+        "tasksPending": 13,
+        "team": [
+            {
+                "id": 21,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/21.jpg",
+                "name": "Elizabet F.",
+                "initials": "EF",
+                "color": "warning"
+            },
+            {
+                "id": 189,
+                "picture": null,
+                "name": "Alan T.",
+                "initials": "AT",
+                "color": "success"
+            },
+            {
+                "id": 39,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/39.jpg",
+                "name": "Alejandro B.",
+                "initials": "AB",
+                "color": "danger"
+            }
+        ]
+    },
+    {
+        "id": 16,
+        "username": "Jason G.",
+        "fullName": "Jason Guarank",
+        "initials": "JG",
+        "color": "danger",
+        "location": "Houston, TX",
+        "position": "Business Analyst",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/16.jpg",
+        "status": "synced",
+        "tasksPending": 39,
+        "team": [
+            {
+                "id": 14,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/14.jpg",
+                "name": "Ryan B.",
+                "initials": "RB",
+                "color": "warning"
+            },
+            {
+                "id": 198,
+                "picture": null,
+                "name": "Sarah C.",
+                "initials": "SC",
+                "color": "h-purple"
+            }
+        ]
+    },
+    {
+        "id": 23,
+        "username": "Irina V.",
+        "fullName": "Irina Vierbovsky",
+        "initials": "IV",
+        "color": "info",
+        "location": "San Jose, CA",
+        "position": "Project Manager",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/23.jpg",
+        "status": "synced",
+        "tasksPending": 7,
+        "team": [
+            {
+                "id": 189,
+                "picture": null,
+                "name": "Alan T.",
+                "initials": "AT",
+                "color": "success"
+            },
+            {
+                "id": 34,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/34.jpg",
+                "name": "Daniel R.",
+                "initials": "DR",
+                "color": "h-yellow"
+            }
+        ]
+    },
+    {
+        "id": 28,
+        "username": "Edouard F.",
+        "fullName": "Edouard Falant",
+        "initials": "EF",
+        "color": "success",
+        "location": "Paris, France",
+        "position": "Web Developer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/france.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/28.jpg",
+        "status": "synced",
+        "tasksPending": 19,
+        "team": [
+            {
+                "id": 148,
+                "picture": null,
+                "name": "Betty T.",
+                "initials": "BT",
+                "color": "h-yellow"
+            },
+            {
+                "id": 18,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/18.jpg",
+                "name": "Esteban C.",
+                "initials": "EC",
+                "color": "h-purple"
+            },
+            {
+                "id": 159,
+                "picture": null,
+                "name": "John D.",
+                "initials": "JD",
+                "color": "info"
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "username": "Alice C.",
+        "fullName": "Alice Carasca",
+        "initials": "AC",
+        "color": "info",
+        "location": "San Diego, CA",
+        "position": "Software Engineer",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/7.jpg",
+        "status": "synced",
+        "tasksPending": 14,
+        "team": [
+            {
+                "id": 25,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/25.jpg",
+                "name": "Melany W.",
+                "initials": "MW",
+                "color": "success"
+            },
+            {
+                "id": 198,
+                "picture": null,
+                "name": "Sarah C.",
+                "initials": "SC",
+                "color": "h-purple"
+            },
+            {
+                "id": 12,
+                "picture": "/vuero/images/layouts/list-view-v1/avatars/12.jpg",
+                "name": "Joshua S.",
+                "initials": "JS",
+                "color": "warning"
+            }
+        ]
+    },
+    {
+        "id": 22,
+        "username": "Dwayne H.",
+        "fullName": "Dwayne Hicks",
+        "initials": "DH",
+        "color": "info",
+        "location": "Los Angeles, CA",
+        "position": "Product Manager",
+        "bio": "This is a nice user description that we can use as demo content.",
+        "badge": "/vuero/images/layouts/list-view-v1/flags/united-states-of-america.svg",
+        "picture": "/vuero/images/layouts/list-view-v1/avatars/22.jpg",
+        "status": "synced",
+        "tasksPending": 5,
+        "team": [
+            {
+                "id": 148,
+                "picture": null,
+                "name": "Betty T.",
+                "initials": "BT",
+                "color": "h-yellow"
+            },
+            {
+                "id": 198,
+                "picture": null,
+                "name": "Sarah C.",
+                "initials": "SC",
+                "color": "h-purple"
+            }
+        ]
+    }
+]

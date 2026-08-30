@@ -2,8 +2,17 @@
 
 @php
     $dashboardActive = request()->routeIs('vuero.admin.dashboard', 'vuero.admin.dashboards.*', 'vuero.admin.wizard', 'vuero.admin.starters.*');
-    $layoutsActive = request()->routeIs('vuero.admin.layouts.*');
+    $layoutsActive = request()->routeIs('vuero.admin.layouts.*', 'vuero.error.*');
     $settingsActive = request()->routeIs('vuero.admin.profile-settings');
+    $profileLayoutsActive = request()->routeIs(
+        'vuero.admin.layouts.profile-view',
+        'vuero.admin.layouts.profile-notifications',
+        'vuero.admin.layouts.profile-edit',
+    );
+    $searchLayoutsActive = request()->routeIs(
+        'vuero.admin.layouts.search-results',
+        'vuero.admin.layouts.search-empty',
+    );
     $sections = [
         'dashboard' => ['label' => 'Dashboards', 'icon' => 'activity', 'active' => $dashboardActive],
         'layouts' => ['label' => 'Layouts', 'icon' => 'apps', 'active' => $layoutsActive || $settingsActive],
@@ -106,56 +115,57 @@
                 ['label' => 'Tile Grid V2', 'url' => route('vuero.admin.layouts.show', 'grid-tile-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-tile-v2', 'icon' => 'layout'],
                 ['label' => 'Tile Grid V3', 'url' => route('vuero.admin.layouts.show', 'grid-tile-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'grid-tile-v3', 'icon' => 'layout'],
             ]],
-            ['label' => 'User Grid', 'children' => [
-                ['label' => 'User Grid V1', 'icon' => 'layout'],
-                ['label' => 'User Grid V2', 'icon' => 'layout'],
-                ['label' => 'User Grid V3', 'icon' => 'layout'],
-                ['label' => 'User Grid V4', 'icon' => 'layout'],
+            ['label' => 'User Grid', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['user-grid-v1', 'user-grid-v2', 'user-grid-v3', 'user-grid-v4'], true), 'children' => [
+                ['label' => 'User Grid V1', 'url' => route('vuero.admin.layouts.show', 'user-grid-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'user-grid-v1', 'icon' => 'layout'],
+                ['label' => 'User Grid V2', 'url' => route('vuero.admin.layouts.show', 'user-grid-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'user-grid-v2', 'icon' => 'layout'],
+                ['label' => 'User Grid V3', 'url' => route('vuero.admin.layouts.show', 'user-grid-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'user-grid-v3', 'icon' => 'layout'],
+                ['label' => 'User Grid V4', 'url' => route('vuero.admin.layouts.show', 'user-grid-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'user-grid-v4', 'icon' => 'layout'],
             ]],
             ['type' => 'divider'],
-            ['label' => 'Personal', 'children' => [
-                ['label' => 'Profile'],
-                ['label' => 'Edit Profile'],
-                ['label' => 'Notifications'],
+            ['label' => 'Personal', 'open' => $profileLayoutsActive || $settingsActive, 'children' => [
+                ['label' => 'Profile', 'url' => route('vuero.admin.layouts.profile-view'), 'active' => request()->routeIs('vuero.admin.layouts.profile-view'), 'icon' => 'user'],
+                ['label' => 'Edit Profile', 'url' => route('vuero.admin.layouts.profile-edit', 'general'), 'active' => request()->routeIs('vuero.admin.layouts.profile-edit'), 'icon' => 'edit'],
+                ['label' => 'Notifications', 'url' => route('vuero.admin.layouts.profile-notifications'), 'active' => request()->routeIs('vuero.admin.layouts.profile-notifications'), 'icon' => 'bell'],
                 ['label' => 'Settings', 'url' => route('vuero.admin.profile-settings'), 'active' => $settingsActive, 'icon' => 'settings'],
             ]],
-            ['label' => 'Pages', 'children' => [
-                ['label' => 'Search Results'],
-                ['label' => 'Empty Search'],
+            ['label' => 'Pages', 'open' => $searchLayoutsActive, 'children' => [
+                ['label' => 'Search Results', 'url' => route('vuero.admin.layouts.search-results'), 'active' => request()->routeIs('vuero.admin.layouts.search-results'), 'icon' => 'search'],
+                ['label' => 'Empty Search', 'url' => route('vuero.admin.layouts.search-empty'), 'active' => request()->routeIs('vuero.admin.layouts.search-empty'), 'icon' => 'search'],
             ]],
-            ['label' => 'Subpages', 'children' => [
-                ['label' => 'SaaS Billing'],
-                ['label' => 'Action Page V1'],
-                ['label' => 'Action Page V2'],
+            ['label' => 'Subpages', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['saas-billing', 'action-page-v1', 'action-page-v2'], true), 'children' => [
+                ['label' => 'SaaS Billing', 'url' => route('vuero.admin.layouts.show', 'saas-billing'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'saas-billing', 'icon' => 'layout'],
+                ['label' => 'Action Page V1', 'url' => route('vuero.admin.layouts.show', 'action-page-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'action-page-v1', 'icon' => 'layout'],
+                ['label' => 'Action Page V2', 'url' => route('vuero.admin.layouts.show', 'action-page-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'action-page-v2', 'icon' => 'layout'],
             ]],
-            ['label' => 'Projects', 'children' => [
-                ['label' => 'Projects V1'],
-                ['label' => 'Projects V2'],
-                ['label' => 'Projects V3'],
-                ['label' => 'Project Details'],
-                ['label' => 'Kanban Board'],
+            ['label' => 'Projects', 'open' => request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['projects-v1', 'projects-v2', 'projects-v3', 'project-details', 'kanban-board'], true), 'children' => [
+                ['label' => 'Projects V1', 'url' => route('vuero.admin.layouts.show', 'projects-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'projects-v1', 'icon' => 'layout'],
+                ['label' => 'Projects V2', 'url' => route('vuero.admin.layouts.show', 'projects-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'projects-v2', 'icon' => 'layout'],
+                ['label' => 'Projects V3', 'url' => route('vuero.admin.layouts.show', 'projects-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'projects-v3', 'icon' => 'layout'],
+                ['label' => 'Project Details', 'url' => route('vuero.admin.layouts.show', 'project-details'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'project-details', 'icon' => 'layout'],
+                ['label' => 'Kanban Board', 'url' => route('vuero.admin.layouts.show', 'kanban-board'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'kanban-board', 'icon' => 'layout'],
             ]],
             ['type' => 'divider'],
-            ['label' => 'Utility', 'children' => [
-                ['label' => 'Confirm Account'],
-                ['label' => 'Promotion Page'],
-                ['label' => 'Invoice'],
+            ['label' => 'Utility', 'open' => request()->routeIs('vuero.utility.*') || (request()->routeIs('vuero.admin.layouts.show') && in_array(request()->route('layout'), ['utility-account-confirm', 'utility-promotion', 'utility-invoice'], true)), 'children' => [
+                ['label' => 'Confirm Account', 'url' => route('vuero.admin.layouts.show', 'utility-account-confirm'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'utility-account-confirm', 'icon' => 'layout'],
+                ['label' => 'Promotion Page', 'url' => route('vuero.admin.layouts.show', 'utility-promotion'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'utility-promotion', 'icon' => 'layout'],
+                ['label' => 'Invoice', 'url' => route('vuero.admin.layouts.show', 'utility-invoice'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'utility-invoice', 'icon' => 'layout'],
+                ['label' => 'Roadmap', 'url' => route('vuero.utility.roadmap'), 'active' => request()->routeIs('vuero.utility.roadmap'), 'icon' => 'map'],
+                ['label' => 'App Status', 'url' => route('vuero.utility.status'), 'active' => request()->routeIs('vuero.utility.status'), 'icon' => 'activity'],
             ]],
-            ['label' => 'Onboarding', 'children' => [
-                ['label' => 'Onboarding Welcome'],
-                ['label' => 'Onboarding V1'],
-                ['label' => 'Onboarding V2'],
-                ['label' => 'Onboarding V3'],
-                ['label' => 'Onboarding V4'],
-                ['label' => 'Onboarding V5'],
+            ['label' => 'Onboarding', 'open' => request()->routeIs('vuero.admin.layouts.show') && str_starts_with((string) request()->route('layout'), 'onboarding-'), 'children' => [
+                ['label' => 'Onboarding Welcome', 'url' => route('vuero.admin.layouts.show', 'onboarding-welcome'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'onboarding-welcome', 'icon' => 'layout'],
+                ['label' => 'Onboarding V1', 'url' => route('vuero.admin.layouts.show', 'onboarding-v1'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'onboarding-v1', 'icon' => 'layout'],
+                ['label' => 'Onboarding V2', 'url' => route('vuero.admin.layouts.show', 'onboarding-v2'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'onboarding-v2', 'icon' => 'layout'],
+                ['label' => 'Onboarding V3', 'url' => route('vuero.admin.layouts.show', 'onboarding-v3'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'onboarding-v3', 'icon' => 'layout'],
+                ['label' => 'Onboarding V4', 'url' => route('vuero.admin.layouts.show', 'onboarding-v4'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'onboarding-v4', 'icon' => 'layout'],
+                ['label' => 'Onboarding V5', 'url' => route('vuero.admin.layouts.show', 'onboarding-v5'), 'active' => request()->routeIs('vuero.admin.layouts.show') && request()->route('layout') === 'onboarding-v5', 'icon' => 'layout'],
             ]],
-            ['label' => 'Error Pages', 'children' => [
-                ['label' => 'Error 404 V1'],
-                ['label' => 'Error 404 V2'],
-                ['label' => 'Error 404 V3'],
-                ['label' => 'Error 404 V4'],
-                ['label' => 'Error 500 V1'],
-            ]],
+            ['label' => 'Error Pages', 'open' => request()->routeIs('vuero.error.*'), 'children' => collect(config('vuero.error_pages'))->map(fn (array $errorPage, string $slug): array => [
+                'label' => $errorPage['menu'],
+                'url' => route('vuero.error.show', $slug),
+                'active' => request()->routeIs('vuero.error.show') && request()->route('page') === $slug,
+                'icon' => 'x',
+            ])->values()->all()],
         ],
         'elements' => [
             ['label' => 'Forms', 'children' => [['label' => 'Inputs'], ['label' => 'Selects'], ['label' => 'Checkboxes']]],

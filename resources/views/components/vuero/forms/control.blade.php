@@ -1,6 +1,6 @@
-@props(['icon' => null])
+@props(['icon' => null, 'expanded' => false])
 
-<div {{ $attributes->class(['control', 'has-icon' => $icon]) }}>
+<div {{ $attributes->class(['control', 'has-icon' => $icon, 'is-expanded' => $expanded]) }}>
     {{ $slot }}
     @if ($icon)
         <span class="form-icon" aria-hidden="true">

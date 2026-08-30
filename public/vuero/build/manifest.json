@@ -33,28 +33,34 @@
       "_jquery-fde43e1f.js"
     ]
   },
-  "_form-layout-runtime-bb23840b.js": {
-    "file": "assets/form-layout-runtime-bb23840b.js",
+  "_form-layout-runtime-1bf49a63.js": {
+    "file": "assets/form-layout-runtime-1bf49a63.js",
     "imports": [
       "_jquery-fde43e1f.js"
     ]
   },
-  "_grid-cards-runtime-9e706c71.js": {
-    "file": "assets/grid-cards-runtime-9e706c71.js",
+  "_grid-cards-runtime-d5286e25.js": {
+    "file": "assets/grid-cards-runtime-d5286e25.js",
     "imports": [
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ]
   },
-  "_grid-tiles-runtime-1e832ffd.js": {
-    "file": "assets/grid-tiles-runtime-1e832ffd.js",
+  "_grid-tiles-runtime-3683ea99.js": {
+    "file": "assets/grid-tiles-runtime-3683ea99.js",
     "imports": [
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ]
   },
   "_jquery-fde43e1f.js": {
     "file": "assets/jquery-fde43e1f.js"
+  },
+  "_layout-pages-runtime-f80fedd6.js": {
+    "file": "assets/layout-pages-runtime-f80fedd6.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ]
   },
   "_lifestyle-e1f986e1.js": {
     "file": "assets/lifestyle-e1f986e1.js",
@@ -95,6 +101,32 @@
       "_jquery-fde43e1f.js"
     ]
   },
+  "_profile-layout-runtime-8e05429c.js": {
+    "file": "assets/profile-layout-runtime-8e05429c.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ]
+  },
+  "_projects-runtime-ad8f7f8f.js": {
+    "file": "assets/projects-runtime-ad8f7f8f.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ]
+  },
+  "_user-grids-runtime-e4eee495.js": {
+    "file": "assets/user-grids-runtime-e4eee495.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ]
+  },
+  "_utility-public-runtime-079c93c9.js": {
+    "file": "assets/utility-public-runtime-079c93c9.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ]
+  },
   "_widget-charts-3f6690cf.js": {
     "file": "assets/widget-charts-3f6690cf.js",
     "imports": [
@@ -130,12 +162,12 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-2299f0b7.css",
+    "file": "assets/app-b2b4a414.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
   "resources/js/vuero/app.js": {
-    "file": "assets/app-2a0efc5e.js",
+    "file": "assets/app-b4f6031c.js",
     "imports": [
       "_jquery-fde43e1f.js"
     ],
@@ -487,6 +519,24 @@
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/writer.js"
   },
+  "resources/js/vuero/pages/admin/layouts/action-page-v1.js": {
+    "file": "assets/action-page-v1-a52203fd.js",
+    "imports": [
+      "_layout-pages-runtime-f80fedd6.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/action-page-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/action-page-v2.js": {
+    "file": "assets/action-page-v2-08e3e0be.js",
+    "imports": [
+      "_layout-pages-runtime-f80fedd6.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/action-page-v2.js"
+  },
   "resources/js/vuero/pages/admin/layouts/flex-list-v1.js": {
     "file": "assets/flex-list-v1-7f98beb8.js",
     "imports": [
@@ -515,119 +565,129 @@
     "src": "resources/js/vuero/pages/admin/layouts/flex-list-v3.js"
   },
   "resources/js/vuero/pages/admin/layouts/form-layout-v1.js": {
-    "file": "assets/form-layout-v1-0372ca6f.js",
+    "file": "assets/form-layout-v1-053f7ffc.js",
     "imports": [
-      "_form-layout-runtime-bb23840b.js",
+      "_form-layout-runtime-1bf49a63.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/form-layout-v1.js"
   },
   "resources/js/vuero/pages/admin/layouts/form-layout-v2.js": {
-    "file": "assets/form-layout-v2-0ed09318.js",
+    "file": "assets/form-layout-v2-72b8c8a3.js",
     "imports": [
-      "_form-layout-runtime-bb23840b.js",
+      "_form-layout-runtime-1bf49a63.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/form-layout-v2.js"
   },
   "resources/js/vuero/pages/admin/layouts/form-layout-v3.js": {
-    "file": "assets/form-layout-v3-3c2cdf07.js",
+    "file": "assets/form-layout-v3-8b56d1e3.js",
     "imports": [
-      "_form-layout-runtime-bb23840b.js",
+      "_form-layout-runtime-1bf49a63.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/form-layout-v3.js"
   },
   "resources/js/vuero/pages/admin/layouts/form-layout-v4.js": {
-    "file": "assets/form-layout-v4-e3260dfa.js",
+    "file": "assets/form-layout-v4-e6e2e191.js",
     "imports": [
-      "_form-layout-runtime-bb23840b.js",
+      "_form-layout-runtime-1bf49a63.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/form-layout-v4.js"
   },
   "resources/js/vuero/pages/admin/layouts/form-layout-v5.js": {
-    "file": "assets/form-layout-v5-ab994e47.js",
+    "file": "assets/form-layout-v5-a73cfb2d.js",
     "imports": [
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/form-layout-v5.js"
   },
   "resources/js/vuero/pages/admin/layouts/grid-card-v1.js": {
-    "file": "assets/grid-card-v1-6de698b7.js",
+    "file": "assets/grid-card-v1-89e5183e.js",
     "imports": [
-      "_grid-cards-runtime-9e706c71.js",
+      "_grid-cards-runtime-d5286e25.js",
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/grid-card-v1.js"
   },
   "resources/js/vuero/pages/admin/layouts/grid-card-v2.js": {
-    "file": "assets/grid-card-v2-5a809740.js",
+    "file": "assets/grid-card-v2-933e043a.js",
     "imports": [
-      "_grid-cards-runtime-9e706c71.js",
+      "_grid-cards-runtime-d5286e25.js",
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/grid-card-v2.js"
   },
   "resources/js/vuero/pages/admin/layouts/grid-card-v3.js": {
-    "file": "assets/grid-card-v3-17f90174.js",
+    "file": "assets/grid-card-v3-728709f7.js",
     "imports": [
-      "_grid-cards-runtime-9e706c71.js",
+      "_grid-cards-runtime-d5286e25.js",
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/grid-card-v3.js"
   },
   "resources/js/vuero/pages/admin/layouts/grid-card-v4.js": {
-    "file": "assets/grid-card-v4-dc21d7ff.js",
+    "file": "assets/grid-card-v4-a701ed26.js",
     "imports": [
-      "_grid-cards-runtime-9e706c71.js",
+      "_grid-cards-runtime-d5286e25.js",
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/grid-card-v4.js"
   },
   "resources/js/vuero/pages/admin/layouts/grid-tile-v1.js": {
-    "file": "assets/grid-tile-v1-e900b39f.js",
+    "file": "assets/grid-tile-v1-5792adda.js",
     "imports": [
-      "_grid-tiles-runtime-1e832ffd.js",
+      "_grid-tiles-runtime-3683ea99.js",
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/grid-tile-v1.js"
   },
   "resources/js/vuero/pages/admin/layouts/grid-tile-v2.js": {
-    "file": "assets/grid-tile-v2-f323f8e0.js",
+    "file": "assets/grid-tile-v2-0c3c493d.js",
     "imports": [
-      "_grid-tiles-runtime-1e832ffd.js",
+      "_grid-tiles-runtime-3683ea99.js",
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/grid-tile-v2.js"
   },
   "resources/js/vuero/pages/admin/layouts/grid-tile-v3.js": {
-    "file": "assets/grid-tile-v3-89b95280.js",
+    "file": "assets/grid-tile-v3-a7e1b633.js",
     "imports": [
-      "_grid-tiles-runtime-1e832ffd.js",
+      "_grid-tiles-runtime-3683ea99.js",
       "_jquery-fde43e1f.js",
-      "_form-layout-runtime-bb23840b.js"
+      "_form-layout-runtime-1bf49a63.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/grid-tile-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/kanban-board.js": {
+    "file": "assets/kanban-board-20a495f2.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_projects-runtime-ad8f7f8f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/kanban-board.js"
   },
   "resources/js/vuero/pages/admin/layouts/list-datatable-v1.js": {
     "file": "assets/list-datatable-v1-f3e83eb1.js",
@@ -691,6 +751,26 @@
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/list-view-v4.js"
   },
+  "resources/js/vuero/pages/admin/layouts/onboarding-page.js": {
+    "file": "assets/onboarding-page-209e29c3.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_projects-runtime-ad8f7f8f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/onboarding-page.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/onboarding-welcome.js": {
+    "file": "assets/onboarding-welcome-209e29c3.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_projects-runtime-ad8f7f8f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/onboarding-welcome.js"
+  },
   "resources/js/vuero/pages/admin/layouts/placeload-v1.js": {
     "file": "assets/placeload-v1-2951fc68.js",
     "imports": [
@@ -727,6 +807,167 @@
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/layouts/placeload-v4.js"
   },
+  "resources/js/vuero/pages/admin/layouts/profile-edit.js": {
+    "file": "assets/profile-edit-2fd95bea.js",
+    "imports": [
+      "_form-layout-runtime-1bf49a63.js",
+      "_profile-layout-runtime-8e05429c.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/profile-edit.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/profile-notifications.js": {
+    "file": "assets/profile-notifications-12e07617.js",
+    "imports": [
+      "_profile-layout-runtime-8e05429c.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/profile-notifications.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/profile-view.js": {
+    "file": "assets/profile-view-0adff8a1.js",
+    "imports": [
+      "_profile-layout-runtime-8e05429c.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/profile-view.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/project-details.js": {
+    "file": "assets/project-details-bdf450d7.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_projects-runtime-ad8f7f8f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/project-details.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/projects-v1.js": {
+    "file": "assets/projects-v1-26b3152c.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_projects-runtime-ad8f7f8f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/projects-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/projects-v2.js": {
+    "file": "assets/projects-v2-03d4710b.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_projects-runtime-ad8f7f8f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/projects-v2.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/projects-v3.js": {
+    "file": "assets/projects-v3-b018235a.js",
+    "imports": [
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/projects-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/saas-billing.js": {
+    "file": "assets/saas-billing-31cc7d0b.js",
+    "imports": [
+      "_layout-pages-runtime-f80fedd6.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/saas-billing.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/search-empty.js": {
+    "file": "assets/search-empty-63930a36.js",
+    "imports": [
+      "_profile-layout-runtime-8e05429c.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/search-empty.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/search-results.js": {
+    "file": "assets/search-results-a6e07dc9.js",
+    "imports": [
+      "_profile-layout-runtime-8e05429c.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/search-results.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/user-grid-v1.js": {
+    "file": "assets/user-grid-v1-bb249924.js",
+    "imports": [
+      "_user-grids-runtime-e4eee495.js",
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/user-grid-v1.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/user-grid-v2.js": {
+    "file": "assets/user-grid-v2-f783cb1d.js",
+    "imports": [
+      "_user-grids-runtime-e4eee495.js",
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/user-grid-v2.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/user-grid-v3.js": {
+    "file": "assets/user-grid-v3-c1c730b6.js",
+    "imports": [
+      "_user-grids-runtime-e4eee495.js",
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/user-grid-v3.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/user-grid-v4.js": {
+    "file": "assets/user-grid-v4-2bd31ee6.js",
+    "imports": [
+      "_user-grids-runtime-e4eee495.js",
+      "_jquery-fde43e1f.js",
+      "_form-layout-runtime-1bf49a63.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/user-grid-v4.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/utility-account-confirm.js": {
+    "file": "assets/utility-account-confirm-b7159121.js",
+    "imports": [
+      "_layout-pages-runtime-f80fedd6.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/utility-account-confirm.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/utility-invoice.js": {
+    "file": "assets/utility-invoice-db28c95b.js",
+    "imports": [
+      "_layout-pages-runtime-f80fedd6.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/utility-invoice.js"
+  },
+  "resources/js/vuero/pages/admin/layouts/utility-promotion.js": {
+    "file": "assets/utility-promotion-a9e6d190.js",
+    "imports": [
+      "_layout-pages-runtime-f80fedd6.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/admin/layouts/utility-promotion.js"
+  },
   "resources/js/vuero/pages/admin/profile-settings.js": {
     "file": "assets/profile-settings-52e09422.js",
     "imports": [
@@ -758,5 +999,31 @@
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/auth/login.js"
+  },
+  "resources/js/vuero/pages/error/error-page.js": {
+    "file": "assets/error-page-752e1841.js",
+    "imports": [
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/error/error-page.js"
+  },
+  "resources/js/vuero/pages/utility-roadmap.js": {
+    "file": "assets/utility-roadmap-8040a133.js",
+    "imports": [
+      "_utility-public-runtime-079c93c9.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/utility-roadmap.js"
+  },
+  "resources/js/vuero/pages/utility-status.js": {
+    "file": "assets/utility-status-b4342203.js",
+    "imports": [
+      "_utility-public-runtime-079c93c9.js",
+      "_jquery-fde43e1f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/utility-status.js"
   }
 }

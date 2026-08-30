@@ -1,0 +1,353 @@
+/* Subpages: SaaS Billing, Action Page V1/V2 */
+
+.layout-page { width: 100%; opacity: 0; transform: translateY(4px); transition: opacity .22s ease, transform .22s ease; }
+.layout-page.is-ready { opacity: 1; transform: none; }
+
+.layout-page .flex-avatar.is-big { width: 80px; min-width: 80px; height: 80px; }
+.layout-page .flex-avatar.is-big .flex-avatar__badge { right: auto; bottom: 0; inset-inline-end: 0; width: 28px; height: 28px; border-width: 2.4px; }
+.layout-page .flex-avatar.is-large { width: 68px; min-width: 68px; height: 68px; }
+.layout-page .flex-avatar.is-large.is-squared .flex-avatar__image { border-radius: 16px; }
+.layout-page .flex-avatar.is-large .flex-avatar__badge { bottom: 22px; inset-inline-end: -12px; width: 22px; height: 22px; }
+
+.layout-switch-block { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; cursor: pointer; }
+.layout-switch-block + .layout-switch-block { margin-top: 10px; }
+.layout-switch-block__input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.layout-switch-block__track { position: relative; display: inline-block; order: 2; width: 46px; min-width: 46px; height: 26px; background: #e6e6e6; border-radius: 23px; transition: background .3s linear; }
+.layout-switch-block__track::before { content: ''; position: absolute; inset-inline-start: 2px; top: 2px; width: 42px; height: 22px; background: var(--surface-raised); border-radius: 11px; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); transition: transform .25s linear; }
+.layout-switch-block__track::after { content: ''; position: absolute; inset-inline-start: 2px; top: 2px; width: 22px; height: 22px; background: var(--surface-raised); border-radius: 11px; box-shadow: 0 2px 2px rgb(0 0 0 / 24%); transition: transform .2s ease-in-out; }
+.layout-switch-block__input:checked + .layout-switch-block__track { background: var(--primary); }
+.layout-switch-block__input:checked + .layout-switch-block__track::before { transform: translate3d(18px, 0, 0) scale3d(0, 0, 0); }
+.layout-switch-block__input:checked + .layout-switch-block__track::after { transform: translate3d(20px, 0, 0); }
+.layout-switch-block__input:focus-visible + .layout-switch-block__track { outline: 2px solid var(--primary); outline-offset: 2px; }
+.layout-switch-block__label { order: 1; flex: 1 1 auto; color: var(--text); font-size: 13px; }
+
+.layout-radio-group { display: grid; gap: 10px; }
+.layout-radio { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-soft); font-size: 14px; }
+.layout-radio input { accent-color: var(--primary); width: 16px; height: 16px; margin: 0; }
+
+/* Credit card */
+.card-container { width: 100%; height: 170px; padding: 20px 0; perspective: 1000px; }
+.card-container .creditcard { position: relative; width: 100%; max-width: 260px; height: 100%; margin: 0 auto; transform-style: preserve-3d; transition: transform .6s; cursor: pointer; }
+.card-container .creditcard.is-flipped { transform: rotateY(180deg); }
+.card-container .creditcard .front,
+.card-container .creditcard .back { position: absolute; inset: 0; width: 100%; max-width: 260px; backface-visibility: hidden; color: #47525d; }
+.card-container .creditcard .back { transform: rotateY(180deg); }
+.card-container svg#cardfront,
+.card-container svg#cardback { display: block; width: 100%; height: auto; box-shadow: var(--shadow-sm); border-radius: 18px; }
+.card-container #cardfront .st2 { fill: #fff; }
+.card-container #cardfront .st3,
+.card-container #cardfront .st5,
+.card-container #cardfront .st6,
+.card-container #cardfront .st9,
+.card-container #cardfront .st10 { font-family: 'Roboto Mono', monospace; }
+.card-container #cardfront .st4 { font-size: 54px; font-weight: 600; }
+.card-container #cardfront .st6 { font-size: 33px; }
+.card-container #cardfront .st7 { opacity: .6; fill: #fff; }
+.card-container #cardfront .st8 { font-size: 24px; }
+.card-container #cardfront .st9 { font-size: 36px; }
+.card-container #cardfront .st12 { fill: #4c4c4c; }
+.card-container #cardback .st2 { fill: #111; }
+.card-container #cardback .st3 { fill: #f2f2f2; }
+.card-container #cardback .st4 { fill: #d8d2db; }
+.card-container #cardback .st5 { fill: #c4c4c4; }
+.card-container #cardback .st6,
+.card-container #cardback .st7 { font-family: 'Roboto Mono', monospace; font-size: 27px; }
+.card-container #cardback .st9 { fill: #fff; }
+.card-container #cardback .st10 { font-size: 24px; }
+.card-container #cardback .st11 { fill: #eaeaea; }
+.card-container #cardback .st12,
+.card-container #cardback .st13 { font-family: 'Roboto Mono', monospace; font-size: 37px; }
+.card-container #ccsingle { position: absolute; inset-inline-end: 15px; top: 20px; z-index: 2; }
+.card-container #ccsingle svg { width: 100px; max-height: 60px; }
+.card-container .lightblue { fill: #03a9f4; }
+.card-container .lightbluedark { fill: #0288d1; }
+.card-container .red { fill: #ef5350; }
+.card-container .reddark { fill: #d32f2f; }
+.card-container .purple { fill: #ab47bc; }
+.card-container .purpledark { fill: #7b1fa2; }
+.card-container .cyan { fill: #26c6da; }
+.card-container .cyandark { fill: #0097a7; }
+.card-container .green { fill: #66bb6a; }
+.card-container .greendark { fill: #388e3c; }
+.card-container .lime { fill: #d4e157; }
+.card-container .limedark { fill: #afb42b; }
+.card-container .yellow { fill: #ffeb3b; }
+.card-container .yellowdark { fill: #f9a825; }
+.card-container .orange { fill: #ff9800; }
+.card-container .orangedark { fill: #ef6c00; }
+.card-container .grey { fill: #bdbdbd; }
+.card-container .greydark { fill: #616161; }
+
+/* SaaS Billing */
+.saas-billing-wrapper { max-width: 980px; margin: 0 auto; }
+.saas-billing-wrapper .plans-wrapper { display: flex; align-items: center; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.saas-billing-wrapper .plans-wrapper > .left { width: 50%; }
+.saas-billing-wrapper .plans-wrapper > .right { width: 45%; padding: 20px 0; margin-inline-start: auto; }
+.saas-billing-wrapper .inner-wrap > h3 { margin: 0 0 10px; color: var(--text); font-family: var(--font-alt); font-size: 1.1rem; font-weight: 600; }
+.saas-billing-wrapper .plans { display: flex; flex-wrap: wrap; margin-inline: -8px; }
+.saas-billing-wrapper .plan { position: relative; width: calc(50% - 16px); max-width: calc(50% - 16px); margin: 8px; }
+.saas-billing-wrapper .plan input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.saas-billing-wrapper .plan-inner { display: flex; width: 100%; align-items: center; padding: 16px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; box-shadow: none; transition: border-color .3s ease, box-shadow .3s ease; }
+.saas-billing-wrapper .plan input:checked + .plan-inner { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+.saas-billing-wrapper .plan-inner img { display: block; width: 32px; min-width: 32px; height: 32px; filter: grayscale(1); opacity: .6; pointer-events: none; transition: filter .3s ease, opacity .3s ease; }
+.saas-billing-wrapper .plan input:checked + .plan-inner img { filter: grayscale(0); opacity: 1; }
+.saas-billing-wrapper .plan-inner .meta { margin-inline-start: 12px; line-height: 1.3; min-width: 0; }
+.saas-billing-wrapper .plan-inner .meta span { display: block; font-family: var(--font); }
+.saas-billing-wrapper .plan-inner .meta span:first-child { color: var(--text); font-family: var(--font-alt); font-size: .95rem; font-weight: 600; }
+.saas-billing-wrapper .plan-inner .meta span:nth-child(2) { color: var(--muted); font-size: .85rem; }
+.saas-billing-wrapper .plan-inner .checkmark { display: none; width: 32px; min-width: 32px; height: 32px; margin-inline-start: auto; align-items: center; justify-content: center; color: #41c38d; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 50%; box-shadow: var(--shadow-sm); }
+.saas-billing-wrapper .plan-inner .checkmark .ui-icon { width: 16px; height: 16px; stroke-width: 3; }
+.saas-billing-wrapper .plan input:checked + .plan-inner .checkmark { display: flex; }
+
+.saas-billing-wrapper .plan-description { display: flex; align-items: center; }
+.saas-billing-wrapper .plan-description > .left { max-width: 200px; }
+.saas-billing-wrapper .plan-description > .left img { width: 160px; min-width: 160px; height: 160px; margin: 0 auto; }
+.saas-billing-wrapper .plan-description > .left .light-image { display: block !important; }
+.saas-billing-wrapper .plan-description > .left .dark-image { display: none !important; }
+:root[data-theme='dark'] .saas-billing-wrapper .plan-description > .left .light-image { display: none !important; }
+:root[data-theme='dark'] .saas-billing-wrapper .plan-description > .left .dark-image { display: block !important; }
+.saas-billing-wrapper .plan-description > .right { flex-grow: 2; }
+.saas-billing-wrapper .plan-pricing { padding: 5px 0 10px; font-family: var(--font); line-height: 1.3; }
+.saas-billing-wrapper .plan-pricing span { display: block; font-family: var(--font-alt); font-size: .9rem; font-weight: 500; color: var(--primary); }
+.saas-billing-wrapper .plan-pricing span:first-child { color: var(--text); }
+.saas-billing-wrapper .plan-pricing span:first-child strong { font-size: 2rem; font-family: var(--font); font-weight: 600; }
+.saas-billing-wrapper .plan-moto p { margin: 0; font-size: .9rem; color: var(--text-soft); line-height: 1.45; }
+.saas-billing-wrapper .plan-summary { margin-top: 12px; }
+.saas-billing-wrapper .plan-summary > p { margin: 0 0 12px; font-size: .9rem; color: var(--text-soft); line-height: 1.45; }
+.saas-billing-wrapper .plan-features .columns { display: flex; flex-wrap: wrap; margin: -0.35rem; }
+.saas-billing-wrapper .plan-features .column { flex: none; width: 50%; padding: 0.35rem; }
+.saas-billing-wrapper .plan-features .content ul { margin: 0; padding-inline-start: 1.15em; color: var(--text); font-family: var(--font-alt); font-size: .95rem; line-height: 1.7; list-style: disc; }
+.saas-billing-wrapper .plan-features .content li { margin-bottom: 2px; }
+
+.saas-billing-wrapper .billing-options-wrapper { display: flex; align-items: flex-start; }
+.saas-billing-wrapper .billing-options-wrapper > .left { width: 50%; }
+.saas-billing-wrapper .billing-options-wrapper > .right { width: 45%; margin-inline-start: auto; }
+.saas-billing-wrapper .option-block { margin-bottom: 20px; padding: 20px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-sm); }
+.saas-billing-wrapper .block-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
+.saas-billing-wrapper .block-header h3 { margin: 0; color: var(--text); font-family: var(--font-alt); font-size: 1rem; font-weight: 600; }
+.saas-billing-wrapper .block-header span,
+.saas-billing-wrapper .block-header a { color: var(--muted); font-family: var(--font); font-size: 13px; text-decoration: none; }
+.saas-billing-wrapper .block-header a:hover,
+.saas-billing-wrapper .block-header a:focus-visible { color: var(--primary); outline: none; }
+.saas-billing-wrapper .block-body.is-seats { display: flex; align-items: center; padding-bottom: 10px; }
+.saas-billing-wrapper .block-body.is-seats .flex-avatar { margin-inline-end: 8px; }
+.saas-billing-wrapper .add-seat { display: flex; width: 40px; min-width: 40px; height: 40px; margin-inline-start: 4px; align-items: center; justify-content: center; color: var(--muted); background: none; border: 1.6px dashed var(--muted); border-radius: 50%; cursor: pointer; padding: 0; transition: color .3s ease, border-color .3s ease; }
+.saas-billing-wrapper .add-seat:hover,
+.saas-billing-wrapper .add-seat:focus-visible { color: var(--primary); border-color: var(--primary); border-style: solid; outline: none; }
+.saas-billing-wrapper .option-block .switch-block { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+.saas-billing-wrapper .option-block .switch-block > label:first-child { flex: 1 1 auto; color: var(--text); font-size: 13px; }
+.saas-billing-wrapper .option-block .form-switch { position: relative; display: inline-block; flex-shrink: 0; cursor: pointer; }
+.saas-billing-wrapper .option-block .form-switch.is-primary input:checked + i { background-color: var(--primary); }
+.saas-billing-wrapper .option-block .form-switch i { position: relative; display: inline-block; width: 46px; height: 26px; background: #e6e6e6; border-radius: 23px; vertical-align: text-bottom; transition: background .3s linear; }
+.saas-billing-wrapper .option-block .form-switch i::before { content: ''; position: absolute; inset-inline-start: 0; width: 42px; height: 22px; background: var(--surface-raised); border-radius: 11px; transform: translate3d(2px, 2px, 0); transition: transform .25s linear; }
+.saas-billing-wrapper .option-block .form-switch i::after { content: ''; position: absolute; inset-inline-start: 0; width: 22px; height: 22px; background: var(--surface-raised); border-radius: 11px; box-shadow: 0 2px 2px rgb(0 0 0 / 24%); transform: translate3d(2px, 2px, 0); transition: transform .2s ease-in-out; }
+.saas-billing-wrapper .option-block .form-switch input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.saas-billing-wrapper .option-block .form-switch input:checked + i::before { transform: translate3d(18px, 2px, 0) scale3d(0, 0, 0); }
+.saas-billing-wrapper .option-block .form-switch input:checked + i::after { transform: translate3d(22px, 2px, 0); }
+
+.saas-billing-wrapper .payment-form { padding: 20px 30px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; }
+.saas-billing-wrapper .form-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.saas-billing-wrapper .form-header h3 { margin: 0; color: var(--text); font-family: var(--font-alt); font-size: 1rem; font-weight: 600; }
+.saas-billing-wrapper .form-header [data-billing-randomize] { color: var(--muted); font-family: var(--font); font-size: 13px; cursor: pointer; user-select: none; }
+.saas-billing-wrapper .form-header [data-billing-randomize]:hover,
+.saas-billing-wrapper .form-header [data-billing-randomize]:focus-visible { color: var(--primary); outline: none; }
+.saas-billing-wrapper .form-container { max-width: 330px; margin: 0 auto; padding: 30px 0 20px; color: #707070; }
+.saas-billing-wrapper .form-container .columns { display: flex; flex-wrap: wrap; margin: 0 -0.75rem; }
+.saas-billing-wrapper .form-container .column { flex: none; padding: 0.25rem 0.75rem; }
+.saas-billing-wrapper .form-container .column.is-12 { width: 100%; }
+.saas-billing-wrapper .form-container .column.is-6 { width: 50%; }
+.saas-billing-wrapper .form-container .field { margin-bottom: 0; }
+.saas-billing-wrapper .form-container label { display: block; margin-bottom: 6px; color: var(--text-soft); font-size: 13px; font-weight: 500; }
+.saas-billing-wrapper .form-container .input { width: 100%; min-height: 38px; padding: 8px 12px; color: var(--text); background: var(--surface-raised); border: 1px solid var(--border); border-radius: 4px; font-family: var(--font); font-size: 13px; }
+.saas-billing-wrapper .form-container .input:focus { border-color: var(--primary); outline: none; box-shadow: 0 3px 10px rgb(var(--primary-rgb) / 10%); }
+.saas-billing-wrapper .form-container .control { position: relative; }
+.saas-billing-wrapper .creditcardIcon { position: absolute; inset-inline-end: -2px; top: 4px; pointer-events: none; }
+.saas-billing-wrapper .creditcardIcon svg { width: 60px; height: 30px; }
+.saas-billing-wrapper .button-wrap { padding-top: 16px; }
+.saas-billing-wrapper .v-button { display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; font-family: var(--font); font-size: 14px; font-weight: 500; }
+.saas-billing-wrapper .v-button.is-fullwidth { width: 100%; min-height: 50px; }
+.saas-billing-wrapper .v-button.is-primary.is-raised { color: #fff; background: var(--primary); border: 1px solid var(--primary); box-shadow: 0 8px 18px rgb(var(--primary-rgb) / 22%); }
+.saas-billing-wrapper .v-button.is-primary.is-raised:hover { background: var(--primary-hover, var(--primary)); }
+.saas-billing-wrapper .v-button.is-loading { opacity: .75; pointer-events: none; }
+
+:root[data-theme='dark'] .saas-billing-wrapper .plans-wrapper { border-color: var(--border); }
+:root[data-theme='dark'] .saas-billing-wrapper .plan-inner,
+:root[data-theme='dark'] .saas-billing-wrapper .option-block,
+:root[data-theme='dark'] .saas-billing-wrapper .payment-form { background: var(--surface); border-color: var(--border); }
+:root[data-theme='dark'] .saas-billing-wrapper .plan input:checked + .plan-inner { border-color: var(--primary); }
+:root[data-theme='dark'] .saas-billing-wrapper .plan-inner .checkmark { background: var(--surface-soft); border-color: var(--border); }
+:root[data-theme='dark'] .saas-billing-wrapper .plan-pricing span:first-child { color: var(--text); }
+:root[data-theme='dark'] .saas-billing-wrapper .plan-features .content ul { color: var(--text); }
+:root[data-theme='dark'] .saas-billing-wrapper .form-container .input { background: var(--surface-soft); }
+:root[data-theme='dark'] .saas-billing-wrapper .block-header a:hover { color: var(--primary); }
+:root[data-theme='dark'] .saas-billing-wrapper .form-header [data-billing-randomize]:hover { color: var(--primary); }
+
+/* Action pages — match Vuero ActionPageV1 / ActionPageV2 */
+.action-page-wrapper { display: flex; width: 100%; min-height: 560px; margin: 0 auto; align-items: center; justify-content: center; }
+.action-page-wrapper.action-page-v1 { max-width: 540px; }
+.action-page-wrapper.action-page-v2 { max-width: 840px; }
+.action-page-wrapper .wrapper-outer {
+    display: flex;
+    width: 100%;
+    padding: 0;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-large);
+    box-shadow: var(--light-box-shadow);
+    transition: all .3s;
+}
+.action-page-wrapper.action-page-v1 .action-box {
+    display: inline-block;
+    width: 100%;
+    padding: 40px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-large);
+    box-shadow: var(--light-box-shadow);
+    transition: all .3s;
+}
+.action-page-wrapper .wrapper-inner .action-box { padding: 40px; }
+.action-page-wrapper { font-family: var(--font); color: var(--dark-text); }
+.action-page-wrapper .box-content { text-align: center; font-family: var(--font); }
+.action-page-wrapper .box-content > .flex-avatar { display: block; margin: 0 auto 8px; }
+.action-page-wrapper .box-content h3 {
+    max-width: 320px;
+    margin: 0 auto 16px;
+    color: var(--dark-text);
+    font-family: var(--font-alt);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+.action-page-wrapper .box-content h3 span,
+.action-page-wrapper .box-content h3 .is-dark-primary { color: var(--primary); }
+.action-page-wrapper p {
+    margin: 0;
+    color: var(--light-text);
+    font-family: var(--font);
+    font-weight: 300;
+    line-height: 1.6;
+}
+.action-page-wrapper .sender-message {
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: start;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-large);
+    box-shadow: var(--light-box-shadow);
+}
+.action-page-wrapper .sender-message h4 {
+    margin: 0 0 6px;
+    color: var(--dark-text);
+    font-family: var(--font-alt);
+    font-size: .7rem;
+    font-weight: 500;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+.action-page-wrapper .sender-message p { font-size: .9rem; }
+.action-page-wrapper .people-wrap .people { display: flex; justify-content: center; padding: 16px 0 8px; }
+.action-page-wrapper .people-wrap .people .flex-avatar { margin: 0 4px; }
+.action-page-wrapper .people-wrap .people .flex-avatar.is-small { width: 32px; min-width: 32px; height: 32px; }
+.action-page-wrapper .people-wrap .people-text p { font-size: .9rem; }
+.action-page-wrapper .buttons { display: flex; justify-content: center; padding-top: 30px; margin: 0 auto; }
+.action-page-wrapper .buttons .v-button { margin: 0 4px; }
+.action-page-wrapper .v-button { display: inline-flex; min-width: 150px; min-height: 38px; align-items: center; justify-content: center; padding: 0 18px; border-radius: var(--radius); cursor: pointer; font-family: var(--font); font-size: .9rem; font-weight: 500; transition: border-color .2s ease, box-shadow .2s ease, color .2s ease, background .2s ease; }
+.action-page-wrapper .v-button.is-primary.is-raised { color: #fff; background: var(--primary); border: 1px solid var(--primary); box-shadow: 0 14px 26px -12px rgb(var(--primary-rgb) / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(var(--primary-rgb) / 20%); }
+.action-page-wrapper .v-button.is-dark-outlined { color: var(--text-soft); background: var(--surface-raised); border: 1px solid var(--border); }
+.action-page-wrapper .v-button.is-dark-outlined:hover { color: var(--primary); border-color: var(--primary); }
+.action-page-wrapper .v-button.is-primary.is-raised:hover { filter: brightness(1.02); }
+.action-page-wrapper .v-button.is-loading { opacity: .75; pointer-events: none; }
+.action-page-wrapper.action-page-v2 .wrapper-inner .action-box { border: 0; background: none; border-radius: 0; box-shadow: none; border-inline-end: 1px solid var(--border); }
+.action-page-wrapper .side-wrapper { flex-grow: 2; padding: 40px; }
+.action-page-wrapper .side-title { margin-bottom: 16px; font-family: var(--font); }
+.action-page-wrapper .side-title h3 {
+    margin: 0;
+    color: var(--dark-text);
+    font-family: var(--font-alt);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+.action-page-wrapper .side-title p { font-size: .9rem; }
+.action-page-wrapper .action-list { width: 100%; }
+.action-page-wrapper .action-list .layout-media-block.media-flex { display: flex; width: 100%; margin-bottom: 1rem; align-items: flex-start; text-align: start; }
+.action-page-wrapper .action-list .layout-media-block.media-flex:last-child { margin-bottom: 0; }
+.action-page-wrapper .action-list .layout-media-block .icon-wrap { display: flex; width: 32px; min-width: 32px; height: 32px; align-items: center; justify-content: center; color: var(--primary); background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-rounded, 9999px); box-shadow: var(--light-box-shadow); }
+.action-page-wrapper .action-list .layout-media-block .icon-wrap .ui-icon { width: 16px; height: 16px; stroke-width: 3px; }
+.action-page-wrapper .action-list .layout-media-block .flex-meta { margin-inline-start: 12px; line-height: 1.3; }
+.action-page-wrapper .action-list .layout-media-block .flex-meta span {
+    display: block;
+    color: var(--dark-text);
+    font-family: var(--font-alt);
+    font-size: .9rem;
+    font-weight: 400;
+}
+.action-page-wrapper .action-list .layout-media-block .flex-meta p { max-width: 240px; font-size: .9rem; }
+
+.layout-media-block.media-flex { display: flex; width: 100%; margin-bottom: 1rem; align-items: flex-start; text-align: start; }
+.layout-media-block.media-flex:last-child { margin-bottom: 0; }
+.layout-media-block .icon-wrap { display: flex; width: 32px; min-width: 32px; height: 32px; align-items: center; justify-content: center; color: var(--primary); background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-rounded, 9999px); box-shadow: var(--light-box-shadow); }
+.layout-media-block .icon-wrap .ui-icon { width: 16px; height: 16px; stroke-width: 3px; }
+.layout-media-block .flex-meta { margin-inline-start: 12px; line-height: 1.3; }
+.layout-media-block .flex-meta span { display: block; color: var(--dark-text); font-family: var(--font-alt); font-size: .9rem; font-weight: 400; }
+.layout-media-block .flex-meta p { max-width: 240px; margin: 0; color: var(--light-text); font-family: var(--font); font-size: .9rem; font-weight: 300; line-height: 1.6; }
+
+:root[data-theme='dark'] .action-page-wrapper .dark-inverted { color: var(--dark-dark-text); }
+:root[data-theme='dark'] .action-page-wrapper .box-content h3 .is-dark-primary { color: var(--primary); }
+
+:root[data-theme='dark'] .action-page-wrapper.action-page-v1 .action-box,
+:root[data-theme='dark'] .action-page-wrapper .wrapper-outer { background: var(--surface-raised); border-color: var(--border); }
+:root[data-theme='dark'] .action-page-wrapper .sender-message { background: var(--surface-soft); border-color: var(--border); }
+:root[data-theme='dark'] .action-page-wrapper.action-page-v2 .wrapper-inner .action-box { background: none; border-color: var(--border); box-shadow: none; }
+:root[data-theme='dark'] .action-page-wrapper .action-list .layout-media-block .icon-wrap,
+:root[data-theme='dark'] .layout-media-block .icon-wrap { background: var(--surface-soft); border-color: var(--border); color: var(--primary); }
+
+@media (max-width: 767px) {
+    .saas-billing-wrapper .plans-wrapper,
+    .saas-billing-wrapper .billing-options-wrapper { flex-direction: column; }
+    .saas-billing-wrapper .plans-wrapper > .left,
+    .saas-billing-wrapper .plans-wrapper > .right,
+    .saas-billing-wrapper .billing-options-wrapper > .left,
+    .saas-billing-wrapper .billing-options-wrapper > .right { width: 100%; max-width: 100%; }
+    .saas-billing-wrapper .plan-inner { position: relative; flex-direction: column; text-align: center; }
+    .saas-billing-wrapper .plan-inner .meta { margin-inline-start: 0; margin-top: 8px; }
+    .saas-billing-wrapper .plan-inner .checkmark { position: absolute; top: 10px; inset-inline-end: 10px; margin: 0; }
+    .saas-billing-wrapper .plan-description { flex-direction: column; text-align: center; }
+    .saas-billing-wrapper .plan-features .columns { display: flex; }
+    .saas-billing-wrapper .form-container .column.is-6 { width: 100%; }
+    .action-page-wrapper.action-page-v1 .action-box { padding: 20px; }
+    .action-page-wrapper .wrapper-outer { flex-direction: column; }
+    .action-page-wrapper.action-page-v2 .wrapper-inner .action-box { padding: 20px 20px 40px; border-inline-end: 0; border-bottom: 1px solid var(--border); }
+    .action-page-wrapper .side-wrapper { padding: 40px 20px; }
+    .action-page-wrapper .v-button { min-width: 130px; }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    .saas-billing-wrapper { max-width: 690px; }
+    .saas-billing-wrapper .plans-wrapper,
+    .saas-billing-wrapper .billing-options-wrapper { flex-direction: column; }
+    .saas-billing-wrapper .plans-wrapper > .left,
+    .saas-billing-wrapper .plans-wrapper > .right,
+    .saas-billing-wrapper .billing-options-wrapper > .left,
+    .saas-billing-wrapper .billing-options-wrapper > .right { width: 100%; max-width: 100%; }
+    .saas-billing-wrapper .plan-inner { position: relative; flex-direction: column; text-align: center; }
+    .saas-billing-wrapper .plan-inner .meta { margin-inline-start: 0; margin-top: 8px; }
+    .saas-billing-wrapper .plan-inner .checkmark { position: absolute; top: 10px; inset-inline-end: 10px; margin: 0; }
+    .saas-billing-wrapper .plan-features .columns { display: flex; }
+    .action-page-wrapper .v-button { min-width: 130px; }
+    .action-page-wrapper.action-page-v2 .wrapper-inner .action-box { padding: 30px; }
+    .action-page-wrapper .side-wrapper { padding: 30px; }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .saas-billing-wrapper .plan-inner { position: relative; }
+    .saas-billing-wrapper .plan-inner .checkmark { position: absolute; top: 10px; inset-inline-end: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .layout-page { opacity: 1; transform: none; transition: none; }
+    .card-container .creditcard { transition: none; }
+}

@@ -1,0 +1,34 @@
+/* Onboarding layouts (Vuero 2.7) */
+.onboarding-layout { padding: 20px 0; }
+.onboarding-layout .title-wrap { text-align: center; margin-bottom: 10px; }
+.onboarding-layout .title-wrap h2 { font-family: var(--font-alt); font-weight: 600; font-size: 1.4rem; color: var(--text); margin: 0 0 8px; }
+.onboarding-layout .title-wrap p { text-transform: uppercase; font-family: var(--font); font-size: 0.85rem; color: var(--text-soft); margin: 0; }
+
+.standard-onboarding .onboarding-wrap { padding: 30px 0; }
+.standard-onboarding .onboarding-wrap-inner,
+.onboarding-wrapper .onboarding-wrap-inner { display: flex; max-width: 880px; margin: 0 auto; gap: 0; }
+.onboarding-wrapper .onboarding-wrap-inner { max-width: 800px; }
+
+.onboarding-card { margin: 8px; width: calc(33.333% - 16px); text-align: center; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-large); padding: 24px 20px; }
+.onboarding-wrapper .onboarding-card { padding: 0; overflow: hidden; }
+.onboarding-wrapper .onboarding-card > img { display: block; width: 100%; margin: 0 auto; }
+.onboarding-wrapper .onboarding-content { padding: 0 20px 30px; }
+.onboarding-card > img { display: block; width: 100%; max-width: 140px; margin: 0 auto 12px; }
+.onboarding-card h3 { font-family: var(--font-alt); font-size: 1.1rem; font-weight: 600; color: var(--text); margin: 0 0 12px; }
+.onboarding-card p { font-family: var(--font); font-size: 0.95rem; color: var(--text-soft); margin: 0; }
+.onboarding-card .button-wrap { text-align: center; padding: 30px 0 10px; }
+.onboarding-wrapper .onboarding-card .button-wrap { padding: 20px 0 0; }
+.onboarding-card .button-wrap .v-button { min-width: 140px; }
+
+html[data-theme='dark'] .onboarding-card { background: var(--surface-raised); border-color: var(--border); }
+
+@media (max-width: 767px) {
+    .standard-onboarding .onboarding-wrap-inner,
+    .onboarding-wrapper .onboarding-wrap-inner { flex-wrap: wrap; }
+    .onboarding-card { min-width: calc(100% - 16px) !important; width: calc(100% - 16px); }
+    .onboarding-layout .title-wrap h2 { max-width: 280px; margin-inline: auto; }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    .onboarding-layout .title-wrap h2 { max-width: 280px; margin-inline: auto; }
+}

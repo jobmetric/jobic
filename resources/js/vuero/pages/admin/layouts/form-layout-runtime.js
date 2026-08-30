@@ -71,6 +71,7 @@ export const initFormMultiselects = ($root) => {
                 }
             }
 
+            $select.trigger('multiselect:change', [{ value, label, icon }]);
             closeMultiselect($select);
         });
 

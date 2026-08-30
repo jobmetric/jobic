@@ -76,45 +76,64 @@
 .form-layout .control.has-icon .input:focus + .form-icon { color: var(--primary); }
 .form-layout .control { position: relative; }
 
-/* Vueform-style multiselect (Vuero Form Layouts) */
+/* Vueform-style multiselect (Vuero Form Layouts + Profile Edit) */
 .form-layout .multiselect,
-.stepper-form .multiselect { position: relative; width: 100%; font-family: var(--font); cursor: pointer; outline-offset: 0; }
+.stepper-form .multiselect,
+.account-box.is-form .multiselect { position: relative; width: 100%; font-family: var(--font); cursor: pointer; outline-offset: 0; }
 .form-layout .multiselect-wrapper,
-.stepper-form .multiselect-wrapper { position: relative; display: flex; min-height: 38px; align-items: center; justify-content: flex-end; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 4px; transition: border-color .2s ease, box-shadow .2s ease; }
+.stepper-form .multiselect-wrapper,
+.account-box.is-form .multiselect-wrapper { position: relative; display: flex; min-height: 38px; align-items: center; justify-content: flex-end; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 4px; transition: border-color .2s ease, box-shadow .2s ease; }
 .form-layout .multiselect.is-open .multiselect-wrapper,
-.stepper-form .multiselect.is-open .multiselect-wrapper { border-color: var(--primary); box-shadow: 0 3px 10px rgb(var(--primary-rgb) / 10%); }
+.stepper-form .multiselect.is-open .multiselect-wrapper,
+.account-box.is-form .multiselect.is-open .multiselect-wrapper { border-color: var(--primary); box-shadow: 0 3px 10px rgb(var(--primary-rgb) / 10%); }
 .form-layout .multiselect-fake-input,
-.stepper-form .multiselect-fake-input { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; padding: 0; background: transparent; border: 0; cursor: pointer; }
+.stepper-form .multiselect-fake-input,
+.account-box.is-form .multiselect-fake-input { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; padding: 0; background: transparent; border: 0; cursor: pointer; }
 .form-layout .multiselect-placeholder,
-.stepper-form .multiselect-placeholder { position: absolute; inset-inline: 0; display: flex; height: 38px; align-items: center; padding: 0 2.5rem 0 12px; color: var(--muted); font-size: 13px; pointer-events: none; }
+.stepper-form .multiselect-placeholder,
+.account-box.is-form .multiselect-placeholder { position: absolute; inset-inline: 0; display: flex; height: 38px; align-items: center; padding: 0 2.5rem 0 12px; color: var(--muted); font-size: 13px; pointer-events: none; }
 .form-layout .multiselect-single-label,
-.stepper-form .multiselect-single-label { position: absolute; inset-inline: 0; display: flex; height: 38px; align-items: center; padding: 0 2.5rem 0 12px; pointer-events: none; }
+.stepper-form .multiselect-single-label,
+.account-box.is-form .multiselect-single-label { position: absolute; inset-inline: 0; display: flex; height: 38px; align-items: center; padding: 0 2.5rem 0 12px; pointer-events: none; }
 .form-layout .multiselect-single-label-text,
-.stepper-form .multiselect-single-label-text { overflow: hidden; color: var(--text); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.stepper-form .multiselect-single-label-text,
+.account-box.is-form .multiselect-single-label-text { overflow: hidden; color: var(--text); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .form-layout .multiselect-caret,
-.stepper-form .multiselect-caret { position: relative; z-index: 1; flex-shrink: 0; width: 10px; height: 18px; margin-inline-end: 12px; background-color: var(--muted); pointer-events: none; transition: transform .2s ease, background-color .2s ease; -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z'%3E%3C/path%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z'%3E%3C/path%3E%3C/svg%3E"); -webkit-mask-position: center; mask-position: center; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+.stepper-form .multiselect-caret,
+.account-box.is-form .multiselect-caret { position: relative; z-index: 1; flex-shrink: 0; width: 10px; height: 18px; margin-inline-end: 12px; background-color: var(--muted); pointer-events: none; transition: transform .2s ease, background-color .2s ease; -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z'%3E%3C/path%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z'%3E%3C/path%3E%3C/svg%3E"); -webkit-mask-position: center; mask-position: center; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
 .form-layout .multiselect.is-open .multiselect-caret,
-.stepper-form .multiselect.is-open .multiselect-caret { transform: rotate(180deg); background-color: var(--primary); }
+.stepper-form .multiselect.is-open .multiselect-caret,
+.account-box.is-form .multiselect.is-open .multiselect-caret { transform: rotate(180deg); background-color: var(--primary); }
 .form-layout .multiselect-dropdown,
-.stepper-form .multiselect-dropdown { position: absolute; z-index: 30; top: calc(100% + 4px); inset-inline: 0; overflow: hidden; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); }
+.stepper-form .multiselect-dropdown,
+.account-box.is-form .multiselect-dropdown { position: absolute; z-index: 30; top: calc(100% + 4px); inset-inline: 0; overflow: hidden; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); }
 .form-layout .multiselect-options,
-.stepper-form .multiselect-options { max-height: 168px; margin: 0; padding: 12px 10px; overflow-y: auto; list-style: none; }
+.stepper-form .multiselect-options,
+.account-box.is-form .multiselect-options { max-height: 168px; margin: 0; padding: 12px 10px; overflow-y: auto; list-style: none; }
 .form-layout .multiselect-option,
-.stepper-form .multiselect-option { position: relative; display: flex; align-items: center; padding: 8px 34px 8px 10px; border-radius: 8px; color: var(--text-soft); font-size: 13px; cursor: pointer; transition: background-color .2s ease, color .2s ease; }
+.stepper-form .multiselect-option,
+.account-box.is-form .multiselect-option { position: relative; display: flex; align-items: center; padding: 8px 34px 8px 10px; border-radius: 8px; color: var(--text-soft); font-size: 13px; cursor: pointer; transition: background-color .2s ease, color .2s ease; }
 .form-layout .multiselect-option.is-pointed,
-.stepper-form .multiselect-option.is-pointed { background: var(--surface-soft); color: var(--text); }
+.stepper-form .multiselect-option.is-pointed,
+.account-box.is-form .multiselect-option.is-pointed { background: var(--surface-soft); color: var(--text); }
 .form-layout .multiselect-option.is-selected,
-.stepper-form .multiselect-option.is-selected { color: var(--text); background: transparent; }
+.stepper-form .multiselect-option.is-selected,
+.account-box.is-form .multiselect-option.is-selected { color: var(--text); background: transparent; }
 .form-layout .multiselect-option.is-selected::after,
-.stepper-form .multiselect-option.is-selected::after { content: '✓'; position: absolute; inset-inline-end: 12px; top: 50%; color: var(--muted); font-size: 14px; font-weight: 700; transform: translateY(-50%); }
+.stepper-form .multiselect-option.is-selected::after,
+.account-box.is-form .multiselect-option.is-selected::after { content: '✓'; position: absolute; inset-inline-end: 12px; top: 50%; color: var(--muted); font-size: 14px; font-weight: 700; transform: translateY(-50%); }
 .form-layout .is-image-select .multiselect-single-label,
-.stepper-form .is-image-select .multiselect-single-label { padding-inline-start: 6px; }
+.stepper-form .is-image-select .multiselect-single-label,
+.account-box.is-form .is-image-select .multiselect-single-label { padding-inline-start: 6px; }
 .form-layout .is-image-select .select-label-icon,
-.stepper-form .is-image-select .select-label-icon { width: 26px; height: 26px; margin-inline-end: 6px; object-fit: cover; border-radius: 3px; }
+.stepper-form .is-image-select .select-label-icon,
+.account-box.is-form .is-image-select .select-label-icon { width: 26px; height: 26px; margin-inline-end: 6px; object-fit: cover; border-radius: 3px; }
 .form-layout .is-image-select .select-option-icon,
-.stepper-form .is-image-select .select-option-icon { width: 22px; height: 22px; margin-inline-end: 6px; object-fit: cover; border-radius: 3px; }
+.stepper-form .is-image-select .select-option-icon,
+.account-box.is-form .is-image-select .select-option-icon { width: 22px; height: 22px; margin-inline-end: 6px; object-fit: cover; border-radius: 3px; }
 .form-layout .is-image-select .select-label-text,
-.stepper-form .is-image-select .select-label-text { color: var(--text); font-size: 13px; }
+.stepper-form .is-image-select .select-label-text,
+.account-box.is-form .is-image-select .select-label-text { color: var(--text); font-size: 13px; }
 
 .form-layout .checkbox,
 .form-layout .radio { display: inline-flex; align-items: center; gap: 8px; margin-inline-end: 16px; color: var(--text-soft); font-size: 13px; cursor: pointer; }

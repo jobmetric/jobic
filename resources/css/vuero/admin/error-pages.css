@@ -1,0 +1,273 @@
+/* Vuero minimal error pages */
+
+:root {
+    --font: var(--font-sans);
+    --background-grey: #fafafa;
+    --lighter-grey: #fcfcfc;
+    --dark-text: hsl(226 34% 24%);
+    --primary-dark-15: hsl(166 61% 27%);
+    --primary-light-20: hsl(166 61% 62%);
+    --primary-dark-4: hsl(166 61% 38%);
+    --primary-dark-16: hsl(166 61% 26%);
+    --radius-rounded: 9999px;
+}
+
+.cms-page--error {
+    overflow-x: hidden;
+}
+
+.minimal-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: var(--lighter-grey);
+    transition: background-color 0.3s ease;
+}
+
+.minimal-wrapper.darker {
+    background: var(--background-grey);
+}
+
+:root[data-theme='dark'] .minimal-wrapper.darker {
+    background: var(--page);
+}
+
+.dark-inverted {
+    color: var(--dark-text);
+}
+
+:root[data-theme='dark'] .dark-inverted {
+    color: var(--text);
+}
+
+.has-text-centered {
+    text-align: center !important;
+}
+
+.light-image {
+    display: inline-block !important;
+}
+
+.light-image-block {
+    display: block !important;
+}
+
+.dark-image,
+.dark-image-block {
+    display: none !important;
+}
+
+:root[data-theme='dark'] .light-image,
+:root[data-theme='dark'] .light-image-block {
+    display: none !important;
+}
+
+:root[data-theme='dark'] .dark-image {
+    display: inline-block !important;
+}
+
+:root[data-theme='dark'] .dark-image-block {
+    display: block !important;
+}
+
+.dark-mode {
+    cursor: pointer;
+    transform: translate3d(0, 0, 0);
+}
+
+.dark-mode:focus-visible {
+    border-radius: 50px;
+    outline-offset: 20px;
+    outline-width: 2px;
+}
+
+.dark-mode input {
+    display: none;
+}
+
+.dark-mode input + span {
+    display: block;
+    border-radius: var(--radius-rounded);
+    width: 36px;
+    height: 36px;
+    position: relative;
+    box-shadow: inset 16px -16px 0 0 #ffd22e;
+    transform: scaleY(1) rotate(-2deg);
+    transition: box-shadow 0.5s ease 0s, transform 0.4s ease 0.1s;
+}
+
+.dark-mode input + span::before {
+    content: '';
+    width: inherit;
+    height: inherit;
+    border-radius: inherit;
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    backface-visibility: hidden;
+    transition: background-color 0.3s ease;
+}
+
+.dark-mode input + span::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-rounded);
+    margin-top: -4px;
+    margin-inline-start: -4px;
+    position: absolute;
+    top: 50%;
+    inset-inline-start: 50%;
+    box-shadow:
+        0 -23px 0 #ffb62e,
+        0 23px 0 #ffb62e,
+        23px 0 0 #ffb62e,
+        -23px 0 0 #ffb62e,
+        15px 15px 0 #ffb62e,
+        -15px 15px 0 #ffb62e,
+        15px -15px 0 #ffb62e,
+        -15px -15px 0 #ffb62e;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.dark-mode input:checked + span {
+    box-shadow: inset 32px -32px 0 0 #ffd22e;
+    transform: scale(0.5) rotate(0deg);
+    transition: transform 0.3s ease 0.1s, box-shadow 0.2s ease 0s;
+}
+
+.dark-mode input:checked + span::before {
+    background: #ffb62e;
+    backface-visibility: hidden;
+    transition: background-color 0.3s ease 0.1s;
+}
+
+.dark-mode input:checked + span::after {
+    transform: scale(1.5);
+    transition: transform 0.5s ease 0.15s;
+}
+
+.error-container {
+    width: 100vw;
+    min-height: 100vh;
+}
+
+.error-container .error-nav .dark-mode {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 0;
+    display: inline-block;
+    transform: scale(0.5);
+}
+
+.error-container .error-wrapper {
+    max-width: 840px;
+    margin: 0 auto;
+    padding-top: 40px;
+}
+
+.error-container .error-wrapper .error-inner {
+    position: relative;
+    max-width: 540px;
+    margin: 0 auto;
+}
+
+.error-container .error-wrapper .error-inner .bg-number {
+    font-family: var(--font);
+    position: absolute;
+    top: -58px;
+    inset-inline-start: -50px;
+    inset-inline-end: 0;
+    margin: 0 auto;
+    font-size: 28rem;
+    font-weight: 600;
+    opacity: 0.15;
+    z-index: 0;
+    line-height: 1;
+}
+
+.error-container .error-wrapper .error-inner img,
+.error-container .error-wrapper .error-inner svg,
+.error-container .error-wrapper .error-inner h3,
+.error-container .error-wrapper .error-inner p,
+.error-container .error-wrapper .error-inner .button-wrap {
+    position: relative;
+    z-index: 1;
+}
+
+.error-container .error-wrapper .error-inner img,
+.error-container .error-wrapper .error-inner svg {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.error-container .error-wrapper .error-inner h3 {
+    font-size: 1.5rem;
+    font-family: var(--font-alt);
+    color: var(--dark-text);
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+:root[data-theme='dark'] .error-container .error-wrapper .error-inner h3 {
+    color: var(--text);
+}
+
+.error-container .error-wrapper .error-inner p {
+    font-family: var(--font);
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    color: var(--text-soft);
+}
+
+.error-container .error-wrapper .error-inner .button-wrap .button {
+    min-width: 220px;
+    min-height: 50px;
+    border-radius: 4px;
+}
+
+.error-container .error-wrapper .error-inner .button-wrap .button.is-rounded {
+    border-radius: 999px;
+}
+
+.button--elevated {
+    box-shadow: 0 8px 18px rgb(var(--primary-rgb) / 20%);
+}
+
+:root[data-theme='dark'] .error-container .error-wrapper .error-inner .bg-number {
+    opacity: 0.09;
+}
+
+@media only screen and (width <= 767px) {
+    .error-container .error-wrapper {
+        padding-top: 60px;
+    }
+
+    .error-container .error-wrapper .error-inner {
+        padding: 10px;
+    }
+
+    .error-container .error-wrapper .error-inner .bg-number {
+        top: -35px;
+        inset-inline-start: -18px;
+        inset-inline-end: 0;
+        font-size: 13rem;
+    }
+
+    .error-container .error-wrapper .error-inner img,
+    .error-container .error-wrapper .error-inner svg {
+        max-width: 345px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .minimal-wrapper,
+    .dark-mode input + span,
+    .dark-mode input + span::before,
+    .dark-mode input + span::after,
+    .button--elevated {
+        transition: none !important;
+    }
+}

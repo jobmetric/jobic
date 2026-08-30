@@ -18,6 +18,11 @@ yarn-error.log
 /.idea
 /.vscode
 
+/tests/Browser/.auth/
+/tests/Browser/reports/
+/test-results/
+/playwright-report/
+
 composer.phar
 
 /database/*.sqlite
