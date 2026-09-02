@@ -1,0 +1,54 @@
+---
+description: HTTP layer — thin controller, Form Request, domain service, Output\Response
+alwaysApply: true
+---
+
+# HTTP Service Layer
+
+Follow the `jobmetric/laravel-flow` + `laravel-package-core` contract for every HTTP feature.
+
+## Flow
+
+1. Route → **Controller** (thin)
+2. First method parameter: dedicated **Form Request**
+3. Controller calls **domain service** (or Facade) with validated data + explicit context
+4. Service returns `JobMetric\PackageCore\Output\Response`
+5. Controller maps `Response` to redirect/view/JSON
+
+## Controller rules
+
+- No `Auth::attempt`, queries, mail, rate-limit, or business logic in controllers
+- No `authenticate()` or similar logic inside Form Requests
+- GET pages that only render a view may skip a service; any side-effect needs one
+
+## Service rules
+
+- One domain service per aggregate in `app/Services/{Domain}/`
+- Re-validate with `dto($data, SomeRequest::class)` inside the service
+- Do not type-hint `Illuminate\Http\Request`; pass arrays + explicit context (IP, user-agent)
+- CRUD: extend `AbstractCrudService`; non-CRUD: custom methods on the same service class
+- Return `Response::make($ok, $message, $data, $status)`
+
+## Good
+
+```php
+public function store(LoginRequest $request): RedirectResponse
+{
+    $result = Authentication::login($request->validated(), [
+        'ip' => $request->ip(),
+        'user_agent' => (string) $request->userAgent(),
+    ]);
+
+    if (! $result->ok) {
+        throw ValidationException::withMessages(['email' => $result->message]);
+    }
+
+    return redirect()->intended(route('admin.dashboard', absolute: false));
+}
+```
+
+## Bad
+
+- `Auth::attempt()` inside the controller
+- `authenticate()` inside `LoginRequest`
+- One service class per single action (`LoginUser`, `LogoutUser`, …)

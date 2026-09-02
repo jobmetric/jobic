@@ -1,0 +1,33 @@
+---
+description: Jobic CMS boundaries, naming, and extension points for contributors
+alwaysApply: true
+---
+
+# CMS Consistency
+
+Jobic is a CMS others install and extend. Match existing patterns before inventing new ones.
+
+## Code boundaries
+
+- Product code lives in `app/`, `routes/`, `resources/views/auth|legal`, `tests/Feature/Auth`
+- Vuero demo stays under `app/Http/Controllers/Vuero`, `resources/views/vuero`, `/vuero/*` — do not leak demo routes into CMS auth
+- Future installable capabilities belong in packages/modules, not scattered in core controllers
+
+## Before adding a new layer
+
+Reuse the current stack: Controller → Form Request → domain service → `Output\Response`.
+Do not add parallel Action classes, repositories, or per-method services unless the existing contract cannot work.
+
+## Extension for third parties
+
+- Emit domain events from services (like Flow), not from controllers
+- Extend behavior via services/events/modules; avoid editing unrelated controllers
+
+## Naming
+
+- PHP classes, routes, and methods: English (`login.store`, `LoginRequest`, `Authentication`)
+- User-facing copy: `trans()` / `__()`; keep Persian strings in lang files when possible
+
+## Reference implementation
+
+Auth under `app/Http/Controllers/Auth` + `app/Services/Auth/Authentication.php` is the template for new CMS features.

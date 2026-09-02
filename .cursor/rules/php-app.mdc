@@ -1,0 +1,30 @@
+---
+description: PHP conventions for app code, routes, and feature tests
+globs: app/**/*.php,routes/**/*.php,tests/Feature/**/*.php
+alwaysApply: false
+---
+
+# PHP App Conventions
+
+## New files in `app/`
+
+- Start with `declare(strict_types=1);`
+- Use scalar type hints and return types on all public methods
+- Services must not type-hint HTTP `Request`; use validated arrays + context arrays
+
+## Structure
+
+- `app/Http/Controllers/{Domain}/` — thin controllers only
+- `app/Http/Requests/{Domain}/` — validation only (`rules`, `messages`, `authorize`, `withValidator`)
+- `app/Services/{Domain}/` — one domain service per aggregate
+- `app/Facades/` — only for singleton services registered in `AppServiceProvider`
+
+## Tests
+
+- Feature tests hit real named routes (`route('login')`), not controller internals
+- Assert redirects, session, and database side-effects
+
+## Style
+
+- Follow Laravel Pint / project style; do not introduce a second formatting style
+- Prefer constructor injection in controllers; Facade calls are acceptable for domain services
