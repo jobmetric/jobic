@@ -13,7 +13,7 @@ class GridTilesTest extends TestCase
     public function test_grid_tile_routes_require_authentication(): void
     {
         foreach (range(1, 3) as $version) {
-            $this->get("/vuero/admin/layouts/grid-tile-v{$version}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/grid-tile-v{$version}")->assertRedirect('/login');
         }
     }
 

@@ -13,7 +13,7 @@ class WizardPageTest extends TestCase
     public function test_guests_are_redirected_to_the_vuero_login(): void
     {
         $this->get(route('vuero.admin.wizard'))
-            ->assertRedirect(route('vuero.login'));
+            ->assertRedirect(route('login'));
     }
 
     public function test_authenticated_users_can_open_the_complete_wizard(): void

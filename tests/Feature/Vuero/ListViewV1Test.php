@@ -12,7 +12,7 @@ class ListViewV1Test extends TestCase
 
     public function test_list_view_v1_requires_authentication(): void
     {
-        $this->get('/vuero/admin/layouts/list-view-v1')->assertRedirect('/vuero/login');
+        $this->get('/vuero/admin/layouts/list-view-v1')->assertRedirect('/login');
     }
 
     public function test_list_view_v1_renders_the_complete_vuero_dataset_and_controls(): void

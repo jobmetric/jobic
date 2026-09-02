@@ -13,7 +13,7 @@ class ErrorPagesTest extends TestCase
     public function test_error_pages_require_authentication(): void
     {
         $this->get('/vuero/error/page-1')
-            ->assertRedirect('/vuero/login');
+            ->assertRedirect('/login');
     }
 
     public function test_all_five_reference_error_pages_render_their_exact_layout(): void

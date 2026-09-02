@@ -13,7 +13,7 @@ class PlaceloadTest extends TestCase
     public function test_placeload_routes_require_authentication(): void
     {
         foreach (range(1, 4) as $version) {
-            $this->get("/vuero/admin/layouts/placeload-v{$version}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/placeload-v{$version}")->assertRedirect('/login');
         }
     }
 

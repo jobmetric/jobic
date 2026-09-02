@@ -12,7 +12,7 @@ class ListViewV4Test extends TestCase
 
     public function test_list_view_v4_requires_authentication(): void
     {
-        $this->get('/vuero/admin/layouts/list-view-v4')->assertRedirect('/vuero/login');
+        $this->get('/vuero/admin/layouts/list-view-v4')->assertRedirect('/login');
     }
 
     public function test_list_view_v4_renders_the_complete_recipes_experience(): void

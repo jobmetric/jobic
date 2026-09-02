@@ -10,11 +10,11 @@ export default async function globalSetup() {
     const browser = await chromium.launch();
     const page = await browser.newPage({ ignoreHTTPSErrors: true });
 
-    await page.goto('https://jobic.test/vuero/login');
+    await page.goto('https://jobic.test/login');
     await page.fill('#email', 'admin@jobic.test');
     await page.fill('#password', 'secret');
     await page.click('button.auth-form__submit');
-    await page.waitForURL(/\/vuero\/admin/, { timeout: 15_000 });
+    await page.waitForURL(/\/admin$/, { timeout: 15_000 });
 
     await page.context().storageState({ path: authFile });
     await browser.close();

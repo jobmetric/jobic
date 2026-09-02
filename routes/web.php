@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', fn () => auth()->check()
-    ? redirect()->route('vuero.admin.dashboard')
-    : redirect()->route('vuero.login'))->name('home');
+    ? redirect()->route('admin.dashboard')
+    : redirect()->route('login'))->name('home');
 
+require __DIR__.'/auth.php';
+require __DIR__.'/admin.php';
 require __DIR__.'/vuero.php';

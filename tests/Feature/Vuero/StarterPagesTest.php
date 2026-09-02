@@ -13,7 +13,7 @@ class StarterPagesTest extends TestCase
     public function test_starter_pages_require_authentication(): void
     {
         $this->get('/vuero/admin/starters/sidebar-blank-page-1')
-            ->assertRedirect('/vuero/login');
+            ->assertRedirect('/login');
     }
 
     public function test_all_nineteen_reference_starters_render_their_exact_layout(): void

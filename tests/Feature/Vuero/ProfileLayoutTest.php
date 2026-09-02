@@ -28,7 +28,7 @@ class ProfileLayoutTest extends TestCase
     public function test_profile_layout_routes_require_authentication(): void
     {
         foreach ($this->profileLayoutUrls() as $url) {
-            $this->get($url)->assertRedirect('/vuero/login');
+            $this->get($url)->assertRedirect('/login');
         }
     }
 

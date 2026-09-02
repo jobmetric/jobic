@@ -13,7 +13,7 @@ class AdminAuthenticationTest extends TestCase
     public function test_home_redirects_guests_to_login(): void
     {
         $this->get(route('home'))
-            ->assertRedirect(route('vuero.login'));
+            ->assertRedirect(route('login'));
     }
 
     public function test_home_redirects_authenticated_users_to_dashboard(): void
@@ -22,7 +22,7 @@ class AdminAuthenticationTest extends TestCase
             'password' => 'test-password',
         ]))
             ->get(route('home'))
-            ->assertRedirect(route('vuero.admin.dashboard'));
+            ->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_disabled_installer_redirects_to_the_application(): void
@@ -38,7 +38,7 @@ class AdminAuthenticationTest extends TestCase
 
     public function test_guest_can_view_the_login_page(): void
     {
-        $this->get(route('vuero.login'))
+        $this->get(route('login'))
             ->assertOk()
             ->assertSee('ورود به حساب')
             ->assertSee('Jobic');
@@ -46,8 +46,8 @@ class AdminAuthenticationTest extends TestCase
 
     public function test_guest_is_redirected_from_the_dashboard_to_login(): void
     {
-        $this->get(route('vuero.admin.dashboard'))
-            ->assertRedirect(route('vuero.login'));
+        $this->get(route('admin.dashboard'))
+            ->assertRedirect(route('login'));
     }
 
     public function test_authenticated_user_can_view_profile_settings(): void
@@ -65,16 +65,16 @@ class AdminAuthenticationTest extends TestCase
             'password' => 'secret-password',
         ]);
 
-        $this->post(route('vuero.login.store'), [
+        $this->post(route('login.store'), [
             'email' => $user->email,
             'password' => 'secret-password',
-        ])->assertRedirect(route('vuero.admin.dashboard'));
+        ])->assertRedirect(route('admin.dashboard'));
 
         $this->assertAuthenticatedAs($user);
 
-        $this->get(route('vuero.admin.dashboard'))
+        $this->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('Analytics Dashboard')
+            ->assertSee('داشبورد')
             ->assertSee($user->name);
     }
 
@@ -84,12 +84,12 @@ class AdminAuthenticationTest extends TestCase
             'password' => 'correct-password',
         ]);
 
-        $this->from(route('vuero.login'))
-            ->post(route('vuero.login.store'), [
+        $this->from(route('login'))
+            ->post(route('login.store'), [
                 'email' => $user->email,
                 'password' => 'not-the-password',
             ])
-            ->assertRedirect(route('vuero.login'))
+            ->assertRedirect(route('login'))
             ->assertSessionHasErrors('email');
 
         $this->assertGuest();

@@ -22,6 +22,6 @@
         <hr>
         <a class="profile-dropdown__item" href="{{ route('vuero.admin.profile-settings') }}" role="menuitem"><span class="profile-dropdown__icon"><x-vuero.icon name="settings" size="19" /></span><span><strong>Settings</strong><small>Account settings</small></span></a>
         <hr>
-        <form method="POST" action="{{ route('vuero.logout') }}">@csrf<button class="profile-dropdown__logout" type="submit" role="menuitem"><x-vuero.icon name="logout" size="17" /> Logout</button></form>
+        <form method="POST" action="{{ route('logout') }}">@csrf<button class="profile-dropdown__logout" type="submit" role="menuitem"><x-vuero.icon name="logout" size="17" /> Logout</button></form>
     </div>
 </div>

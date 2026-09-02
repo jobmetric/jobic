@@ -13,7 +13,7 @@ class GridCardsTest extends TestCase
     public function test_grid_card_routes_require_authentication(): void
     {
         foreach (range(1, 4) as $version) {
-            $this->get("/vuero/admin/layouts/grid-card-v{$version}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/grid-card-v{$version}")->assertRedirect('/login');
         }
     }
 

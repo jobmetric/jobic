@@ -36,7 +36,7 @@
                 <a href="{{ route('vuero.admin.dashboard') }}" role="menuitem"><x-vuero.icon name="box" size="17" /><span>Projects</span></a>
                 <a href="{{ route('vuero.admin.profile-settings') }}" role="menuitem"><x-vuero.icon name="settings" size="17" /><span>Settings</span></a>
                 <hr>
-                <form action="{{ route('vuero.logout') }}" method="POST">@csrf<button type="submit" role="menuitem"><x-vuero.icon name="logout" size="17" /><span>Sign Out</span></button></form>
+                <form action="{{ route('logout') }}" method="POST">@csrf<button type="submit" role="menuitem"><x-vuero.icon name="logout" size="17" /><span>Sign Out</span></button></form>
             </div>
         </div>
     </div>

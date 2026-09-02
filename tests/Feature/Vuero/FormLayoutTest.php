@@ -13,7 +13,7 @@ class FormLayoutTest extends TestCase
     public function test_form_layout_routes_require_authentication(): void
     {
         foreach (range(1, 5) as $version) {
-            $this->get("/vuero/admin/layouts/form-layout-v{$version}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/form-layout-v{$version}")->assertRedirect('/login');
         }
     }
 

@@ -13,7 +13,7 @@ class ListDatatableTest extends TestCase
     public function test_datatable_routes_require_authentication(): void
     {
         foreach (['list-datatable-v1', 'list-datatable-v2', 'list-datatable-v3'] as $layout) {
-            $this->get("/vuero/admin/layouts/{$layout}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/{$layout}")->assertRedirect('/login');
         }
     }
 

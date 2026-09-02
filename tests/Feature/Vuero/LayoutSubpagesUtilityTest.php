@@ -26,11 +26,11 @@ class LayoutSubpagesUtilityTest extends TestCase
     public function test_subpages_and_utility_routes_require_authentication(): void
     {
         foreach ($this->layoutSlugs() as $slug) {
-            $this->get("/vuero/admin/layouts/{$slug}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/{$slug}")->assertRedirect('/login');
         }
 
-        $this->get('/vuero/roadmap')->assertRedirect('/vuero/login');
-        $this->get('/vuero/status')->assertRedirect('/vuero/login');
+        $this->get('/vuero/roadmap')->assertRedirect('/login');
+        $this->get('/vuero/status')->assertRedirect('/login');
     }
 
     public function test_saas_billing_renders_billing_workspace(): void

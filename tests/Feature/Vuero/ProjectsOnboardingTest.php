@@ -25,7 +25,7 @@ class ProjectsOnboardingTest extends TestCase
     public function test_project_and_onboarding_routes_require_authentication(): void
     {
         foreach ([...$this->projectLayouts(), ...$this->onboardingLayouts()] as $layout) {
-            $this->get("/vuero/admin/layouts/{$layout}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/{$layout}")->assertRedirect('/login');
         }
     }
 

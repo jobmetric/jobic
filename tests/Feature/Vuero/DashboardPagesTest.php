@@ -27,7 +27,7 @@ class DashboardPagesTest extends TestCase
 
     public function test_vuero_routes_are_kept_under_the_demo_prefix(): void
     {
-        $this->assertSame('/vuero/login', route('vuero.login', absolute: false));
+        $this->get('/vuero/login')->assertRedirect('/login');
         $this->assertSame('/vuero/admin', route('vuero.admin.dashboard', absolute: false));
         $this->assertSame(
             '/vuero/admin/dashboards/analytics',

@@ -14,7 +14,7 @@ class ChartsPagesTest extends TestCase
     {
         foreach (['charts-apex', 'charts-billboardjs'] as $dashboard) {
             $this->get(route('vuero.admin.dashboards.show', $dashboard))
-                ->assertRedirect(route('vuero.login'));
+                ->assertRedirect(route('login'));
         }
     }
 

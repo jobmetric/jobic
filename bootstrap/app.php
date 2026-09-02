@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\Installation\Check as InstallationCheck;
 use App\Http\Middleware\Installation\Install;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
@@ -32,11 +33,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->redirectGuestsTo(fn () => route('vuero.login'));
-        $middleware->redirectUsersTo(fn () => route('vuero.admin.dashboard'));
+        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
 
         $middleware->appendToGroup('web', [
             Install::class,
+            SecurityHeaders::class,
         ]);
 
         $middleware->group('installation', [

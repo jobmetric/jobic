@@ -12,7 +12,7 @@ class WidgetsPagesTest extends TestCase
 
     public function test_guests_are_redirected_from_widget_pages(): void
     {
-        $this->get('/vuero/admin/dashboards/widgets-sample-ui')->assertRedirect('/vuero/login');
+        $this->get('/vuero/admin/dashboards/widgets-sample-ui')->assertRedirect('/login');
     }
 
     public function test_each_widget_page_renders_its_exact_view_and_entry_script(): void

@@ -6,7 +6,6 @@ use App\Http\Controllers\Vuero\Admin\ProfileLayoutController;
 use App\Http\Controllers\Vuero\Admin\ProfileSettingsController;
 use App\Http\Controllers\Vuero\Admin\StarterController;
 use App\Http\Controllers\Vuero\Admin\WizardController;
-use App\Http\Controllers\Vuero\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Vuero\ErrorPageController;
 use App\Http\Controllers\Vuero\UtilityPageController;
 use Illuminate\Support\Facades\Route;
@@ -16,20 +15,10 @@ Route::prefix('vuero')
     ->group(function (): void {
         Route::get('/', fn () => auth()->check()
             ? redirect()->route('vuero.admin.dashboard')
-            : redirect()->route('vuero.login'))
+            : redirect()->route('login'))
             ->name('home');
 
-        Route::middleware('guest')->group(function (): void {
-            Route::get('/login', [AuthenticatedSessionController::class, 'create'])
-                ->name('login');
-
-            Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-                ->name('login.store');
-        });
-
-        Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-            ->middleware('auth')
-            ->name('logout');
+        Route::redirect('/login', '/login')->name('login');
 
         Route::middleware('auth')->group(function (): void {
             Route::get('/error/{page}', [ErrorPageController::class, 'show'])

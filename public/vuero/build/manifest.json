@@ -162,7 +162,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-b2b4a414.css",
+    "file": "assets/app-646775b8.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },

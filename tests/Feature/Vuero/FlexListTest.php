@@ -13,7 +13,7 @@ class FlexListTest extends TestCase
     public function test_flex_list_routes_require_authentication(): void
     {
         foreach (['flex-list-v1', 'flex-list-v2', 'flex-list-v3'] as $layout) {
-            $this->get("/vuero/admin/layouts/{$layout}")->assertRedirect('/vuero/login');
+            $this->get("/vuero/admin/layouts/{$layout}")->assertRedirect('/login');
         }
     }
 

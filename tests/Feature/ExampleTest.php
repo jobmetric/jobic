@@ -12,6 +12,6 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_redirects_guests_to_login(): void
     {
-        $this->get('/')->assertRedirect(route('vuero.login'));
+        $this->get('/')->assertRedirect(route('login'));
     }
 }
