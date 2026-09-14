@@ -162,9 +162,21 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-646775b8.css",
+    "file": "assets/app-2c46c25a.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
+  },
+  "resources/js/installation/wizard.css": {
+    "file": "assets/wizard-471b8ebf.css",
+    "src": "resources/js/installation/wizard.css"
+  },
+  "resources/js/installation/wizard.js": {
+    "css": [
+      "assets/wizard-471b8ebf.css"
+    ],
+    "file": "assets/wizard-391c1dd1.js",
+    "isEntry": true,
+    "src": "resources/js/installation/wizard.js"
   },
   "resources/js/vuero/app.js": {
     "file": "assets/app-b4f6031c.js",

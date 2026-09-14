@@ -25,15 +25,14 @@ class AdminAuthenticationTest extends TestCase
             ->assertRedirect(route('admin.dashboard'));
     }
 
-    public function test_disabled_installer_redirects_to_the_application(): void
+    public function test_completed_installer_redirects_to_login(): void
     {
         config()->set([
-            'installation.enabled' => false,
-            'installation.completed' => false,
+            'installation.completed' => true,
         ]);
 
         $this->get(route('installation.intro'))
-            ->assertRedirect(route('home'));
+            ->assertRedirect(route('login'));
     }
 
     public function test_guest_can_view_the_login_page(): void
@@ -74,7 +73,7 @@ class AdminAuthenticationTest extends TestCase
 
         $this->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('داشبورد')
+            ->assertSee('data-dashboard-page="ecommerce-1"', false)
             ->assertSee($user->name);
     }
 

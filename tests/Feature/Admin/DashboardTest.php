@@ -23,7 +23,10 @@ class DashboardTest extends TestCase
         $this->actingAs($user)
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('داشبورد')
+            ->assertSee('data-dashboard-page="ecommerce-1"', false)
+            ->assertSee('ecommerce-tile-grid')
+            ->assertSee(route('admin.settings.mail.edit'))
+            ->assertDontSee('Erik Kovalsky')
             ->assertSee($user->name);
     }
 

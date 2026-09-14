@@ -27,3 +27,8 @@ composer.phar
 
 /database/*.sqlite
 /database/*.sqlite-journal
+
+/.env.lock
+/.env-install-*
+/storage/app/installation/
+/.env.bootstrap.lock

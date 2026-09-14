@@ -1,3 +1,5 @@
+@props(['name' => 'Erik Kovalsky'])
+
 @php
     $tiles = [
         ['Total Sales', '641.4K', 'award', 'info', 'M2,34 C12,28 19,36 29,25 S47,10 57,18 72,27 84,8 99,16 113,29 124,12 142,20'],
@@ -16,8 +18,8 @@
 
 <div class="ecommerce-v1" data-ecommerce="ecommerce-1">
     <header class="ecommerce-v1-header">
-        <img src="{{ asset('vuero/images/avatars/svg/vuero-1.svg') }}" alt="Erik Kovalsky">
-        <div><h1>Welcome back, Erik Kovalsky</h1><p>We're very happy to see you again on your dashboard.</p></div>
+        <img src="{{ asset('vuero/images/avatars/svg/vuero-1.svg') }}" alt="{{ $name }}">
+        <div><h1>Welcome back, {{ $name }}</h1><p>We're very happy to see you again on your dashboard.</p></div>
         <nav aria-label="Ecommerce actions"><button type="button" class="vuero-button" data-ecommerce-report>View Reports</button><button type="button" class="vuero-button is-primary" data-ecommerce-shop>Manage Shop</button></nav>
     </header>
 

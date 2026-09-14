@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "jobmetric/laravel-env-modifier": "^2.2",
         "jobmetric/laravel-flow": "^2.4",
         "jobmetric/laravel-setting": "^1.0|^2.0",
         "laravel/framework": "^13.17",
@@ -13,7 +14,9 @@
         "laravel/tinker": "^3.0",
         "lorisleiva/laravel-actions": "^2.9",
         "spatie/laravel-query-builder": "^6.3|^7.0",
-        "tymon/jwt-auth": "^2.2"
+        "tymon/jwt-auth": "^2.2",
+        "ext-redis": "*",
+        "ext-pdo": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -52,6 +55,9 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "pre-autoload-dump": [
+            "@php tools/fix-translation-nullability.php"
         ]
     },
     "extra": {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8440acf9dd6f6ed3cf10a45842bb7d26",
+    "content-hash": "eae5064a2fd518b198e3cc3109b589c9",
     "packages": [
         {
             "name": "brick/math",
@@ -1113,6 +1113,79 @@
                 "source": "https://github.com/jobmetric/laravel-custom-field"
             },
             "time": "2025-12-30T18:47:44+00:00"
+        },
+        {
+            "name": "jobmetric/laravel-env-modifier",
+            "version": "2.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jobmetric/laravel-env-modifier.git",
+                "reference": "fc3c5d76ce06540f297e6b9bbbd0465c91252141"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jobmetric/laravel-env-modifier/zipball/fc3c5d76ce06540f297e6b9bbbd0465c91252141",
+                "reference": "fc3c5d76ce06540f297e6b9bbbd0465c91252141",
+                "shasum": ""
+            },
+            "require": {
+                "jobmetric/laravel-package-core": "^1.26",
+                "laravel/framework": ">=9.19",
+                "php": ">=8.0.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "EnvModifier": "JobMetric\\EnvModifier\\Facades\\EnvModifier"
+                    },
+                    "providers": [
+                        "JobMetric\\EnvModifier\\EnvModifierServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "JobMetric\\EnvModifier\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Majid Mohammadian",
+                    "email": "majeedmohammadian@gmail.com",
+                    "homepage": "https://www.linkedin.com/in/majidmohammadian/",
+                    "role": "Full Stack Developer"
+                }
+            ],
+            "description": "This is a package for env modification the contents of different Laravel projects.",
+            "homepage": "https://doc.jobmetric.net/package/laravel-env-modifier",
+            "keywords": [
+                "env",
+                "env file",
+                "env modifier",
+                "jobmetric",
+                "laravel",
+                "package"
+            ],
+            "support": {
+                "forum": "https://twitter.com/jobmetric",
+                "issues": "https://github.com/jobmetric/laravel-env-modifier/issues",
+                "source": "https://github.com/jobmetric/laravel-env-modifier"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/majidmohammadian",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-01-26T13:50:31+00:00"
         },
         {
             "name": "jobmetric/laravel-event-system",

@@ -1,4 +1,6 @@
-<x-auth.layout title="ورود به مدیریت">
+@extends('common.auth', ['script' => 'resources/js/vuero/pages/auth/login.js'])
+@section('title', 'ورود به مدیریت')
+@section('content')
     <main class="auth-shell">
         <x-auth.visual />
 
@@ -76,4 +78,4 @@
             </div>
         </section>
     </main>
-</x-auth.layout>
+@endsection

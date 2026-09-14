@@ -1,4 +1,6 @@
-<x-auth.layout title="تعیین رمز جدید">
+@extends('common.auth', ['script' => 'resources/js/vuero/pages/auth/login.js'])
+@section('title', 'تعیین رمز جدید')
+@section('content')
     <main class="auth-shell">
         <x-auth.visual />
 
@@ -66,4 +68,4 @@
             </div>
         </section>
     </main>
-</x-auth.layout>
+@endsection

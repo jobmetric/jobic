@@ -1,4 +1,6 @@
-<x-auth.layout title="حریم خصوصی" :script="null">
+@extends('common.auth')
+@section('title', 'حریم خصوصی')
+@section('content')
     <main class="auth-shell auth-shell--legal">
         <section class="auth-panel auth-panel--legal">
             <x-auth.panel-tools />
@@ -40,4 +42,4 @@
             </article>
         </section>
     </main>
-</x-auth.layout>
+@endsection

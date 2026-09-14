@@ -2,24 +2,8 @@
     'title' => 'ورود',
     'script' => 'resources/js/vuero/pages/auth/login.js',
 ])
-
-<!doctype html>
-<html lang="fa" dir="rtl" data-theme="light">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="#2aac8c">
-
-    <title>{{ $title }} | {{ config('app.name', 'Jobic') }}</title>
-
-    @vite(['resources/css/vuero/app.css', 'resources/js/vuero/app.js'], 'vuero/build')
-    @if ($script)
-        @vite($script, 'vuero/build')
-    @endif
-</head>
-<body class="cms-page cms-page--auth">
-    <x-vuero.icon-sprite />
+@extends('common.auth')
+@section('title', $title)
+@section('content')
     {{ $slot }}
-</body>
-</html>
+@endsection

@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Middleware\Installation\Check as InstallationCheck;
 use App\Http\Middleware\Installation\Install;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\Installation\Bootstrap;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -15,7 +16,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
@@ -36,8 +37,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
 
+        $middleware->trimStrings(except: ['DB_PASSWORD', 'REDIS_PASSWORD', 'MAIL_PASSWORD', 'ADMIN_PASSWORD', 'ADMIN_PASSWORD_confirmation']);
+        $middleware->prepend(Install::class);
+
         $middleware->appendToGroup('web', [
-            Install::class,
             SecurityHeaders::class,
         ]);
 
@@ -48,14 +51,17 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareErrorsFromSession::class,
             ValidateCsrfToken::class,
             SubstituteBindings::class,
+            SecurityHeaders::class,
         ]);
 
-        $middleware->alias([
-            'installation.check' => InstallationCheck::class,
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash(['DB_PASSWORD', 'REDIS_PASSWORD', 'MAIL_PASSWORD', 'ADMIN_PASSWORD', 'ADMIN_PASSWORD_confirmation']);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();
+
+$app->beforeBootstrapping(LoadEnvironmentVariables::class, fn ($app) => Bootstrap::prepare($app));
+
+return $app;

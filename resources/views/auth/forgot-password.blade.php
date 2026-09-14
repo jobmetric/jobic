@@ -1,4 +1,6 @@
-<x-auth.layout title="فراموشی رمز عبور">
+@extends('common.auth', ['script' => 'resources/js/vuero/pages/auth/login.js'])
+@section('title', 'فراموشی رمز عبور')
+@section('content')
     <main class="auth-shell">
         <x-auth.visual />
 
@@ -54,4 +56,4 @@
             </div>
         </section>
     </main>
-</x-auth.layout>
+@endsection
