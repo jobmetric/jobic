@@ -12,10 +12,11 @@
         "php": "^8.3",
         "ext-pdo": "*",
         "ext-redis": "*",
-        "jobmetric/domi": "^1.14",
+        "jobmetric/domi": "^1.14.1",
         "jobmetric/laravel-env-modifier": "^2.2",
         "jobmetric/laravel-flow": "^2.4",
         "jobmetric/laravel-setting": "^1.0|^2.0",
+        "jobmetric/laravel-translation": "^3.9.1",
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
@@ -60,10 +61,6 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
-        ],
-        "pre-autoload-dump": [
-            "@php tools/fix-translation-nullability.php",
-            "@php tools/fix-domi-compatibility.php"
         ]
     },
     "extra": {

@@ -1,6 +1,6 @@
 # Page presentation with Domi
 
-Jobic uses jobmetric/domi 1.14.0. The published API is Domi::setLocalize(namespace, data); it has no addLocalize method. App\Support\Page::addLocalize is the project's thin adapter to that API.
+Jobic requires jobmetric/domi 1.14.1 or later. The published API is Domi::setLocalize(namespace, data); it has no addLocalize method. App\Support\Page::addLocalize is the project's thin adapter to that API.
 
 GET controllers call Page::prepare(pageName) after the locale is known, and Page::addLocalize('feature', [...]) for page-specific public data. The published Domi layout renders its localization registry once, as application/json with JSON_HEX_TAG/AMP/APOS/QUOT escaping. JavaScript reads it via resources/js/common/page.js; do not use eval, raw inline assignments or duplicate data-* JSON payloads. AJAX locale changes replace this registry from the new server presentation. Never serialize a Request, model, env, password, token or secret into it.
 
@@ -8,7 +8,7 @@ Use Domi for PHP-generated page metadata, assets and JS localization. Keep stati
 
 All save buttons use loadingButton: preserve nodes/state, disable, display translated loading text and restore on success/failure. Settings remain AJAX; navigation is not a saving indicator. Translation keys live in lang/en and lang/fa and use descriptive names. Browser tests must check pending and restored labels, disabled state and document identity.
 
-Compatibility: tools/fix-domi-compatibility.php runs before Composer autoload generation. It maps Domi's obsolete EnumToArray import to PackageCore EnumMacros and makes nullable string parameters explicit. Remove after a compatible upstream release; verify package discovery and localization tests on upgrades.
+Compatibility fixes belong in the package source at `../maral/packages/domi`. Release 1.14.1 includes PackageCore EnumMacros compatibility and explicit nullable string parameters. Jobic installs the published package without vendor patches or Composer repair scripts. Verify package discovery and localization tests on upgrades; see `docs/package-development.md`.
 
 
 ## Domi layout integration

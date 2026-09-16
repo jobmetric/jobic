@@ -18,7 +18,7 @@ Installation starts in English. The first page posts the selected `en` or `fa` l
 
 ## Translation compatibility
 
-The installed laravel-translation 3.9.0 helpers declare two implicit nullable parameters. `tools/fix-translation-nullability.php` changes those declarations to `?string`, without suppressing deprecations or altering helper behavior. Composer runs this idempotent patch on `pre-autoload-dump`, before loading application helpers. When running Composer with `--no-scripts`, run the patch manually. It fails visibly if upstream signatures change and need review. Remove it after upgrading to an upstream release with the fix.
+Jobic requires `jobmetric/laravel-translation:^3.9.1`. The package itself declares explicit nullable locale parameters, preserving helper behavior without PHP 8.4+ deprecations. No vendor patch or Composer repair script is needed, including installs using `--no-scripts`. Maintain package fixes in `../maral/packages/laravel-translation`; see `docs/package-development.md`.
 
 ## Panel navigation and settings
 

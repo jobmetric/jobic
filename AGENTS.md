@@ -2,6 +2,8 @@
 
 Read `.cursor/rules/` and `docs/hooks.md` before changing CMS features.
 
+- Fix JobMetric package defects in their repositories under `../maral/packages/`, not in Jobic's `vendor/` or Composer repair scripts. Preserve unrelated package work, test and release the package, then update Jobic's version constraint and lock file. Follow `docs/package-development.md` and `.cursor/rules/jobmetric-packages.mdc`; publish only when authorized by the task.
+
 - Every PHP class and named method in `app/` must follow the PHPDoc style of `App\Services\Auth\Authentication`. Read `docs/phpdoc.md` and `.cursor/rules/phpdoc.mdc`: meaningful English summary, ordered typed `@param` entries, a blank line before `@return`, and accurate `@throws` where applicable. Keep documentation synchronized with implementation, including private methods; preserve framework and generic annotations.
 
 - Keep Controller → Form Request → domain service → PackageCore Response.

@@ -1,0 +1,13 @@
+---
+description: Fix and release owned JobMetric packages upstream instead of patching vendor
+alwaysApply: true
+---
+
+Read `docs/package-development.md` when changing JobMetric dependencies.
+
+- Package development repositories live in `../maral/packages/<package>/` (Domi: `domi`, Translation: `laravel-translation`). Read their local contribution rules first.
+- Fix defects in those repositories. Never modify installed vendor code or add application Composer hooks/tools that rewrite package code.
+- Inspect existing changes, branch and remote state. Preserve unrelated edits and commit only task-owned changes.
+- Validate compatibility and behavior, document the release, and use a new immutable semantic version. Commit, push and tag only when the user has authorized publication.
+- Upgrade Jobic's Composer constraints and lock from the published stable release. Do not leave local path repositories, dev branches or hand-edited lock references in deployment configuration.
+- Remove superseded repair scripts/hooks, update integration docs and run package discovery plus relevant application regression tests against the installed release.
