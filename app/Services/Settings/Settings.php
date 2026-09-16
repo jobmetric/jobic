@@ -12,14 +12,16 @@ use App\Http\Requests\Settings\SecurityRequest;
 use App\Models\LoginEvent;
 use App\Models\User;
 use App\Support\Installation\Environment;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
 /**
  * Manage website and account settings.
  */
-class Settings
+readonly class Settings
 {
     /**
      * Initialize the service dependencies.
@@ -28,7 +30,9 @@ class Settings
      *
      * @return void
      */
-    public function __construct(private readonly Environment $environment) {}
+    public function __construct(private Environment $environment)
+    {
+    }
 
     /**
      * Get the account and configuration data for a settings page.
@@ -37,17 +41,27 @@ class Settings
      * @param int $userId
      *
      * @return array<string, mixed>
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws ModelNotFoundException
      */
     public function page(string $section, int $userId): array
     {
         $user = User::query()->findOrFail($userId);
         $values = $this->environment->read();
 
-        return ['section' => $section, 'account' => $user,
-            'site' => ['APP_NAME' => $values['APP_NAME'] ?? config('app.name'), 'APP_URL' => $values['APP_URL'] ?? config('app.url')],
+        return [
+            'section'     => $section,
+            'account'     => $user,
+            'site'        => [
+                'APP_NAME' => $values['APP_NAME'] ?? config('app.name'),
+                'APP_URL'  => $values['APP_URL'] ?? config('app.url'),
+            ],
             'preferences' => array_replace(config('admin.appearance'), $user->ui_preferences ?? []),
-            'loginEvents' => $section === 'security' ? LoginEvent::query()->where('user_id', $userId)->latest('created_at')->limit(15)->get() : collect()];
+            'loginEvents' => $section === 'security' ? LoginEvent::query()
+                ->where('user_id', $userId)
+                ->latest('created_at')
+                ->limit(15)
+                ->get() : collect(),
+        ];
     }
 
     /**
@@ -57,7 +71,8 @@ class Settings
      * @param int|null $userId
      *
      * @return Response
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
+     * @throws Throwable
      */
     public function general(array $data, ?int $userId = null): Response
     {
@@ -67,7 +82,7 @@ class Settings
         try {
             $this->environment->write($values);
 
-            Hooks::notify('jobic.settings.'.$context['section'].'.saved', $context);
+            Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
             return Response::make(true, trans('admin.saved'));
         } catch (Throwable) {
@@ -82,8 +97,9 @@ class Settings
      * @param int $userId
      *
      * @return Response
-     * @throws \Illuminate\Validation\ValidationException
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws ValidationException
+     * @throws ModelNotFoundException
+     * @throws Throwable
      */
     public function appearance(array $data, int $userId): Response
     {
@@ -93,7 +109,7 @@ class Settings
         Hooks::action('jobic.settings.appearance.saving', $context);
         $user->forceFill(['ui_preferences' => $values])->save();
 
-        Hooks::notify('jobic.settings.'.$context['section'].'.saved', $context);
+        Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
         return Response::make(true, trans('admin.saved'), $values);
     }
@@ -105,8 +121,9 @@ class Settings
      * @param int $userId
      *
      * @return Response
-     * @throws \Illuminate\Validation\ValidationException
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws ValidationException
+     * @throws ModelNotFoundException
+     * @throws Throwable
      */
     public function profile(array $data, int $userId): Response
     {
@@ -123,7 +140,7 @@ class Settings
         Hooks::action('jobic.settings.profile.saving', $context);
         $user->fill($values)->save();
 
-        Hooks::notify('jobic.settings.'.$context['section'].'.saved', $context);
+        Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
         return Response::make(true, trans('admin.saved'));
     }
@@ -135,8 +152,9 @@ class Settings
      * @param int $userId
      *
      * @return Response
-     * @throws \Illuminate\Validation\ValidationException
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws ValidationException
+     * @throws ModelNotFoundException
+     * @throws Throwable
      */
     public function security(array $data, int $userId): Response
     {
@@ -146,7 +164,7 @@ class Settings
         Hooks::action('jobic.settings.security.saving', $context);
         $user->forceFill(['password' => $values['password'], 'remember_token' => Str::random(60)])->save();
 
-        Hooks::notify('jobic.settings.'.$context['section'].'.saved', $context);
+        Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
         return Response::make(true, trans('admin.saved'));
     }

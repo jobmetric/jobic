@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Services\Installation\Installation;
 use Illuminate\Console\Command;
+use Throwable;
 
 /**
  * Provide release installation application behavior.
@@ -22,6 +23,7 @@ class ReleaseInstallation extends Command
      * @param Installation $installation
      *
      * @return int
+     * @throws Throwable
      */
     public function handle(Installation $installation): int
     {

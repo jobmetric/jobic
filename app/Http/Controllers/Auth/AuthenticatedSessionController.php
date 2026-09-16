@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 /**
  * Handle authenticated session page requests.
@@ -36,11 +37,12 @@ class AuthenticatedSessionController extends Controller
      * @param LoginRequest $request
      *
      * @return RedirectResponse
+     * @throws Throwable
      */
     public function store(LoginRequest $request): RedirectResponse
     {
         $result = Authentication::login($request->validated(), [
-            'ip' => $request->ip(),
+            'ip'         => $request->ip(),
             'user_agent' => (string) $request->userAgent(),
         ]);
 
@@ -59,6 +61,7 @@ class AuthenticatedSessionController extends Controller
      * @param Request $request
      *
      * @return RedirectResponse
+     * @throws Throwable
      */
     public function destroy(Request $request): RedirectResponse
     {

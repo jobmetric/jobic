@@ -6,6 +6,8 @@ namespace App\Support\Installation;
 
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Application;
+use Random\RandomException;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -26,6 +28,7 @@ class Bootstrap
         if ($app->runningInConsole()) {
             return;
         }
+
         try {
             self::initialize($app);
         } catch (Throwable) {
@@ -39,6 +42,7 @@ class Bootstrap
      * @param Application $app
      *
      * @return void
+     * @throws RandomException
      */
     public static function initialize(Application $app): void
     {
@@ -46,14 +50,17 @@ class Bootstrap
         if ($environment->installed()) {
             return;
         }
-        $lock = fopen($app->environmentFilePath().'.bootstrap.lock', 'c');
+
+        $lock = fopen($app->environmentFilePath() . '.bootstrap.lock', 'c');
         if ($lock === false) {
-            throw new \RuntimeException('Cannot lock environment initialization.');
+            throw new RuntimeException('Cannot lock environment initialization.');
         }
+
         try {
             if (! flock($lock, LOCK_EX)) {
-                throw new \RuntimeException('Cannot lock environment initialization.');
+                throw new RuntimeException('Cannot lock environment initialization.');
             }
+
             $environment = new Environment($app->environmentFilePath(), $app->getCachedConfigPath());
             $exists = is_file($environment->path);
             $environment->initialize($app->basePath('.env.example'));
@@ -66,15 +73,18 @@ class Bootstrap
             if (! $exists) {
                 $changes = ['INSTALLATION_STATUS' => 'pending', 'INSTALLATION_STEP' => 0, 'INSTALLATION_TASK' => 0];
             }
+
             if (empty($values['APP_KEY'])) {
-                $changes['APP_KEY'] = 'base64:'.base64_encode(random_bytes(32));
+                $changes['APP_KEY'] = 'base64:' . base64_encode(random_bytes(32));
             }
+
             if (! empty($values['APP_KEY'])) {
                 $key = str_starts_with($values['APP_KEY'], 'base64:') ? base64_decode(substr($values['APP_KEY'], 7), true) : $values['APP_KEY'];
                 if (! is_string($key) || ! Encrypter::supported($key, 'AES-256-CBC')) {
-                    throw new \RuntimeException('Existing application key is invalid; restore it before continuing.');
+                    throw new RuntimeException('Existing application key is invalid; restore it before continuing.');
                 }
             }
+
             if ($changes !== []) {
                 $environment->write($changes);
             }

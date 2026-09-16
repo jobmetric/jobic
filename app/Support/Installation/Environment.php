@@ -7,12 +7,14 @@ namespace App\Support\Installation;
 use Closure;
 use Dotenv\Dotenv;
 use JobMetric\EnvModifier\EnvModifier;
+use JobMetric\EnvModifier\Exceptions\EnvFileNotFoundException;
+use Random\RandomException;
 use RuntimeException;
 
 /**
  * Manage atomic environment file updates.
  */
-class Environment
+readonly class Environment
 {
     /**
      * Initialize the service dependencies.
@@ -22,7 +24,9 @@ class Environment
      *
      * @return void
      */
-    public function __construct(public readonly string $path, private readonly ?string $cachePath = null) {}
+    public function __construct(public string $path, private ?string $cachePath = null)
+    {
+    }
 
     /**
      * Read environment values from the configured file.
@@ -53,7 +57,7 @@ class Environment
      */
     public function locked(Closure $callback): mixed
     {
-        $lock = fopen($this->path.'.lock', 'c');
+        $lock = fopen($this->path . '.lock', 'c');
         if ($lock === false) {
             throw new RuntimeException('Environment lock is not writable.');
         }
@@ -91,6 +95,8 @@ class Environment
      * @param array<string, mixed> $values
      *
      * @return void
+     * @throws EnvFileNotFoundException
+     * @throws RandomException
      */
     public function write(array $values): void
     {
@@ -99,11 +105,13 @@ class Environment
             if ($temporary === false) {
                 throw new RuntimeException('Cannot create environment temporary file.');
             }
+
             try {
                 chmod($temporary, 0600);
                 if (! copy($this->path, $temporary)) {
                     throw new RuntimeException('Cannot read environment.');
                 }
+
                 // Modify a private sibling, then atomically replace the live file.
                 // Unique placeholders avoid the package's regex replacement interpreting $1
                 // or backslashes in credentials. Dotenv literals are encoded afterwards.
@@ -113,15 +121,23 @@ class Environment
                     if (! preg_match('/^[A-Z][A-Z0-9_]*$/D', $key)) {
                         throw new RuntimeException('Invalid environment key.');
                     }
-                    $placeholder = 'JOBIC_'.bin2hex(random_bytes(24));
+
+                    $placeholder = 'JOBIC_' . bin2hex(random_bytes(24));
                     $placeholders[$key] = $placeholder;
                     $literal = is_bool($value) ? ($value ? 'true' : 'false') : ($value === null ? 'null' : (string) $value);
-                    $replacements[$placeholder] = '"'.str_replace(['\\', '"', '$', "\r", "\n"], ['\\\\', '\\"', '\\$', '\\r', '\\n'], $literal).'"';
+                    $replacements[$placeholder] = '"' . str_replace(['\\', '"', '$', "\r", "\n"], [
+                            '\\\\',
+                            '\\"',
+                            '\\$',
+                            '\\r',
+                            '\\n',
+                        ], $literal) . '"';
                 }
                 (new EnvModifier)->setPath($temporary)->set($placeholders);
                 if (file_put_contents($temporary, strtr(file_get_contents($temporary), $replacements), LOCK_EX) === false) {
                     throw new RuntimeException('Cannot write environment.');
                 }
+
                 $parsed = Dotenv::parse(file_get_contents($temporary));
                 foreach ($values as $key => $value) {
                     $expected = is_bool($value) ? ($value ? 'true' : 'false') : ($value === null ? 'null' : (string) $value);
@@ -129,6 +145,7 @@ class Environment
                         throw new RuntimeException('Environment value could not be encoded.');
                     }
                 }
+
                 $this->invalidateCache();
                 if (! rename($temporary, $this->path)) {
                     throw new RuntimeException('Cannot replace environment.');
@@ -166,6 +183,7 @@ class Environment
         if ($temporary === false) {
             throw new RuntimeException('Cannot create environment.');
         }
+
         try {
             chmod($temporary, 0600);
             if (file_put_contents($temporary, $contents, LOCK_EX) === false || ! rename($temporary, $this->path)) {

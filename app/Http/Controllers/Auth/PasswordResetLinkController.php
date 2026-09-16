@@ -11,6 +11,7 @@ use App\Support\Page;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 /**
  * Handle password reset link page requests.
@@ -35,6 +36,7 @@ class PasswordResetLinkController extends Controller
      * @param ForgotPasswordRequest $request
      *
      * @return RedirectResponse
+     * @throws Throwable
      */
     public function store(ForgotPasswordRequest $request): RedirectResponse
     {

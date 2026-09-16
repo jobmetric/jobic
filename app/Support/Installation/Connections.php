@@ -54,19 +54,11 @@ class Connections
         $driver = $values['DB_CONNECTION'];
 
         return match ($driver) {
-            'mysql',
-            'mariadb' => $this->mysqlDatabaseHasTables(
-                $connection,
-                $values['DB_DATABASE']
-            ),
+            'mysql', 'mariadb' => $this->mysqlDatabaseHasTables($connection, $values['DB_DATABASE']),
 
-            'pgsql' => $this->postgresDatabaseHasTables(
-                $connection
-            ),
+            'pgsql' => $this->postgresDatabaseHasTables($connection),
 
-            default => throw new RuntimeException(
-                "Unsupported database driver: {$driver}"
-            ),
+            default => throw new RuntimeException("Unsupported database driver: {$driver}"),
         };
     }
 
@@ -80,16 +72,13 @@ class Connections
      */
     private function mysqlDatabaseHasTables(Connection $connection, string $database): bool
     {
-        $table = $connection->selectOne(
-            <<<'SQL'
+        $table = $connection->selectOne(<<<'SQL'
         SELECT TABLE_NAME
         FROM information_schema.TABLES
         WHERE TABLE_SCHEMA = ?
           AND TABLE_TYPE = 'BASE TABLE'
         LIMIT 1
-        SQL,
-            [$database]
-        );
+        SQL, [$database]);
 
         return $table !== null;
     }
@@ -103,8 +92,7 @@ class Connections
      */
     private function postgresDatabaseHasTables($connection): bool
     {
-        $table = $connection->selectOne(
-            <<<'SQL'
+        $table = $connection->selectOne(<<<'SQL'
         SELECT tablename
         FROM pg_catalog.pg_tables
         WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
@@ -125,12 +113,17 @@ class Connections
     public function configureDatabase(array $values): void
     {
         $driver = $values['DB_CONNECTION'];
-        $config = config('database.connections.'.$driver, []);
+        $config = config('database.connections.' . $driver, []);
         $config = array_replace($config, [
-            'driver' => $driver, 'url' => null, 'host' => $values['DB_HOST'],
-            'port' => $values['DB_PORT'], 'database' => $values['DB_DATABASE'],
-            'username' => $values['DB_USERNAME'], 'password' => $values['DB_PASSWORD'] ?? '',
-            'prefix' => '', 'options' => [PDO::ATTR_TIMEOUT => 5],
+            'driver' => $driver,
+            'url' => null,
+            'host' => $values['DB_HOST'],
+            'port' => $values['DB_PORT'],
+            'database' => $values['DB_DATABASE'],
+            'username' => $values['DB_USERNAME'],
+            'password' => $values['DB_PASSWORD'] ?? '',
+            'prefix' => '',
+            'options' => [PDO::ATTR_TIMEOUT => 5],
         ]);
         config(['database.connections.installation' => $config]);
         DB::purge('installation');
@@ -148,13 +141,16 @@ class Connections
         foreach (array_unique([$values['REDIS_DB'], $values['REDIS_CACHE_DB']]) as $database) {
             $redis = new Redis;
             try {
-                $host = ($values['REDIS_SCHEME'] === 'tls' ? 'tls://' : '').$values['REDIS_HOST'];
+                $host = ($values['REDIS_SCHEME'] === 'tls' ? 'tls://' : '') . $values['REDIS_HOST'];
                 if (! $redis->connect($host, (int) $values['REDIS_PORT'], 5, null, 0, 5)) {
                     throw new RuntimeException('Redis unavailable.');
                 }
 
                 if (! empty($values['REDIS_PASSWORD'])) {
-                    $credentials = empty($values['REDIS_USERNAME']) ? $values['REDIS_PASSWORD'] : [$values['REDIS_USERNAME'], $values['REDIS_PASSWORD']];
+                    $credentials = empty($values['REDIS_USERNAME']) ? $values['REDIS_PASSWORD'] : [
+                        $values['REDIS_USERNAME'],
+                        $values['REDIS_PASSWORD'],
+                    ];
                     if (! $redis->auth($credentials)) {
                         throw new RuntimeException('Redis authentication failed.');
                     }

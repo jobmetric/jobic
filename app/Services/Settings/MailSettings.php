@@ -8,13 +8,14 @@ use App\Facades\Hooks;
 use App\Http\Requests\Settings\MailRequest;
 use App\Support\Installation\Environment;
 use App\Support\Installation\Fields;
+use Illuminate\Validation\ValidationException;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
 /**
  * Manage outgoing mail configuration.
  */
-class MailSettings
+readonly class MailSettings
 {
     /**
      * Initialize the service dependencies.
@@ -23,7 +24,9 @@ class MailSettings
      *
      * @return void
      */
-    public function __construct(private readonly Environment $environment) {}
+    public function __construct(private Environment $environment)
+    {
+    }
 
     /**
      * Get mail configuration values without exposing stored credentials.
@@ -42,7 +45,8 @@ class MailSettings
      * @param int|null $userId
      *
      * @return Response
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
+     * @throws Throwable
      */
     public function save(array $data, ?int $userId = null): Response
     {

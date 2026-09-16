@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Apply install middleware to requests.
+ * Apply to install middleware to requests.
  */
 class Install
 {
@@ -31,12 +31,14 @@ class Install
         if (app()->bound('installation.bootstrap_error')) {
             return response('Jobic: امکان آماده‌سازی فایل تنظیمات وجود ندارد. کلید APP_KEY، قالب env و دسترسی نوشتن .env و bootstrap/cache را بررسی کنید.', 503);
         }
+
         $installation = app(Installation::class);
         try {
             $completed = $installation->completed() || $installation->detectExisting();
         } catch (Throwable) {
             return response('Jobic: امکان خواندن وضعیت نصب وجود ندارد.', 503);
         }
+
         if ($completed) {
             if ($request->is('installation', 'installation/*')) {
                 return $request->expectsJson()
@@ -51,6 +53,7 @@ class Install
         foreach (['sessions', 'cache'] as $folder) {
             File::ensureDirectoryExists($directory.'/'.$folder, 0700);
         }
+
         $locale = app(Environment::class)->read()['INSTALLATION_LOCALE'] ?? 'en';
         app()->setLocale(in_array($locale, ['en', 'fa'], true) ? $locale : 'en');
         config([
@@ -64,6 +67,7 @@ class Install
             'cache.stores.installation' => ['driver' => 'file', 'path' => $directory.'/cache', 'lock_path' => $directory.'/cache'],
             'logging.default' => 'single',
         ]);
+
         if (! $request->is('installation', 'installation/*')) {
             return $request->is('api', 'api/*') || $request->expectsJson()
                 ? response()->json(['ok' => false, 'message' => trans('installation.required'), 'installation_url' => route('installation.intro')], 503)

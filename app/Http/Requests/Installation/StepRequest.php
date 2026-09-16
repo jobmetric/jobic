@@ -43,7 +43,13 @@ class StepRequest extends FormRequest
      */
     public static function rulesFor(array $input, array $context = []): array
     {
-        return ['step' => ['required', 'integer', 'between:1,5']] + Fields::rules(Fields::fields((int) ($input['step'] ?? 0)));
+        return [
+                'step' => [
+                    'required',
+                    'integer',
+                    'between:1,5',
+                ],
+            ] + Fields::rules(Fields::fields((int) ($input['step'] ?? 0)));
     }
 
     /**

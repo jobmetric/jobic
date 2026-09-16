@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 /**
  * Handle new password page requests.
@@ -42,6 +43,7 @@ class NewPasswordController extends Controller
      * @param ResetPasswordRequest $request
      *
      * @return RedirectResponse
+     * @throws Throwable
      */
     public function store(ResetPasswordRequest $request): RedirectResponse
     {
@@ -53,8 +55,6 @@ class NewPasswordController extends Controller
             ]);
         }
 
-        return redirect()
-            ->route('login')
-            ->with('status', $result->message);
+        return redirect()->route('login')->with('status', $result->message);
     }
 }

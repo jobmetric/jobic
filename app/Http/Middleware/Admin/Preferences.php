@@ -29,8 +29,11 @@ class Preferences
         view()->share('adminPreferences', $preferences);
         $sections = [];
         foreach (config('admin.settings') as $key => $item) {
-            $sections[$key] = $item + ['label' => trans('admin.sections.'.$key), 'description' => trans('admin.descriptions.'.$key),
-                'url' => $key === 'mail' ? route('admin.settings.mail.edit') : route('admin.settings.edit', $key)];
+            $sections[$key] = $item + [
+                    'label'       => trans('admin.sections.' . $key),
+                    'description' => trans('admin.descriptions.' . $key),
+                    'url'         => $key === 'mail' ? route('admin.settings.mail.edit') : route('admin.settings.edit', $key),
+                ];
         }
         view()->share('settingsSections', Hooks::filter('jobic.admin.settings.sections', $sections, ['user_id' => (int) $request->user()->id]));
 

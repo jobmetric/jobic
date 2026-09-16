@@ -17,7 +17,7 @@ class ResetPasswordNotification extends ResetPassword
      *
      * @param object $notifiable
      *
-     * @return array<string, mixed>
+     * @return MailMessage
      */
     public function toMail($notifiable): MailMessage
     {
@@ -26,8 +26,7 @@ class ResetPasswordNotification extends ResetPassword
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-        return (new MailMessage)
-            ->subject(__('auth.reset_mail_subject'))
+        return (new MailMessage)->subject(__('auth.reset_mail_subject'))
             ->line(__('auth.reset_mail_line1'))
             ->action(__('auth.reset_mail_action'), $url)
             ->line(__('auth.reset_mail_line2', ['count' => config('auth.passwords.users.expire')]))

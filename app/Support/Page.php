@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use JobMetric\Domi\Facades\Domi;
+use Throwable;
 
 /** Page-only presentation data; never pass requests, models or credentials. */
 class Page
@@ -29,6 +30,7 @@ class Page
      * @param string|null $media
      *
      * @return void
+     * @throws Throwable
      */
     public static function addStyle(string $url, ?string $media = null): void
     {
@@ -44,8 +46,11 @@ class Page
      *
      * @return void
      */
-    public static function addScript(string $url, string $position = 'bottom', string $type = 'application/javascript'): void
-    {
+    public static function addScript(
+        string $url,
+        string $position = 'bottom',
+        string $type = 'application/javascript'
+    ): void {
         Domi::setScript($url, $type, false, false, $position);
     }
 
