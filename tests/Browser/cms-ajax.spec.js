@@ -43,7 +43,7 @@ test('settings save without document navigation and use product branding', async
     for (const url of ['/admin', '/admin/settings', '/admin/settings/mail']) {
         await page.goto(url);
         expect(await page.locator('body').innerText()).not.toMatch(/vuero|css ?ninja|Erik Kovalsky/i);
-        await expect(page.locator('img[src$="/images/brand/jobmetric.png"]').first()).toBeAttached();
-        expect(await page.locator('img[src$="/images/brand/jobmetric.png"]').first().evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
+        await expect(page.locator('img[src$="/images/brand/jobmetric-transparent.png"]').first()).toBeAttached();
+        expect(await page.locator('img[src$="/images/brand/jobmetric-transparent.png"]').first().evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
     }
 });

@@ -2,4 +2,4 @@
 description: Mandatory AJAX settings saves and product branding
 alwaysApply: true
 ---
-Follow AGENTS.md. Every settings form must use resources/js/admin/settings.js and return PackageCore JSON for AJAX requests. No reload, redirect or navigation on save, including appearance/language. Preserve CSRF, validation, error focus, in-flight locking and shared toast; clear secrets after success. Test document identity and failure recovery. Reuse x-brand and public/images/brand/jobmetric.png. Keep template branding and demo content out of CMS-facing pages.
+Follow AGENTS.md. Every settings form must use resources/js/admin/settings.js and return PackageCore JSON for AJAX requests. No reload, redirect or navigation on save, including appearance/language. Preserve CSRF, validation, error focus, in-flight locking and shared toast; clear secrets after success. Test document identity and failure recovery. Reuse x-brand and public/images/brand/jobmetric-transparent.png. Keep template branding and demo content out of CMS-facing pages.

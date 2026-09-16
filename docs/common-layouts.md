@@ -41,3 +41,13 @@ RTL loads the local IRANSans regular/medium/bold WOFF2 files under `public/fonts
 All `form.cms-settings-form` elements use `resources/js/admin/settings.js`. Controllers return PackageCore JSON when Accept is application/json, with X-CSRF-TOKEN after session changes. The shared handler locks submission, preserves drafts after errors, marks invalid fields, focuses the error summary, clears saved secrets and shows a toast. The HTML redirect is a no-JavaScript fallback only.
 
 Appearance applies immediately. Locale and profile/site wording is fetched from the current server-rendered page and copied without replacing the document, form controls or event listeners. Do not use location.reload/location.assign after a save. Browser tests assert document identity survives success, validation failure and language changes. All new forms must follow AGENTS.md and the Cursor AJAX rule.
+
+## Transparent brand asset
+
+The shared `x-brand` component uses `public/images/brand/jobmetric-transparent.png`, a transparent-background version of the official JobMetric mark. The original source image remains available for reference. Do not add a white background to brand images; the same component is used by authentication, installation and the admin panel.
+
+The login welcome scene is decorative SVG with pointer-driven depth; it has no fabricated account statistics. It is hidden at widths of 900px or less. Pointer interaction is disabled for coarse pointers and reduced-motion preferences; form controls and language changes remain independent of the decoration.
+
+The login creative stage is an abstract website composition, with a local three-colour preview. Palette buttons only change the illustration, never persisted theme settings; labels use the auth translation catalog. Decorative layers are hidden from assistive technology.
+
+Legal pages share `legal.page`, the auth language panel, and Domi-backed AJAX localization. Their article scrolls independently; footer navigation stays outside the scroll region. `auth.remember_days` (`AUTH_REMEMBER_DAYS`, default 30) is used by both authentication and cookie copy; session lifetime is read from `session.lifetime`. Sign-in events currently have no automatic pruning policy, so the privacy text makes no time-based deletion promise. Operators must document and implement their actual log and backup retention policy.

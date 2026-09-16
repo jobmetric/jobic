@@ -10,6 +10,9 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
+    Route::post('/login/language', [AuthenticatedSessionController::class, 'language'])
+        ->middleware('throttle:30,1')->name('login.language');
+
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
         ->name('login.store');
 
@@ -35,3 +38,6 @@ Route::get('/privacy', [LegalController::class, 'privacy'])
 
 Route::get('/cookies', [LegalController::class, 'cookies'])
     ->name('legal.cookies');
+
+Route::post('/legal/language', [AuthenticatedSessionController::class, 'language'])
+    ->middleware('throttle:30,1')->name('legal.language');

@@ -52,3 +52,6 @@ html[dir='rtl'] [data-cms-shell][data-selected-layout] .admin-sidebar { left: au
 
 html[dir='rtl'] [data-cms-shell][data-selected-layout*='sideblock'][data-selected-layout$='curved'] .admin-sideblock { border-radius: 32px 0 0 32px; }
 .cms-brand-mark { object-fit: contain; border-radius: 6px; flex-shrink: 0; }
+
+/* Preserve the green mark while lifting its navy strokes on dark surfaces. */
+[data-theme="dark"] .cms-brand-mark { filter: url(#brand-dark-contrast); }

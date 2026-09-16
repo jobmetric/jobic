@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Auth;
 use App\Facades\Authentication;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\LanguageRequest;
+use Illuminate\Http\JsonResponse;
 use App\Support\Page;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,9 +28,31 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        Page::prepare('auth', 'fa');
+        app()->setLocale(session('auth_locale', 'fa'));
+        Page::prepare('auth');
+        Page::addLocalize('auth', [
+            'show_password' => trans('auth.screen.show'),
+            'hide_password' => trans('auth.screen.hide'),
+        ]);
 
         return view('auth.login');
+    }
+
+    /**
+     * Save the guest language and return the standard settings response.
+     *
+     * @param LanguageRequest $request
+     *
+     * @return JsonResponse|RedirectResponse
+     * @throws Throwable
+     */
+    public function language(LanguageRequest $request): JsonResponse|RedirectResponse
+    {
+        $result = Authentication::language($request->validated());
+
+        return $request->expectsJson()
+            ? response()->json($result, $result->status)
+            : redirect()->route('login');
     }
 
     /**

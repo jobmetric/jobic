@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \JobMetric\PackageCore\Output\Response logout(array $context = [])
  * @method static \JobMetric\PackageCore\Output\Response sendResetLink(array $data, array $context = [])
  * @method static \JobMetric\PackageCore\Output\Response resetPassword(array $data)
+ * @method static \JobMetric\PackageCore\Output\Response language(array $data)
  *
  * @see \App\Services\Auth\Authentication
  */

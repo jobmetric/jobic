@@ -8,6 +8,8 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\LoginEvent;
+use App\Facades\Hooks;
+use App\Http\Requests\Auth\LanguageRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
@@ -21,11 +23,29 @@ use Throwable;
  */
 class Authentication
 {
+    /**
+     * Validate and persist the guest interface language in the current session.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return Response
+     * @throws Throwable
+     */
+    public function language(array $data): Response
+    {
+        $data = dto($data, LanguageRequest::class);
+        $context = ['locale' => $data['locale']];
+        Hooks::action('jobic.auth.language.saving', $context);
+        session()->put('auth_locale', $data['locale']);
+        app()->setLocale($data['locale']);
+        Hooks::notify('jobic.auth.language.saved', $context);
+
+        return Response::make(true, trans('auth.screen.language_saved'));
+    }
+
     private const int LOGIN_MAX_ATTEMPTS = 5;
 
     private const int FORGOT_MAX_ATTEMPTS = 5;
-
-    private const int|float REMEMBER_MINUTES = 60 * 24 * 30;
 
     /**
      * Login user with email and password.
@@ -55,7 +75,7 @@ class Authentication
                 ]), null, 429);
         }
 
-        Auth::guard('web')->setRememberDuration(self::REMEMBER_MINUTES);
+        Auth::guard('web')->setRememberDuration(max(1, (int) config('auth.remember_days', 30)) * 24 * 60);
 
         if (! Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']], $remember)) {
             RateLimiter::hit($throttleKey);

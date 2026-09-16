@@ -4,6 +4,8 @@ use App\Models\User;
 
 return [
 
+    'remember_days' => (int) env('AUTH_REMEMBER_DAYS', 30),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults

@@ -18,7 +18,7 @@ export async function sendSettings(url, data) {
 
 // Copy server-rendered wording without replacing controls, event handlers or drafts.
 // Match static element structure; dynamic widgets and extension slots remain intact.
-export async function refreshPresentation() {
+export async function refreshPresentation(selector = '[data-cms-shell]') {
     const response = await fetch(location.href, { headers: { Accept: 'text/html' }, credentials: 'same-origin', cache: 'no-store' });
     if (!response.ok || response.redirected) return;
     const next = new DOMParser().parseFromString(await response.text(), 'text/html');
@@ -44,7 +44,9 @@ export async function refreshPresentation() {
         const replacements = [...incoming.childNodes];
         if (children.length === replacements.length) children.forEach((child, index) => copy(child, replacements[index]));
     }
-    copy(document.querySelector('[data-cms-shell]'), next.querySelector('[data-cms-shell]'));
+    const currentRoot = document.querySelector(selector);
+    const nextRoot = next.querySelector(selector);
+    if (currentRoot && nextRoot) copy(currentRoot, nextRoot);
 }
 
 export function bindSettingsForms({ announce, applyPreferences }) {

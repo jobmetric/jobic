@@ -20,9 +20,10 @@ class LegalController extends Controller
      */
     public function privacy(): View
     {
-        Page::prepare('auth', 'fa');
+        app()->setLocale(session('auth_locale', 'fa'));
+        Page::prepare('legal');
 
-        return view('legal.privacy');
+        return view('legal.page', ['policy' => 'privacy']);
     }
 
     /**
@@ -32,8 +33,9 @@ class LegalController extends Controller
      */
     public function cookies(): View
     {
-        Page::prepare('auth', 'fa');
+        app()->setLocale(session('auth_locale', 'fa'));
+        Page::prepare('legal');
 
-        return view('legal.cookies');
+        return view('legal.page', ['policy' => 'cookies']);
     }
 }

@@ -7,13 +7,7 @@
             <header class="side-panel__header"><h2 id="{{ $panel }}-title">{{ __('admin.'.$label) }}</h2><button class="side-panel__close" type="button" data-panel-close aria-label="{{ __('admin.control_close') }}"><x-vuero.icon name="chevron-right" size="20" /></button></header>
             <div class="cms-panel-body">
                 @if ($panel === 'languages')
-                    <p class="cms-language-hint">{{ __('admin.language_hint') }}</p><div class="cms-language-grid" role="group" aria-label="{{ __('admin.language') }}">
-                        @foreach(['en' => ['English', 'English', 'us'], 'fa' => ['فارسی', 'Persian', 'ir']] as $locale => [$name, $subtitle, $flag])
-                            <button class="cms-language-option {{ app()->getLocale() === $locale ? 'is-active' : '' }}" type="button" data-cms-locale="{{ $locale }}" aria-pressed="{{ app()->getLocale() === $locale ? 'true' : 'false' }}">
-                                <span class="country-flag country-flag--{{ $flag }}" aria-hidden="true"></span><strong>{{ $name }}</strong><small>{{ $subtitle }}</small><span class="cms-language-check"><x-vuero.icon name="check" size="14" /></span>
-                            </button>
-                        @endforeach
-                    </div>
+                    <p class="cms-language-hint">{{ __('admin.language_hint') }}</p>@include('common.language-options')
                 @else
                     <div class="media-flex-center"><span class="vuero-avatar"><span>{{ mb_substr(auth()->user()->name, 0, 1) }}</span></span><strong>{{ auth()->user()->name }}</strong></div>
                     <p>{{ __('admin.activity_hint') }}</p>
