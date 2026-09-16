@@ -181,6 +181,10 @@ class Installation
         }
 
         return [
+            'connectionTests' => [
+                'database' => $owned && isset($state['database_test']) && hash_equals($state['database_test'], $this->fingerprint($this->credentials(array_intersect_key($values, Fields::groups(2)['database'])))),
+                'redis' => $owned && isset($state['redis_test']) && hash_equals($state['redis_test'], $this->fingerprint($this->credentials(array_intersect_key($values, Fields::groups(3)['redis'])))),
+            ],
             'values'       => $values,
             'requirements' => $this->requirements(),
             'owned'        => $owned,
@@ -223,7 +227,6 @@ class Installation
         $validated = dto($data, LanguageRequest::class);
 
         return $this->mutate($context, function (array &$state) use ($validated): Response {
-            $this->assertStep(1);
             $this->environment->write([
                 'INSTALLATION_LOCALE' => $validated['locale'],
                 'APP_LOCALE'          => $validated['locale'],
@@ -250,6 +253,8 @@ class Installation
         return $this->mutate($context, function (array &$state) use ($data): Response {
             $this->assertStep(2);
             $values = $this->credentials($data);
+            unset($state['database_test']);
+            $this->state->write($state);
             $this->connections->database($values);
             $state['database_test'] = $this->fingerprint($values);
 
@@ -273,6 +278,8 @@ class Installation
         return $this->mutate($context, function (array &$state) use ($data): Response {
             $this->assertStep(3);
             $values = $this->credentials($data);
+            unset($state['redis_test']);
+            $this->state->write($state);
             $this->connections->redis($values);
             $state['redis_test'] = $this->fingerprint($values);
 

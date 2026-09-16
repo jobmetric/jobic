@@ -1,0 +1,1 @@
+import{a as t}from"./form-layout-runtime-df83fa2c.js";import{i as o}from"./profile-layout-runtime-106dc460.js";import{j as i}from"./jquery-83fec99f.js";o("[data-profile-edit]");i(()=>{t(i("[data-profile-edit]"))});

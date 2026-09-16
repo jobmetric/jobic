@@ -63,3 +63,150 @@
     .installation-actions--split { gap: 8px; }
     .installation-actions--split > .button { padding-inline: 14px; font-size: 12px; }
 }
+
+/* Independent installation studio. Shared mail fields keep their base styling. */
+.installation-studio { --primary: #526344; --page: #f7f8f4; --surface: #fff; --border: #e4e7df; --text: #263429; --muted: #6d786e; min-height: 100vh; background: radial-gradient(ellipse at 12% 10%, #e8eddd 0, transparent 42%), #f7f8f4; padding-bottom: 1px; }
+.installation-studio .installation-navigation { display: flex; align-items: center; position: relative; padding: 24px max(24px, calc((100vw - 1200px)/2)); background: transparent; border-bottom: 1px solid var(--border); }
+.installation-studio .installation-navigation strong { font-size: 13px; font-weight: 500; color: var(--muted); }
+.installation-studio .installation-step-count { border: 1px solid var(--border); border-radius: 30px; padding: 9px 15px; font-size: 12px; background: #ffffffb0; }
+.installation-overall-progress { display: block; width: 100%; height: 3px; border: 0; accent-color: var(--primary); }
+.installation-overall-progress::-webkit-progress-bar { background: #e8ecdf; }
+.installation-overall-progress::-webkit-progress-value { background: #74875d; transition: width .4s; }
+.installation-studio .installation-container { width: min(1200px, calc(100% - 48px)); margin: 46px auto 24px; }
+.installation-studio .installation-heading { text-align: start; max-width: 780px; margin-bottom: 30px; }
+.installation-studio .installation-heading > p:first-of-type { display: none; }
+.installation-studio .installation-heading h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 700; letter-spacing: -.045em; color: var(--text); margin: 12px 0; }
+[dir=rtl] .installation-studio .installation-heading h1 { letter-spacing: 0; }
+.installation-eyebrow { display: inline-flex; align-items: center; gap: 9px; font-size: 10px; font-weight: 700; letter-spacing: .13em; color: var(--primary); }
+[dir=rtl] .installation-eyebrow { letter-spacing: 0; }
+.installation-eyebrow > span { width: 7px; height: 7px; background: #829864; border-radius: 50%; box-shadow: 0 0 0 4px #82986415; }
+.installation-studio .installation-language { padding: 0; margin-bottom: 24px; background: transparent; border: 0; }
+.installation-studio .installation-language__choices { gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 30px; background: #ecefe6; }
+.installation-studio .installation-language__choice { min-height: 38px; border-radius: 24px; border: 0; background: transparent; padding: 5px 14px; }
+.installation-studio .installation-language__choice.is-active { background: white; box-shadow: 0 2px 8px #2634290c; }
+.installation-studio .installation-language__badge, .installation-studio .installation-language__check { display: none; }
+.installation-workspace { display: grid; grid-template-columns: 285px minmax(0,1fr); gap: 28px; align-items: start; }
+.installation-sidebar { position: sticky; top: 28px; padding: 28px 22px; border-radius: 24px; background: #e9eddf; border: 1px solid #dfe5d4; }
+.installation-orbit { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid #b4c09f; border-radius: 16px; color: #63764d; font-size: 34px; margin-bottom: 22px; transform: rotate(-8deg); }
+.installation-sidebar-intro h2 { font-size: 21px; font-weight: 600; margin-bottom: 10px; }
+.installation-sidebar-intro p { font-size: 13px; line-height: 1.9; color: var(--muted); }
+.installation-studio .installation-steps { display: grid; gap: 6px; margin: 26px -10px 20px; }
+.installation-studio .installation-steps button { display: flex; align-items: center; gap: 12px; padding: 12px 10px; text-align: start; background: transparent; border: 1px solid transparent; border-radius: 13px; transition: background .2s, transform .2s; }
+.installation-studio .installation-steps [aria-current] { background: #fff; border-color: #dfe5d4; box-shadow: 0 4px 16px #26342906; }
+.installation-step-number { width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center; border-radius: 50%; border: 1px solid #c9d1bd; font-size: 12px; }
+[aria-current] .installation-step-number { background: var(--primary); border-color: var(--primary); color: white; }
+.installation-steps strong { font-size: 13px; font-weight: 600; display: block; }
+.installation-steps small { display: block; font-size: 11px; margin-top: 4px; color: var(--muted); }
+.installation-steps .is-step-finished .installation-step-number { background: #d8e3c8; border-color: #c3d3ad; }
+.installation-trust { display: flex; gap: 10px; border-top: 1px solid #d4ddc8; padding-top: 18px; font-size: 11px; line-height: 1.9; color: #647357; }
+.installation-trust svg { flex-shrink: 0; margin-top: 5px; }
+.installation-stage { min-width: 0; }
+.installation-studio .installation-panel { padding: clamp(22px, 4vw, 42px); border-radius: 24px; box-shadow: 0 12px 50px #293b2510; animation: installation-enter .35s ease both; }
+.installation-kicker { color: #7f8d72; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.installation-studio .installation-panel h2 { margin: 10px 0 12px; font-weight: 650; font-size: 27px; color: var(--text); }
+.installation-panel-heading > p { font-size: 14px; color: var(--muted); max-width: 540px; }
+.installation-studio .installation-panel fieldset { padding: 22px 0 8px; border: 0; border-top: 1px solid var(--border); border-radius: 0; margin: 24px 0; }
+.installation-studio .installation-panel legend { padding-inline: 0 16px; font-size: 13px; color: #46573d; }
+.installation-studio fieldset > p { font-size: 12px; color: var(--muted); background: #f4f6ef; padding: 12px 15px; border-radius: 10px; }
+.installation-studio .installation-fields { gap: 22px; }
+.installation-studio .installation-field > label { font-weight: 550; font-size: 12px; }
+.installation-studio .installation-field input, .installation-studio .installation-field select { min-height: 50px; background: #fbfcf9; border-radius: 11px; border-color: #dde3d5; transition: border-color .2s, box-shadow .2s, background .2s; font-size: 14px; }
+.installation-studio .installation-field input:focus, .installation-studio .installation-field select:focus { outline: 0; border-color: #879974; box-shadow: 0 0 0 4px #87997418; background: white; }
+.installation-studio .installation-field [aria-invalid=true] { border-color: #ba5362; box-shadow: 0 0 0 3px #ba536211; }
+.installation-input-wrap { position: relative; }
+.installation-input-wrap input { padding-inline-end: 48px; }
+.installation-password-toggle { position: absolute; inset-inline-end: 7px; top: 7px; width: 36px; height: 36px; display: grid; place-items: center; background: transparent; border: 0; border-radius: 8px; color: var(--muted); cursor: pointer; }
+.installation-password-toggle:hover { background: #e8eddf; }
+.installation-password-help { font-size: 11px; color: var(--muted); line-height: 1.7; }
+.installation-password-meter { height: 4px; width: 100%; accent-color: #78915d; border: 0; }
+.installation-studio .installation-checks { gap: 9px; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.installation-studio .installation-checks li { background: #f5f7f1; border: 1px solid #e7ebdf; padding: 12px; border-radius: 10px; font-size: 11px; align-items: center; }
+.installation-studio .installation-checks .is-failed { background: #fff5f4; border-color: #f0d5d3; }
+.installation-studio .button { border: 1px solid #dce3d3; border-radius: 11px; min-height: 46px; padding: 10px 20px; background: #fff; color: var(--primary); font-size: 13px; font-weight: 600; transition: transform .2s, box-shadow .2s; cursor: pointer; }
+.installation-studio .button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px #26342912; }
+.installation-studio .button--primary { background: #526344; border-color: #526344; color: #fff; box-shadow: 0 4px 10px #52634420; }
+.installation-studio .installation-actions { padding-top: 24px; border-top: 1px solid var(--border); }
+.installation-studio [data-test-result] { font-size: 12px; color: #52733e; margin-inline-start: 12px; }
+.installation-studio .installation-notice { background: #f0f5e9; border-color: #d5e3c5; font-size: 13px; }
+.installation-studio .installation-notice.is-failed { background: #fff4f3; border-color: #ebc9c9; }
+.installation-launch { display: grid; place-items: center; width: 80px; height: 80px; background: #edf2e5; color: #728759; border-radius: 24px; font-size: 48px; margin-bottom: 24px; }
+.installation-studio .installation-tasks { list-style: none; counter-reset: task; padding: 0; display: grid; gap: 10px; }
+.installation-studio .installation-tasks li { counter-increment: task; display: flex; align-items: center; gap: 12px; font-size: 13px; padding: 8px 12px; border-radius: 10px; background: #f7f8f4; }
+.installation-tasks li::before { content: counter(task); border: 1px solid #dce4d2; border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; flex-shrink: 0; }
+.installation-tasks li.is-passed::before { content: '✓'; color: #507235; background: #e1ecd6; }
+.installation-tasks li.is-current { box-shadow: inset 0 0 0 1px #bacaaa; }
+.installation-footer { text-align: center; color: #7d8877; font-size: 11px; padding: 32px 0 10px; }
+@keyframes installation-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media(max-width: 900px) { .installation-workspace { grid-template-columns: 220px minmax(0,1fr); gap: 18px; } .installation-sidebar { padding: 22px 16px; } .installation-studio .installation-fields { grid-template-columns: 1fr; } }
+@media(max-width: 680px) { .installation-studio .installation-container { width: calc(100% - 28px); margin-top: 28px; } .installation-workspace { grid-template-columns: 1fr; } .installation-sidebar { position: static; padding: 10px; border-radius: 16px; } .installation-sidebar-intro,.installation-trust,.installation-steps small { display: none; } .installation-studio .installation-steps { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); margin: 0; gap: 0; } .installation-studio .installation-steps button { padding: 8px 0; justify-content: center; } .installation-steps button > span:last-child { display: none; } .installation-studio .installation-navigation { padding: 18px; } .installation-navigation strong { display: none; } .installation-studio .installation-language__choices { width: auto; } .installation-studio .installation-panel { border-radius: 18px; padding: 22px 18px; } .installation-studio .installation-heading h1 { font-size: 29px; } .installation-studio .installation-checks li span:last-child { width: 100%; margin: 0; } }
+@media(prefers-reduced-motion: reduce) { .installation-studio *, .installation-studio *::before { animation: none !important; transition: none !important; } }
+
+.installation-field-hint { font-size: 11px; font-weight: 400; color: var(--muted); line-height: 1.8; }
+.installation-field-hint:empty { display: none; }
+.installation-studio .installation-steps button:disabled { opacity: .65; }
+.installation-studio .installation-steps button.is-step-finished:disabled { opacity: 1; }
+.installation-studio :focus-visible { outline: 2px solid #6a8056; outline-offset: 3px; }
+.installation-toast { position: fixed; z-index: 10000; inset-block-start: 24px; inset-inline-end: 24px; display: flex; align-items: center; gap: 12px; max-width: min(440px, calc(100vw - 32px)); padding: 18px; border: 1px solid #d7e3ce; border-radius: 16px; background: #fff; color: #35482c; box-shadow: 0 12px 40px #25352026; font-size: 13px; line-height: 1.9; animation: installation-enter .25s ease both; }
+.installation-toast.is-error { color: #942f40; border-color: #ebc8cf; }
+.installation-toast-dot { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 5px #78915d16; }
+.installation-toast button { display: grid; place-items: center; border: 0; background: transparent; color: inherit; cursor: pointer; padding: 6px; flex-shrink: 0; }
+.installation-field .select2-container { font: inherit; min-width: 0; }
+.installation-studio .select2-container .select2-selection--single { height: 50px; background: #fbfcf9; border: 1px solid #dde3d5; border-radius: 11px; display: flex; align-items: center; }
+.installation-studio .select2-container .select2-selection__rendered { color: var(--text); padding-inline: 13px 36px; font-size: 14px; width: 100%; }
+.installation-studio .select2-container .select2-selection__arrow { inset-inline-end: 12px; inset-inline-start: auto; top: 12px; }
+.installation-studio .select2-container--open .select2-selection--single,.installation-studio .select2-container--focus .select2-selection--single { border-color: #879974; box-shadow: 0 0 0 4px #87997418; }
+.installation-studio .select2-dropdown { border: 1px solid #dce3d3; border-radius: 12px; overflow: hidden; padding: 6px; background: white; box-shadow: 0 12px 30px #2634291a; color: var(--text); font-size: 13px; }
+.installation-studio .select2-results__option { padding: 10px 12px; border-radius: 7px; }
+.installation-studio .select2-container--default .select2-results__option--highlighted[aria-selected] { background: #526344; color: white; }
+.installation-studio .select2-container--default .select2-results__option[aria-selected=true] { background: #e9efdf; color: #35482c; }
+.installation-studio .select2-search--dropdown .select2-search__field { min-height: 38px; border-radius: 8px; border-color: #dce3d3; }
+.installation-studio .installation-tasks li::before { content: none; }
+.installation-task-mark { width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center; border-radius: 50%; transition: background .3s; }
+.installation-task-mark svg { width: 28px; height: 28px; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.installation-task-mark circle { stroke: #d5decb; }
+.installation-task-mark path { stroke: #557a38; stroke-dasharray: 18; stroke-dashoffset: 18; transition: stroke-dashoffset .45s ease .1s; }
+.is-passed .installation-task-mark { background: #e4efd9; animation: installation-check-pop .4s ease both; }
+.is-passed .installation-task-mark circle { stroke: #83a869; }
+.is-passed .installation-task-mark path { stroke-dashoffset: 0; }
+.is-current .installation-task-mark circle { stroke: #7c945f; stroke-dasharray: 40 24; transform-origin: center; animation: installation-task-spin 1.4s linear infinite; }
+@keyframes installation-check-pop { 0% { transform: scale(.8); } 65% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes installation-task-spin { to { transform: rotate(360deg); } }
+@media(prefers-reduced-motion: reduce) { .installation-task-mark *, .installation-task-mark { animation: none !important; transition: none !important; } }
+/* Dropdowns are anchored outside animated panels so transforms cannot shift them. */
+.installation-studio { position: relative; }
+.installation-studio > .select2-container--open { z-index: 1050; }
+.installation-studio .select2-dropdown { animation: installation-dropdown-in .18s ease-out; transform-origin: top; }
+.installation-studio .select2-results__option { transition: background .15s, color .15s; }
+.installation-connection { display: flex; align-items: center; gap: 14px; padding: 18px; border: 1px solid #dce3d5; border-radius: 16px; background: #f6f8f2; transition: background .3s, border-color .3s, box-shadow .3s; position: relative; overflow: hidden; }
+.connection-symbol { display: grid; place-items: center; width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; background: #e8eedf; transition: background .3s, transform .3s; }
+.connection-symbol svg { width: 34px; height: 34px; stroke: #859578; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.connection-symbol circle { stroke-dasharray: 3 4; transform-origin: center; }
+.connection-check { stroke-dasharray: 22; stroke-dashoffset: 22; transition: stroke-dashoffset .45s ease .1s; }
+.connection-cross { opacity: 0; }
+.connection-copy { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.connection-copy strong { font-size: 13px; color: #3c5031; }
+.installation-studio .connection-copy [data-test-result] { margin: 0; color: #6e7d64; font-size: 12px; line-height: 1.8; }
+.installation-connection .button { flex-shrink: 0; }
+.installation-connection[data-state=pending] { border-color: #a3b793; box-shadow: 0 0 0 4px #a3b79312; }
+.installation-connection[data-state=pending] .connection-symbol circle { stroke-dasharray: 46 30; animation: installation-task-spin 1s linear infinite; }
+.installation-connection[data-state=pending]::after { content: ''; position: absolute; inset-block-end: 0; inset-inline-start: 0; height: 2px; width: 35%; background: linear-gradient(90deg, transparent, #849c6c, transparent); animation: connection-scan 1.5s ease-in-out infinite; }
+.installation-connection[data-state=success] { background: #f0f7e9; border-color: #a8c38e; box-shadow: 0 4px 18px #70934b12; }
+.installation-connection[data-state=success] .connection-symbol { background: #dfeecf; animation: installation-check-pop .45s ease both; }
+.installation-connection[data-state=success] circle { stroke: #82a960; stroke-dasharray: none; }
+.installation-connection[data-state=success] .connection-check { stroke: #4a7730; stroke-dashoffset: 0; }
+.installation-connection[data-state=error] { background: #fff6f5; border-color: #e8bec2; animation: connection-nudge .25s ease; }
+.installation-connection[data-state=error] .connection-symbol { background: #fae4e4; }
+.installation-connection[data-state=error] svg { stroke: #ba6170; }
+.installation-connection[data-state=error] .connection-cross { opacity: 1; }
+.installation-connection[data-state=error] circle { stroke-dasharray: none; }
+.installation-studio .installation-continue:not(:disabled) { animation: continue-ready .35s ease both; }
+.installation-panel:not([hidden]) .installation-field { animation: installation-field-in .38s ease both; }
+.installation-panel:not([hidden]) .installation-field:nth-child(2n) { animation-delay: .04s; }
+.installation-panel:not([hidden]) .installation-field:nth-child(n+3) { animation-delay: .08s; }
+@keyframes installation-dropdown-in { from { opacity: 0; transform: scaleY(.96); } to { opacity: 1; transform: scaleY(1); } }
+@keyframes installation-field-in { from { opacity: 0; translate: 0 5px; } to { opacity: 1; translate: 0 0; } }
+@keyframes continue-ready { from { box-shadow: 0 0 0 6px #92ac7326; } to { box-shadow: 0 4px 10px #52634420; } }
+@keyframes connection-nudge { 25% { translate: -3px 0; } 75% { translate: 3px 0; } }
+@keyframes connection-scan { from { inset-inline-start: -35%; } to { inset-inline-start: 100%; } }
+@media(max-width: 680px) { .installation-connection { flex-wrap: wrap; padding: 14px; gap: 12px; } .installation-connection .button { width: 100%; } }
+@media(prefers-reduced-motion: reduce) { .installation-studio *, .installation-studio *::after { animation: none !important; transition: none !important; } }

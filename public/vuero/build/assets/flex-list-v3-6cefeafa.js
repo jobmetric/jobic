@@ -1,1 +1,0 @@
-import{i as n}from"./list-view-runtime-afb96121.js";import{j as i}from"./jquery-fde43e1f.js";n("[data-flex-list-v3]",{initialize:(t,a)=>{t.on("click","[data-flex-purchase]",function(){const e=String(i(this).data("item-name")),r=String(i(this).data("item-price"));a(`Purchase started for ${e} ($${r}).`)})}});

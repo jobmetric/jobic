@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JobMetric\PackageCore\Output\Response;
-use JsonException;
+use JobMetric\Domi\Facades\Domi;
 use Throwable;
 
 /**
@@ -44,12 +44,30 @@ class IntroController extends Controller
      * @param Request $request
      *
      * @return View
-     * @throws JsonException
+     * @throws Throwable
      */
     public function index(Request $request): View
     {
         $data = $this->installation->viewData($this->context($request));
         Page::prepare('installation');
+        Domi::setPlugins(['jquery', 'select2']);
+        Page::addLocalize('installation', [
+            'connection_idle' => trans('installation.connection_idle'),
+            'connection_pending' => trans('installation.connection_pending'),
+            'connection_success' => trans('installation.connection_success'),
+            'connection_error' => trans('installation.connection_error'),
+            'select_empty' => trans('installation.select_empty'),
+            'select_search' => trans('installation.select_search'),
+            'show_password' => trans('installation.studio.show_password'),
+            'hide_password' => trans('installation.studio.hide_password'),
+            'password_short' => trans('installation.studio.password_short'),
+            'password_ready' => trans('installation.studio.password_ready'),
+            'error' => trans('installation.network_failed'),
+            'working' => trans('installation.working'),
+            'complete' => trans('installation.success'),
+            'step_count' => trans('installation.step_count'),
+            'progress_label' => trans('installation.progress_label'),
+        ]);
 
         return view('installation.index', $data);
     }
@@ -59,12 +77,15 @@ class IntroController extends Controller
      *
      * @param LanguageRequest $request
      *
-     * @return RedirectResponse
+     * @return RedirectResponse|JsonResponse
      * @throws Throwable
      */
-    public function language(LanguageRequest $request): RedirectResponse
+    public function language(LanguageRequest $request): RedirectResponse|JsonResponse
     {
         $result = $this->installation->language($request->validated(), $this->context($request));
+        if ($request->expectsJson()) {
+            return $this->json($result);
+        }
         if (! $result->ok) {
             throw ValidationException::withMessages(['locale' => $result->message]);
         }

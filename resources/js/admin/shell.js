@@ -1,3 +1,4 @@
+import { announce } from '../common/toast';
 import '../../css/admin-shell.css';
 import { bindSettingsForms, refreshPresentation } from './settings';
 
@@ -6,17 +7,7 @@ if (shell) {
     let preferences = JSON.parse(shell.dataset.preferences);
     let saved = { ...preferences };
     let pending = Promise.resolve();
-    let toastTimer;
     let revision = 0;
-    const announce = (message) => {
-        const toast = document.querySelector('[data-ui-toast]');
-        toast.querySelector('[data-ui-toast-message]').textContent = message;
-        toast.hidden = false;
-        toast.querySelector('[data-toast-dismiss]').onclick = () => { toast.hidden = true; clearTimeout(toastTimer); };
-        toast.classList.add('is-visible');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { toast.hidden = true; toast.classList.remove('is-visible'); }, 4500);
-    };
     const mediaTheme = window.matchMedia('(prefers-color-scheme: dark)');
     function apply(syncForm = false) {
         document.documentElement.dataset.theme = preferences.theme === 'system' ? (mediaTheme.matches ? 'dark' : 'light') : preferences.theme;

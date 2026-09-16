@@ -1,1 +1,0 @@
-import{j as a}from"./jquery-fde43e1f.js";a(()=>{const e=a("[data-starter-page]");e.length&&(window.requestAnimationFrame(()=>e.addClass("is-ready")),e.closest("[data-admin-shell]").on("click.starter",'.starter-sideblock__link[href="#"]',t=>{t.preventDefault()}))});

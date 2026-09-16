@@ -1,0 +1,1 @@
+import{i as n}from"./list-view-runtime-21b07633.js";import"./jquery-83fec99f.js";n("[data-list-view-v2]",{initialize:(t,o)=>{t.on("click","[data-property-action]",function(){const i=String($(this).data("item-name")),a=String($(this).data("property-action"));o(a==="book"?`Booking started for ${i}.`:`Property details opened for ${i}.`)})}});

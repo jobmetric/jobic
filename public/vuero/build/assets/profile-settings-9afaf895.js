@@ -1,0 +1,1 @@
+import{j as t}from"./jquery-83fec99f.js";t(()=>{const a=t("[data-profile-settings]");a.length&&(window.requestAnimationFrame(()=>a.addClass("is-ready")),a.on("click","[data-setting-card]",function(){a.find("[data-setting-card]").removeClass("is-active"),t(this).addClass("is-active")}))});

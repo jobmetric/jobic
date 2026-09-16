@@ -69,6 +69,48 @@ class InstallerTest extends TestCase
         ], $data));
     }
 
+    public function test_installer_localizes_every_field_option_and_javascript_message(): void
+    {
+        foreach (['en', 'fa'] as $locale) {
+            $this->post(route('installation.language'), ['locale' => $locale])->assertRedirect();
+            $response = $this->get(route('installation.intro'))->assertOk();
+            $response->assertSee('plugins/select2/dist/js/select2.full.min.js', false);
+            $response->assertSee('plugins/select2/dist/css/select2.min.css', false);
+            $html = $response->getContent();
+            preg_match('/<script[^>]*id="jobic-page-data"[^>]*>(.*?)<\/script>/s', $html, $matches);
+            $registry = json_decode($matches[1], true, flags: JSON_THROW_ON_ERROR);
+            $this->assertSame(trans('installation.network_failed'), $registry['installation']['error']);
+            $this->assertSame(trans('installation.step_count'), $registry['installation']['step_count']);
+            $this->assertStringNotContainsString('data-error-message=', $html);
+            foreach (range(1, 5) as $step) {
+                foreach (Fields::fields($step) as $name => $field) {
+                    $this->assertTrue(\Illuminate\Support\Facades\Lang::has('installation.fields.'.$name, $locale, false));
+                    if ($field[0] !== 'select') continue;
+                    foreach ($field[2] as $option) {
+                        $this->assertTrue(\Illuminate\Support\Facades\Lang::has('installation.options.'.$option, $locale, false));
+                        $response->assertSee(trans('installation.options.'.$option));
+                    }
+                }
+            }
+        }
+        $response = $this->postJson(route('installation.steps.store'), ['step' => 2]);
+        $response->assertUnprocessable()->assertJsonValidationErrors('DB_HOST');
+        $this->assertStringContainsString('میزبان دیتابیس', $response->json('errors.DB_HOST.0'));
+    }
+
+    public function test_language_can_change_during_installation_without_advancing_progress(): void
+    {
+        $this->environment->write(['INSTALLATION_STEP' => 5, 'INSTALLATION_STATUS' => 'running', 'INSTALLATION_TASK' => 2]);
+        $this->postJson(route('installation.language'), ['locale' => 'fa'])->assertOk()->assertJsonPath('ok', true);
+        $values = $this->environment->read();
+        $this->assertSame('fa', $values['INSTALLATION_LOCALE']);
+        $this->assertSame('5', $values['INSTALLATION_STEP']);
+        $this->assertSame('2', $values['INSTALLATION_TASK']);
+        $this->assertSame('running', $values['INSTALLATION_STATUS']);
+        $this->withSession(['installation_owner' => 'another-browser']);
+        $this->postJson(route('installation.language'), ['locale' => 'en'])->assertForbidden();
+    }
+
     public function test_uninstalled_web_redirects_before_database_sessions_and_api_returns_503(): void
     {
         config(['session.driver' => 'database']);
@@ -101,6 +143,20 @@ class InstallerTest extends TestCase
             $this->postJson(route('installation.steps.store'), array_replace($data, ['DB_HOST' => 'changed']))->assertUnprocessable();
             $this->postJson(route('installation.steps.store'), $data)->assertOk()->assertJsonPath('data.step', 2);
         }
+    }
+
+    public function test_failed_retest_revokes_saved_connection_confirmation(): void
+    {
+        $this->environment->write(['INSTALLATION_STEP' => 1]);
+        $this->connections->shouldReceive('database')->once()->ordered();
+        $this->connections->shouldReceive('database')->once()->ordered()->andThrow(new \RuntimeException('Connection unavailable'));
+        $this->postJson(route('installation.test.database'), $this->data(2))->assertOk();
+        $this->postJson(route('installation.steps.store'), $this->data(2))->assertOk();
+        $this->get(route('installation.intro'))->assertViewHas('connectionTests', fn ($tests) => $tests['database'] === true);
+        $this->postJson(route('installation.test.database'), $this->data(2))->assertUnprocessable();
+        $this->assertArrayNotHasKey('database_test', $this->state->read());
+        $this->get(route('installation.intro'))->assertViewHas('connectionTests', fn ($tests) => $tests['database'] === false);
+        $this->postJson(route('installation.steps.store'), $this->data(2))->assertUnprocessable();
     }
 
     public function test_connection_errors_are_sanitized(): void
