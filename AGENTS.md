@@ -2,6 +2,8 @@
 
 Read `.cursor/rules/` and `docs/hooks.md` before changing CMS features.
 
+- Every PHP class and named method in `app/` must follow the PHPDoc style of `App\Services\Auth\Authentication`. Read `docs/phpdoc.md` and `.cursor/rules/phpdoc.mdc`: meaningful English summary, ordered typed `@param` entries, a blank line before `@return`, and accurate `@throws` where applicable. Keep documentation synchronized with implementation, including private methods; preserve framework and generic annotations.
+
 - Keep Controller → Form Request → domain service → PackageCore Response.
 - New CMS pages inherit common layouts and expose documented view slots where extensions belong.
 - New settings/save operations must expose namespaced saving/saved hooks in the service, after validation and around persistence. Reuse App\Facades\Hooks; do not invent another dispatcher.

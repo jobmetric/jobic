@@ -5,8 +5,18 @@ namespace App\Http\Controllers\Vuero\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
+/**
+ * Handle layout page requests.
+ */
 class LayoutController extends Controller
 {
+    /**
+     * Render the requested page.
+     *
+     * @param string $layout
+     *
+     * @return View
+     */
     public function show(string $layout): View
     {
         abort_unless(in_array($layout, [
@@ -104,31 +114,53 @@ class LayoutController extends Controller
         });
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * Build the demo user grid users v1 data.
+     *
+     * @return list<array<string, mixed>>
+     */
     private function userGridUsersV1(): array
     {
         return $this->loadUserGridData('user-grid-v1');
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * Build the demo user grid users v2 data.
+     *
+     * @return list<array<string, mixed>>
+     */
     private function userGridUsersV2(): array
     {
         return $this->loadUserGridData('user-grid-v2');
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * Build the demo user grid users v3 data.
+     *
+     * @return list<array<string, mixed>>
+     */
     private function userGridUsersV3(): array
     {
         return $this->loadUserGridData('user-grid-v3');
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * Build the demo user grid users v4 data.
+     *
+     * @return list<array<string, mixed>>
+     */
     private function userGridUsersV4(): array
     {
         return $this->loadUserGridData('user-grid-v4');
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * Build the demo load user grid data data.
+     *
+     * @param string $slug
+     *
+     * @return list<array<string, mixed>>
+     */
     private function loadUserGridData(string $slug): array
     {
         $path = resource_path("data/vuero/layouts/{$slug}.json");
@@ -140,6 +172,11 @@ class LayoutController extends Controller
         return is_array($data) ? $data : [];
     }
 
+    /**
+     * Build the demo users data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function users(): array
     {
         $avatar = fn (string $id): string => "/vuero/images/layouts/list-view-v1/avatars/{$id}.jpg";
@@ -159,6 +196,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo properties data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function properties(): array
     {
         $items = [
@@ -181,6 +223,11 @@ class LayoutController extends Controller
         ])->all();
     }
 
+    /**
+     * Build the demo jobs data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function jobs(): array
     {
         $items = [
@@ -205,6 +252,11 @@ class LayoutController extends Controller
         ])->all();
     }
 
+    /**
+     * Build the demo recipes data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function recipes(): array
     {
         $avatar = fn (string $file): string => "/vuero/images/layouts/list-view-v1/avatars/{$file}";
@@ -249,6 +301,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo flex users data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function flexUsers(): array
     {
         $avatar = fn (?string $file): ?string => match (true) {
@@ -292,6 +349,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo flex projects data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function flexProjects(): array
     {
         $picture = fn (int $number): string => "/vuero/images/layouts/flex-list/abstracts/{$number}.png";
@@ -325,6 +387,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo flex courses data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function flexCourses(): array
     {
         $picture = fn (string $file): string => "/vuero/images/layouts/flex-list/courses/{$file}";
@@ -362,7 +429,13 @@ class LayoutController extends Controller
         })->all();
     }
 
-    /** @param  list<array{0: string}|list{string}>  $contacts */
+    /**
+     * Build the demo flex contacts data.
+     *
+     * @param list<array{0: string}|list{string}> $contacts
+     *
+     * @return array<array-key, mixed>
+     */
     private function flexContacts(array $contacts): array
     {
         return collect($contacts)->map(function (array $contact): array {
@@ -378,6 +451,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo grid card social links data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function gridCardSocialLinks(): array
     {
         return [
@@ -388,6 +466,13 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo grid card badge data.
+     *
+     * @param string $file
+     *
+     * @return string
+     */
     private function gridCardBadge(string $file): string
     {
         $flags = ['united-states-of-america', 'france', 'germany', 'england', 'australia', 'canada', 'spain'];
@@ -399,6 +484,11 @@ class LayoutController extends Controller
         return '/vuero/images/layouts/grid-cards/stacks/'.pathinfo($file, PATHINFO_FILENAME).'.svg';
     }
 
+    /**
+     * Build the demo grid card users data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function gridCardUsers(): array
     {
         $avatar = fn (string $file): string => '/vuero/images/layouts/list-view-v1/avatars/'.$file;
@@ -435,6 +525,11 @@ class LayoutController extends Controller
         ])->all();
     }
 
+    /**
+     * Build the demo grid card projects data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function gridCardProjects(): array
     {
         $photo = fn (string $file): string => '/vuero/images/layouts/grid-cards/apps/'.$file;
@@ -476,6 +571,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo grid card projects v3 data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function gridCardProjectsV3(): array
     {
         $photo = fn (string $file): string => '/vuero/images/layouts/grid-cards/apps/'.$file;
@@ -514,6 +614,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo grid card posts data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function gridCardPosts(): array
     {
         $photo = fn (int $number): string => '/vuero/images/layouts/grid-cards/posts/'.$number.'.jpg';
@@ -556,6 +661,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo tile grid users data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function tileGridUsers(): array
     {
         $avatar = fn (?string $file): ?string => match (true) {
@@ -605,6 +715,11 @@ class LayoutController extends Controller
         ])->all();
     }
 
+    /**
+     * Build the demo tile grid files data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function tileGridFiles(): array
     {
         $icon = fn (string $name): string => '/vuero/images/layouts/grid-tiles/files/'.$name.'.svg';
@@ -637,7 +752,13 @@ class LayoutController extends Controller
         ])->all();
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Build the demo onboarding page data.
+     *
+     * @param string $variant
+     *
+     * @return array<string, mixed>
+     */
     private function onboardingPage(string $variant): array
     {
         return [
@@ -647,6 +768,13 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo demo avatar data.
+     *
+     * @param string $file
+     *
+     * @return string
+     */
     private function demoAvatar(string $file): string
     {
         if (str_contains($file, 'vuero-1.svg')) {
@@ -656,6 +784,14 @@ class LayoutController extends Controller
         return '/vuero/images/layouts/list-view-v1/avatars/'.basename($file);
     }
 
+    /**
+     * Build the demo onboarding image data.
+     *
+     * @param string $set
+     * @param int $number
+     *
+     * @return array<array-key, mixed>
+     */
     private function onboardingImage(string $set, int $number): array
     {
         $base = "/vuero/images/onboarding/{$set}-{$number}";
@@ -663,6 +799,13 @@ class LayoutController extends Controller
         return ['image' => "{$base}.svg", 'dark_image' => "{$base}-dark.svg"];
     }
 
+    /**
+     * Build the demo onboarding cards data.
+     *
+     * @param string $variant
+     *
+     * @return array<array-key, mixed>
+     */
     private function onboardingCards(string $variant): array
     {
         $cards = match ($variant) {
@@ -709,6 +852,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo project members data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectMembers(): array
     {
         return collect(['7.jpg', '9.jpg', '12.jpg', 'vuero-1.svg', '25.jpg', '22.jpg'])
@@ -716,6 +864,11 @@ class LayoutController extends Controller
             ->all();
     }
 
+    /**
+     * Build the demo project recent data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectRecent(): array
     {
         return [
@@ -727,6 +880,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project advanced users data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectAdvancedUsers(): array
     {
         $flag = fn (string $country): string => "/vuero/images/layouts/list-view-v1/flags/{$country}.svg";
@@ -740,6 +898,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project header stats data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectHeaderStats(): array
     {
         return [
@@ -750,6 +913,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project cards data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectCards(): array
     {
         $description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Idem iste, inquam, de voluptate quid sentit? Itaque contra est, ac dicitis; Quae cum essent dicta, discessimus. Iam enim adesse poterit. Duo Reges: constructio interrete.';
@@ -785,6 +953,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo project illustration stats data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectIllustrationStats(): array
     {
         return [
@@ -795,6 +968,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project recent boxes data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectRecentBoxes(): array
     {
         return [
@@ -804,6 +982,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project minimal items data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectMinimalItems(): array
     {
         $text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Idem iste, inquam, de voluptate quid sentit? Itaque contra est, ac dicitis; Quae cum essent dicta, discessimus. Iam enim adesse poterit. Duo Reges: constructio interrete.';
@@ -834,6 +1017,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo project detail participants data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectDetailParticipants(): array
     {
         return collect(['7.jpg', '9.jpg', '12.jpg', 'vuero-1.svg', '25.jpg'])
@@ -841,6 +1029,11 @@ class LayoutController extends Controller
             ->all();
     }
 
+    /**
+     * Build the demo project detail features data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectDetailFeatures(): array
     {
         return [
@@ -851,6 +1044,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project detail files data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectDetailFiles(): array
     {
         return [
@@ -863,6 +1061,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project detail side cards data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectDetailSideCards(): array
     {
         $stack = fn (string $file): string => '/vuero/images/layouts/grid-cards/stacks/'.$file;
@@ -893,6 +1096,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project detail team data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectDetailTeam(): array
     {
         $bio = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Si enim ad populum me vocas, eum. Quod cum dixissent, ille contra. Cur id non ita fit? Duo Reges: constructio interrete.';
@@ -909,6 +1117,11 @@ class LayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo project detail tasks data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function projectDetailTasks(): array
     {
         $items = [
@@ -932,6 +1145,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo kanban participants data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function kanbanParticipants(): array
     {
         return collect(['7.jpg', '9.jpg', '12.jpg', 'vuero-1.svg', '25.jpg', '13.jpg', '16.jpg', '18.jpg'])
@@ -939,6 +1157,11 @@ class LayoutController extends Controller
             ->all();
     }
 
+    /**
+     * Build the demo kanban columns data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function kanbanColumns(): array
     {
         $board = fn (string $name): array => [
@@ -980,6 +1203,11 @@ class LayoutController extends Controller
         })->all();
     }
 
+    /**
+     * Build the demo saas billing plans data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function saasBillingPlans(): array
     {
         $icon = fn (string $file): string => "/vuero/images/logos/logo/{$file}";
@@ -1036,7 +1264,11 @@ class LayoutController extends Controller
         ];
     }
 
-    /** @return list<array{name: string, unit: string, quantity: int, rate: int}> */
+    /**
+     * Build the demo invoice items data.
+     *
+     * @return list<array{name: string, unit: string, quantity: int, rate: int}>
+     */
     private function invoiceItems(): array
     {
         return [

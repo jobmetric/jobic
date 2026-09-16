@@ -9,21 +9,54 @@ use JobMetric\Domi\Facades\Domi;
 /** Page-only presentation data; never pass requests, models or credentials. */
 class Page
 {
+    /**
+     * Register public page data in the Domi localization registry.
+     *
+     * @param string $namespace
+     * @param array<string, mixed> $data
+     *
+     * @return void
+     */
     public static function addLocalize(string $namespace, array $data): void
     {
         Domi::setLocalize($namespace, $data);
     }
 
+    /**
+     * Register a page stylesheet with Domi.
+     *
+     * @param string $url
+     * @param string|null $media
+     *
+     * @return void
+     */
     public static function addStyle(string $url, ?string $media = null): void
     {
         Domi::setStyle($url, $media);
     }
 
+    /**
+     * Register a page script at the requested Domi position.
+     *
+     * @param string $url
+     * @param string $position
+     * @param string $type
+     *
+     * @return void
+     */
     public static function addScript(string $url, string $position = 'bottom', string $type = 'application/javascript'): void
     {
         Domi::setScript($url, $type, false, false, $position);
     }
 
+    /**
+     * Reset page presentation data and register localized interface messages.
+     *
+     * @param string $page
+     * @param string|null $locale
+     *
+     * @return void
+     */
     public static function prepare(string $page, ?string $locale = null): void
     {
         Domi::clearResolvedInstance(\JobMetric\Domi\Domi::class);

@@ -8,10 +8,18 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Apply security headers middleware to requests.
+ */
 class SecurityHeaders
 {
     /**
-     * @param  Closure(Request): Response  $next
+     * Add security headers to the outgoing response.
+     *
+     * @param Request $request
+     * @param Closure(Request): Response $next
+     *
+     * @return Response
      */
     public function handle(Request $request, Closure $next): Response
     {

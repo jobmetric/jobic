@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Facade;
 /** @see \App\Services\Installation\Installation */
 class Installation extends Facade
 {
+    /**
+     * Get the container binding for the facade.
+     *
+     * @return string
+     */
     protected static function getFacadeAccessor(): string
     {
         return \App\Services\Installation\Installation::class;

@@ -7,9 +7,16 @@ namespace App\Notifications;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 
+/**
+ * Provide reset password notification application behavior.
+ */
 class ResetPasswordNotification extends ResetPassword
 {
     /**
+     * Build the password reset email notification.
+     *
+     * @param object $notifiable
+     *
      * @return array<string, mixed>
      */
     public function toMail($notifiable): MailMessage

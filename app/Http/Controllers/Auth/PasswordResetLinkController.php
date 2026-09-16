@@ -12,8 +12,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Handle password reset link page requests.
+ */
 class PasswordResetLinkController extends Controller
 {
+    /**
+     * Render the authentication form.
+     *
+     * @return View
+     */
     public function create(): View
     {
         Page::prepare('auth', 'fa');
@@ -21,6 +29,13 @@ class PasswordResetLinkController extends Controller
         return view('auth.forgot-password');
     }
 
+    /**
+     * Process the submitted authentication data.
+     *
+     * @param ForgotPasswordRequest $request
+     *
+     * @return RedirectResponse
+     */
     public function store(ForgotPasswordRequest $request): RedirectResponse
     {
         $result = Authentication::sendResetLink($request->validated(), [

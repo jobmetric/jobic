@@ -13,8 +13,16 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Handle authenticated session page requests.
+ */
 class AuthenticatedSessionController extends Controller
 {
+    /**
+     * Render the authentication form.
+     *
+     * @return View
+     */
     public function create(): View
     {
         Page::prepare('auth', 'fa');
@@ -22,6 +30,13 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
+    /**
+     * Process the submitted authentication data.
+     *
+     * @param LoginRequest $request
+     *
+     * @return RedirectResponse
+     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $result = Authentication::login($request->validated(), [
@@ -38,6 +53,13 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 
+    /**
+     * Log out the authenticated user.
+     *
+     * @param Request $request
+     *
+     * @return RedirectResponse
+     */
     public function destroy(Request $request): RedirectResponse
     {
         Authentication::logout([

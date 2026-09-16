@@ -9,14 +9,24 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Validate login request data.
+ */
 class LoginRequest extends FormRequest
 {
+    /**
+     * Determine whether the request is authorized.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
+     * Get the validation rules for the request.
+     *
      * @return array<string, array<int, string>>
      */
     public function rules(): array
@@ -29,6 +39,9 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Build the demo authenticate data.
+     *
+     * @return void
      * @throws ValidationException
      */
     public function authenticate(): void
@@ -47,6 +60,9 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Build the demo ensure is not rate limited data.
+     *
+     * @return void
      * @throws ValidationException
      */
     private function ensureIsNotRateLimited(): void
@@ -67,6 +83,11 @@ class LoginRequest extends FormRequest
         ]);
     }
 
+    /**
+     * Build the demo throttle key data.
+     *
+     * @return string
+     */
     private function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());

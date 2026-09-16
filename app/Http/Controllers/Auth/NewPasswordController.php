@@ -13,8 +13,19 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Handle new password page requests.
+ */
 class NewPasswordController extends Controller
 {
+    /**
+     * Render the authentication form.
+     *
+     * @param Request $request
+     * @param string $token
+     *
+     * @return View
+     */
     public function create(Request $request, string $token): View
     {
         Page::prepare('auth', 'fa');
@@ -25,6 +36,13 @@ class NewPasswordController extends Controller
         ]);
     }
 
+    /**
+     * Process the submitted authentication data.
+     *
+     * @param ResetPasswordRequest $request
+     *
+     * @return RedirectResponse
+     */
     public function store(ResetPasswordRequest $request): RedirectResponse
     {
         $result = Authentication::resetPassword($request->validated());

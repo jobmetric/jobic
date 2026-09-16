@@ -9,20 +9,48 @@ use Dotenv\Dotenv;
 use JobMetric\EnvModifier\EnvModifier;
 use RuntimeException;
 
+/**
+ * Manage atomic environment file updates.
+ */
 class Environment
 {
+    /**
+     * Initialize the service dependencies.
+     *
+     * @param string $path
+     * @param string|null $cachePath
+     *
+     * @return void
+     */
     public function __construct(public readonly string $path, private readonly ?string $cachePath = null) {}
 
+    /**
+     * Read environment values from the configured file.
+     *
+     * @return array<string, mixed>
+     */
     public function read(): array
     {
         return is_file($this->path) ? Dotenv::parse(file_get_contents($this->path)) : [];
     }
 
+    /**
+     * Determine whether installation is marked complete.
+     *
+     * @return bool
+     */
     public function installed(): bool
     {
         return ! in_array($this->read()['INSTALLATION'] ?? '', ['', 'null', '(null)', 'false', '(false)', '0'], true);
     }
 
+    /**
+     * Run a callback while holding the environment file lock.
+     *
+     * @param Closure $callback
+     *
+     * @return mixed
+     */
     public function locked(Closure $callback): mixed
     {
         $lock = fopen($this->path.'.lock', 'c');
@@ -41,6 +69,13 @@ class Environment
         }
     }
 
+    /**
+     * Create the environment file and application key when required.
+     *
+     * @param string $example
+     *
+     * @return void
+     */
     public function initialize(string $example): void
     {
         $this->locked(function () use ($example): void {
@@ -50,6 +85,13 @@ class Environment
         });
     }
 
+    /**
+     * Save allowed environment values with atomic replacement.
+     *
+     * @param array<string, mixed> $values
+     *
+     * @return void
+     */
     public function write(array $values): void
     {
         $this->locked(function () use ($values): void {
@@ -99,6 +141,11 @@ class Environment
         });
     }
 
+    /**
+     * Remove cached configuration after an environment change.
+     *
+     * @return void
+     */
     public function invalidateCache(): void
     {
         if ($this->cachePath && is_file($this->cachePath) && ! unlink($this->cachePath)) {
@@ -106,6 +153,13 @@ class Environment
         }
     }
 
+    /**
+     * Atomically replace the environment file contents.
+     *
+     * @param string $contents
+     *
+     * @return void
+     */
     private function replace(string $contents): void
     {
         $temporary = tempnam(dirname($this->path), '.env-install-');

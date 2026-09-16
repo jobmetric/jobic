@@ -7,12 +7,22 @@ namespace App\Console\Commands;
 use App\Services\Installation\Installation;
 use Illuminate\Console\Command;
 
+/**
+ * Provide release installation application behavior.
+ */
 class ReleaseInstallation extends Command
 {
     protected $signature = 'installation:release';
 
     protected $description = 'Release the installer session after losing access to its browser';
 
+    /**
+     * Release installation ownership for local recovery.
+     *
+     * @param Installation $installation
+     *
+     * @return int
+     */
     public function handle(Installation $installation): int
     {
         $result = $installation->release();

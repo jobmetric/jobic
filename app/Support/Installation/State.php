@@ -8,10 +8,27 @@ use Closure;
 use JobMetric\PackageCore\Output\Response;
 use RuntimeException;
 
+/**
+ * Store private installation state under a file lock.
+ */
 class State
 {
+    /**
+     * Initialize the service dependencies.
+     *
+     * @param string $directory
+     *
+     * @return void
+     */
     public function __construct(public readonly string $directory) {}
 
+    /**
+     * Run a callback while holding the installation state lock.
+     *
+     * @param Closure $callback
+     *
+     * @return mixed
+     */
     public function locked(Closure $callback): mixed
     {
         if (! is_dir($this->directory) && ! mkdir($this->directory, 0700, true) && ! is_dir($this->directory)) {
@@ -33,6 +50,11 @@ class State
         }
     }
 
+    /**
+     * Read the private installation state.
+     *
+     * @return array<string, mixed>
+     */
     public function read(): array
     {
         $path = $this->directory.'/state.json';
@@ -40,6 +62,13 @@ class State
         return is_file($path) ? json_decode(file_get_contents($path), true, flags: JSON_THROW_ON_ERROR) : [];
     }
 
+    /**
+     * Persist the private installation state.
+     *
+     * @param array<string, mixed> $state
+     *
+     * @return void
+     */
     public function write(array $state): void
     {
         $temporary = tempnam($this->directory, 'state-');
@@ -58,6 +87,11 @@ class State
         }
     }
 
+    /**
+     * Remove temporary installation state.
+     *
+     * @return void
+     */
     public function clear(): void
     {
         if (is_file($this->directory.'/state.json') && ! unlink($this->directory.'/state.json')) {

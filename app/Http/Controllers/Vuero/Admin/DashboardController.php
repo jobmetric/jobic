@@ -5,13 +5,28 @@ namespace App\Http\Controllers\Vuero\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
+/**
+ * Handle dashboard page requests.
+ */
 class DashboardController extends Controller
 {
+    /**
+     * Render the dashboard page.
+     *
+     * @return View
+     */
     public function __invoke(): View
     {
         return $this->show('analytics');
     }
 
+    /**
+     * Render the requested page.
+     *
+     * @param string $dashboard
+     *
+     * @return View
+     */
     public function show(string $dashboard): View
     {
         $pages = collect(config('vuero.dashboards.groups'))

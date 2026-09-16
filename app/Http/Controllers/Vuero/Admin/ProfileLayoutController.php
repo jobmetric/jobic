@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Vuero\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
+/**
+ * Handle profile layout page requests.
+ */
 class ProfileLayoutController extends Controller
 {
     private const EDIT_TABS = ['general', 'experience', 'skills', 'settings'];
 
+    /**
+     * Build the demo view data.
+     *
+     * @return View
+     */
     public function view(): View
     {
         return view('vuero.admin.layouts.profile-view', [
@@ -24,6 +32,11 @@ class ProfileLayoutController extends Controller
         ]);
     }
 
+    /**
+     * Build the demo notifications data.
+     *
+     * @return View
+     */
     public function notifications(): View
     {
         return view('vuero.admin.layouts.profile-notifications', [
@@ -32,6 +45,13 @@ class ProfileLayoutController extends Controller
         ]);
     }
 
+    /**
+     * Render the requested settings form.
+     *
+     * @param string|null $tab
+     *
+     * @return View
+     */
     public function edit(?string $tab = null): View
     {
         $tab = in_array($tab, self::EDIT_TABS, true) ? $tab : 'general';
@@ -47,6 +67,11 @@ class ProfileLayoutController extends Controller
         ]);
     }
 
+    /**
+     * Build the demo search results data.
+     *
+     * @return View
+     */
     public function searchResults(): View
     {
         return view('vuero.admin.layouts.search-results', [
@@ -58,6 +83,11 @@ class ProfileLayoutController extends Controller
         ]);
     }
 
+    /**
+     * Build the demo search empty data.
+     *
+     * @return View
+     */
     public function searchEmpty(): View
     {
         return view('vuero.admin.layouts.search-empty', [
@@ -65,6 +95,13 @@ class ProfileLayoutController extends Controller
         ]);
     }
 
+    /**
+     * Build the demo avatar data.
+     *
+     * @param string $file
+     *
+     * @return string
+     */
     private function avatar(string $file): string
     {
         if (str_contains($file, 'vuero-1.svg')) {
@@ -74,21 +111,47 @@ class ProfileLayoutController extends Controller
         return '/vuero/images/layouts/list-view-v1/avatars/'.$file;
     }
 
+    /**
+     * Build the demo flag data.
+     *
+     * @param string $country
+     *
+     * @return string
+     */
     private function flag(string $country): string
     {
         return "/vuero/images/layouts/list-view-v1/flags/{$country}.svg";
     }
 
+    /**
+     * Build the demo stack data.
+     *
+     * @param string $name
+     *
+     * @return string
+     */
     private function stack(string $name): string
     {
         return "/vuero/images/layouts/grid-cards/stacks/{$name}.svg";
     }
 
+    /**
+     * Build the demo brand data.
+     *
+     * @param string $name
+     *
+     * @return string
+     */
     private function brand(string $name): string
     {
         return "/vuero/images/layouts/list-view-v3/brands/{$name}.svg";
     }
 
+    /**
+     * Build the demo profile header data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function profileHeader(): array
     {
         $userName = auth()->user()->name ?? 'Erik Kovalsky';
@@ -104,6 +167,13 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo experiences data.
+     *
+     * @param bool $includeExtra
+     *
+     * @return array<array-key, mixed>
+     */
     private function experiences(bool $includeExtra = false): array
     {
         $items = [
@@ -127,6 +197,11 @@ class ProfileLayoutController extends Controller
         ])->all();
     }
 
+    /**
+     * Build the demo languages data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function languages(): array
     {
         return [
@@ -137,6 +212,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo profile skills data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function profileSkills(): array
     {
         return [
@@ -149,6 +229,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo edit skills data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function editSkills(): array
     {
         return [
@@ -158,6 +243,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo edit tools data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function editTools(): array
     {
         return [
@@ -167,6 +257,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo recommendations data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function recommendations(): array
     {
         return [
@@ -189,6 +284,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo tools data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function tools(): array
     {
         return [
@@ -198,6 +298,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo recent views data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function recentViews(): array
     {
         return [
@@ -209,6 +314,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo timeline items data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function timelineItems(): array
     {
         $avatar = fn (string $file): string => $this->avatar($file);
@@ -225,6 +335,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo search people data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function searchPeople(): array
     {
         return [
@@ -238,6 +353,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo search records data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function searchRecords(): array
     {
         return [
@@ -253,6 +373,11 @@ class ProfileLayoutController extends Controller
         ];
     }
 
+    /**
+     * Build the demo search filters data.
+     *
+     * @return array<array-key, mixed>
+     */
     private function searchFilters(): array
     {
         return [

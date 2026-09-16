@@ -9,8 +9,19 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Apply preferences middleware to requests.
+ */
 class Preferences
 {
+    /**
+     * Apply account locale and appearance preferences to the request.
+     *
+     * @param Request $request
+     * @param Closure $next
+     *
+     * @return Response
+     */
     public function handle(Request $request, Closure $next): Response
     {
         $preferences = array_replace(config('admin.appearance'), $request->user()?->ui_preferences ?? []);

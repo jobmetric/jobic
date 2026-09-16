@@ -1,0 +1,19 @@
+---
+description: Required PHPDoc structure for every PHP class and named method in app
+globs: app/**/*.php
+alwaysApply: false
+---
+
+# Application PHPDoc
+
+Follow `App\Services\Auth\Authentication` and `docs/phpdoc.md` for all new or edited PHP files in `app/`.
+
+- Document every class and named method, including protected/private methods and constructors.
+- Start with a meaningful English sentence describing behavior, not a repetition of the method name.
+- Add one typed `@param` per parameter in signature order; separate the summary and parameter group with a blank PHPDoc line.
+- Separate parameters from `@return` with a blank PHPDoc line. Include `@return void` for void methods and constructors.
+- Place accurate `@throws` entries after `@return`; document escaping exceptions, not exceptions handled internally. Never copy exception tags blindly.
+- Match nullable and union types; describe array keys/values using generics or shapes and use specific types when supported by the implementation.
+- Preserve useful descriptions and framework annotations (`@method`, `@mixin`, `@use`, `@var`). Do not invent types or example credentials.
+- Update PHPDoc in the same change as the implementation. Review summaries, parameter order, return types and exception behavior before finishing.
+- Documentation-only changes must preserve executable PHP tokens. Do not alter signatures or behavior merely to match documentation.

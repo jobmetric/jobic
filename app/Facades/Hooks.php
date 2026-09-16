@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Facade;
 /** @mixin \App\Support\Hooks */
 class Hooks extends Facade
 {
+    /**
+     * Get the container binding for the facade.
+     *
+     * @return string
+     */
     protected static function getFacadeAccessor(): string
     {
         return \App\Support\Hooks::class;

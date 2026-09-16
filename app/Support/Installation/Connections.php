@@ -10,12 +10,15 @@ use PDO;
 use Redis;
 use RuntimeException;
 
+/**
+ * Configure and test installation service connections.
+ */
 class Connections
 {
     /**
      * Test database connection and check if it is empty.
      *
-     * @param array $values
+     * @param array<string, mixed> $values
      * @param bool $empty
      *
      * @return void
@@ -42,7 +45,7 @@ class Connections
      * Check if the database has any tables.
      *
      * @param Connection $connection
-     * @param array $values
+     * @param array<string, mixed> $values
      *
      * @return bool
      */
@@ -115,7 +118,7 @@ class Connections
     /**
      * Configure the database connection for installation.
      *
-     * @param array $values
+     * @param array<string, mixed> $values
      *
      * @return void
      */
@@ -136,7 +139,7 @@ class Connections
     /**
      * Test Redis connection and check if the database is available.
      *
-     * @param array $values
+     * @param array<string, mixed> $values
      *
      * @return void
      */

@@ -5,8 +5,16 @@ namespace App\Http\Controllers\Vuero\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
+/**
+ * Handle wizard page requests.
+ */
 class WizardController extends Controller
 {
+    /**
+     * Render the dashboard page.
+     *
+     * @return View
+     */
     public function __invoke(): View
     {
         return view('vuero.admin.wizard.index', [

@@ -13,8 +13,19 @@ use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+/**
+ * Apply install middleware to requests.
+ */
 class Install
 {
+    /**
+     * Restrict application access until installation is complete.
+     *
+     * @param Request $request
+     * @param Closure $next
+     *
+     * @return Response
+     */
     public function handle(Request $request, Closure $next): Response
     {
         if (app()->bound('installation.bootstrap_error')) {

@@ -7,6 +7,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Record a user sign-in attempt.
+ */
 class LoginEvent extends Model
 {
     public $timestamps = false;
@@ -24,6 +27,8 @@ class LoginEvent extends Model
     ];
 
     /**
+     * Get the attribute casting definitions.
+     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -34,6 +39,11 @@ class LoginEvent extends Model
         ];
     }
 
+    /**
+     * Get the user associated with the login event.
+     *
+     * @return BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

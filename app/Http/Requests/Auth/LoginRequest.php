@@ -6,14 +6,24 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validate login request data.
+ */
 class LoginRequest extends FormRequest
 {
+    /**
+     * Determine whether the request is authorized.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
+     * Get the validation rules for the request.
+     *
      * @return array<string, array<int, string>>
      */
     public function rules(): array

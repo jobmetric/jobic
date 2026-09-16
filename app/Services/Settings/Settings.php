@@ -16,10 +16,29 @@ use Illuminate\Support\Str;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
+/**
+ * Manage website and account settings.
+ */
 class Settings
 {
+    /**
+     * Initialize the service dependencies.
+     *
+     * @param Environment $environment
+     *
+     * @return void
+     */
     public function __construct(private readonly Environment $environment) {}
 
+    /**
+     * Get the account and configuration data for a settings page.
+     *
+     * @param string $section
+     * @param int $userId
+     *
+     * @return array<string, mixed>
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
     public function page(string $section, int $userId): array
     {
         $user = User::query()->findOrFail($userId);
@@ -31,6 +50,15 @@ class Settings
             'loginEvents' => $section === 'security' ? LoginEvent::query()->where('user_id', $userId)->latest('created_at')->limit(15)->get() : collect()];
     }
 
+    /**
+     * Validate and save the website name and URL.
+     *
+     * @param array<string, mixed> $data
+     * @param int|null $userId
+     *
+     * @return Response
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function general(array $data, ?int $userId = null): Response
     {
         $values = dto($data, GeneralRequest::class);
@@ -47,6 +75,16 @@ class Settings
         }
     }
 
+    /**
+     * Validate and save the current account appearance preferences.
+     *
+     * @param array<string, mixed> $data
+     * @param int $userId
+     *
+     * @return Response
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
     public function appearance(array $data, int $userId): Response
     {
         $values = dto($data, AppearanceRequest::class);
@@ -60,6 +98,16 @@ class Settings
         return Response::make(true, trans('admin.saved'), $values);
     }
 
+    /**
+     * Validate and update the current account profile.
+     *
+     * @param array<string, mixed> $data
+     * @param int $userId
+     *
+     * @return Response
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
     public function profile(array $data, int $userId): Response
     {
         $values = dto($data, ProfileRequest::class);
@@ -80,6 +128,16 @@ class Settings
         return Response::make(true, trans('admin.saved'));
     }
 
+    /**
+     * Validate and change the current account password.
+     *
+     * @param array<string, mixed> $data
+     * @param int $userId
+     *
+     * @return Response
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
     public function security(array $data, int $userId): Response
     {
         $values = dto($data, SecurityRequest::class);

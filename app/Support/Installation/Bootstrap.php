@@ -8,8 +8,18 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Application;
 use Throwable;
 
+/**
+ * Prepare the application environment before installation middleware.
+ */
 class Bootstrap
 {
+    /**
+     * Prepare installation prerequisites before configuration is loaded.
+     *
+     * @param Application $app
+     *
+     * @return void
+     */
     public static function prepare(Application $app): void
     {
         // CLI commands and tests never silently modify a developer's environment.
@@ -23,6 +33,13 @@ class Bootstrap
         }
     }
 
+    /**
+     * Initialize the environment and installer runtime defaults.
+     *
+     * @param Application $app
+     *
+     * @return void
+     */
     public static function initialize(Application $app): void
     {
         $environment = new Environment($app->environmentFilePath(), $app->getCachedConfigPath());

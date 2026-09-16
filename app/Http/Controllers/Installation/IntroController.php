@@ -22,13 +22,28 @@ use JobMetric\PackageCore\Output\Response;
 use JsonException;
 use Throwable;
 
+/**
+ * Handle intro page requests.
+ */
 class IntroController extends Controller
 {
+    /**
+     * Initialize the service dependencies.
+     *
+     * @param Installation $installation
+     *
+     * @return void
+     */
     public function __construct(
         private readonly Installation $installation
     ) {}
 
     /**
+     * Render the installation wizard with saved progress.
+     *
+     * @param Request $request
+     *
+     * @return View
      * @throws JsonException
      */
     public function index(Request $request): View
@@ -40,6 +55,11 @@ class IntroController extends Controller
     }
 
     /**
+     * Save the installation language.
+     *
+     * @param LanguageRequest $request
+     *
+     * @return RedirectResponse
      * @throws Throwable
      */
     public function language(LanguageRequest $request): RedirectResponse
@@ -53,6 +73,11 @@ class IntroController extends Controller
     }
 
     /**
+     * Save the submitted installation step.
+     *
+     * @param StepRequest $request
+     *
+     * @return JsonResponse
      * @throws Throwable
      */
     public function save(StepRequest $request): JsonResponse
@@ -61,6 +86,11 @@ class IntroController extends Controller
     }
 
     /**
+     * Test the submitted database connection settings.
+     *
+     * @param DatabaseRequest $request
+     *
+     * @return JsonResponse
      * @throws Throwable
      */
     public function database(DatabaseRequest $request): JsonResponse
@@ -69,6 +99,11 @@ class IntroController extends Controller
     }
 
     /**
+     * Test the submitted Redis connection settings.
+     *
+     * @param RedisRequest $request
+     *
+     * @return JsonResponse
      * @throws Throwable
      */
     public function redis(RedisRequest $request): JsonResponse
@@ -77,6 +112,11 @@ class IntroController extends Controller
     }
 
     /**
+     * Start the installation task sequence.
+     *
+     * @param RunRequest $request
+     *
+     * @return JsonResponse
      * @throws Throwable
      */
     public function start(RunRequest $request): JsonResponse
@@ -85,6 +125,11 @@ class IntroController extends Controller
     }
 
     /**
+     * Execute the next pending installation task.
+     *
+     * @param RunRequest $request
+     *
+     * @return JsonResponse
      * @throws Throwable
      */
     public function next(RunRequest $request): JsonResponse
@@ -92,11 +137,23 @@ class IntroController extends Controller
         return $this->json($this->installation->next($request->validated(), $this->context($request)));
     }
 
+    /**
+     * Return the current installation progress.
+     *
+     * @return JsonResponse
+     */
     public function status(): JsonResponse
     {
         return $this->json(Response::make(true, '', $this->installation->progress()));
     }
 
+    /**
+     * Build the installation context from the current request.
+     *
+     * @param Request $request
+     *
+     * @return array<string, mixed>
+     */
     private function context(Request $request): array
     {
         if (! $request->session()->has('installation_owner')) {
@@ -110,6 +167,13 @@ class IntroController extends Controller
         ];
     }
 
+    /**
+     * Convert the installation result into a JSON response.
+     *
+     * @param Response $result
+     *
+     * @return JsonResponse
+     */
     private function json(Response $result): JsonResponse
     {
         return response()->json($result, $result->status);

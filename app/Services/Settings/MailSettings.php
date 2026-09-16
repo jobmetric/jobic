@@ -11,15 +11,39 @@ use App\Support\Installation\Fields;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
+/**
+ * Manage outgoing mail configuration.
+ */
 class MailSettings
 {
+    /**
+     * Initialize the service dependencies.
+     *
+     * @param Environment $environment
+     *
+     * @return void
+     */
     public function __construct(private readonly Environment $environment) {}
 
+    /**
+     * Get mail configuration values without exposing stored credentials.
+     *
+     * @return array<string, mixed>
+     */
     public function values(): array
     {
         return Fields::values(Fields::mail(), $this->environment->read());
     }
 
+    /**
+     * Validate and save mail settings, preserving an omitted password.
+     *
+     * @param array<string, mixed> $data
+     * @param int|null $userId
+     *
+     * @return Response
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function save(array $data, ?int $userId = null): Response
     {
         $validated = dto($data, MailRequest::class);

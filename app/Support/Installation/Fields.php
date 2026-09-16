@@ -4,9 +4,18 @@ declare(strict_types=1);
 
 namespace App\Support\Installation;
 
+/**
+ * Define installation configuration fields and validation rules.
+ */
 class Fields
 {
-    /** One catalog supplies form inputs and their server-side allowlist. */
+    /**
+     * One catalog supplies form inputs and their server-side allowlist.
+     *
+     * @param int $step
+     *
+     * @return array<array-key, mixed>
+     */
     public static function groups(int $step): array
     {
         return match ($step) {
@@ -43,6 +52,11 @@ class Fields
         };
     }
 
+    /**
+     * Get the mail configuration field definitions.
+     *
+     * @return array<array-key, mixed>
+     */
     public static function mail(): array
     {
         return [
@@ -54,11 +68,25 @@ class Fields
         ];
     }
 
+    /**
+     * Get the field definitions for an installation step.
+     *
+     * @param int $step
+     *
+     * @return array<array-key, mixed>
+     */
     public static function fields(int $step): array
     {
         return array_merge([], ...array_values(self::groups($step)));
     }
 
+    /**
+     * Build validation rules from configuration field definitions.
+     *
+     * @param array<string, mixed> $fields
+     *
+     * @return array<string, mixed>
+     */
     public static function rules(array $fields): array
     {
         $rules = [];
@@ -90,6 +118,14 @@ class Fields
         return $rules;
     }
 
+    /**
+     * Get safe form values from the environment and field defaults.
+     *
+     * @param array<string, mixed> $fields
+     * @param array<string, mixed> $environment
+     *
+     * @return array<string, mixed>
+     */
     public static function values(array $fields, array $environment): array
     {
         $values = [];

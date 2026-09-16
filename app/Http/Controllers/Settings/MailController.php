@@ -14,10 +14,25 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Handle mail page requests.
+ */
 class MailController extends Controller
 {
+    /**
+     * Initialize the service dependencies.
+     *
+     * @param MailSettings $settings
+     *
+     * @return void
+     */
     public function __construct(private readonly MailSettings $settings) {}
 
+    /**
+     * Render the requested settings form.
+     *
+     * @return View
+     */
     public function edit(): View
     {
         Page::prepare('settings');
@@ -25,6 +40,13 @@ class MailController extends Controller
         return view('settings.mail', ['fields' => Fields::mail(), 'values' => $this->settings->values()]);
     }
 
+    /**
+     * Save mail settings and return the service result.
+     *
+     * @param MailRequest $request
+     *
+     * @return JsonResponse|RedirectResponse
+     */
     public function update(MailRequest $request): JsonResponse|RedirectResponse
     {
         $result = $this->settings->save($request->validated(), (int) $request->user()->id);

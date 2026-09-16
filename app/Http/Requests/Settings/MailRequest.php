@@ -7,13 +7,26 @@ namespace App\Http\Requests\Settings;
 use App\Support\Installation\Fields;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validate mail request data.
+ */
 class MailRequest extends FormRequest
 {
+    /**
+     * Determine whether the request is authorized.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules for the request.
+     *
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return Fields::rules(Fields::mail());

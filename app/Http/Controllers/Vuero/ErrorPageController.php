@@ -5,8 +5,18 @@ namespace App\Http\Controllers\Vuero;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
+/**
+ * Handle error page page requests.
+ */
 class ErrorPageController extends Controller
 {
+    /**
+     * Render the requested page.
+     *
+     * @param string $page
+     *
+     * @return View
+     */
     public function show(string $page): View
     {
         $config = config("vuero.error_pages.{$page}");

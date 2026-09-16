@@ -5,8 +5,18 @@ namespace App\Http\Controllers\Vuero\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
+/**
+ * Handle starter page requests.
+ */
 class StarterController extends Controller
 {
+    /**
+     * Render the dashboard page.
+     *
+     * @param string $starter
+     *
+     * @return View
+     */
     public function __invoke(string $starter): View
     {
         $page = collect(config('vuero.starters'))

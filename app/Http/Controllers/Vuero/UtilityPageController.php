@@ -5,8 +5,16 @@ namespace App\Http\Controllers\Vuero;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
+/**
+ * Handle utility page page requests.
+ */
 class UtilityPageController extends Controller
 {
+    /**
+     * Build the demo roadmap data.
+     *
+     * @return View
+     */
     public function roadmap(): View
     {
         return view('vuero.utility.roadmap', [
@@ -15,6 +23,11 @@ class UtilityPageController extends Controller
         ]);
     }
 
+    /**
+     * Build the demo status data.
+     *
+     * @return View
+     */
     public function status(): View
     {
         return view('vuero.utility.status', [
@@ -30,7 +43,11 @@ class UtilityPageController extends Controller
         ]);
     }
 
-    /** @return array<string, array{progress: int, quarters: array<int, list<array<string, mixed>>>}> */
+    /**
+     * Build the demo roadmap data data.
+     *
+     * @return array<string, array{progress: int, quarters: array<int, list<array<string, mixed>>>}>
+     */
     private function roadmapData(): array
     {
         $description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Omnis enim est natura diligens sui. Philosophi autem in suis lectulis plerumque moriuntur. Ad eas enim res ab Epicuro praecepta dantur.';
@@ -95,7 +112,11 @@ class UtilityPageController extends Controller
         return $roadmap;
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * Build the demo changelog data data.
+     *
+     * @return list<array<string, mixed>>
+     */
     private function changelogData(): array
     {
         return [

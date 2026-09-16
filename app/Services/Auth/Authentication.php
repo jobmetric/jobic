@@ -16,6 +16,9 @@ use Illuminate\Support\Str;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
+/**
+ * Authenticate users and manage password recovery.
+ */
 class Authentication
 {
     private const int LOGIN_MAX_ATTEMPTS = 5;

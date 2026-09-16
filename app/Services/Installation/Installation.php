@@ -25,6 +25,9 @@ use JsonException;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Coordinate the resumable installation workflow.
+ */
 class Installation
 {
     public const array TASKS = [
@@ -36,6 +39,15 @@ class Installation
         'finish',
     ];
 
+    /**
+     * Initialize the service dependencies.
+     *
+     * @param Environment $environment
+     * @param State $state
+     * @param Connections $connections
+     *
+     * @return void
+     */
     public function __construct(
         private readonly Environment $environment,
         private readonly State $state,
@@ -141,9 +153,9 @@ class Installation
     /**
      * Get the current installation state and environment values for the view.
      *
-     * @param array $context
+     * @param array<string, mixed> $context
      *
-     * @return array
+     * @return array<string, mixed>
      * @throws JsonException
      */
     public function viewData(array $context): array
@@ -180,7 +192,7 @@ class Installation
     /**
      * Get the current installation progress.
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function progress(): array
     {
@@ -200,6 +212,10 @@ class Installation
     /**
      * Set the installation language and locale.
      *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
+     *
+     * @return Response
      * @throws Throwable
      */
     public function language(array $data, array $context): Response
@@ -219,10 +235,10 @@ class Installation
     }
 
     /**
-     * Test the database connection with the provided credentials.
+     * Test the Redis connection with the provided credentials.
      *
-     * @param array $data
-     * @param array $context
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
      *
      * @return Response
      * @throws Throwable
@@ -242,10 +258,10 @@ class Installation
     }
 
     /**
-     * Test the database connection with the provided credentials.
+     * Test the Redis connection with the provided credentials.
      *
-     * @param array $data
-     * @param array $context
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
      *
      * @return Response
      * @throws Throwable
@@ -265,10 +281,10 @@ class Installation
     }
 
     /**
-     * Test the database connection with the provided credentials.
+     * Test the Redis connection with the provided credentials.
      *
-     * @param array $data
-     * @param array $context
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
      *
      * @return Response
      * @throws Throwable
@@ -337,8 +353,8 @@ class Installation
     /**
      * Start the installation process.
      *
-     * @param array $data
-     * @param array $context
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
      *
      * @return Response
      * @throws Throwable
@@ -360,8 +376,8 @@ class Installation
     /**
      * Advance to the next installation task.
      *
-     * @param array $data
-     * @param array $context
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
      *
      * @return Response
      * @throws Throwable
@@ -425,9 +441,9 @@ class Installation
     /**
      * Execute the installation task.
      *
-     * @param int   $task
-     * @param array $state
-     * @param array $values
+     * @param int $task
+     * @param array<string, mixed> $state
+     * @param array<string, mixed> $values
      *
      * @return void
      * @throws Throwable
@@ -507,9 +523,9 @@ class Installation
     /**
      * Mutate the installation state with a callback, handling ownership and errors.
      *
-     * @param array    $context
-     * @param Closure  $callback
-     * @param string   $failure
+     * @param array<string, mixed> $context
+     * @param Closure $callback
+     * @param string $failure
      *
      * @return Response
      */
@@ -566,7 +582,7 @@ class Installation
     /**
      * Get the hashed owner identifier from the context.
      *
-     * @param array $context
+     * @param array<string, mixed> $context
      *
      * @return string
      * @throws RuntimeException
@@ -583,9 +599,9 @@ class Installation
     /**
      * Merge the provided credentials with existing environment values, preserving sensitive data.
      *
-     * @param array $values
+     * @param array<string, mixed> $values
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     private function credentials(array $values): array
     {
@@ -609,7 +625,7 @@ class Installation
     /**
      * Generate a fingerprint for the provided values to detect changes.
      *
-     * @param array $values
+     * @param array<string, mixed> $values
      *
      * @return string
      * @throws JsonException

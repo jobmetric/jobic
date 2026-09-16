@@ -16,6 +16,11 @@ use Illuminate\Support\Facades\Facade;
  */
 class Authentication extends Facade
 {
+    /**
+     * Get the container binding for the facade.
+     *
+     * @return string
+     */
     protected static function getFacadeAccessor(): string
     {
         return 'authentication';
