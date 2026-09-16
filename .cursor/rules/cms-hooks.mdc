@@ -1,0 +1,5 @@
+---
+description: Mandatory CMS hook lifecycle and documentation contract
+alwaysApply: true
+---
+Follow AGENTS.md and docs/hooks.md for every new CMS feature. Reuse App\Facades\Hooks. New extensible pages provide shared view slots; new save services expose validated saving and successful saved actions. Use lowercase dotted names, explicit safe context, ascending priorities and success-only notifications. No credentials in contexts. Preserve auth, CSRF and dto validation. Update the hook registry and lifecycle tests with every addition; never create undocumented extension points.

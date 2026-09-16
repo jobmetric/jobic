@@ -1,3 +1,4 @@
+import { loadingButton } from '../../../common/page';
 import $ from '../../admin/jquery';
 
 $(() => {
@@ -14,3 +15,5 @@ $(() => {
         $passwordInput.trigger('focus');
     });
 });
+
+document.querySelectorAll('.auth-shell form').forEach((form) => form.addEventListener('submit', () => { form.querySelectorAll('[type="submit"]').forEach(loadingButton); }));

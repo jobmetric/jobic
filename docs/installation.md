@@ -51,3 +51,9 @@ npx playwright test --config=playwright.installation.config.js
 ```
 
 Use a fresh sandbox for each run. The fixture replaces requirement checks; browser tests use a real saved first step and failed DB connection, then deterministic API responses to exercise the remaining UI. Never deploy the test router as a production entry point.
+
+### Package migrations and existing deployments
+
+The install task runs Laravel `migrate --database=installation --force` without a path restriction. Laravel combines application migrations with paths registered by discovered package providers and orders migration filenames together; package migrations are not a separate final batch. The installation integration test checks core and JobMetric tables.
+
+Legacy detection only recognizes an existing database and closes the installer; it deliberately does not perform upgrades or seeds. Packages installed after the last migration can therefore remain pending on an existing deployment. Check `php artisan migrate:status` and apply `php artisan migrate --force` as part of deployment. Never use `migrate:fresh` for an upgrade.

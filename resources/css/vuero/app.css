@@ -34,3 +34,5 @@
 @import './admin/layout-subpages.css';
 @import './admin/layout-utility.css';
 @import './admin/utility-public.css';
+
+@import '../cms-rtl.css';

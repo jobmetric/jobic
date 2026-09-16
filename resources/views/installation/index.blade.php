@@ -9,7 +9,7 @@
         data-error-message="{{ __('installation.network_failed') }}" data-working="{{ __('installation.working') }}"
         data-complete="{{ __('installation.success') }}">
         <nav class="wizard-navigation installation-navigation" aria-label="{{ __('installation.navigation') }}">
-            <x-vuero.brand compact />
+            <x-brand compact />
             <strong>{{ __('installation.title') }}</strong>
             <span class="installation-step-count" data-step-count></span>
         </nav>

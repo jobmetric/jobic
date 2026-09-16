@@ -7,10 +7,17 @@ test('wizard saves its first step, resumes and displays connection errors on mob
     await expect(page).toHaveURL(/\/installation$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+    await expect(page.locator('.installation-language__choice')).toHaveCount(2);
+    await page.screenshot({ path: 'test-results/installation-language-english.png', fullPage: true });
     await page.locator('[data-language-form] button[value="fa"]').click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'fa');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(page.locator('form[data-step="1"]')).toBeVisible();
+    const recheck = await page.locator('.installation-recheck').boundingBox();
+    const next = await page.locator('form[data-step="1"] .installation-continue').boundingBox();
+    expect(Math.abs(recheck.y - next.y)).toBeLessThan(3);
+    expect(Math.abs(recheck.x - next.x)).toBeGreaterThan(50);
+    await page.screenshot({ path: 'test-results/installation-language-persian.png', fullPage: true });
     await page.locator('form[data-step="1"] button[type="submit"]').click();
     await expect(page.locator('form[data-step="2"]')).toBeVisible();
     await page.reload();

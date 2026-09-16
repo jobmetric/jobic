@@ -1,0 +1,7 @@
+---
+description: Domi page localization and mandatory translated loading states
+alwaysApply: true
+---
+Read docs/domi.md. Use Page::prepare and Page::addLocalize in GET controllers, backed by jobmetric/domi. Keep static layout in common Blade views; PHP-managed DOM metadata/assets/localization go through Domi. Never raw-concatenate scripts or serialize secrets. Use descriptive en/fa translation keys. All submit buttons use shared loadingButton, disabled and translated while pending, restored after errors/success. Preserve complete product layouts when replacing template branding.
+
+The HTML document must be owned by domi::layout (published override under resources/views/vendor/domi). common.base only maps CMS sections/stacks into it. Never rebuild a second document in common.base or bypass Domi's link/topScript/bottomScript/localize/footer/modal output. Preserve safe JSON serialization and test registered asset rendering on layout changes.

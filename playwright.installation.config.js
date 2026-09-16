@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
     testDir: './tests/Browser',
-    testMatch: ['installation.spec.js', 'cms-layout.spec.js'],
+    testMatch: ['installation.spec.js', 'cms-layout.spec.js', 'cms-settings.spec.js', 'cms-refinement.spec.js', 'cms-ajax.spec.js', 'cms-loading.spec.js'],
     workers: 1,
     fullyParallel: false,
     timeout: 60_000,

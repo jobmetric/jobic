@@ -1,3 +1,4 @@
+import { loadingButton } from '../common/page';
 import '../../css/installation.css';
 
 // Conditional fields are shared by setup and the authenticated mail settings form.
@@ -23,6 +24,7 @@ if (root) {
     let available = step;
     let executing = ['running', 'failed'].includes(root.dataset.installStatus);
     let busy = false;
+    let restoreButton = null;
     const notice = root.querySelector('[data-notice]');
     const runButton = root.querySelector('[data-run]');
     const panels = [...root.querySelectorAll('.installation-panel[data-step]')];
@@ -46,11 +48,15 @@ if (root) {
         if (focus) panels.find((panel) => Number(panel.dataset.step) === step)?.querySelector('h2')?.focus();
     }
     function setBusy(value) {
+        if (value) {
+            const button = document.activeElement;
+            if (button?.tagName === 'BUTTON' && root.contains(button)) restoreButton = loadingButton(button);
+        } else { restoreButton?.(); restoreButton = null; }
         busy = value;
         root.setAttribute('aria-busy', String(value));
         root.querySelectorAll('button').forEach((button) => {
             if (value) {
-                button.dataset.wasDisabled = String(button.disabled);
+                button.dataset.wasDisabled = String(button === document.activeElement && restoreButton ? false : button.disabled);
                 button.disabled = true;
             } else {
                 button.disabled = button.dataset.wasDisabled === 'true';

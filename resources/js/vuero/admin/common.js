@@ -16,6 +16,7 @@ $(() => {
     const $body = $('body');
     const $root = $('html');
     const $shell = $('[data-admin-shell]');
+    const cmsPreferences = $shell.is('[data-cms-shell]') ? JSON.parse($shell.attr('data-preferences')) : null;
     const $circularMenu = $('[data-circular-menu]');
     const mobileQuery = window.matchMedia('(max-width: 820px)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -27,7 +28,7 @@ $(() => {
 
     $root.attr(
         'data-theme',
-        localStorage.getItem(themeStorageKey)
+        (cmsPreferences ? (cmsPreferences.theme === 'system' ? null : cmsPreferences.theme) : localStorage.getItem(themeStorageKey))
             || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
     );
 
@@ -264,7 +265,8 @@ $(() => {
         }
 
         if (shouldPersist) {
-            localStorage.setItem(layoutStorageKey, layoutId);
+            if (cmsPreferences) window.dispatchEvent(new CustomEvent('cms:preference', { detail: { layout: layoutId } }));
+            else localStorage.setItem(layoutStorageKey, layoutId);
         }
         closeDesktopNavbarMenus();
 
@@ -275,7 +277,7 @@ $(() => {
                 closeSubsidebar();
             }
 
-            showToast(`${$option.find('strong').text()} selected.`);
+            if (!cmsPreferences) showToast(`${$option.find('strong').text()} selected.`);
         }
     };
 
@@ -317,7 +319,7 @@ $(() => {
         $root.attr('lang', locale);
         localStorage.setItem(languageStorageKey, locale);
 
-        if (shouldNotify) {
+        if (shouldNotify && !cmsPreferences) {
             showToast(`${label} selected.`);
         }
     };
@@ -326,7 +328,8 @@ $(() => {
         const nextTheme = $root.attr('data-theme') === 'dark' ? 'light' : 'dark';
 
         $root.attr('data-theme', nextTheme);
-        localStorage.setItem(themeStorageKey, nextTheme);
+        if (cmsPreferences) window.dispatchEvent(new CustomEvent('cms:preference', { detail: { theme: nextTheme } }));
+        else localStorage.setItem(themeStorageKey, nextTheme);
         updateThemeControls();
     });
 
@@ -660,9 +663,10 @@ $(() => {
     $('[data-subsidebar]').prop('inert', true);
     $('[data-sideblock]').prop('inert', true);
     syncMobileNavigation();
-    selectLanguage(localStorage.getItem(languageStorageKey) || 'en', false);
+    if (!cmsPreferences) selectLanguage(localStorage.getItem(languageStorageKey) || 'en', false);
     const forcedLayout = String($shell.attr('data-initial-layout') || '');
     const initialLayout = forcedLayout || localStorage.getItem(layoutStorageKey) || 'sidebar-default';
+    window.addEventListener('cms:apply-layout', (event) => selectLayout(event.detail.layout, false, false));
     selectLayout(initialLayout, false, !forcedLayout);
     if ($shell.is('[data-open-navigation]') && !mobileQuery.matches) {
         openSubsidebar('dashboard');

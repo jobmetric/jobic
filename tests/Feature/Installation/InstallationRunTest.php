@@ -81,6 +81,9 @@ class InstallationRunTest extends TestCase
         $this->assertSame('owner@example.test', DB::connection('installation')->table('users')->value('email'));
         $this->assertTrue(DB::connection('installation')->getSchemaBuilder()->hasTable('sessions'));
         $this->assertSame(0, DB::connection('installation')->table('settings')->count());
+        foreach (['metas', 'translations', 'languages', 'flows', 'flow_states', 'flow_tasks'] as $table) {
+            $this->assertTrue(DB::connection('installation')->getSchemaBuilder()->hasTable($table), $table);
+        }
         $this->postJson(route('installation.next'))->assertForbidden();
     }
 

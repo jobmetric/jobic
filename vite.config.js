@@ -22,6 +22,7 @@ export default defineConfig({
                 'resources/js/vuero/pages/admin/profile-settings.js',
                 'resources/js/vuero/pages/admin/wizard.js',
                 'resources/js/installation/wizard.js',
+                'resources/js/admin/shell.js',
                 'resources/js/vuero/pages/admin/starter.js',
                 'resources/js/vuero/pages/utility-roadmap.js',
                 'resources/js/vuero/pages/utility-status.js',

@@ -11,6 +11,7 @@ use App\Http\Requests\Installation\RedisRequest;
 use App\Http\Requests\Installation\RunRequest;
 use App\Http\Requests\Installation\StepRequest;
 use App\Services\Installation\Installation;
+use App\Support\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,15 +26,17 @@ class IntroController extends Controller
 {
     public function __construct(
         private readonly Installation $installation
-    ) {
-    }
+    ) {}
 
     /**
      * @throws JsonException
      */
     public function index(Request $request): View
     {
-        return view('installation.index', $this->installation->viewData($this->context($request)));
+        $data = $this->installation->viewData($this->context($request));
+        Page::prepare('installation');
+
+        return view('installation.index', $data);
     }
 
     /**
@@ -102,8 +105,8 @@ class IntroController extends Controller
 
         return [
             'owner' => $request->session()->get('installation_owner'),
-            'ip'    => $request->ip(),
-            'url'   => $request->getSchemeAndHttpHost() . $request->getBaseUrl(),
+            'ip' => $request->ip(),
+            'url' => $request->getSchemeAndHttpHost().$request->getBaseUrl(),
         ];
     }
 

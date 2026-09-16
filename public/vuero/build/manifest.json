@@ -95,6 +95,9 @@
       "_jquery-fde43e1f.js"
     ]
   },
+  "_page-c5baf820.js": {
+    "file": "assets/page-c5baf820.js"
+  },
   "_placeload-runtime-fbcc5379.js": {
     "file": "assets/placeload-runtime-fbcc5379.js",
     "imports": [
@@ -162,9 +165,24 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-2c46c25a.css",
+    "file": "assets/app-28cf8e14.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
+  },
+  "resources/js/admin/shell.css": {
+    "file": "assets/shell-63fb04fb.css",
+    "src": "resources/js/admin/shell.css"
+  },
+  "resources/js/admin/shell.js": {
+    "css": [
+      "assets/shell-63fb04fb.css"
+    ],
+    "file": "assets/shell-65054cd4.js",
+    "imports": [
+      "_page-c5baf820.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/admin/shell.js"
   },
   "resources/js/installation/wizard.css": {
     "file": "assets/wizard-471b8ebf.css",
@@ -174,12 +192,15 @@
     "css": [
       "assets/wizard-471b8ebf.css"
     ],
-    "file": "assets/wizard-391c1dd1.js",
+    "file": "assets/wizard-6f40931f.js",
+    "imports": [
+      "_page-c5baf820.js"
+    ],
     "isEntry": true,
     "src": "resources/js/installation/wizard.js"
   },
   "resources/js/vuero/app.js": {
-    "file": "assets/app-b4f6031c.js",
+    "file": "assets/app-5eacb46c.js",
     "imports": [
       "_jquery-fde43e1f.js"
     ],
@@ -1005,8 +1026,9 @@
     "src": "resources/js/vuero/pages/admin/wizard.js"
   },
   "resources/js/vuero/pages/auth/login.js": {
-    "file": "assets/login-306c6905.js",
+    "file": "assets/login-2166939b.js",
     "imports": [
+      "_page-c5baf820.js",
       "_jquery-fde43e1f.js"
     ],
     "isEntry": true,

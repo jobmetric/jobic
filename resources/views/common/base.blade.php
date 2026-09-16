@@ -1,15 +1,25 @@
-<!doctype html>
-<html lang="@yield('language', app()->getLocale())" dir="@yield('direction', app()->getLocale() === 'fa' ? 'rtl' : 'ltr')" data-theme="light">
-<head>
+@extends('domi::layout')
+
+@section('domi-head')
     @include('common.head')
-    @yield('head')
     @stack('styles')
-</head>
-<body class="cms-page @yield('body-class')">
+    @cmsHook('jobic.page.head.end')
+@endsection
+
+@section('body-attribute')class="cms-page @yield('body-class')"@endsection
+
+@section('domi-content')
     <x-vuero.icon-sprite />
+    @cmsHook('jobic.page.body.start')
     @yield('body')
     @yield('footer')
     @stack('overlays')
+@endsection
+
+@section('domi-script')
     @stack('scripts')
-</body>
-</html>
+@endsection
+
+@section('domi-script-bottom')
+    @cmsHook('jobic.page.body.end')
+@endsection

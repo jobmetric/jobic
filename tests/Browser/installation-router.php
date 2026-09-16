@@ -8,11 +8,13 @@ use App\Services\Installation\Installation;
 use Illuminate\Foundation\Bootstrap\BootProviders;
 use Illuminate\Foundation\Bootstrap\RegisterProviders;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 $root = dirname(__DIR__, 2);
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (str_starts_with($path, '/vuero/') && is_file($root.'/public'.$path)) {
+if ((str_starts_with($path, '/vuero/') || str_starts_with($path, '/fonts/') || str_starts_with($path, '/images/') || str_starts_with($path, '/assets/')) && is_file($root.'/public'.$path)) {
     return false;
 }
 require $root.'/vendor/autoload.php';
@@ -40,8 +42,17 @@ class BrowserInstallation extends Installation
 $app->afterBootstrapping(BootProviders::class, function (): void {
     if (str_starts_with(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/admin')) {
         config(['installation.completed' => true]);
-        $user = new User(['name' => 'Layout Test Admin', 'email' => 'layout@example.test']);
-        $user->id = 1;
+        $database = getenv('JOBIC_BROWSER_SANDBOX').'/browser.sqlite';
+        $fresh = ! is_file($database);
+        if ($fresh) {
+            touch($database);
+        }
+        config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => $database, 'database.connections.sqlite.url' => null]);
+        DB::purge('sqlite');
+        if ($fresh) {
+            Artisan::call('migrate', ['--force' => true]);
+        }
+        $user = User::firstOrCreate(['email' => 'layout@example.test'], ['name' => 'Layout Test Admin', 'password' => 'fixture-password-123']);
         Auth::guard('web')->setUser($user);
     }
 });

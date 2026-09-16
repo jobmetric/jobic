@@ -33,6 +33,6 @@
             </main>
         </div>
 
-        <button class="admin-shell__overlay" type="button" tabindex="-1" data-sidebar-close aria-label="Close navigation"></button>
+        <button class="admin-shell__overlay" type="button" tabindex="-1" data-sidebar-close aria-label="{{ __('admin.control_close_navigation') }}"></button>
     </div>
 @endsection

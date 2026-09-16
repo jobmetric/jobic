@@ -30,6 +30,7 @@ class Authentication
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
      *
+     * @return Response
      * @throws Throwable
      */
     public function login(array $data, array $context = []): Response
@@ -77,6 +78,9 @@ class Authentication
      * Logout user.
      *
      * @param array<string, mixed> $context
+     *
+     * @return Response
+     * @throws Throwable
      */
     public function logout(array $context = []): Response
     {
@@ -96,6 +100,7 @@ class Authentication
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
      *
+     * @return Response
      * @throws Throwable
      */
     public function sendResetLink(array $data, array $context = []): Response
@@ -127,6 +132,7 @@ class Authentication
      *
      * @param array<string, mixed> $data
      *
+     * @return Response
      * @throws Throwable
      */
     public function resetPassword(array $data): Response
@@ -146,16 +152,43 @@ class Authentication
         return Response::make(true, trans('auth.password_reset_success'));
     }
 
+    /**
+     * Generate a unique key for login throttling based on email and IP address.
+     *
+     * @param string $email The user's email address.
+     * @param string $ip The user's IP address.
+     *
+     * @return string A unique key for throttling login attempts.
+     */
     private function loginThrottleKey(string $email, string $ip): string
     {
         return Str::transliterate($email . '|' . $ip);
     }
 
+    /**
+     * Generate a unique key for forgot password throttling based on email and IP address.
+     *
+     * @param string $email The user's email address.
+     * @param string $ip The user's IP address.
+     *
+     * @return string A unique key for throttling forgot password attempts.
+     */
     private function forgotThrottleKey(string $email, string $ip): string
     {
         return Str::transliterate('forgot|' . $email . '|' . $ip);
     }
 
+    /**
+     * Record a login event in the database.
+     *
+     * @param string $email The user's email address.
+     * @param int|null $userId The user's ID, or null if not available.
+     * @param string $ip The user's IP address.
+     * @param string $userAgent The user's user agent string.
+     * @param bool $successful Whether the login attempt was successful.
+     *
+     * @return void
+     */
     private function recordLoginEvent(
         string $email,
         ?int $userId,

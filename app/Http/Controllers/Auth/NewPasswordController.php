@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Facades\Authentication;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Support\Page;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +17,8 @@ class NewPasswordController extends Controller
 {
     public function create(Request $request, string $token): View
     {
+        Page::prepare('auth', 'fa');
+
         return view('auth.reset-password', [
             'token' => $token,
             'email' => $request->string('email')->value(),

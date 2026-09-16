@@ -1,0 +1,54 @@
+@font-face { font-family: IRANSans; src: url('/fonts/iransans/regular.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: IRANSans; src: url('/fonts/iransans/medium.woff2') format('woff2'); font-style: normal; font-weight: 500 600; font-display: swap; }
+@font-face { font-family: IRANSans; src: url('/fonts/iransans/bold.woff2') format('woff2'); font-style: normal; font-weight: 700 900; font-display: swap; }
+html[dir='rtl'] { --font-sans: IRANSans, Tahoma, sans-serif; --font-alt: IRANSans, Tahoma, sans-serif; font-family: var(--font-sans); }
+html[dir='rtl'] body, html[dir='rtl'] button, html[dir='rtl'] input, html[dir='rtl'] select, html[dir='rtl'] textarea { font-family: var(--font-sans); }
+html[dir='rtl'] input[type='email'], html[dir='rtl'] input[type='url'], html[dir='rtl'] input[type='password'] { direction: ltr; text-align: start; }
+html[dir='rtl'] [data-cms-shell] .admin-shell__main { margin-left: 0; margin-right: var(--sidebar-width); transition: margin-right .3s ease; }
+html[dir='rtl'] [data-cms-shell].is-subsidebar-open .admin-shell__main { margin-right: calc(var(--sidebar-width) + var(--subsidebar-width)); }
+html[dir='rtl'] [data-cms-shell] .admin-sidebar { left: auto; right: 0; }
+html[dir='rtl'] [data-cms-shell] .admin-subsidebar { left: auto; right: var(--sidebar-width); transform: translateX(100%); }
+html[dir='rtl'] [data-cms-shell].is-subsidebar-open .admin-subsidebar { transform: none; }
+html[dir='rtl'] [data-cms-shell] .admin-sideblock { left: auto; right: 0; transform: translateX(100%); border-right: 0; border-left: 1px solid var(--border); }
+html[dir='rtl'] [data-cms-shell] .admin-subsidebar__header h2 { margin-left: 0; margin-right: 12px; }
+html[dir='rtl'] [data-cms-shell] .admin-subsidebar__header button, html[dir='rtl'] [data-cms-shell] .admin-navbar__toolbar, html[dir='rtl'] [data-cms-shell] .admin-sideblock__footer .profile-dropdown { margin-left: 0; margin-right: auto; }
+html[dir='rtl'] [data-cms-shell] .admin-sidebar__link > span { left: auto; right: 67px; }
+html[dir='rtl'] [data-cms-shell] .profile-dropdown__menu { left: auto; right: 54px; }
+html[dir='rtl'] [data-cms-shell] .admin-navbar__toolbar .profile-dropdown__menu, html[dir='rtl'] [data-cms-shell] .admin-sideblock__footer .profile-dropdown__menu, html[dir='rtl'] [data-cms-shell] .ui-dropdown__menu:not(.profile-dropdown__menu) { right: auto; left: 0; }
+html[dir='rtl'] [data-cms-shell] .side-panel { inset: 0 auto 0 0; transform: translateX(-100%); }
+html[dir='rtl'] [data-cms-shell] .side-panel--left { inset: 0 0 0 auto; transform: translateX(100%); }
+html[dir='rtl'] [data-cms-shell] .side-panel-layer.is-open .side-panel { transform: none; }
+html[dir='rtl'] [data-cms-shell] .account-menu-item .end { margin-left: 0; margin-right: auto; }
+html[dir='rtl'] [data-cms-shell] .account-menu-item .end svg, html[dir='rtl'] [data-cms-shell] .side-panel__close svg { transform: scaleX(-1); }
+html[dir='rtl'] [data-cms-shell] .subsidebar-menu__link, html[dir='rtl'] [data-cms-shell] .admin-sideblock__group > button, html[dir='rtl'] [data-cms-shell] .search-entry { text-align: start; }
+html[dir='rtl'] [data-cms-shell] .subsidebar-menu__children a { padding: 0 32px 0 20px; }
+html[dir='rtl'] [data-cms-shell] .search-panel__field svg { left: auto; right: 17px; }
+html[dir='rtl'] [data-cms-shell] .search-panel__field input { padding: 0 48px 0 18px; }
+html[dir='rtl'] [data-cms-shell] .cms-toast { right: auto; left: 20px; }
+@media (min-width: 821px) {
+    html[dir='rtl'] [data-cms-shell][data-selected-layout^="sideblock-"].is-subsidebar-open .admin-sideblock { transform: none; }
+    html[dir='rtl'] [data-cms-shell][data-selected-layout^="sideblock-"].is-subsidebar-open .admin-shell__main { margin-right: 280px; }
+    html[dir='rtl'] [data-cms-shell][data-selected-layout^="navbar-"] .admin-shell__main { margin-right: 0; }
+}
+@media (max-width: 820px) {
+    html[dir='rtl'] [data-cms-shell] .admin-shell__main, html[dir='rtl'] [data-cms-shell].is-subsidebar-open .admin-shell__main { margin-right: 0; }
+    html[dir='rtl'] [data-cms-shell] .admin-sidebar { transform: translateX(100%); }
+    html[dir='rtl'] [data-cms-shell].is-sidebar-open .admin-sidebar { transform: none; }
+    html[dir='rtl'] [data-cms-shell] .profile-dropdown--mobile .profile-dropdown__menu { right: auto; left: 0; }
+}
+
+html[dir='rtl'] [data-cms-shell][data-selected-layout^='sideblock-']:not(.is-subsidebar-open) .admin-shell__main { margin-right: 0; }
+html[dir='rtl'] [data-cms-shell][data-sidebar-theme='sidebar-float']:not(.is-subsidebar-open) .admin-sidebar { left: auto; right: 6px; }
+html[dir='rtl'] [data-cms-shell][data-sidebar-theme*='curved'] .admin-sidebar { border-radius: 20px 0 0 20px; }
+@media (max-width: 820px) {
+html[dir='rtl'] [data-cms-shell][data-selected-layout] .admin-subsidebar { left: auto; right: 60px; }
+html[dir='rtl'] [data-cms-shell].is-subsidebar-open .admin-shell__main { margin-right: 0; }
+}
+
+html[dir='rtl'] [data-cms-shell] .admin-mobile-navbar__actions { margin-left: 0; margin-right: auto; }
+@media (max-width: 820px) {
+html[dir='rtl'] [data-cms-shell][data-selected-layout] .admin-sidebar { left: auto; right: 0; }
+}
+
+html[dir='rtl'] [data-cms-shell][data-selected-layout*='sideblock'][data-selected-layout$='curved'] .admin-sideblock { border-radius: 32px 0 0 32px; }
+.cms-brand-mark { object-fit: contain; border-radius: 6px; flex-shrink: 0; }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eae5064a2fd518b198e3cc3109b589c9",
+    "content-hash": "6a76000401dbcf8965e639c6ec3eac77",
     "packages": [
         {
             "name": "brick/math",
@@ -1053,6 +1053,79 @@
                 }
             ],
             "time": "2026-08-24T17:13:02+00:00"
+        },
+        {
+            "name": "jobmetric/domi",
+            "version": "1.14.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jobmetric/domi.git",
+                "reference": "2c3cf07e82b9d1a7d357e1c8b0fc408d38145be2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jobmetric/domi/zipball/2c3cf07e82b9d1a7d357e1c8b0fc408d38145be2",
+                "reference": "2c3cf07e82b9d1a7d357e1c8b0fc408d38145be2",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "jobmetric/laravel-package-core": "^1.7",
+                "laravel/framework": ">=9.19",
+                "php": ">=8.0.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Domi": "JobMetric\\Domi\\Facades\\Domi"
+                    },
+                    "providers": [
+                        "JobMetric\\Domi\\DomiServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "JobMetric\\Domi\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Majid Mohammadian",
+                    "email": "majeedmohammadian@gmail.com",
+                    "homepage": "https://www.linkedin.com/in/majidmohammadian/",
+                    "role": "Full Stack Developer"
+                }
+            ],
+            "description": "A full-stack framework for Laravel that takes the hassle out of building dynamic pages.",
+            "homepage": "https://doc.jobmetric.net/package/domi",
+            "keywords": [
+                "dom",
+                "domi",
+                "jobmetric",
+                "laravel",
+                "package"
+            ],
+            "support": {
+                "forum": "https://twitter.com/jobmetric",
+                "issues": "https://github.com/jobmetric/domi/issues",
+                "source": "https://github.com/jobmetric/domi"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/majidmohammadian",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-02-21T17:49:26+00:00"
         },
         {
             "name": "jobmetric/laravel-custom-field",
@@ -9688,7 +9761,9 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.3"
+        "php": "^8.3",
+        "ext-pdo": "*",
+        "ext-redis": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
