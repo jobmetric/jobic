@@ -2,6 +2,7 @@
 
 return [
     'recovery' => [
+        'story_title' => 'Your next chapter is one key away.',
         'request_title' => 'Reset your password',
         'request_description' => 'Enter your account email. We’ll send you a reset link.',
         'send' => 'Send reset link',
@@ -34,7 +35,7 @@ return [
 
         'title' => 'Sign in to Jobic',
         'eyebrow' => 'YOUR WORKSPACE, READY WHEN YOU ARE',
-        'heading' => 'Welcome back.',
+        'heading' => 'Ready? Let’s go!',
         'description' => 'Sign in to bring your next idea to life.',
         'email' => 'Email address',
         'password' => 'Password',

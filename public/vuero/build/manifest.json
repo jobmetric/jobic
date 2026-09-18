@@ -173,7 +173,7 @@
     "src": "admin-shell.css"
   },
   "auth-login.css": {
-    "file": "assets/auth-login-6702b724.css",
+    "file": "assets/auth-login-8fff407d.css",
     "src": "auth-login.css"
   },
   "dashboard-runtime.css": {
@@ -1084,9 +1084,9 @@
   "resources/js/vuero/pages/auth/login.js": {
     "css": [
       "assets/admin-shell-5a94c5ae.css",
-      "assets/auth-login-6702b724.css"
+      "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/login-01933615.js",
+    "file": "assets/login-19068b44.js",
     "imports": [
       "_settings-9b650e65.js",
       "_toast-18d1caa1.js",
@@ -1099,9 +1099,9 @@
   "resources/js/vuero/pages/auth/recovery.js": {
     "css": [
       "assets/admin-shell-5a94c5ae.css",
-      "assets/auth-login-6702b724.css"
+      "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/recovery-01933615.js",
+    "file": "assets/recovery-19068b44.js",
     "imports": [
       "_settings-9b650e65.js",
       "_toast-18d1caa1.js",

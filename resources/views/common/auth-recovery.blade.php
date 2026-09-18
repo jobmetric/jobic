@@ -1,7 +1,7 @@
 @extends('common.auth', ['script' => 'resources/js/vuero/pages/auth/recovery.js'])
 @section('content')
 <main class="auth-shell auth-login-refined auth-recovery" data-auth-shell>
-    @include('auth.partials.welcome')
+    @include('auth.partials.welcome', ['recoveryArt' => true])
     <section class="auth-panel">
         @include('auth.partials.tools')
         <div class="auth-form-wrap">
@@ -11,7 +11,7 @@
             @cmsHook('jobic.auth.recovery.form.before')
             @yield('recovery-form')
             @cmsHook('jobic.auth.recovery.form.after')
-            <p class="auth-form__footer"><a class="auth-recovery-back" href="{{ route('login') }}"><x-vuero.icon name="arrow-left" size="18" />{{ __('auth.recovery.back') }}</a></p>
+            <p class="auth-form__footer"><a href="{{ route('login') }}">{{ __('auth.recovery.back') }}</a></p>
         </div>
     </section>
     @include('auth.partials.language-panel')

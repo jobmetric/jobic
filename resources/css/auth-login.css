@@ -131,3 +131,20 @@ html[dir=rtl] .legal-card footer svg { transform: scaleX(-1); }
 .auth-recovery .auth-field-error { display:block; color:#dc354f; font-size:12px; margin-block-start:-12px; }
 .auth-recovery .auth-recovery-back { display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border:1px solid var(--border); border-radius:12px; color:var(--primary); font-weight:600; }
 [dir=rtl] .auth-recovery-back svg { transform:rotate(180deg); }
+.recovery-art { width:100%; height:100%; overflow:visible; }
+.recovery-art__shield { animation:recovery-hover 7s ease-in-out infinite; }
+.recovery-art__key { animation:recovery-hover 6s ease-in-out -2s infinite; }
+.recovery-art__mail { animation:recovery-hover 8s ease-in-out -4s infinite; }
+.recovery-art__orbit { transform-origin:300px 216px; animation:recovery-orbit 24s ease-in-out infinite alternate; }
+@keyframes recovery-hover { 0%,100% {transform:translateY(0)} 50% {transform:translateY(-10px)} }
+@keyframes recovery-orbit { from {transform:rotate(-7deg)} to {transform:rotate(7deg)} }
+@media(prefers-reduced-motion:reduce) { .recovery-art * { animation:none; } }
+.login-access-portal { animation:recovery-hover 8s ease-in-out infinite; }
+.login-access-profile { animation:recovery-hover 7s ease-in-out -3s infinite; }
+.login-access-entry { animation:recovery-hover 6s ease-in-out -1s infinite; }
+.login-access-orbits { transform-origin:300px 217px; animation:recovery-orbit 28s ease-in-out infinite alternate-reverse; }
+@media(prefers-reduced-motion:reduce) { .login-access-stage svg * { animation:none; } }
+.login-access-workspace { animation:recovery-hover 8s ease-in-out infinite; }
+.login-access-stage .recovery-art,.recovery-stage .recovery-art { transform:scale(1.16); transform-origin:50% 52%; }
+.login-access-stage .creative-stage__caption,.recovery-stage .creative-stage__caption { margin-block-start:40px; }
+@media(prefers-reduced-motion:reduce) { .login-access-workspace { animation:none; } }

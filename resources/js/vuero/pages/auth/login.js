@@ -58,11 +58,11 @@ languageForm?.addEventListener('submit', async (event) => {
 const universe = document.querySelector('[data-login-universe]');
 if (universe) {
     const starfield = universe.querySelector('[data-starfield]');
-    for (let index = 0; index < 42; index++) {
+    for (let index = 0; index < 96; index++) {
         const star = document.createElement('i');
         star.className = 'login-space-star';
-        star.style.setProperty('--star-x', `${(index * 37 + 9) % 100}%`);
-        star.style.setProperty('--star-y', `${(index * 23 + 7) % 100}%`);
+        star.style.setProperty('--star-x', `${(index * 37.73 + 9) % 100}%`);
+        star.style.setProperty('--star-y', `${(index * 23.17 + 7) % 100}%`);
         star.style.setProperty('--star-size', `${index % 4 === 0 ? 9 : 2 + index % 3}px`);
         star.style.setProperty('--star-opacity', String(.2 + (index % 5) * .1));
         star.style.setProperty('--depth', String(.4 + (index % 4) * .5));
