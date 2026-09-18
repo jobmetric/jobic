@@ -2,18 +2,9 @@
 @section('title', trans('auth.screen.title'))
 @section('content')
     <main class="auth-shell auth-login-refined" data-auth-shell>
-        <section class="auth-visual login-welcome" data-login-universe>
-            @include('auth.partials.universe')
-            <div class="login-welcome__content">
-                <h2>{{ __('auth.screen.story_title') }}</h2>
-                @include('auth.partials.creative-stage')
-
-            </div>
-        </section>
-
+        @include('auth.partials.welcome')
         <section class="auth-panel">
-            <div class="auth-panel__tools"><a href="{{ route('home') }}" aria-label="{{ trans('auth.screen.home') }}"><x-brand compact /></a><div class="login-panel-actions"><button class="icon-button" type="button" data-panel-open="languages" aria-expanded="false" aria-controls="languages-panel" aria-label="{{ __('admin.language') }}">@include('common.language-mark', ['locale' => app()->getLocale()])</button><button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="{{ trans('auth.screen.theme') }}" aria-pressed="false"><x-vuero.icon class="theme-toggle__sun" name="sun" /><x-vuero.icon class="theme-toggle__moon" name="moon" /></button></div></div>
-
+            @include('auth.partials.tools')
             <div class="auth-form-wrap">
                 <header class="auth-form__header">
                     <h1>{{ trans('auth.screen.heading') }}</h1>

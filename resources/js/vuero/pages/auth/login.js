@@ -6,11 +6,11 @@ import { loadingButton, pageData } from '../../../common/page';
 import $ from '../../admin/jquery';
 
 $(() => {
-    const $passwordInput = $('[data-password-input]');
     const $passwordToggle = $('[data-password-toggle]');
 
     $passwordToggle.on('mousedown', (event) => event.preventDefault());
     $passwordToggle.on('click', function () {
+        const $passwordInput = $(this).closest('.form-field').find('[data-password-input]');
         const shouldReveal = $passwordInput.attr('type') === 'password';
 
         $passwordInput.attr('type', shouldReveal ? 'text' : 'password');
@@ -39,11 +39,11 @@ languageForm?.addEventListener('submit', async (event) => {
         restore();
         buttons.forEach((button) => { button.disabled = true; });
         await refreshPresentation('[data-auth-shell]');
-        const password = document.querySelector('[data-password-input]');
-        if (password) password.type = 'password';
-        const toggle = document.querySelector('[data-password-toggle]');
-        toggle?.setAttribute('aria-pressed', 'false');
-        toggle?.setAttribute('aria-label', pageData().auth.show_password);
+        document.querySelectorAll('[data-password-input]').forEach(input => { input.type = 'password'; });
+        document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
+            toggle.setAttribute('aria-pressed', 'false');
+            toggle.setAttribute('aria-label', pageData().auth.show_password);
+        });
         document.querySelector('#languages-panel [data-panel-close]').click();
         announce(result.message);
     } catch (error) {

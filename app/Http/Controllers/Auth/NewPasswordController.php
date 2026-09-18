@@ -31,6 +31,7 @@ class NewPasswordController extends Controller
     public function create(Request $request, string $token): View
     {
         Page::prepare('auth', LocaleCatalog::resolve(session('auth_locale', 'fa')));
+        Page::addLocalize('auth', ['show_password' => trans('auth.screen.show'), 'hide_password' => trans('auth.screen.hide')]);
 
         return view('auth.reset-password', [
             'token' => $token,

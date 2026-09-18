@@ -17,6 +17,7 @@ export default defineConfig({
                 'resources/css/vuero/app.css',
                 'resources/js/vuero/app.js',
                 'resources/js/vuero/pages/auth/login.js',
+                'resources/js/vuero/pages/auth/recovery.js',
                 'resources/js/vuero/pages/error/error-page.js',
                 'resources/js/vuero/pages/admin/dashboard.js',
                 'resources/js/vuero/pages/admin/profile-settings.js',

@@ -1,6 +1,17 @@
 <?php
 
 return [
+    'recovery' => [
+        'request_title' => 'Reset your password',
+        'request_description' => 'Enter your account email. We’ll send you a reset link.',
+        'send' => 'Send reset link',
+        'reset_title' => 'Choose a new password',
+        'reset_description' => 'Set a new password to return to your workspace.',
+        'new_password' => 'New password',
+        'confirm_password' => 'Confirm new password',
+        'save' => 'Save new password',
+        'back' => 'Back to sign in',
+    ],
     'screen' => [
         'canvas_title' => 'Your next idea, in colour.',
         'palette_hint' => 'Try a colour',

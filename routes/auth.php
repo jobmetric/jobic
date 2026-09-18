@@ -7,37 +7,34 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function (): void {
-    Route::get('/login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
+    Route::controller(AuthenticatedSessionController::class)->group(function () {
+        Route::prefix('login')->group(function () {
+            Route::get('/', 'create')->name('login');
+            Route::post('/', 'store')->name('login.store');
+            Route::post('language', [AuthenticatedSessionController::class, 'language'])->middleware('throttle:30,1')->name('login.language');
+        });
+    });
 
-    Route::post('/login/language', [AuthenticatedSessionController::class, 'language'])
-        ->middleware('throttle:30,1')->name('login.language');
+    Route::name('password.')->group(function () {
+        Route::prefix('forgot-password')->controller(PasswordResetLinkController::class)->group(function () {
+            Route::get('/', 'create')->name('request');
+            Route::post('/', 'store')->name('email');
+        });
 
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-        ->name('login.store');
-
-    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])
-        ->name('password.request');
-
-    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->name('password.email');
-
-    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
-
-    Route::post('/reset-password', [NewPasswordController::class, 'store'])
-        ->name('password.update');
+        Route::prefix('reset-password')->controller(NewPasswordController::class)->group(function () {
+            Route::get('{token}', 'create')->name('reset');
+            Route::post('/', 'store')->name('update');
+        });
+    });
 });
 
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
+Route::controller(AuthenticatedSessionController::class)->group(function () {
+    Route::post('logout', 'destroy')->middleware('auth')->name('logout');
 
-Route::get('/privacy', [LegalController::class, 'privacy'])
-    ->name('legal.privacy');
+    Route::post('legal/language', [AuthenticatedSessionController::class, 'language'])->middleware('throttle:30,1')->name('legal.language');
+});
 
-Route::get('/cookies', [LegalController::class, 'cookies'])
-    ->name('legal.cookies');
-
-Route::post('/legal/language', [AuthenticatedSessionController::class, 'language'])
-    ->middleware('throttle:30,1')->name('legal.language');
+Route::name('legal.')->controller(LegalController::class)->group(function () {
+    Route::get('privacy', 'privacy')->name('privacy');
+    Route::get('cookies', 'cookies')->name('cookies');
+});

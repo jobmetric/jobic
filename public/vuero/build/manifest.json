@@ -169,8 +169,12 @@
     ]
   },
   "admin-shell.css": {
-    "file": "assets/admin-shell-63fb04fb.css",
+    "file": "assets/admin-shell-5a94c5ae.css",
     "src": "admin-shell.css"
+  },
+  "auth-login.css": {
+    "file": "assets/auth-login-6702b724.css",
+    "src": "auth-login.css"
   },
   "dashboard-runtime.css": {
     "file": "assets/dashboard-runtime-079a4fb7.css",
@@ -199,9 +203,9 @@
   },
   "resources/js/admin/shell.js": {
     "css": [
-      "assets/admin-shell-63fb04fb.css"
+      "assets/admin-shell-5a94c5ae.css"
     ],
-    "file": "assets/shell-cc48ad9c.js",
+    "file": "assets/shell-e8e23376.js",
     "imports": [
       "_toast-18d1caa1.js",
       "_settings-9b650e65.js",
@@ -1077,16 +1081,12 @@
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/wizard.js"
   },
-  "resources/js/vuero/pages/auth/login.css": {
-    "file": "assets/login-dfc47cc0.css",
-    "src": "resources/js/vuero/pages/auth/login.css"
-  },
   "resources/js/vuero/pages/auth/login.js": {
     "css": [
-      "assets/login-dfc47cc0.css",
-      "assets/admin-shell-63fb04fb.css"
+      "assets/admin-shell-5a94c5ae.css",
+      "assets/auth-login-6702b724.css"
     ],
-    "file": "assets/login-7dcac90b.js",
+    "file": "assets/login-01933615.js",
     "imports": [
       "_settings-9b650e65.js",
       "_toast-18d1caa1.js",
@@ -1095,6 +1095,21 @@
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/auth/login.js"
+  },
+  "resources/js/vuero/pages/auth/recovery.js": {
+    "css": [
+      "assets/admin-shell-5a94c5ae.css",
+      "assets/auth-login-6702b724.css"
+    ],
+    "file": "assets/recovery-01933615.js",
+    "imports": [
+      "_settings-9b650e65.js",
+      "_toast-18d1caa1.js",
+      "_page-315b051b.js",
+      "_jquery-83fec99f.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/vuero/pages/auth/recovery.js"
   },
   "resources/js/vuero/pages/error/error-page.js": {
     "file": "assets/error-page-2ff502b6.js",

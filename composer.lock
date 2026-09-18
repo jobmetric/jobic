@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a546dfaa56a6240a5f00919572b2dc84",
+    "content-hash": "1364d8834fe2a884bd068b801d4fcd8f",
     "packages": [
         {
             "name": "brick/math",
@@ -1613,16 +1613,16 @@
         },
         {
             "name": "jobmetric/laravel-package-core",
-            "version": "1.38.0",
+            "version": "1.38.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-package-core.git",
-                "reference": "6a705b4c774472ba455f1ee59f54ea9f2312cc47"
+                "reference": "488b30d761f67fd93012e3c2dfd5db25cfc3b004"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-package-core/zipball/6a705b4c774472ba455f1ee59f54ea9f2312cc47",
-                "reference": "6a705b4c774472ba455f1ee59f54ea9f2312cc47",
+                "url": "https://api.github.com/repos/jobmetric/laravel-package-core/zipball/488b30d761f67fd93012e3c2dfd5db25cfc3b004",
+                "reference": "488b30d761f67fd93012e3c2dfd5db25cfc3b004",
                 "shasum": ""
             },
             "require": {
@@ -1671,7 +1671,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-13T09:31:29+00:00"
+            "time": "2026-09-18T13:10:45+00:00"
         },
         {
             "name": "jobmetric/laravel-setting",

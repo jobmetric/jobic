@@ -431,7 +431,13 @@ class Installation
                 }
 
                 return Response::make(true, trans('installation.task_done'), $this->progress());
-            } catch (Throwable) {
+            } catch (Throwable $exception) {
+                // Record diagnostic identifiers only; exception messages may contain credentials or SQL bindings.
+                \Illuminate\Support\Facades\Log::error('Installation task failed.', [
+                    'task' => self::TASKS[$task] ?? 'verify',
+                    'exception_type' => $exception::class,
+                    'error_code' => (string) $exception->getCode(),
+                ]);
                 $this->environment->write([
                     'INSTALLATION_STATUS' => 'failed',
                 ]);
@@ -661,6 +667,6 @@ class Installation
         ksort($values);
 
         return hash_hmac('sha256', json_encode(array_map(fn ($value
-            ) => (string) $value, $values), JSON_THROW_ON_ERROR), (string) config('app.key'));
+        ) => (string) $value, $values), JSON_THROW_ON_ERROR), (string) config('app.key'));
     }
 }

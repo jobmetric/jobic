@@ -126,3 +126,8 @@ html[dir=ltr] .auth-login-refined .remember-control input:checked + .remember-co
 html[dir=rtl] .legal-card footer svg { transform: scaleX(-1); }
 .legal-shell .cms-panel-body { padding: 24px; }
 @media(max-width:600px) { .legal-shell .auth-panel--legal { padding: 20px; gap: 24px; }.legal-card header { padding-block-end: 20px; }.legal-scroll { padding-inline-end: 12px; }.legal-scroll section { padding-inline-start: 12px; }.legal-card footer { padding-block-start: 16px; gap: 12px; }.legal-card footer a { font-size: 12px; gap: 7px; }.legal-return { padding: 10px 14px; } }
+.auth-recovery .auth-form-wrap { max-width:460px; }
+.auth-recovery .auth-form__header h1 { font-size:clamp(25px,2.5vw,36px); }
+.auth-recovery .auth-field-error { display:block; color:#dc354f; font-size:12px; margin-block-start:-12px; }
+.auth-recovery .auth-recovery-back { display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border:1px solid var(--border); border-radius:12px; color:var(--primary); font-weight:600; }
+[dir=rtl] .auth-recovery-back svg { transform:rotate(180deg); }

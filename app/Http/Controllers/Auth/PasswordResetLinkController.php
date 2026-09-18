@@ -27,6 +27,7 @@ class PasswordResetLinkController extends Controller
     public function create(): View
     {
         Page::prepare('auth', LocaleCatalog::resolve(session('auth_locale', 'fa')));
+        Page::addLocalize('auth', ['show_password' => trans('auth.screen.show'), 'hide_password' => trans('auth.screen.hide')]);
 
         return view('auth.forgot-password');
     }
