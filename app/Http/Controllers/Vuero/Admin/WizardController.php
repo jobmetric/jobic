@@ -18,10 +18,10 @@ class WizardController extends Controller
     public function __invoke(): View
     {
         return view('vuero.admin.wizard.index', [
-            'steps' => config('vuero.wizard.steps'),
+            'steps'     => config('vuero.wizard.steps'),
             'customers' => config('vuero.wizard.customers'),
             'teammates' => config('vuero.wizard.teammates'),
-            'tools' => config('vuero.wizard.tools'),
+            'tools'     => config('vuero.wizard.tools'),
         ]);
     }
 }

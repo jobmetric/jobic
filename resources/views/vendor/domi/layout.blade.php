@@ -5,7 +5,7 @@
     $bottomScripts = \JobMetric\Domi\Facades\Domi::bottomScript();
 @endphp
 <!DOCTYPE html>
-<html lang="@yield('language', app()->getLocale())" dir="@yield('direction', app()->getLocale() === 'fa' ? 'rtl' : 'ltr')" data-theme="light">
+<html lang="@yield('language', app()->getLocale())" dir="@yield('direction', \App\Support\LocaleCatalog::direction())" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -79,7 +79,7 @@
     @yield('head')
 @foreach($links as $rel => $linkObjects)
     @foreach($linkObjects as $object)
-        <link rel="{{ $rel }}" href="{{ $object['href'] }}" @foreach($object['items'] as $name => $value) @if($value !== null) {{ $name }}="{{ $value }}" @endif @endforeach>
+        <link rel="{{ $rel }}" href="{{ $rel === 'stylesheet' ? asset($object['href']) : $object['href'] }}" @foreach($object['items'] as $name => $value) @if($value !== null) {{ $name }}="{{ $value }}" @endif @endforeach>
     @endforeach
 @endforeach
     <!-- Top Script -->

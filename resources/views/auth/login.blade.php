@@ -12,7 +12,7 @@
         </section>
 
         <section class="auth-panel">
-            <div class="auth-panel__tools"><a href="{{ route('home') }}" aria-label="{{ trans('auth.screen.home') }}"><x-brand compact /></a><div class="login-panel-actions"><button class="icon-button" type="button" data-panel-open="languages" aria-expanded="false" aria-controls="languages-panel" aria-label="{{ __('admin.language') }}"><span class="country-flag country-flag--{{ app()->getLocale() === 'fa' ? 'ir' : 'us' }}" aria-hidden="true"></span></button><button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="{{ trans('auth.screen.theme') }}" aria-pressed="false"><x-vuero.icon class="theme-toggle__sun" name="sun" /><x-vuero.icon class="theme-toggle__moon" name="moon" /></button></div></div>
+            <div class="auth-panel__tools"><a href="{{ route('home') }}" aria-label="{{ trans('auth.screen.home') }}"><x-brand compact /></a><div class="login-panel-actions"><button class="icon-button" type="button" data-panel-open="languages" aria-expanded="false" aria-controls="languages-panel" aria-label="{{ __('admin.language') }}">@include('common.language-mark', ['locale' => app()->getLocale()])</button><button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="{{ trans('auth.screen.theme') }}" aria-pressed="false"><x-vuero.icon class="theme-toggle__sun" name="sun" /><x-vuero.icon class="theme-toggle__moon" name="moon" /></button></div></div>
 
             <div class="auth-form-wrap">
                 <header class="auth-form__header">

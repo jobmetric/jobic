@@ -45,7 +45,14 @@ readonly class Environment
      */
     public function installed(): bool
     {
-        return ! in_array($this->read()['INSTALLATION'] ?? '', ['', 'null', '(null)', 'false', '(false)', '0'], true);
+        return ! in_array($this->read()['INSTALLATION'] ?? '', [
+            '',
+            'null',
+            '(null)',
+            'false',
+            '(false)',
+            '0',
+        ], true);
     }
 
     /**
@@ -61,6 +68,7 @@ readonly class Environment
         if ($lock === false) {
             throw new RuntimeException('Environment lock is not writable.');
         }
+
         try {
             if (! flock($lock, LOCK_EX)) {
                 throw new RuntimeException('Cannot lock environment.');
@@ -125,7 +133,13 @@ readonly class Environment
                     $placeholder = 'JOBIC_' . bin2hex(random_bytes(24));
                     $placeholders[$key] = $placeholder;
                     $literal = is_bool($value) ? ($value ? 'true' : 'false') : ($value === null ? 'null' : (string) $value);
-                    $replacements[$placeholder] = '"' . str_replace(['\\', '"', '$', "\r", "\n"], [
+                    $replacements[$placeholder] = '"' . str_replace([
+                            '\\',
+                            '"',
+                            '$',
+                            "\r",
+                            "\n",
+                        ], [
                             '\\\\',
                             '\\"',
                             '\\$',
@@ -133,7 +147,9 @@ readonly class Environment
                             '\\n',
                         ], $literal) . '"';
                 }
+
                 (new EnvModifier)->setPath($temporary)->set($placeholders);
+
                 if (file_put_contents($temporary, strtr(file_get_contents($temporary), $replacements), LOCK_EX) === false) {
                     throw new RuntimeException('Cannot write environment.');
                 }

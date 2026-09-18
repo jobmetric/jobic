@@ -65,10 +65,13 @@ class Bootstrap
             $exists = is_file($environment->path);
             $environment->initialize($app->basePath('.env.example'));
             $values = $environment->read();
+
             if ($environment->installed()) {
                 return;
             }
+
             $environment->invalidateCache();
+
             $changes = [];
             if (! $exists) {
                 $changes = ['INSTALLATION_STATUS' => 'pending', 'INSTALLATION_STEP' => 0, 'INSTALLATION_TASK' => 0];

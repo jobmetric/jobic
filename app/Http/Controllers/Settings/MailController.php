@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 /**
  * Handle mail page requests.
@@ -26,7 +27,9 @@ class MailController extends Controller
      *
      * @return void
      */
-    public function __construct(private readonly MailSettings $settings) {}
+    public function __construct(private readonly MailSettings $settings)
+    {
+    }
 
     /**
      * Render the requested settings form.
@@ -46,6 +49,7 @@ class MailController extends Controller
      * @param MailRequest $request
      *
      * @return JsonResponse|RedirectResponse
+     * @throws Throwable
      */
     public function update(MailRequest $request): JsonResponse|RedirectResponse
     {
@@ -53,6 +57,7 @@ class MailController extends Controller
         if ($request->expectsJson()) {
             return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
         }
+
         if (! $result->ok) {
             throw ValidationException::withMessages(['settings' => $result->message]);
         }

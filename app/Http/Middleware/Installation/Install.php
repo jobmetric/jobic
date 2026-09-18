@@ -7,6 +7,7 @@ namespace App\Http\Middleware\Installation;
 use App\Services\Installation\Installation;
 use App\Support\Installation\Environment;
 use App\Support\Installation\State;
+use App\Support\LocaleCatalog;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -41,9 +42,11 @@ class Install
 
         if ($completed) {
             if ($request->is('installation', 'installation/*')) {
-                return $request->expectsJson()
-                    ? response()->json(['ok' => false, 'message' => trans('installation.closed'), 'data' => ['completed' => true]], 403)
-                    : redirect()->route('login');
+                return $request->expectsJson() ? response()->json([
+                    'ok'      => false,
+                    'message' => trans('installation.closed'),
+                    'data'    => ['completed' => true],
+                ], 403) : redirect()->route('login');
             }
 
             return $next($request);
@@ -51,28 +54,40 @@ class Install
 
         $directory = app(State::class)->directory;
         foreach (['sessions', 'cache'] as $folder) {
-            File::ensureDirectoryExists($directory.'/'.$folder, 0700);
+            File::ensureDirectoryExists($directory . '/' . $folder, 0700);
         }
 
         $locale = app(Environment::class)->read()['INSTALLATION_LOCALE'] ?? 'en';
-        app()->setLocale(in_array($locale, ['en', 'fa'], true) ? $locale : 'en');
+        app()->setLocale(LocaleCatalog::resolve($locale));
         config([
-            'app.debug' => false,
-            'session.driver' => 'file', 'session.cookie' => 'jobic_installer',
-            'session.files' => $directory.'/sessions',
-            'session.path' => '/', 'session.domain' => null, 'session.secure' => $request->isSecure(),
-            'session.same_site' => 'lax', 'session.encrypt' => true,
-            'session.connection' => null, 'session.store' => null,
-            'cache.default' => 'installation',
-            'cache.stores.installation' => ['driver' => 'file', 'path' => $directory.'/cache', 'lock_path' => $directory.'/cache'],
-            'logging.default' => 'single',
+            'app.debug'                 => false,
+            'session.driver'            => 'file',
+            'session.cookie'            => 'jobic_installer',
+            'session.files'             => $directory . '/sessions',
+            'session.path'              => '/',
+            'session.domain'            => null,
+            'session.secure'            => $request->isSecure(),
+            'session.same_site'         => 'lax',
+            'session.encrypt'           => true,
+            'session.connection'        => null,
+            'session.store'             => null,
+            'cache.default'             => 'installation',
+            'cache.stores.installation' => [
+                'driver'    => 'file',
+                'path'      => $directory . '/cache',
+                'lock_path' => $directory . '/cache',
+            ],
+            'logging.default'           => 'single',
         ]);
 
         if (! $request->is('installation', 'installation/*')) {
-            return $request->is('api', 'api/*') || $request->expectsJson()
-                ? response()->json(['ok' => false, 'message' => trans('installation.required'), 'installation_url' => route('installation.intro')], 503)
-                : redirect()->route('installation.intro');
+            return $request->is('api', 'api/*') || $request->expectsJson() ? response()->json([
+                'ok'               => false,
+                'message'          => trans('installation.required'),
+                'installation_url' => route('installation.intro'),
+            ], 503) : redirect()->route('installation.intro');
         }
+
         $response = $next($request);
         $response->headers->set('Cache-Control', 'no-store, private');
 

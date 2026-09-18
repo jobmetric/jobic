@@ -51,11 +51,19 @@ readonly class MailSettings
     public function save(array $data, ?int $userId = null): Response
     {
         $validated = dto($data, MailRequest::class);
+
         if (empty($validated['MAIL_PASSWORD'])) {
             unset($validated['MAIL_PASSWORD']);
         }
-        $context = ['section' => 'mail', 'user_id' => $userId, 'fields' => array_keys($validated)];
+
+        $context = [
+            'section' => 'mail',
+            'user_id' => $userId,
+            'fields'  => array_keys($validated),
+        ];
+
         Hooks::action('jobic.settings.mail.saving', $context);
+
         try {
             $this->environment->write($validated + ['MAIL_URL' => null]);
 

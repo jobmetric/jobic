@@ -29,15 +29,15 @@ class DashboardController extends Controller
      */
     public function show(string $dashboard): View
     {
-        $pages = collect(config('vuero.dashboards.groups'))
-            ->flatMap(fn (array $group, string $groupKey): array => collect($group['pages'])
-                ->map(fn (string $title, string $slug): array => [
-                    'slug' => $slug,
-                    'title' => $title,
-                    'group' => $groupKey,
+        $pages = collect(config('vuero.dashboards.groups'))->flatMap(fn (
+                array $group,
+                string $groupKey
+            ): array => collect($group['pages'])->map(fn (string $title, string $slug): array => [
+                    'slug'       => $slug,
+                    'title'      => $title,
+                    'group'      => $groupKey,
                     'groupLabel' => $group['label'],
-                ])->all())
-            ->keyBy('slug');
+                ])->all())->keyBy('slug');
 
         abort_unless($pages->has($dashboard), 404);
 
@@ -47,7 +47,7 @@ class DashboardController extends Controller
         abort_unless(view()->exists($view), 404);
 
         return view($view, [
-            'dashboard' => $page,
+            'dashboard'       => $page,
             'dashboardScript' => "resources/js/vuero/pages/admin/dashboards/{$dashboard}.js",
         ]);
     }

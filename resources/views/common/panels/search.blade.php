@@ -8,7 +8,7 @@
                 <a class="search-entry" href="{{ route('admin.dashboard') }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon name="activity" size="20" /></span><span>{{ __('admin.dashboard') }}</span></a>
                 <a class="search-entry" href="{{ route('admin.settings.index') }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon name="apps" size="20" /></span><span>{{ __('admin.all_settings') }}</span></a>
                 @foreach(config('admin.settings') as $key => $item)
-                    <a class="search-entry" href="{{ $key === 'mail' ? route('admin.settings.mail.edit') : route('admin.settings.edit', $key) }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon :name="$item['icon']" size="20" /></span><span><strong>{{ __('admin.sections.'.$key) }}</strong><small>{{ __('admin.descriptions.'.$key) }}</small></span></a>
+                    <a class="search-entry" href="{{ match ($key) { 'mail' => route('admin.settings.mail.edit'), 'languages' => route('admin.settings.languages.index'), default => route('admin.settings.edit', $key) } }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon :name="$item['icon']" size="20" /></span><span><strong>{{ __('admin.sections.'.$key) }}</strong><small>{{ __('admin.descriptions.'.$key) }}</small></span></a>
                 @endforeach
                 <p class="search-empty" data-cms-search-empty hidden>{{ __('admin.no_results') }}</p>
             </div>

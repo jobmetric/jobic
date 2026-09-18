@@ -28,6 +28,17 @@ class SecurityRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['password' => ['required', 'string', 'min:12', 'confirmed'], 'password_confirmation' => ['required', 'string']];
+        return [
+            'password'              => [
+                'required',
+                'string',
+                'min:12',
+                'confirmed',
+            ],
+            'password_confirmation' => [
+                'required',
+                'string',
+            ],
+        ];
     }
 }

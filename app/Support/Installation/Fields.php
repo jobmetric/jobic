@@ -21,29 +21,88 @@ class Fields
         return match ($step) {
             1 => [
                 'application' => [
-                    'APP_ENV'   => ['select', 'production', ['production', 'local', 'staging']],
-                    'APP_DEBUG' => ['boolean', '0'],
+                    'APP_ENV'   => [
+                        'select',
+                        'production',
+                        [
+                            'production',
+                            'local',
+                            'staging',
+                        ],
+                    ],
+                    'APP_DEBUG' => [
+                        'boolean',
+                        '0',
+                    ],
                 ],
             ],
             2 => [
                 'database' => [
-                    'DB_CONNECTION' => ['select', 'mysql', ['mysql', 'mariadb', 'pgsql']],
-                    'DB_HOST'       => ['text', '127.0.0.1'],
-                    'DB_PORT'       => ['number', '3306'],
-                    'DB_DATABASE'   => ['text', 'jobic'],
-                    'DB_USERNAME'   => ['text', ''],
-                    'DB_PASSWORD'   => ['password', ''],
+                    'DB_CONNECTION' => [
+                        'select',
+                        'mysql',
+                        [
+                            'mysql',
+                            'mariadb',
+                            'pgsql',
+                        ],
+                    ],
+                    'DB_HOST'       => [
+                        'text',
+                        '127.0.0.1',
+                    ],
+                    'DB_PORT'       => [
+                        'number',
+                        '3306',
+                    ],
+                    'DB_DATABASE'   => [
+                        'text',
+                        'jobic',
+                    ],
+                    'DB_USERNAME'   => [
+                        'text',
+                        '',
+                    ],
+                    'DB_PASSWORD'   => [
+                        'password',
+                        '',
+                    ],
                 ],
             ],
             3 => [
                 'redis' => [
-                    'REDIS_HOST'     => ['text', '127.0.0.1'],
-                    'REDIS_PORT'     => ['number', '6379'],
-                    'REDIS_USERNAME' => ['text', ''],
-                    'REDIS_PASSWORD' => ['password', ''],
-                    'REDIS_SCHEME'   => ['select', 'tcp', ['tcp', 'tls']],
-                    'REDIS_DB'       => ['number', '0'],
-                    'REDIS_CACHE_DB' => ['number', '1'],
+                    'REDIS_HOST'     => [
+                        'text',
+                        '127.0.0.1',
+                    ],
+                    'REDIS_PORT'     => [
+                        'number',
+                        '6379',
+                    ],
+                    'REDIS_USERNAME' => [
+                        'text',
+                        '',
+                    ],
+                    'REDIS_PASSWORD' => [
+                        'password',
+                        '',
+                    ],
+                    'REDIS_SCHEME'   => [
+                        'select',
+                        'tcp',
+                        [
+                            'tcp',
+                            'tls',
+                        ],
+                    ],
+                    'REDIS_DB'       => [
+                        'number',
+                        '0',
+                    ],
+                    'REDIS_CACHE_DB' => [
+                        'number',
+                        '1',
+                    ],
                 ],
                 'mail'  => self::mail(),
             ],
@@ -52,34 +111,107 @@ class Fields
                     'LOG_CHANNEL'    => [
                         'select',
                         'single',
-                        ['single', 'daily', 'stack', 'stderr', 'syslog', 'errorlog'],
+                        [
+                            'single',
+                            'daily',
+                            'stack',
+                            'stderr',
+                            'syslog',
+                            'errorlog',
+                        ],
                     ],
                     'LOG_LEVEL'      => [
                         'select',
                         'error',
-                        ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'],
+                        [
+                            'debug',
+                            'info',
+                            'notice',
+                            'warning',
+                            'error',
+                            'critical',
+                            'alert',
+                            'emergency',
+                        ],
                     ],
-                    'LOG_STACK'      => ['text', 'single'],
-                    'LOG_DAILY_DAYS' => ['number', '14'],
+                    'LOG_STACK'      => [
+                        'text',
+                        'single',
+                    ],
+                    'LOG_DAILY_DAYS' => [
+                        'number',
+                        '14',
+                    ],
                 ],
                 'session' => [
-                    'SESSION_DRIVER'          => ['select', 'file', ['file', 'database', 'redis']],
-                    'SESSION_LIFETIME'        => ['number', '120'],
-                    'SESSION_ENCRYPT'         => ['boolean', '0'],
-                    'SESSION_EXPIRE_ON_CLOSE' => ['boolean', '0'],
-                    'SESSION_PATH'            => ['text', '/'],
-                    'SESSION_DOMAIN'          => ['text', ''],
-                    'SESSION_SECURE_COOKIE'   => ['boolean', '0'],
-                    'SESSION_SAME_SITE'       => ['select', 'lax', ['lax', 'strict', 'none']],
+                    'SESSION_DRIVER'          => [
+                        'select',
+                        'file',
+                        [
+                            'file',
+                            'database',
+                            'redis',
+                        ],
+                    ],
+                    'SESSION_LIFETIME'        => [
+                        'number',
+                        '120',
+                    ],
+                    'SESSION_ENCRYPT'         => [
+                        'boolean',
+                        '0',
+                    ],
+                    'SESSION_EXPIRE_ON_CLOSE' => [
+                        'boolean',
+                        '0',
+                    ],
+                    'SESSION_PATH'            => [
+                        'text',
+                        '/',
+                    ],
+                    'SESSION_DOMAIN'          => [
+                        'text',
+                        '',
+                    ],
+                    'SESSION_SECURE_COOKIE'   => [
+                        'boolean',
+                        '0',
+                    ],
+                    'SESSION_SAME_SITE'       => [
+                        'select',
+                        'lax',
+                        ['lax', 'strict', 'none'],
+                    ],
                 ],
             ],
             5 => [
-                'site'          => ['APP_NAME' => ['text', 'Jobic'], 'APP_URL' => ['url', '']],
+                'site'          => [
+                    'APP_NAME' => [
+                        'text',
+                        'Jobic',
+                    ],
+                    'APP_URL'  => [
+                        'url',
+                        '',
+                    ],
+                ],
                 'administrator' => [
-                    'ADMIN_NAME'                  => ['text', ''],
-                    'ADMIN_EMAIL'                 => ['email', ''],
-                    'ADMIN_PASSWORD'              => ['password', ''],
-                    'ADMIN_PASSWORD_confirmation' => ['password', ''],
+                    'ADMIN_NAME'                  => [
+                        'text',
+                        '',
+                    ],
+                    'ADMIN_EMAIL'                 => [
+                        'email',
+                        '',
+                    ],
+                    'ADMIN_PASSWORD'              => [
+                        'password',
+                        '',
+                    ],
+                    'ADMIN_PASSWORD_confirmation' => [
+                        'password',
+                        '',
+                    ],
                 ],
             ],
             default => [],
@@ -94,14 +226,46 @@ class Fields
     public static function mail(): array
     {
         return [
-            'MAIL_MAILER'       => ['select', 'log', ['log', 'smtp']],
-            'MAIL_SCHEME'       => ['select', 'smtp', ['smtp', 'smtps']],
-            'MAIL_HOST'         => ['text', ''],
-            'MAIL_PORT'         => ['number', '587'],
-            'MAIL_USERNAME'     => ['text', ''],
-            'MAIL_PASSWORD'     => ['password', ''],
-            'MAIL_FROM_ADDRESS' => ['email', ''],
-            'MAIL_FROM_NAME'    => ['text', ''],
+            'MAIL_MAILER'       => [
+                'select',
+                'log',
+                [
+                    'log',
+                    'smtp',
+                ],
+            ],
+            'MAIL_SCHEME'       => [
+                'select',
+                'smtp',
+                [
+                    'smtp',
+                    'smtps',
+                ],
+            ],
+            'MAIL_HOST'         => [
+                'text',
+                '',
+            ],
+            'MAIL_PORT'         => [
+                'number',
+                '587',
+            ],
+            'MAIL_USERNAME'     => [
+                'text',
+                '',
+            ],
+            'MAIL_PASSWORD'     => [
+                'password',
+                '',
+            ],
+            'MAIL_FROM_ADDRESS' => [
+                'email',
+                '',
+            ],
+            'MAIL_FROM_NAME'    => [
+                'text',
+                '',
+            ],
         ];
     }
 
@@ -145,16 +309,36 @@ class Fields
             }
 
             $rules[$key] = array_merge($rules[$key], match ($field[0]) {
-                'select' => ['string', 'in:' . implode(',', $field[2])],
-                'boolean' => ['boolean'],
+                'select' => [
+                    'string',
+                    'in:' . implode(',', $field[2]),
+                ],
+                'boolean' => [
+                    'boolean',
+                ],
                 'number' => [
                     'integer',
-                    'min:' . (in_array($key, ['REDIS_DB', 'REDIS_CACHE_DB'], true) ? '0' : '1'),
+                    'min:' . (in_array($key, [
+                        'REDIS_DB',
+                        'REDIS_CACHE_DB',
+                    ], true) ? '0' : '1'),
                     'max:65535',
                 ],
-                'email' => ['string', 'email', 'max:254'],
-                'url' => ['string', 'url:http,https', 'max:2048'],
-                default => ['string', 'max:255', 'not_regex:/[\r\n\x00]/'],
+                'email' => [
+                    'string',
+                    'email',
+                    'max:254',
+                ],
+                'url' => [
+                    'string',
+                    'url:http,https',
+                    'max:2048',
+                ],
+                default => [
+                    'string',
+                    'max:255',
+                    'not_regex:/[\r\n\x00]/',
+                ],
             });
         }
 

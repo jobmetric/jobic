@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
 use JobMetric\Domi\Facades\Domi;
 use Throwable;
 
@@ -61,19 +62,32 @@ class Page
      * @param string|null $locale
      *
      * @return void
+     * @throws SetPluginNotFoundException
      */
     public static function prepare(string $page, ?string $locale = null): void
     {
         Domi::clearResolvedInstance(\JobMetric\Domi\Domi::class);
+
         app()->forgetInstance(\JobMetric\Domi\Domi::class);
-        $locale ??= app()->getLocale();
+        $locale = LocaleCatalog::resolve($locale ?? app()->getLocale());
+        app()->setLocale($locale);
+        app('translator')->setFallback(config('localization.fallback', 'en'));
         Domi::setSiteName(config('app.name', 'Jobic'));
         Domi::setTitle(null);
-        self::addLocalize('page', ['name' => $page, 'locale' => $locale]);
+        Domi::setPlugins(['jquery', 'select2']);
+
+        self::addLocalize('selects', [
+            'no_results' => trans('languages.no_results'),
+            'searching'  => trans('languages.searching'),
+        ]);
+        self::addLocalize('page', [
+            'name'   => $page,
+            'locale' => $locale,
+        ]);
         self::addLocalize('ui', [
-            'loading' => trans('admin.loading', [], $locale),
+            'loading'     => trans('admin.loading', [], $locale),
             'save_failed' => trans('admin.save_failed', [], $locale),
-            'saved' => trans('admin.saved', [], $locale),
+            'saved'       => trans('admin.saved', [], $locale),
         ]);
     }
 }

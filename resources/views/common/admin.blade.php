@@ -1,6 +1,6 @@
 @extends('common.base')
 @section('language', app()->getLocale())
-@section('direction', app()->getLocale() === 'fa' ? 'rtl' : 'ltr')
+@section('direction', \App\Support\LocaleCatalog::direction())
 @section('body-class', 'cms-page--admin cms-page--default')
 @section('body')
     <div class="admin-shell" data-admin-shell data-cms-shell data-initial-layout="{{ ($adminPreferences ?? config('admin.appearance'))['layout'] }}" data-preferences="{{ json_encode($adminPreferences ?? config('admin.appearance')) }}" data-preferences-url="{{ route('admin.settings.appearance.update') }}" data-save-failed="{{ __('admin.save_failed') }}" data-saved="{{ __('admin.saved') }}">

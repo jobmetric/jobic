@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Installation;
 
+use App\Support\LocaleCatalog;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validate language request data.
@@ -28,6 +30,12 @@ class LanguageRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['locale' => ['required', 'string', 'in:en,fa']];
+        return [
+            'locale' => [
+                'required',
+                'string',
+                Rule::in(LocaleCatalog::codes()),
+            ],
+        ];
     }
 }

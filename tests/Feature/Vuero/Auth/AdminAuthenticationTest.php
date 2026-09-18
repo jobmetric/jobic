@@ -39,7 +39,7 @@ class AdminAuthenticationTest extends TestCase
     {
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('ورود به حساب')
+            ->assertSee(trans('auth.screen.heading', [], 'fa'))
             ->assertSee('Jobic');
     }
 

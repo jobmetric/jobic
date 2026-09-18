@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Facades\Authentication;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Support\LocaleCatalog;
 use App\Support\Page;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,7 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request, string $token): View
     {
-        Page::prepare('auth', 'fa');
+        Page::prepare('auth', LocaleCatalog::resolve(session('auth_locale', 'fa')));
 
         return view('auth.reset-password', [
             'token' => $token,

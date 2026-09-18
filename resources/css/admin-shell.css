@@ -53,7 +53,7 @@ html[dir="rtl"] [data-cms-shell] .installation-field { text-align: right; }
 .cms-settings-links .account-menu-item { justify-content: flex-start; }
 .cms-settings-links .account-menu-item .end { margin-inline-start: auto; }
 [data-cms-shell] .subsidebar-menu__link { justify-content: flex-start; }
-.cms-security-heading { display: flex; align-items: center; gap: 16px; padding-bottom: 26px; border-bottom: 1px solid var(--border); }
+.cms-security-heading { display: flex; align-items: center; gap: 16px; padding-bottom: 26px; }
 .cms-security-heading h3 { font-size: 20px; font-weight: 700; }
 .cms-security-heading p { color: var(--muted); line-height: 1.9; margin-top: 8px; }
 .cms-security-icon { display: grid; place-items: center; width: 52px; height: 52px; flex-shrink: 0; color: var(--primary); background: var(--primary-soft); border-radius: 16px; }

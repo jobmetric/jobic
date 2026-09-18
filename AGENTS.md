@@ -22,3 +22,7 @@ Read `.cursor/rules/` and `docs/hooks.md` before changing CMS features.
 - Preserve the complete dashboard layout when changing branding. Sample dashboard figures must be visibly identified as preview data until connected to domain services.
 
 - common.base must extend domi::layout; the published Domi view owns the HTML document and renders all Domi registries. Never create a parallel HTML base. See docs/domi.md for section mapping and override maintenance.
+
+- Read docs/crud.md and .cursor/rules/cms-crud.mdc for CRUD work. Language management is a review candidate; do not mark its final design approved until the user approves it. Explicit CRUD requirements apply now, including page-only Domi assets, server-side tables, shared AJAX transport, field errors and documented safe hooks.
+
+- Product select controls use Domi Select2 and the shared enhancer, including table page-length and dialog filters. CRUD selection survives AJAX pagination/filter/sort for the current document. Use the shared help/selection/bulk-confirmation dialog and translated Domi data. Read docs/localization.md before changing language selectors or validation; installed systems use active package language records.

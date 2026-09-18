@@ -6,10 +6,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Facades\Authentication;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LanguageRequest;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Support\LocaleCatalog;
 use App\Support\Page;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -28,7 +29,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        app()->setLocale(session('auth_locale', 'fa'));
+        app()->setLocale(LocaleCatalog::resolve(session('auth_locale', 'fa')));
         Page::prepare('auth');
         Page::addLocalize('auth', [
             'show_password' => trans('auth.screen.show'),
@@ -50,9 +51,7 @@ class AuthenticatedSessionController extends Controller
     {
         $result = Authentication::language($request->validated());
 
-        return $request->expectsJson()
-            ? response()->json($result, $result->status)
-            : redirect()->route('login');
+        return $request->expectsJson() ? response()->json($result, $result->status) : redirect()->route('login');
     }
 
     /**

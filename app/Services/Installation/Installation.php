@@ -89,10 +89,12 @@ class Installation
                     if ($this->state->read() !== []) {
                         return false;
                     }
+
                     $this->environment->write([
                         'INSTALLATION'        => now()->toIso8601String(),
                         'INSTALLATION_STATUS' => 'completed',
                     ]);
+
                     config(['installation.completed' => true]);
 
                     return true;
@@ -163,19 +165,23 @@ class Installation
         $state = $this->state->read();
         $owned = empty($state['owner']) || hash_equals($state['owner'], $this->owner($context));
         $environment = $owned ? $this->environment->read() : [];
+
         $values = [];
         foreach (range(1, 5) as $step) {
             $values += Fields::values(Fields::fields($step), $environment);
         }
+
         if ($owned && isset($state['admin'])) {
             $values['ADMIN_NAME'] = $state['admin']['name'];
             $values['ADMIN_EMAIL'] = $state['admin']['email'];
         }
+
         // Secure defaults are shown for a genuinely new installation.
         if ((int) ($environment['INSTALLATION_STEP'] ?? 0) === 0) {
             $values['APP_ENV'] = 'production';
             $values['APP_DEBUG'] = '0';
         }
+
         if (empty($values['APP_URL']) || $values['APP_URL'] === 'http://localhost') {
             $values['APP_URL'] = $context['url'] ?? '';
         }
@@ -183,13 +189,13 @@ class Installation
         return [
             'connectionTests' => [
                 'database' => $owned && isset($state['database_test']) && hash_equals($state['database_test'], $this->fingerprint($this->credentials(array_intersect_key($values, Fields::groups(2)['database'])))),
-                'redis' => $owned && isset($state['redis_test']) && hash_equals($state['redis_test'], $this->fingerprint($this->credentials(array_intersect_key($values, Fields::groups(3)['redis'])))),
+                'redis'    => $owned && isset($state['redis_test']) && hash_equals($state['redis_test'], $this->fingerprint($this->credentials(array_intersect_key($values, Fields::groups(3)['redis'])))),
             ],
-            'values'       => $values,
-            'requirements' => $this->requirements(),
-            'owned'        => $owned,
-            'progress'     => $this->progress(),
-            'tasks'        => self::TASKS,
+            'values'          => $values,
+            'requirements'    => $this->requirements(),
+            'owned'           => $owned,
+            'progress'        => $this->progress(),
+            'tasks'           => self::TASKS,
         ];
     }
 
@@ -318,6 +324,7 @@ class Installation
                 if (($state['redis_test'] ?? '') !== $this->fingerprint($redis)) {
                     return Response::make(false, trans('installation.test_required'), null, 422);
                 }
+
                 $values['REDIS_CLIENT'] = 'phpredis';
                 $values['REDIS_URL'] = null;
                 $values['MAIL_URL'] = null;
@@ -374,6 +381,7 @@ class Installation
             if ((int) ($this->environment->read()['INSTALLATION_STEP'] ?? 0) !== 5 || empty($state['admin'])) {
                 return Response::make(false, trans('installation.order'), null, 422);
             }
+
             $this->environment->write(['INSTALLATION_STATUS' => 'running']);
 
             return Response::make(true, trans('installation.started'), $this->progress());
@@ -416,14 +424,21 @@ class Installation
                     $this->state->clear();
                 }
                 else {
-                    $this->environment->write(['INSTALLATION_STATUS' => 'running', 'INSTALLATION_TASK' => $task + 1]);
+                    $this->environment->write([
+                        'INSTALLATION_STATUS' => 'running',
+                        'INSTALLATION_TASK'   => $task + 1,
+                    ]);
                 }
 
                 return Response::make(true, trans('installation.task_done'), $this->progress());
             } catch (Throwable) {
-                $this->environment->write(['INSTALLATION_STATUS' => 'failed']);
+                $this->environment->write([
+                    'INSTALLATION_STATUS' => 'failed',
+                ]);
 
-                return Response::make(false, trans('installation.task_failed', ['task' => trans('installation.tasks.' . (self::TASKS[$task] ?? 'verify'))]), $this->progress(), 422);
+                return Response::make(false, trans('installation.task_failed', [
+                    'task' => trans('installation.tasks.' . (self::TASKS[$task] ?? 'verify')),
+                ]), $this->progress(), 422);
             }
         });
     }
@@ -467,6 +482,7 @@ class Installation
                     if (in_array(false, $this->requirements(), true)) {
                         throw new RuntimeException('Requirements failed.');
                     }
+
                     $this->connections->database($values);
                     $this->connections->redis($this->credentials(array_intersect_key($values, Fields::groups(3)['redis'])));
 
@@ -507,7 +523,9 @@ class Installation
                         if (file_exists($link) || Artisan::call('storage:link') !== 0) {
                             throw new RuntimeException('Storage link could not be created.');
                         }
+
                         clearstatcache(true, $link);
+
                         if (! $linked()) {
                             throw new RuntimeException('Storage link could not be verified.');
                         }
@@ -621,6 +639,7 @@ class Installation
                 ], true) && ($value === null || $value === '')) {
                 $value = $existing[$key] ?? '';
             }
+
             if ($value === 'null' || $value === '(null)' || $value === null) {
                 $value = '';
             }
@@ -642,6 +661,6 @@ class Installation
         ksort($values);
 
         return hash_hmac('sha256', json_encode(array_map(fn ($value
-        ) => (string) $value, $values), JSON_THROW_ON_ERROR), (string) config('app.key'));
+            ) => (string) $value, $values), JSON_THROW_ON_ERROR), (string) config('app.key'));
     }
 }

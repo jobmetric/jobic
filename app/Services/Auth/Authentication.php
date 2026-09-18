@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
+use App\Facades\Hooks;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\LanguageRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\LoginEvent;
-use App\Facades\Hooks;
-use App\Http\Requests\Auth\LanguageRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
@@ -35,9 +35,12 @@ class Authentication
     {
         $data = dto($data, LanguageRequest::class);
         $context = ['locale' => $data['locale']];
+
         Hooks::action('jobic.auth.language.saving', $context);
+
         session()->put('auth_locale', $data['locale']);
         app()->setLocale($data['locale']);
+
         Hooks::notify('jobic.auth.language.saved', $context);
 
         return Response::make(true, trans('auth.screen.language_saved'));
@@ -59,6 +62,7 @@ class Authentication
     public function login(array $data, array $context = []): Response
     {
         $validated = dto($data, LoginRequest::class);
+
         $email = Str::lower($validated['email']);
         $ip = (string) ($context['ip'] ?? '');
         $userAgent = (string) ($context['user_agent'] ?? '');
@@ -70,9 +74,9 @@ class Authentication
             $seconds = RateLimiter::availableIn($throttleKey);
 
             return Response::make(false, trans('auth.throttle', [
-                    'seconds' => $seconds,
-                    'minutes' => (int) ceil($seconds / 60),
-                ]), null, 429);
+                'seconds' => $seconds,
+                'minutes' => (int) ceil($seconds / 60),
+            ]), null, 429);
         }
 
         Auth::guard('web')->setRememberDuration(max(1, (int) config('auth.remember_days', 30)) * 24 * 60);
@@ -129,6 +133,7 @@ class Authentication
     public function sendResetLink(array $data, array $context = []): Response
     {
         $validated = dto($data, ForgotPasswordRequest::class);
+
         $email = Str::lower($validated['email']);
         $ip = (string) ($context['ip'] ?? '');
 
@@ -138,9 +143,9 @@ class Authentication
             $seconds = RateLimiter::availableIn($throttleKey);
 
             return Response::make(false, trans('auth.throttle', [
-                    'seconds' => $seconds,
-                    'minutes' => (int) ceil($seconds / 60),
-                ]), null, 429,);
+                'seconds' => $seconds,
+                'minutes' => (int) ceil($seconds / 60),
+            ]), null, 429,);
         }
 
         RateLimiter::hit($throttleKey);
@@ -179,7 +184,7 @@ class Authentication
      * Generate a unique key for login throttling based on email and IP address.
      *
      * @param string $email The user's email address.
-     * @param string $ip The user's IP address.
+     * @param string $ip    The user's IP address.
      *
      * @return string A unique key for throttling login attempts.
      */
@@ -192,7 +197,7 @@ class Authentication
      * Generate a unique key for forgot password throttling based on email and IP address.
      *
      * @param string $email The user's email address.
-     * @param string $ip The user's IP address.
+     * @param string $ip    The user's IP address.
      *
      * @return string A unique key for throttling forgot password attempts.
      */
@@ -204,11 +209,11 @@ class Authentication
     /**
      * Record a login event in the database.
      *
-     * @param string $email The user's email address.
-     * @param int|null $userId The user's ID, or null if not available.
-     * @param string $ip The user's IP address.
+     * @param string $email     The user's email address.
+     * @param int|null $userId  The user's ID, or null if not available.
+     * @param string $ip        The user's IP address.
      * @param string $userAgent The user's user agent string.
-     * @param bool $successful Whether the login attempt was successful.
+     * @param bool $successful  Whether the login attempt was successful.
      *
      * @return void
      */
@@ -217,7 +222,7 @@ class Authentication
         ?int $userId,
         string $ip,
         string $userAgent,
-        bool $successful,
+        bool $successful
     ): void {
         LoginEvent::query()->create([
             'email'      => $email,

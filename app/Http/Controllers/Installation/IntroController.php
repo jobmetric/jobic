@@ -18,8 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use JobMetric\PackageCore\Output\Response;
 use JobMetric\Domi\Facades\Domi;
+use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
 /**
@@ -36,7 +36,8 @@ class IntroController extends Controller
      */
     public function __construct(
         private readonly Installation $installation
-    ) {}
+    ) {
+    }
 
     /**
      * Render the installation wizard with saved progress.
@@ -52,21 +53,21 @@ class IntroController extends Controller
         Page::prepare('installation');
         Domi::setPlugins(['jquery', 'select2']);
         Page::addLocalize('installation', [
-            'connection_idle' => trans('installation.connection_idle'),
+            'connection_idle'    => trans('installation.connection_idle'),
             'connection_pending' => trans('installation.connection_pending'),
             'connection_success' => trans('installation.connection_success'),
-            'connection_error' => trans('installation.connection_error'),
-            'select_empty' => trans('installation.select_empty'),
-            'select_search' => trans('installation.select_search'),
-            'show_password' => trans('installation.studio.show_password'),
-            'hide_password' => trans('installation.studio.hide_password'),
-            'password_short' => trans('installation.studio.password_short'),
-            'password_ready' => trans('installation.studio.password_ready'),
-            'error' => trans('installation.network_failed'),
-            'working' => trans('installation.working'),
-            'complete' => trans('installation.success'),
-            'step_count' => trans('installation.step_count'),
-            'progress_label' => trans('installation.progress_label'),
+            'connection_error'   => trans('installation.connection_error'),
+            'select_empty'       => trans('installation.select_empty'),
+            'select_search'      => trans('installation.select_search'),
+            'show_password'      => trans('installation.studio.show_password'),
+            'hide_password'      => trans('installation.studio.hide_password'),
+            'password_short'     => trans('installation.studio.password_short'),
+            'password_ready'     => trans('installation.studio.password_ready'),
+            'error'              => trans('installation.network_failed'),
+            'working'            => trans('installation.working'),
+            'complete'           => trans('installation.success'),
+            'step_count'         => trans('installation.step_count'),
+            'progress_label'     => trans('installation.progress_label'),
         ]);
 
         return view('installation.index', $data);
@@ -183,8 +184,8 @@ class IntroController extends Controller
 
         return [
             'owner' => $request->session()->get('installation_owner'),
-            'ip' => $request->ip(),
-            'url' => $request->getSchemeAndHttpHost().$request->getBaseUrl(),
+            'ip'    => $request->ip(),
+            'url'   => $request->getSchemeAndHttpHost() . $request->getBaseUrl(),
         ];
     }
 

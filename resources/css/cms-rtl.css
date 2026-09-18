@@ -55,3 +55,30 @@ html[dir='rtl'] [data-cms-shell][data-selected-layout*='sideblock'][data-selecte
 
 /* Preserve the green mark while lifting its navy strokes on dark surfaces. */
 [data-theme="dark"] .cms-brand-mark { filter: url(#brand-dark-contrast); }
+/* Shared Select2 surface; all product selects use the same theme. */
+.cms-page .select2-container .select2-selection--single { height:43px; background:var(--surface); border:1px solid var(--border); border-radius:9px; }
+.cms-page .select2-container--default .select2-selection--single .select2-selection__rendered { color:var(--text); line-height:41px; padding-inline:12px 30px; }
+.cms-page .select2-container--default .select2-selection--single .select2-selection__arrow { height:41px; }
+.cms-page .select2-dropdown { background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:10px; box-shadow:0 10px 30px #17283b20; overflow:hidden; }
+.cms-page .select2-container--default .select2-results__option--highlighted[aria-selected] { background:var(--primary); color:white; }
+.cms-page .select2-container--default .select2-results__option[aria-selected=true] { background:rgb(var(--primary-rgb) / 12%); color:var(--text); }
+.cms-page .select2-search__field { background:var(--surface); color:var(--text); border-radius:6px; }
+.cms-page .select2-container--disabled { opacity:.6; }
+.cms-locale-mark { display:inline-grid; place-items:center; background:rgb(var(--primary-rgb) / 12%); color:var(--primary); font-size:11px; font-weight:700; border-radius:50%; min-width:24px; min-height:24px; }
+
+.cms-language-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:6px; }
+.cms-language-grid [data-cms-locale] { position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:10px; min-height:142px; padding:20px 12px; border:1px solid var(--border); border-radius:18px; background:var(--surface); color:var(--text); transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.cms-language-grid [data-cms-locale]:hover { transform:translateY(-3px); border-color:var(--primary); box-shadow:0 8px 24px rgb(var(--primary-rgb) / 12%); }
+.cms-language-grid [data-cms-locale].is-active { background:linear-gradient(135deg,rgb(var(--primary-rgb) / 13%),transparent),var(--surface); border-color:var(--primary); }
+.cms-language-grid .cms-language-check { position:absolute; inset-block-start:10px; inset-inline-end:10px; }
+.cms-language-grid .country-flag { width:46px; height:34px; border-radius:6px; }
+.country-flag.cms-package-flag { display:inline-block; flex-shrink:0; background-image:var(--language-flag); background-size:contain; background-repeat:no-repeat; background-position:center; border-radius:3px; box-shadow:none; }
+@media(prefers-reduced-motion:reduce){.cms-language-grid [data-cms-locale] {transition:none;}}
+.cms-language-grid .cms-language-option .cms-package-flag { width:48px; height:36px; border-radius:4px; }
+.cms-select-flag { display:inline-flex; align-items:center; gap:9px; vertical-align:middle; }
+.cms-select-flag img { width:24px; height:18px; object-fit:cover; border-radius:3px; flex-shrink:0; }
+.cms-language-grid .cms-language-option .cms-package-flag { width:46px; height:46px; border-radius:50%; background-size:cover; overflow:hidden; }
+/* Keep the same circular package flag in headers and language tiles. */
+.admin-toolbar .country-flag.cms-package-flag,
+.admin-topbar .country-flag.cms-package-flag,
+.login-panel-actions .country-flag.cms-package-flag { width:26px; height:26px; border-radius:50%; background-size:cover; overflow:hidden; }

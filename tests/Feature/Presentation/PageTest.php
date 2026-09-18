@@ -36,6 +36,7 @@ class PageTest extends TestCase
         $html = Blade::render("@extends('common.base') @section('title', 'Asset test') @section('body')<main id=\"page-main\">Page</main>@endsection");
         $this->assertSame(1, substr_count(strtolower($html), '<!doctype html>'));
         $this->assertStringContainsString('page.css', $html);
+        $this->assertStringContainsString('href="'.asset('assets/vendor/domi/plugins/select2/dist/css/select2.min.css').'"', $html);
         $this->assertStringContainsString('media="print"', $html);
         $this->assertStringContainsString('package-footer', $html);
         $this->assertLessThan(strpos($html, '</head>'), strpos($html, '/test/top.js'));

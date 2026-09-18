@@ -95,6 +95,9 @@
       "_jquery-83fec99f.js"
     ]
   },
+  "_page-315b051b.js": {
+    "file": "assets/page-315b051b.js"
+  },
   "_placeload-runtime-e394db54.js": {
     "file": "assets/placeload-runtime-e394db54.js",
     "imports": [
@@ -114,17 +117,29 @@
       "_form-layout-runtime-df83fa2c.js"
     ]
   },
-  "_settings-cd5182a4.js": {
-    "css": [
-      "assets/settings-63fb04fb.css"
-    ],
-    "file": "assets/settings-cd5182a4.js",
+  "_selects-ec6e9b90.js": {
+    "file": "assets/selects-ec6e9b90.js",
     "imports": [
-      "_toast-2393fe1d.js"
+      "_page-315b051b.js"
     ]
   },
-  "_toast-2393fe1d.js": {
-    "file": "assets/toast-2393fe1d.js"
+  "_settings-9b650e65.js": {
+    "file": "assets/settings-9b650e65.js",
+    "imports": [
+      "_page-315b051b.js"
+    ]
+  },
+  "_shared-a9a33d39.js": {
+    "css": [
+      "assets/shared-24122fcc.css"
+    ],
+    "file": "assets/shared-a9a33d39.js",
+    "imports": [
+      "_page-315b051b.js"
+    ]
+  },
+  "_toast-18d1caa1.js": {
+    "file": "assets/toast-18d1caa1.js"
   },
   "_user-grids-runtime-6f2179c9.js": {
     "file": "assets/user-grids-runtime-6f2179c9.js",
@@ -153,6 +168,10 @@
       "_jquery-83fec99f.js"
     ]
   },
+  "admin-shell.css": {
+    "file": "assets/admin-shell-63fb04fb.css",
+    "src": "admin-shell.css"
+  },
   "dashboard-runtime.css": {
     "file": "assets/dashboard-runtime-079a4fb7.css",
     "src": "dashboard-runtime.css"
@@ -174,15 +193,19 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-affdb058.css",
+    "file": "assets/app-34d8dc1d.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
   "resources/js/admin/shell.js": {
-    "file": "assets/shell-02566f4c.js",
+    "css": [
+      "assets/admin-shell-63fb04fb.css"
+    ],
+    "file": "assets/shell-cc48ad9c.js",
     "imports": [
-      "_toast-2393fe1d.js",
-      "_settings-cd5182a4.js"
+      "_toast-18d1caa1.js",
+      "_settings-9b650e65.js",
+      "_page-315b051b.js"
     ],
     "isEntry": true,
     "src": "resources/js/admin/shell.js"
@@ -195,17 +218,43 @@
     "css": [
       "assets/wizard-d3840e46.css"
     ],
-    "file": "assets/wizard-ea19828b.js",
+    "file": "assets/wizard-71b1f155.js",
     "imports": [
-      "_toast-2393fe1d.js"
+      "_toast-18d1caa1.js",
+      "_page-315b051b.js"
     ],
     "isEntry": true,
     "src": "resources/js/installation/wizard.js"
   },
-  "resources/js/vuero/app.js": {
-    "file": "assets/app-40c931d4.js",
+  "resources/js/languages/form.js": {
+    "file": "assets/form-4b37b06a.js",
     "imports": [
-      "_jquery-83fec99f.js"
+      "_shared-a9a33d39.js",
+      "_page-315b051b.js",
+      "_settings-9b650e65.js",
+      "_toast-18d1caa1.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/languages/form.js"
+  },
+  "resources/js/languages/index.js": {
+    "file": "assets/index-11526c28.js",
+    "imports": [
+      "_shared-a9a33d39.js",
+      "_page-315b051b.js",
+      "_settings-9b650e65.js",
+      "_toast-18d1caa1.js",
+      "_selects-ec6e9b90.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/languages/index.js"
+  },
+  "resources/js/vuero/app.js": {
+    "file": "assets/app-908cf3c5.js",
+    "imports": [
+      "_jquery-83fec99f.js",
+      "_selects-ec6e9b90.js",
+      "_page-315b051b.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/app.js"
@@ -1034,12 +1083,14 @@
   },
   "resources/js/vuero/pages/auth/login.js": {
     "css": [
-      "assets/login-dfc47cc0.css"
+      "assets/login-dfc47cc0.css",
+      "assets/admin-shell-63fb04fb.css"
     ],
-    "file": "assets/login-1b44af5b.js",
+    "file": "assets/login-7dcac90b.js",
     "imports": [
-      "_settings-cd5182a4.js",
-      "_toast-2393fe1d.js",
+      "_settings-9b650e65.js",
+      "_toast-18d1caa1.js",
+      "_page-315b051b.js",
       "_jquery-83fec99f.js"
     ],
     "isEntry": true,
@@ -1071,8 +1122,8 @@
     "isEntry": true,
     "src": "resources/js/vuero/pages/utility-status.js"
   },
-  "settings.css": {
-    "file": "assets/settings-63fb04fb.css",
-    "src": "settings.css"
+  "shared.css": {
+    "file": "assets/shared-24122fcc.css",
+    "src": "shared.css"
   }
 }

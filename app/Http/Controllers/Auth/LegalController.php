@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\LocaleCatalog;
 use App\Support\Page;
 use Illuminate\View\View;
 
@@ -20,7 +21,7 @@ class LegalController extends Controller
      */
     public function privacy(): View
     {
-        app()->setLocale(session('auth_locale', 'fa'));
+        app()->setLocale(LocaleCatalog::resolve(session('auth_locale', 'fa')));
         Page::prepare('legal');
 
         return view('legal.page', ['policy' => 'privacy']);
@@ -33,7 +34,7 @@ class LegalController extends Controller
      */
     public function cookies(): View
     {
-        app()->setLocale(session('auth_locale', 'fa'));
+        app()->setLocale(LocaleCatalog::resolve(session('auth_locale', 'fa')));
         Page::prepare('legal');
 
         return view('legal.page', ['policy' => 'cookies']);

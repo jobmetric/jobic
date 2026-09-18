@@ -56,6 +56,7 @@ return [
     'save_failed' => 'ذخیرهٔ تنظیمات انجام نشد. دوباره تلاش کنید.',
     'dashboard' => 'داشبورد',
     'sections' => [
+        'languages' => 'زبان‌ها',
         'general' => 'سایت',
         'profile' => 'پروفایل',
         'security' => 'امنیت',
@@ -63,6 +64,7 @@ return [
         'mail' => 'ایمیل',
     ],
     'descriptions' => [
+        'languages' => 'مدیریت زبان‌های سیستم',
         'general' => 'نام و آدرس سایت',
         'profile' => 'مدیریت حساب کاربری',
         'security' => 'رمز و تاریخچهٔ ورود',

@@ -28,6 +28,18 @@ class GeneralRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['APP_NAME' => ['required', 'string', 'max:100', 'not_regex:/[\r\n\x00]/'], 'APP_URL' => ['required', 'url:http,https', 'max:2048']];
+        return [
+            'APP_NAME' => [
+                'required',
+                'string',
+                'max:100',
+                'not_regex:/[\r\n\x00]/',
+            ],
+            'APP_URL'  => [
+                'required',
+                'url:http,https',
+                'max:2048',
+            ],
+        ];
     }
 }

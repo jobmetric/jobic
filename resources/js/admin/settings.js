@@ -31,16 +31,22 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
         if (current.nodeType !== incoming.nodeType) return;
         if (current.nodeType === Node.TEXT_NODE) { if (incoming.textContent.trim()) current.textContent = incoming.textContent; return; }
         if (current.nodeType !== Node.ELEMENT_NODE || current.tagName !== incoming.tagName) return;
-        if (current.matches('script, style, svg, input, textarea, [data-ui-toast], [data-settings-errors], [data-chart], .apexcharts-canvas')) return;
-        ['aria-label', 'title', 'placeholder', 'data-saved', 'data-save-failed'].forEach((attribute) => {
+        if (current.matches('.select2-container, script, style, svg, [data-ui-toast], [data-settings-errors], [data-chart], .apexcharts-canvas')) return;
+        ['aria-label', 'title', 'placeholder', 'data-tooltip', 'data-saved', 'data-save-failed'].forEach((attribute) => {
             if (incoming.hasAttribute(attribute)) current.setAttribute(attribute, incoming.getAttribute(attribute));
         });
+        if (current.matches('input, textarea')) return;
         if (current.matches('[data-cms-locale]')) {
             current.classList.toggle('is-active', incoming.classList.contains('is-active'));
             current.setAttribute('aria-pressed', incoming.getAttribute('aria-pressed'));
         }
-        if (current.matches('.country-flag')) current.className = incoming.className;
-        const children = [...current.childNodes];
+        if (current.matches('.country-flag')) {
+            current.className = incoming.className;
+            current.style.cssText = incoming.style.cssText;
+            current.textContent = incoming.textContent;
+            return;
+        }
+        const children = [...current.childNodes].filter(node => !(node.nodeType === Node.ELEMENT_NODE && node.matches('.select2-container')));
         const replacements = [...incoming.childNodes];
         if (children.length === replacements.length) children.forEach((child, index) => copy(child, replacements[index]));
     }

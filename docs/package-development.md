@@ -15,7 +15,11 @@ JobMetric packages are developed in sibling repositories under `../maral/package
 
 | Package | Source | Minimum version | Fix |
 | --- | --- | --- | --- |
-| `jobmetric/domi` | `../maral/packages/domi` | `1.14.1` | PackageCore EnumMacros compatibility and explicit nullable service/helper parameters |
+| `jobmetric/domi` | `../maral/packages/domi` | `1.14.2` | EnumMacros/nullable compatibility and standalone DataTable initialization without KTUtil |
 | `jobmetric/laravel-translation` | `../maral/packages/laravel-translation` | `3.9.1` | Explicit nullable locale in translation helpers |
 
 The application keeps its documented Domi view override for CMS presentation. That supported view customization is separate from repairing package PHP source.
+
+Domi 1.14.2 (`197c3bc`) was released for standalone DataTables initialization: the bundle preserves an existing `KTUtil.isRTL()` implementation and falls back to `document.documentElement.dir` if the host theme does not provide it. Regression smoke checks cover both directions without theme globals. Republish `domi-assets` on upgrade. No unrelated dependency versions were upgraded for language CRUD.
+
+Language 2.5.1 (`273fb32`) preserves and validates `first_day_of_week` in service updates. Jobic delegates mutations to the package and retains only CMS policies/hooks. The fix was released from an isolated worktree based on remote master; unrelated local package edits were preserved.

@@ -29,7 +29,9 @@ class ResetPasswordNotification extends ResetPassword
         return (new MailMessage)->subject(__('auth.reset_mail_subject'))
             ->line(__('auth.reset_mail_line1'))
             ->action(__('auth.reset_mail_action'), $url)
-            ->line(__('auth.reset_mail_line2', ['count' => config('auth.passwords.users.expire')]))
+            ->line(__('auth.reset_mail_line2', [
+                'count' => config('auth.passwords.users.expire'),
+            ]))
             ->line(__('auth.reset_mail_line3'));
     }
 }

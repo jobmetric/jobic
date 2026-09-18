@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef9d31d0a7fb138b257e0e828a4cb0da",
+    "content-hash": "a546dfaa56a6240a5f00919572b2dc84",
     "packages": [
         {
             "name": "brick/math",
@@ -1056,16 +1056,16 @@
         },
         {
             "name": "jobmetric/domi",
-            "version": "1.14.1",
+            "version": "1.14.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/domi.git",
-                "reference": "ddc91f5b481a3f047f18116983f9750a3e215a9a"
+                "reference": "197c3bc4762eda8e9f0bb4d11d479cfcaeb6c0c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/domi/zipball/ddc91f5b481a3f047f18116983f9750a3e215a9a",
-                "reference": "ddc91f5b481a3f047f18116983f9750a3e215a9a",
+                "url": "https://api.github.com/repos/jobmetric/domi/zipball/197c3bc4762eda8e9f0bb4d11d479cfcaeb6c0c1",
+                "reference": "197c3bc4762eda8e9f0bb4d11d479cfcaeb6c0c1",
                 "shasum": ""
             },
             "require": {
@@ -1125,7 +1125,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-16T06:13:12+00:00"
+            "time": "2026-09-17T12:30:20+00:00"
         },
         {
             "name": "jobmetric/laravel-custom-field",
@@ -1481,16 +1481,16 @@
         },
         {
             "name": "jobmetric/laravel-language",
-            "version": "2.5.0",
+            "version": "2.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-language.git",
-                "reference": "d7ede2e0f8b7c976bcadd480be1b3a19990e59f2"
+                "reference": "273fb329a422d367440866754ca8d8d35ca0c76d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-language/zipball/d7ede2e0f8b7c976bcadd480be1b3a19990e59f2",
-                "reference": "d7ede2e0f8b7c976bcadd480be1b3a19990e59f2",
+                "url": "https://api.github.com/repos/jobmetric/laravel-language/zipball/273fb329a422d367440866754ca8d8d35ca0c76d",
+                "reference": "273fb329a422d367440866754ca8d8d35ca0c76d",
                 "shasum": ""
             },
             "require": {
@@ -1550,7 +1550,7 @@
                 "issues": "https://github.com/jobmetric/laravel-language/issues",
                 "source": "https://github.com/jobmetric/laravel-language"
             },
-            "time": "2025-12-30T18:28:31+00:00"
+            "time": "2026-09-18T07:10:43+00:00"
         },
         {
             "name": "jobmetric/laravel-metadata",

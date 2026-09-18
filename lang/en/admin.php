@@ -56,6 +56,7 @@ return [
     'save_failed' => 'Could not save your preferences. Please try again.',
     'dashboard' => 'Dashboard',
     'sections' => [
+        'languages' => 'Languages',
         'general' => 'Website',
         'profile' => 'Profile',
         'security' => 'Security',
@@ -63,6 +64,7 @@ return [
         'mail' => 'Email',
     ],
     'descriptions' => [
+        'languages' => 'Manage the language registry',
         'general' => 'Website name and address',
         'profile' => 'Manage your account',
         'security' => 'Password and sign-in history',

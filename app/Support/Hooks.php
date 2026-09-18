@@ -70,7 +70,10 @@ class Hooks
             try {
                 $callback($context);
             } catch (Throwable $exception) {
-                Log::error('CMS hook observer failed.', ['hook' => $name, 'exception_type' => $exception::class]);
+                Log::error('CMS hook observer failed.', [
+                    'hook'           => $name,
+                    'exception_type' => $exception::class,
+                ]);
             }
         }
     }

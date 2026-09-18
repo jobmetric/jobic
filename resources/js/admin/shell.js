@@ -30,7 +30,7 @@ if (shell) {
                 const result = await response.json();
                 if (!response.ok || !result.ok) throw new Error();
                 saved = { ...snapshot };
-                announce(shell.dataset.saved);
+                if (Object.keys(changes).some(key => key !== 'theme')) announce(shell.dataset.saved);
                 if (snapshot.locale !== document.documentElement.lang) await refreshPresentation().catch(() => {});
             } catch {
                 if (currentRevision === revision) {

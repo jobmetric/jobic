@@ -22,10 +22,10 @@
                     @csrf
                     <span class="installation-language__label">{{ __('installation.language') }}</span>
                     <div class="installation-language__choices" role="group" aria-label="{{ __('installation.language') }}">
-                        @foreach (['en', 'fa'] as $locale)
+                        @foreach (\App\Support\LocaleCatalog::all() as $locale => $language)
                             <button type="submit" name="locale" value="{{ $locale }}" class="installation-language__choice {{ app()->getLocale() === $locale ? 'is-active' : '' }}" aria-pressed="{{ app()->getLocale() === $locale ? 'true' : 'false' }}" lang="{{ $locale }}">
-                                <span class="installation-language__badge" aria-hidden="true">{{ __('installation.language_badges.'.$locale) }}</span>
-                                <span>{{ __('installation.languages.'.$locale) }}</span>
+                                <span class="installation-language__badge" aria-hidden="true">@include('common.language-mark', ['locale' => $locale])</span>
+                                <span>{{ $language['name'] }}</span>
                                 <span class="installation-language__check" aria-hidden="true"><x-vuero.icon name="check" size="14" /></span>
                             </button>
                         @endforeach

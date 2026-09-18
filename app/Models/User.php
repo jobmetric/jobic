@@ -16,6 +16,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 /**
  * Represent an authenticated application user.
  *
+ * @property mixed $id
  * @property HigherOrderCollectionProxy|mixed $name
  * @property HigherOrderCollectionProxy|mixed $email
  * @property HigherOrderCollectionProxy|mixed|null $email_verified_at

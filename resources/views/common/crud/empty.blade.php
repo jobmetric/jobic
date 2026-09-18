@@ -1,0 +1,1 @@
+        <div class="crud-empty" data-table-empty hidden><svg viewBox="0 0 160 100" aria-hidden="true"><rect x="30" y="20" width="100" height="64" rx="12"/><path d="M48 40h64M48 54h42M48 68h26"/><circle cx="120" cy="23" r="15"/><path d="M120 17v12M114 23h12"/></svg><strong>{{ $title }}</strong><p>{{ $hint }}</p></div>

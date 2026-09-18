@@ -28,6 +28,17 @@ class ProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['name' => ['required', 'string', 'max:255'], 'email' => ['required', 'email', 'max:254']];
+        return [
+            'name'  => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:254',
+            ],
+        ];
     }
 }

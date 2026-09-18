@@ -24,12 +24,12 @@ test('settings save without document navigation and use product branding', async
     }
     await page.goto('/admin/settings/appearance');
     await page.evaluate(() => { window.documentIdentity = 'language-save'; });
-    await page.locator('select[name="locale"]').selectOption('fa');
+    await page.locator('select[name="locale"]').selectOption('fa', {force: true});
     await page.locator('form.cms-settings-form button[type="submit"]').click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'fa');
     expect(await page.evaluate(() => window.documentIdentity)).toBe('language-save');
     await expect(page.locator('.admin-topbar h1')).toContainText('ظاهر');
-    await page.locator('select[name="locale"]').selectOption('en');
+    await page.locator('select[name="locale"]').selectOption('en', {force: true});
     await page.locator('form.cms-settings-form button[type="submit"]').click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await page.goto('/admin/settings/security');

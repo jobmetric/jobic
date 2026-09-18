@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JobMetric\PackageCore\Output\Response;
+use Throwable;
 
 /**
  * Handle settings page requests.
@@ -30,7 +31,9 @@ class SettingsController extends Controller
      *
      * @return void
      */
-    public function __construct(private readonly Settings $settings) {}
+    public function __construct(private readonly Settings $settings)
+    {
+    }
 
     /**
      * Render the settings directory.
@@ -58,7 +61,7 @@ class SettingsController extends Controller
 
         Page::prepare('settings');
 
-        return view('settings.'.$section, $this->settings->page($section, (int) $request->user()->id));
+        return view('settings.' . $section, $this->settings->page($section, (int) $request->user()->id));
     }
 
     /**
@@ -67,6 +70,7 @@ class SettingsController extends Controller
      * @param GeneralRequest $request
      *
      * @return JsonResponse|RedirectResponse
+     * @throws Throwable
      */
     public function general(GeneralRequest $request): JsonResponse|RedirectResponse
     {
@@ -79,6 +83,7 @@ class SettingsController extends Controller
      * @param ProfileRequest $request
      *
      * @return JsonResponse|RedirectResponse
+     * @throws Throwable
      */
     public function profile(ProfileRequest $request): JsonResponse|RedirectResponse
     {
@@ -91,6 +96,7 @@ class SettingsController extends Controller
      * @param SecurityRequest $request
      *
      * @return JsonResponse|RedirectResponse
+     * @throws Throwable
      */
     public function security(SecurityRequest $request): JsonResponse|RedirectResponse
     {
@@ -108,6 +114,7 @@ class SettingsController extends Controller
      * @param AppearanceRequest $request
      *
      * @return JsonResponse|RedirectResponse
+     * @throws Throwable
      */
     public function appearance(AppearanceRequest $request): JsonResponse|RedirectResponse
     {
@@ -130,6 +137,7 @@ class SettingsController extends Controller
         if ($request->expectsJson()) {
             return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
         }
+
         if (! $result->ok) {
             throw ValidationException::withMessages(['settings' => $result->message]);
         }

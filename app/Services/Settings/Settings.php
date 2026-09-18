@@ -77,8 +77,15 @@ readonly class Settings
     public function general(array $data, ?int $userId = null): Response
     {
         $values = dto($data, GeneralRequest::class);
-        $context = ['section' => 'general', 'user_id' => $userId, 'fields' => array_keys($values)];
+
+        $context = [
+            'section' => 'general',
+            'user_id' => $userId,
+            'fields'  => array_keys($values),
+        ];
+
         Hooks::action('jobic.settings.general.saving', $context);
+
         try {
             $this->environment->write($values);
 
@@ -104,9 +111,16 @@ readonly class Settings
     public function appearance(array $data, int $userId): Response
     {
         $values = dto($data, AppearanceRequest::class);
-        $context = ['section' => 'appearance', 'user_id' => $userId, 'fields' => array_keys($values)];
+
+        $context = [
+            'section' => 'appearance',
+            'user_id' => $userId,
+            'fields'  => array_keys($values),
+        ];
         $user = User::query()->findOrFail($userId);
+
         Hooks::action('jobic.settings.appearance.saving', $context);
+
         $user->forceFill(['ui_preferences' => $values])->save();
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
@@ -128,16 +142,25 @@ readonly class Settings
     public function profile(array $data, int $userId): Response
     {
         $values = dto($data, ProfileRequest::class);
-        $context = ['section' => 'profile', 'user_id' => $userId, 'fields' => array_keys($values)];
+
+        $context = [
+            'section' => 'profile',
+            'user_id' => $userId,
+            'fields'  => array_keys($values),
+        ];
         $values['email'] = Str::lower($values['email']);
+
         if (User::query()->where('email', $values['email'])->whereKeyNot($userId)->exists()) {
             return Response::make(false, trans('admin.email_taken'), null, 422);
         }
+
         $user = User::query()->findOrFail($userId);
         if ($values['email'] !== $user->email) {
             $user->email_verified_at = null;
         }
+
         Hooks::action('jobic.settings.profile.saving', $context);
+
         $user->fill($values)->save();
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
@@ -159,10 +182,20 @@ readonly class Settings
     public function security(array $data, int $userId): Response
     {
         $values = dto($data, SecurityRequest::class);
-        $context = ['section' => 'security', 'user_id' => $userId, 'fields' => array_keys($values)];
+
+        $context = [
+            'section' => 'security',
+            'user_id' => $userId,
+            'fields'  => array_keys($values),
+        ];
         $user = User::query()->findOrFail($userId);
+
         Hooks::action('jobic.settings.security.saving', $context);
-        $user->forceFill(['password' => $values['password'], 'remember_token' => Str::random(60)])->save();
+
+        $user->forceFill([
+            'password'       => $values['password'],
+            'remember_token' => Str::random(60),
+        ])->save();
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
