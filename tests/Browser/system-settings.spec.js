@@ -1,0 +1,47 @@
+import { test, expect } from '@playwright/test';
+
+test('technical settings use Vuero and save without replacing the document in English and Persian', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    for (const locale of ['en', 'fa']) {
+        await page.goto('/admin/settings/appearance');
+        await page.locator('select[name="locale"]').selectOption(locale, { force: true });
+        await page.locator('select[name="theme"]').selectOption(locale === 'fa' ? 'dark' : 'light', { force: true });
+        await page.locator('[data-appearance-form] button[type="submit"]').click();
+        await expect(page.locator('html')).toHaveAttribute('lang', locale);
+        await page.setViewportSize(locale === 'fa' ? { width: 390, height: 844 } : { width: 1440, height: 1000 });
+        await page.goto('/admin/settings/mail');
+        await expect(page.locator('[data-cms-shell]')).toBeVisible();
+        await expect(page.locator('.installation-studio')).toHaveCount(0);
+        await page.locator('#MAIL_MAILER').selectOption('smtp', { force: true });
+        await expect(page.locator('#MAIL_HOST')).toBeVisible();
+        await page.locator('#MAIL_HOST').fill('127.0.0.1');
+        await page.locator('#MAIL_PORT').fill('1');
+        await page.locator('#MAIL_FROM_ADDRESS').fill('test@example.test');
+        await page.locator('#MAIL_FROM_NAME').fill('Test');
+        await page.evaluate(() => { window.settingsDocument = document; });
+        await page.locator('[data-test-action][value="connection"]').click();
+        await expect(page.locator('[data-test-result]')).not.toBeEmpty();
+        expect(await page.evaluate(() => window.settingsDocument === document)).toBe(true);
+        await page.screenshot({ path: `test-results/mail-${locale}.png`, fullPage: true });
+        await page.goto('/admin/settings/cache');
+        await page.locator('#CACHE_STORE').selectOption('file', { force: true });
+        await page.evaluate(() => { window.settingsDocument = document; });
+        await page.route('**/admin/settings/cache', async route => {
+            if (route.request().method() === 'POST') await new Promise(resolve => setTimeout(resolve, 300));
+            await route.continue();
+        });
+        await page.locator('button.is-primary[type="submit"]').click();
+        await expect(page.locator('button.is-primary[type="submit"]')).toBeDisabled();
+        await expect(page.locator('button.is-primary[type="submit"]')).toBeEnabled();
+        expect(await page.evaluate(() => window.settingsDocument === document)).toBe(true);
+        await page.reload();
+        await expect(page.locator('#CACHE_STORE')).toHaveValue('file');
+        await page.goto('/admin/settings/health');
+        await expect(page.locator('.cms-health time')).toBeVisible();
+        await expect(page.locator('.installation-studio')).toHaveCount(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await page.screenshot({ path: `test-results/health-${locale}.png`, fullPage: true });
+    }
+    expect(errors).toEqual([]);
+});

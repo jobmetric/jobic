@@ -35,7 +35,10 @@ class BrowserInstallation extends Installation
 {
     public function requirements(): array
     {
-        return ['php' => true, 'key' => true, 'env' => true, 'storage' => true, 'assets' => true];
+        return array_fill_keys(['php', 'key', 'pdo_driver', 'env', 'storage', 'bootstrap_cache', 'assets',
+            'extension_ctype', 'extension_curl', 'extension_dom', 'extension_fileinfo', 'extension_filter',
+            'extension_hash', 'extension_mbstring', 'extension_openssl', 'extension_pcre', 'extension_PDO',
+            'extension_session', 'extension_tokenizer', 'extension_xml', 'extension_redis'], true);
     }
 }
 

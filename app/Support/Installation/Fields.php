@@ -19,23 +19,6 @@ class Fields
     public static function groups(int $step): array
     {
         return match ($step) {
-            1 => [
-                'application' => [
-                    'APP_ENV'   => [
-                        'select',
-                        'production',
-                        [
-                            'production',
-                            'local',
-                            'staging',
-                        ],
-                    ],
-                    'APP_DEBUG' => [
-                        'boolean',
-                        '0',
-                    ],
-                ],
-            ],
             2 => [
                 'database' => [
                     'DB_CONNECTION' => [
@@ -105,84 +88,6 @@ class Fields
                     ],
                 ],
                 'mail'  => self::mail(),
-            ],
-            4 => [
-                'logging' => [
-                    'LOG_CHANNEL'    => [
-                        'select',
-                        'single',
-                        [
-                            'single',
-                            'daily',
-                            'stack',
-                            'stderr',
-                            'syslog',
-                            'errorlog',
-                        ],
-                    ],
-                    'LOG_LEVEL'      => [
-                        'select',
-                        'error',
-                        [
-                            'debug',
-                            'info',
-                            'notice',
-                            'warning',
-                            'error',
-                            'critical',
-                            'alert',
-                            'emergency',
-                        ],
-                    ],
-                    'LOG_STACK'      => [
-                        'text',
-                        'single',
-                    ],
-                    'LOG_DAILY_DAYS' => [
-                        'number',
-                        '14',
-                    ],
-                ],
-                'session' => [
-                    'SESSION_DRIVER'          => [
-                        'select',
-                        'file',
-                        [
-                            'file',
-                            'database',
-                            'redis',
-                        ],
-                    ],
-                    'SESSION_LIFETIME'        => [
-                        'number',
-                        '120',
-                    ],
-                    'SESSION_ENCRYPT'         => [
-                        'boolean',
-                        '0',
-                    ],
-                    'SESSION_EXPIRE_ON_CLOSE' => [
-                        'boolean',
-                        '0',
-                    ],
-                    'SESSION_PATH'            => [
-                        'text',
-                        '/',
-                    ],
-                    'SESSION_DOMAIN'          => [
-                        'text',
-                        '',
-                    ],
-                    'SESSION_SECURE_COOKIE'   => [
-                        'boolean',
-                        '0',
-                    ],
-                    'SESSION_SAME_SITE'       => [
-                        'select',
-                        'lax',
-                        ['lax', 'strict', 'none'],
-                    ],
-                ],
             ],
             5 => [
                 'site'          => [
@@ -295,7 +200,6 @@ class Fields
             'DB_PASSWORD',
             'REDIS_USERNAME',
             'REDIS_PASSWORD',
-            'SESSION_DOMAIN',
             'MAIL_USERNAME',
             'MAIL_PASSWORD',
         ];
@@ -345,16 +249,6 @@ class Fields
         if (isset($rules['ADMIN_PASSWORD'])) {
             $rules['ADMIN_PASSWORD'][] = 'min:12';
             $rules['ADMIN_PASSWORD'][] = 'confirmed';
-        }
-
-        if (isset($rules['LOG_STACK'])) {
-            $rules['LOG_STACK'] = [
-                'required_if:LOG_CHANNEL,stack',
-                'nullable',
-                'regex:/^(single|daily|stderr|syslog|errorlog)(,(single|daily|stderr|syslog|errorlog))*$/D',
-            ];
-            $rules['SESSION_PATH'][] = 'starts_with:/';
-            $rules['SESSION_DOMAIN'][] = 'regex:/^\.?[a-zA-Z0-9.-]+$/D';
         }
 
         return $rules;

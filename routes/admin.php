@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
 use App\Http\Controllers\Settings\MailController;
 use App\Http\Controllers\Settings\SettingsController;
+use App\Http\Controllers\Settings\SystemController;
 use App\Http\Middleware\Admin\Preferences;
 use Illuminate\Support\Facades\Route;
 
@@ -30,9 +31,20 @@ Route::middleware([
             }
         });
 
+        Route::controller(SystemController::class)->group(function () {
+            Route::get('health', 'health')->name('health');
+
+            Route::prefix('cache')->name('cache.')->group(function () {
+                Route::get('/', 'edit')->name('edit');
+                Route::put('/', 'update')->middleware('throttle:30,1')->name('update');
+                Route::post('test', 'update')->middleware('throttle:6,1')->name('test');
+            });
+        });
+
         Route::prefix('mail')->controller(MailController::class)->name('mail.')->group(function () {
             Route::get('/', 'edit')->name('edit');
-            Route::put('/', 'update')->name('update');
+            Route::put('/', 'update')->middleware('throttle:30,1')->name('update');
+            Route::post('test', 'test')->middleware('throttle:6,1')->name('test');
         });
 
         Route::prefix('languages')

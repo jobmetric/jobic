@@ -12,6 +12,7 @@
         "php": "^8.3",
         "ext-pdo": "*",
         "ext-redis": "*",
+        "ext-zip": "*",
         "jobmetric/domi": "^1.14.2",
         "jobmetric/laravel-env-modifier": "^2.2",
         "jobmetric/laravel-flow": "^2.4",

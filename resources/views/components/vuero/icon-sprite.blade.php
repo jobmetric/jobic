@@ -1,4 +1,12 @@
 <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="icon-installation-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 4 18 4 18 0V5M3 10c0 4 18 4 18 0M3 15c0 4 18 4 18 0"/></symbol>
+    <symbol id="icon-installation-play" viewBox="0 0 24 24"><path d="m6 3 15 9-15 9Z"/></symbol>
+    <symbol id="icon-installation-link" viewBox="0 0 24 24"><path d="m10 13 4-4M8 10l-2 2a4 4 0 0 0 6 6l2-2M10 8l2-2a4 4 0 0 1 6 6l-2 2"/></symbol>
+    <symbol id="icon-installation-puzzle" viewBox="0 0 24 24"><path d="M9 3v3H5a2 2 0 0 0-2 2v4h3a2 2 0 1 1 0 4H3v4a1 1 0 0 0 1 1h5v-3a2 2 0 1 1 4 0v3h4a2 2 0 0 0 2-2v-4h2a2 2 0 1 0 0-4h-2V7a1 1 0 0 0-1-1h-5V3a2 2 0 1 0-4 0Z"/></symbol>
+    <symbol id="icon-server" viewBox="0 0 24 24"><rect x="3" y="2" width="18" height="6" rx="2"/><rect x="3" y="9" width="18" height="6" rx="2"/><rect x="3" y="16" width="18" height="6" rx="2"/><path d="M6 5h.01M6 12h.01M6 19h.01M11 5h6M11 12h6M11 19h6"/></symbol>
+    <symbol id="icon-life-buoy" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 3.6 3.6m5.6 5.6 3.6 3.6m0-12.8-3.6 3.6m-5.6 5.6-3.6 3.6"/></symbol>
+    <symbol id="icon-external-link" viewBox="0 0 24 24"><path d="M14 3h7v7M21 3 10 14M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/></symbol>
+    <symbol id="icon-headphones" viewBox="0 0 24 24"><path d="M3 14v-3a9 9 0 0 1 18 0v3M21 17v2a3 3 0 0 1-3 3h-4"/><rect x="2" y="11" width="4" height="8" rx="2"/><rect x="18" y="11" width="4" height="8" rx="2"/></symbol>
     <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></symbol>
     <symbol id="icon-rotate" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
     <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M3 4h18l-7 8v7l-4 2v-9Z"/></symbol>

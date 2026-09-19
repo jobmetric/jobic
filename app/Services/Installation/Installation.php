@@ -6,7 +6,6 @@ namespace App\Services\Installation;
 
 use App\Http\Requests\Installation\DatabaseRequest;
 use App\Http\Requests\Installation\LanguageRequest;
-use App\Http\Requests\Installation\RedisRequest;
 use App\Http\Requests\Installation\RunRequest;
 use App\Http\Requests\Installation\StepRequest;
 use App\Models\User;
@@ -20,6 +19,7 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use JobMetric\PackageCore\Output\Response;
 use JsonException;
 use RuntimeException;
@@ -132,6 +132,10 @@ class Installation
                 'fileinfo',
                 'filter',
                 'hash',
+                'intl',
+                'iconv',
+                'json',
+                'libxml',
                 'mbstring',
                 'openssl',
                 'pcre',
@@ -145,7 +149,14 @@ class Installation
         }
         $checks['pdo_driver'] = extension_loaded('pdo_mysql') || extension_loaded('pdo_pgsql');
         $checks['env'] = is_writable($this->environment->path) && is_writable(dirname($this->environment->path));
-        $checks['storage'] = is_writable(storage_path()) && is_writable(storage_path('framework'));
+        $checks['storage'] = collect([
+            '',
+            'framework',
+            'framework/sessions',
+            'framework/cache/data',
+            'framework/views',
+            'logs',
+        ])->every(fn ($path) => is_dir(storage_path($path)) && is_writable(storage_path($path)));
         $checks['bootstrap_cache'] = is_writable(app()->bootstrapPath('cache'));
         $checks['assets'] = is_file(public_path('vuero/build/manifest.json'));
 
@@ -167,7 +178,7 @@ class Installation
         $environment = $owned ? $this->environment->read() : [];
 
         $values = [];
-        foreach (range(1, 5) as $step) {
+        foreach ([2, 5] as $step) {
             $values += Fields::values(Fields::fields($step), $environment);
         }
 
@@ -189,7 +200,6 @@ class Installation
         return [
             'connectionTests' => [
                 'database' => $owned && isset($state['database_test']) && hash_equals($state['database_test'], $this->fingerprint($this->credentials(array_intersect_key($values, Fields::groups(2)['database'])))),
-                'redis'    => $owned && isset($state['redis_test']) && hash_equals($state['redis_test'], $this->fingerprint($this->credentials(array_intersect_key($values, Fields::groups(3)['redis'])))),
             ],
             'values'          => $values,
             'requirements'    => $this->requirements(),
@@ -244,7 +254,7 @@ class Installation
     }
 
     /**
-     * Test the Redis connection with the provided credentials.
+     * Test the database connection with the provided credentials.
      *
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
@@ -269,32 +279,7 @@ class Installation
     }
 
     /**
-     * Test the Redis connection with the provided credentials.
-     *
-     * @param array<string, mixed> $data
-     * @param array<string, mixed> $context
-     *
-     * @return Response
-     * @throws Throwable
-     */
-    public function testRedis(array $data, array $context): Response
-    {
-        $data = dto($data, RedisRequest::class);
-
-        return $this->mutate($context, function (array &$state) use ($data): Response {
-            $this->assertStep(3);
-            $values = $this->credentials($data);
-            unset($state['redis_test']);
-            $this->state->write($state);
-            $this->connections->redis($values);
-            $state['redis_test'] = $this->fingerprint($values);
-
-            return Response::make(true, trans('installation.connection_ok'));
-        }, 'redis_failed');
-    }
-
-    /**
-     * Test the Redis connection with the provided credentials.
+     * Validate and persist an essential installation step.
      *
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
@@ -310,6 +295,9 @@ class Installation
             $step = (int) $data['step'];
             $this->assertStep($step);
             $values = $this->credentials(array_intersect_key($data, Fields::fields($step)));
+            if ($step === 1) {
+                $values = ['APP_ENV' => 'production', 'APP_DEBUG' => false];
+            }
 
             if ($step === 1 && in_array(false, $this->requirements(), true)) {
                 return Response::make(false, trans('installation.requirements_failed'), null, 422);
@@ -319,26 +307,8 @@ class Installation
                 return Response::make(false, trans('installation.test_required'), null, 422);
             }
 
-            if ($step === 3) {
-                $redis = array_intersect_key($values, Fields::groups(3)['redis']);
-                if (($state['redis_test'] ?? '') !== $this->fingerprint($redis)) {
-                    return Response::make(false, trans('installation.test_required'), null, 422);
-                }
-
-                $values['REDIS_CLIENT'] = 'phpredis';
-                $values['REDIS_URL'] = null;
-                $values['MAIL_URL'] = null;
-            }
-
             if ($step === 2) {
                 $values['DB_URL'] = null;
-                unset($state['redis_test']);
-            }
-
-            if ($step === 4) {
-                $values['SESSION_CONNECTION'] = null;
-                $values['SESSION_STORE'] = null;
-                $values['SESSION_TABLE'] = 'sessions';
             }
 
             if ($step === 5) {
@@ -347,7 +317,10 @@ class Installation
                     'email'    => strtolower($values['ADMIN_EMAIL']),
                     'password' => Hash::make($values['ADMIN_PASSWORD']),
                 ];
-                $values = array_intersect_key($values, array_flip(['APP_NAME', 'APP_URL']));
+                $values = array_intersect_key($values, array_flip([
+                        'APP_NAME',
+                        'APP_URL',
+                    ])) + ['SESSION_SECURE_COOKIE' => str_starts_with($values['APP_URL'], 'https://')] + $this->defaults();
             }
             else {
                 unset($state['admin']);
@@ -382,7 +355,7 @@ class Installation
                 return Response::make(false, trans('installation.order'), null, 422);
             }
 
-            $this->environment->write(['INSTALLATION_STATUS' => 'running']);
+            $this->environment->write(['INSTALLATION_STATUS' => 'running'] + $this->defaults());
 
             return Response::make(true, trans('installation.started'), $this->progress());
         });
@@ -433,10 +406,10 @@ class Installation
                 return Response::make(true, trans('installation.task_done'), $this->progress());
             } catch (Throwable $exception) {
                 // Record diagnostic identifiers only; exception messages may contain credentials or SQL bindings.
-                \Illuminate\Support\Facades\Log::error('Installation task failed.', [
-                    'task' => self::TASKS[$task] ?? 'verify',
+                Log::error('Installation task failed.', [
+                    'task'           => self::TASKS[$task] ?? 'verify',
                     'exception_type' => $exception::class,
-                    'error_code' => (string) $exception->getCode(),
+                    'error_code'     => (string) $exception->getCode(),
                 ]);
                 $this->environment->write([
                     'INSTALLATION_STATUS' => 'failed',
@@ -490,7 +463,6 @@ class Installation
                     }
 
                     $this->connections->database($values);
-                    $this->connections->redis($this->credentials(array_intersect_key($values, Fields::groups(3)['redis'])));
 
                     break;
                 case 1:
@@ -591,6 +563,33 @@ class Installation
     }
 
     /**
+     * Supply supported first-login defaults without external services.
+     *
+     * @return array<string, mixed>
+     */
+    private function defaults(): array
+    {
+        return [
+            'APP_ENV'               => 'production',
+            'APP_DEBUG'             => false,
+            'CACHE_STORE'           => 'file',
+            'QUEUE_CONNECTION'      => 'sync',
+            'MAIL_MAILER'           => $this->environment->read()['MAIL_MAILER'] ?? 'log',
+            'SESSION_DRIVER'        => 'file',
+            'SESSION_CONNECTION'    => null,
+            'SESSION_STORE'         => null,
+            'SESSION_PATH'          => '/',
+            'SESSION_DOMAIN'        => null,
+            'SESSION_SAME_SITE'     => 'lax',
+            'SESSION_SECURE_COOKIE' => str_starts_with($this->environment->read()['APP_URL'] ?? '', 'https://'),
+            'SESSION_LIFETIME'      => 120,
+            'SESSION_ENCRYPT'       => true,
+            'LOG_CHANNEL'           => 'single',
+            'LOG_LEVEL'             => 'error',
+        ];
+    }
+
+    /**
      * Assert that the current installation step is valid.
      *
      * @param int $step
@@ -602,7 +601,11 @@ class Installation
     {
         $values = $this->environment->read();
 
-        if ($step > (int) ($values['INSTALLATION_STEP'] ?? 0) + 1 || in_array($values['INSTALLATION_STATUS'] ?? '', [
+        if (! in_array($step, [
+                1,
+                2,
+                5,
+            ], true) || ($step === 5 ? (int) ($values['INSTALLATION_STEP'] ?? 0) < 2 : $step > (int) ($values['INSTALLATION_STEP'] ?? 0) + 1) || in_array($values['INSTALLATION_STATUS'] ?? '', [
                 'running',
                 'failed',
             ], true)) {

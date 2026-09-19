@@ -25,6 +25,7 @@ class InstallationRunTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutVite();
         $this->directory = storage_path('framework/testing/run-'.bin2hex(random_bytes(8)));
         File::ensureDirectoryExists($this->directory.'/public');
         File::ensureDirectoryExists($this->directory.'/media');
@@ -85,6 +86,11 @@ class InstallationRunTest extends TestCase
             $this->assertTrue(DB::connection('installation')->getSchemaBuilder()->hasTable($table), $table);
         }
         $this->postJson(route('installation.next'))->assertForbidden();
+        config(['database.default' => 'installation']);
+        $this->post(route('login.store'), ['email' => 'owner@example.test', 'password' => 'secure-password'])
+            ->assertRedirect(route('admin.dashboard', absolute: false));
+        $this->assertAuthenticated();
+
     }
 
     public function test_failed_storage_task_resumes_without_recreating_admin(): void

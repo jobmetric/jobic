@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Installation;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Installation\DatabaseRequest;
 use App\Http\Requests\Installation\LanguageRequest;
-use App\Http\Requests\Installation\RedisRequest;
 use App\Http\Requests\Installation\RunRequest;
 use App\Http\Requests\Installation\StepRequest;
 use App\Services\Installation\Installation;
@@ -68,6 +67,7 @@ class IntroController extends Controller
             'complete'           => trans('installation.success'),
             'step_count'         => trans('installation.step_count'),
             'progress_label'     => trans('installation.progress_label'),
+            'task_states'        => trans('installation.visual'),
         ]);
 
         return view('installation.index', $data);
@@ -118,19 +118,6 @@ class IntroController extends Controller
     public function database(DatabaseRequest $request): JsonResponse
     {
         return $this->json($this->installation->testDatabase($request->validated(), $this->context($request)));
-    }
-
-    /**
-     * Test the submitted Redis connection settings.
-     *
-     * @param RedisRequest $request
-     *
-     * @return JsonResponse
-     * @throws Throwable
-     */
-    public function redis(RedisRequest $request): JsonResponse
-    {
-        return $this->json($this->installation->testRedis($request->validated(), $this->context($request)));
     }
 
     /**

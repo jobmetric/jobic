@@ -35,6 +35,8 @@ class Preferences
                     'label'       => trans('admin.sections.' . $key),
                     'description' => trans('admin.descriptions.' . $key),
                     'url'         => match ($key) {
+                        'health' => route('admin.settings.health'),
+                        'cache' => route('admin.settings.cache.edit'),
                         'mail' => route('admin.settings.mail.edit'),
                         'languages' => route('admin.settings.languages.index'),
                         default => route('admin.settings.edit', $key)
@@ -42,7 +44,9 @@ class Preferences
                 ];
         }
 
-        view()->share('settingsSections', Hooks::filter('jobic.admin.settings.sections', $sections, ['user_id' => (int) $request->user()->id]));
+        view()->share('settingsSections', Hooks::filter('jobic.admin.settings.sections', $sections, [
+            'user_id' => (int) $request->user()->id,
+        ]));
 
         return $next($request);
     }

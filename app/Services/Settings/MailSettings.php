@@ -6,10 +6,14 @@ namespace App\Services\Settings;
 
 use App\Facades\Hooks;
 use App\Http\Requests\Settings\MailRequest;
+use App\Http\Requests\Settings\MailTestRequest;
 use App\Support\Installation\Environment;
 use App\Support\Installation\Fields;
 use Illuminate\Validation\ValidationException;
 use JobMetric\PackageCore\Output\Response;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Throwable;
 
 /**
@@ -36,6 +40,45 @@ readonly class MailSettings
     public function values(): array
     {
         return Fields::values(Fields::mail(), $this->environment->read());
+    }
+
+    /**
+     * Test unsaved SMTP values using a separate transport and bounded socket timeout.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return Response
+     * @throws ValidationException
+     * @throws Throwable
+     */
+    public function test(array $data): Response
+    {
+        $values = dto($data, MailTestRequest::class);
+        $transport = null;
+        try {
+            $transport = new EsmtpTransport($values['MAIL_HOST'], (int) $values['MAIL_PORT'], $values['MAIL_SCHEME'] === 'smtps');
+            $transport->getStream()->setTimeout(5);
+            $transport->setUsername($values['MAIL_USERNAME'] ?? '');
+            $transport->setPassword(($values['MAIL_PASSWORD'] ?? '') ?: ($this->environment->read()['MAIL_PASSWORD'] ?? ''));
+            $transport->start();
+
+            if ($values['action'] === 'send') {
+                $message = (new Email)->from(new Address($values['MAIL_FROM_ADDRESS'], $values['MAIL_FROM_NAME']))
+                    ->to($values['recipient'])
+                    ->subject(trans('system.test_subject'))
+                    ->text(trans('system.test_body'));
+                $transport->send($message);
+            }
+
+            return Response::make(true, trans('system.' . ($values['action'] === 'send' ? 'accepted' : 'connected')));
+        } catch (Throwable) {
+            return Response::make(false, trans('system.smtp_failed'), null, 422);
+        } finally {
+            try {
+                $transport?->stop();
+            } catch (Throwable) { /* Never leak SMTP conversation or credentials. */
+            }
+        }
     }
 
     /**

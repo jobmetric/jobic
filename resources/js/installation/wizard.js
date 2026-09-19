@@ -2,23 +2,11 @@ import { announce } from '../common/toast';
 import { loadingButton, pageData } from '../common/page';
 import '../../css/installation.css';
 
-// Conditional fields are shared by setup and the authenticated mail settings form.
-function conditionals(form) {
-    const read = (name) => form.elements.namedItem(name)?.value;
-    form.querySelectorAll('[data-field]').forEach((row) => {
-        const name = row.dataset.field;
-        let visible = true;
-        if (name.startsWith('MAIL_') && name !== 'MAIL_MAILER') visible = read('MAIL_MAILER') === 'smtp';
-        if (name === 'LOG_STACK') visible = read('LOG_CHANNEL') === 'stack';
-        if (name === 'LOG_DAILY_DAYS') visible = read('LOG_CHANNEL') === 'daily' || (read('LOG_CHANNEL') === 'stack' && read('LOG_STACK')?.split(',').includes('daily'));
-        row.hidden = !visible;
-    });
-}
 function initialize(root, restoredStep = null, restoredConnections = null) {
     if (!root) return;
-    root.querySelectorAll('form').forEach((form) => {
-        conditionals(form);
-        form.addEventListener('input', () => conditionals(form));
+    root.querySelector('[data-theme-toggle]')?.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
+    root.querySelectorAll('[data-installation-help]').forEach((button) => {
+        button.addEventListener('click', () => root.querySelector(`[data-installation-dialog="${button.dataset.installationHelp}"]`)?.showModal());
     });
     const messages = pageData().installation;
     const numbers = new Intl.NumberFormat(document.documentElement.lang);
@@ -113,9 +101,8 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
     let busy = false;
     const connectionStates = restoredConnections || {
         database: root.dataset.databaseVerified === 'true' ? 'success' : 'idle',
-        redis: root.dataset.redisVerified === 'true' ? 'success' : 'idle',
     };
-    const connectionRevision = { database: 0, redis: 0 };
+    const connectionRevision = { database: 0 };
     function renderConnection(kind) {
         const card = root.querySelector(`[data-connection="${kind}"]`);
         if (!card) return;
@@ -135,8 +122,9 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
     function show(number, focus = true) {
         step = number;
         panels.forEach((panel) => { panel.hidden = Number(panel.dataset.step) !== step; });
-        root.querySelector('[data-form-progress]').value = step;
-        root.querySelector('[data-step-count]').textContent = format(messages.step_count, { current: numbers.format(step), total: numbers.format(panels.length) });
+        const position = panels.findIndex((panel) => Number(panel.dataset.step) === step) + 1;
+        root.querySelector('[data-form-progress]').value = position;
+        root.querySelector('[data-step-count]').textContent = format(messages.step_count, { current: numbers.format(position), total: numbers.format(panels.length) });
         root.querySelectorAll('[data-jump]').forEach((button) => {
             button.disabled = executing || Number(button.dataset.jump) > available || busy;
             button.classList.toggle('is-step-finished', Number(button.dataset.jump) < available);
@@ -196,10 +184,17 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
         form.querySelectorAll('[aria-invalid]').forEach((element) => element.removeAttribute('aria-invalid'));
     }
     function progress(data) {
-        root.querySelector('[data-run-progress]').value = data.percent ?? 100;
+        root.querySelector('[data-run-progress]').value = data.percent ?? 0;
+        root.querySelector('[data-install-ring]').style.setProperty('--readiness', `${data.percent ?? 0}%`);
+        root.querySelector('[data-install-count]').textContent = `${numbers.format(data.task ?? 0)} / ${numbers.format(root.querySelectorAll('[data-task]').length)}`;
         const current = root.querySelector(`[data-task="${data.task}"]`);
-        root.querySelector('[data-run-label]').textContent = data.completed ? messages.complete : format(messages.progress_label, { percent: percent.format((data.percent ?? 0) / 100), task: current?.textContent || '' });
+        root.querySelector('[data-run-label]').textContent = data.completed ? messages.complete : format(messages.progress_label, { percent: percent.format((data.percent ?? 0) / 100), task: current?.querySelector('[data-task-title]')?.textContent || '' });
+        const status = data.completed ? 'completed' : data.status === 'failed' ? 'failed' : 'running';
+        root.querySelector('[data-run-heading]').textContent = messages.task_states[`run_${status}`];
         root.querySelectorAll('[data-task]').forEach((item) => {
+            const taskStatus = Number(item.dataset.task) < data.task ? 'completed' : Number(item.dataset.task) === data.task ? status : 'pending';
+            item.querySelector('[data-task-status]').textContent = messages.task_states[taskStatus];
+            item.classList.toggle('is-failed', taskStatus === 'failed');
             item.classList.toggle('is-passed', Number(item.dataset.task) < data.task);
             item.classList.toggle('is-current', Number(item.dataset.task) === data.task);
         });
@@ -214,7 +209,7 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
         if (!busy && !executing && Number(button.dataset.jump) <= available) show(Number(button.dataset.jump));
     }));
     root.querySelectorAll('[data-back]').forEach((button) => button.addEventListener('click', () => {
-        if (!busy && !executing) show(Math.max(1, step - 1));
+        if (!busy && !executing) show([1, 2, 5, 6][Math.max(0, [1, 2, 5, 6].indexOf(step) - 1)]);
     }));
     root.querySelectorAll('form[data-step]').forEach((form) => {
         form.addEventListener('submit', async (event) => {
@@ -227,7 +222,7 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
             setBusy(true);
             try {
                 const result = await request(root.dataset.save, data);
-                available = Number(result.data.step) + 1;
+                available = Number(result.data.step) < 2 ? 2 : Number(result.data.step) < 5 ? 5 : 6;
                 setNotice(result.message);
                 show(available);
             } catch (error) { errors(error, form); }
@@ -257,7 +252,7 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
             });
         });
         form.addEventListener('input', (event) => {
-            const kind = event.target.name?.startsWith('DB_') ? 'database' : event.target.name?.startsWith('REDIS_') ? 'redis' : null;
+            const kind = event.target.name?.startsWith('DB_') ? 'database' : null;
             if (kind) {
                 connectionRevision[kind]++;
                 connectionStates[kind] = 'idle';
@@ -286,7 +281,11 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
         } finally { setBusy(false); }
     });
     const initialProgress = root.querySelector('[data-run-progress]');
-    if (initialProgress) root.querySelector('[data-run-label]').textContent = percent.format(initialProgress.value / 100);
+    if (initialProgress) {
+        root.querySelector('[data-run-label]').textContent = percent.format(initialProgress.value / 100);
+        const counter = root.querySelector('[data-install-count]');
+        counter.textContent = counter.textContent.trim().split(' / ').map(value => numbers.format(Number(value))).join(' / ');
+    }
     renderConnections();
     show(step, false);
 }

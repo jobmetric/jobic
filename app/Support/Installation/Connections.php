@@ -86,8 +86,6 @@ class Connections
     /**
      * Check if the PostgreSQL database has any tables.
      *
-     * @param Connection $connection
-     *
      * @return bool
      */
     private function postgresDatabaseHasTables($connection): bool
@@ -140,6 +138,7 @@ class Connections
     {
         foreach (array_unique([$values['REDIS_DB'], $values['REDIS_CACHE_DB']]) as $database) {
             $redis = new Redis;
+            $key = 'jobic:diagnostics:' . bin2hex(random_bytes(16));
             try {
                 $host = ($values['REDIS_SCHEME'] === 'tls' ? 'tls://' : '') . $values['REDIS_HOST'];
                 if (! $redis->connect($host, (int) $values['REDIS_PORT'], 5, null, 0, 5)) {
@@ -159,9 +158,19 @@ class Connections
                 if (! $redis->select((int) $database) || ! $redis->ping()) {
                     throw new RuntimeException('Redis database unavailable.');
                 }
+                if (! $redis->set($key, 'jobic', [
+                        'ex' => 30,
+                        'nx',
+                    ]) || $redis->get($key) !== 'jobic' || $redis->del($key) !== 1) {
+                    throw new RuntimeException('Redis read/write/delete probe failed.');
+                }
             } finally {
                 if ($redis->isConnected()) {
-                    $redis->close();
+                    try {
+                        $redis->del($key);
+                    } finally {
+                        $redis->close();
+                    }
                 }
             }
         }

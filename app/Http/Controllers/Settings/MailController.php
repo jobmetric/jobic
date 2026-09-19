@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\MailRequest;
+use App\Http\Requests\Settings\MailTestRequest;
 use App\Services\Settings\MailSettings;
 use App\Support\Installation\Fields;
 use App\Support\Page;
@@ -13,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
 use Throwable;
 
 /**
@@ -35,12 +37,27 @@ class MailController extends Controller
      * Render the requested settings form.
      *
      * @return View
+     * @throws SetPluginNotFoundException
      */
     public function edit(): View
     {
         Page::prepare('settings');
 
         return view('settings.mail', ['fields' => Fields::mail(), 'values' => $this->settings->values()]);
+    }
+
+    /**
+     * Return an isolated SMTP connection or acceptance result.
+     *
+     * @param MailTestRequest $request
+     *
+     * @return JsonResponse
+     */
+    public function test(MailTestRequest $request): JsonResponse
+    {
+        $result = $this->settings->test($request->validated());
+
+        return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
     }
 
     /**

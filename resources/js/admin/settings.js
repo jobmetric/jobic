@@ -56,10 +56,21 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
 }
 
 export function bindSettingsForms({ announce, applyPreferences }) {
+    document.querySelectorAll('form.cms-settings-form').forEach((form) => {
+        const update = () => form.querySelectorAll('[data-field]').forEach((row) => {
+            const name = row.dataset.field;
+            if (name.startsWith('MAIL_') && name !== 'MAIL_MAILER') row.hidden = form.elements.MAIL_MAILER?.value !== 'smtp';
+            if (name.startsWith('REDIS_')) row.hidden = form.elements.CACHE_STORE?.value !== 'redis';
+        });
+        form.addEventListener('change', update);
+        update();
+    });
     document.querySelectorAll('form.cms-settings-form').forEach((form) => form.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (form.dataset.saving) return;
         const data = new FormData(form);
+        const testAction = event.submitter?.dataset.testAction;
+        if (testAction) { data.delete('_method'); data.set('action', event.submitter.value); }
         const buttons = [...form.querySelectorAll('[type="submit"]')];
         const errors = document.querySelector('[data-settings-errors]');
         errors.hidden = true;
@@ -74,7 +85,12 @@ export function bindSettingsForms({ announce, applyPreferences }) {
         form.setAttribute('aria-busy', 'true');
         const restoreButtons = buttons.map(loadingButton);
         try {
-            const result = await sendSettings(form.action, data);
+            const result = await sendSettings(testAction || form.action, data);
+            if (testAction) {
+                form.querySelector('[data-test-result]').textContent = result.message;
+                announce(result.message);
+                return;
+            }
             if (form.matches('[data-appearance-form]')) applyPreferences(result.data);
             form.querySelectorAll('input[type="password"], input[data-secret]').forEach((input) => { input.value = ''; });
             form.querySelectorAll('[data-password-toggle]').forEach((button) => { const input = document.getElementById(button.dataset.passwordToggle); input.value = ''; input.type = 'password'; button.setAttribute('aria-pressed', 'false'); });
@@ -87,6 +103,7 @@ export function bindSettingsForms({ announce, applyPreferences }) {
             buttons.forEach((button) => { button.dataset.savedLabel = button.textContent; });
             announce(result.message);
         } catch (error) {
+            if (testAction) form.querySelector('[data-test-result]').textContent = error.message;
             const messages = Object.values(error.errors || {}).flat();
             Object.entries(error.errors || {}).forEach(([name, messages]) => {
                 const input = form.elements.namedItem(name);

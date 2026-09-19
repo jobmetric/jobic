@@ -4,13 +4,18 @@ test('Vuero shell supports every menu family, persisted appearance and settings 
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto('/admin/settings');
-    await expect(page.locator('.settings-grid .settings-box')).toHaveCount(5);
+    await expect(page.locator('.cms-settings-grid .cms-settings-card')).toHaveCount(8);
     await expect(page.locator('.admin-sidebar__footer .profile-dropdown')).toBeVisible();
     await page.locator('.admin-sidebar__footer [data-dropdown-toggle]').click();
     await expect(page.locator('.admin-sidebar__footer [role="menu"]')).toBeVisible();
     await page.locator('.admin-sidebar__footer a[href$="/profile"]').click();
     await expect(page.locator('input[name="email"]')).toBeVisible();
+    await expect(page.locator('.cms-profile-summary')).toBeVisible();
+    await expect(page.locator('.cms-settings-section')).toHaveCount(1);
+    await page.screenshot({ path: 'test-results/settings-profile.png', fullPage: true });
     await page.locator('.cms-settings-links a[href$="/appearance"]').click();
+    await expect(page.locator('.cms-appearance-option')).toHaveCount(3);
+    await page.screenshot({ path: 'test-results/settings-appearance.png', fullPage: true });
     for (const layout of ['sidebar-color-curved', 'sideblock-color', 'navbar-default', 'navbar-dropdown', 'navbar-clean-center', 'sidebar-default']) {
         await page.locator('[data-appearance-form] select[name="layout"]').selectOption(layout);
         const response = page.waitForResponse((response) => response.url().endsWith('/settings/appearance') && response.request().method() === 'POST');

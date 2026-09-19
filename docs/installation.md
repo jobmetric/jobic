@@ -59,3 +59,66 @@ The install task runs Laravel `migrate --database=installation --force` without 
 Legacy detection only recognizes an existing database and closes the installer; it deliberately does not perform upgrades or seeds. Packages installed after the last migration can therefore remain pending on an existing deployment. Check `php artisan migrate:status` and apply `php artisan migrate --force` as part of deployment. Never use `migrate:fresh` for an upgrade.
 
 Package migration discovery requires `jobmetric/laravel-package-core >= 1.38.1`: migration paths must be registered during HTTP bootstrap for the embedded Artisan runner. For a failed migration task, retry resumes pending migrations; never use `migrate:fresh`. Task failures log only the task, exception class and error code, never exception messages or SQL bindings. A failure caused by older PackageCore leaving package tables absent is resolved by upgrading and retrying the same task.
+
+## Minimal installer (September 2026)
+
+The visible sequence is Requirements → Database → Site and administrator → Install.
+Durable IDs remain **1, 2, 5, 6**. Markers 2, 3 and 4 reopen Site and administrator;
+marker 5 reopens Install. Removed steps 3/4 reject writes and the public Redis test
+endpoint has been retired. Completed installs remain closed; running/failed tasks
+retain the original six actual task checkpoints and retry behavior.
+
+The Redis PHP extension remains a Composer platform requirement. A Redis **server**
+is optional: application consumers use configured Laravel stores, and installation
+commits file cache/sessions, sync queue and single/error logging before first login.
+The middleware already uses private file stores while installing. Environment and
+cache invalidation retain the existing atomic persistence implementation. Existing
+SMTP configuration is preserved; new installations default to configure-later/log.
+Core checks include intl (required by multi-calendar), iconv, JSON and libxml.
+GD, JPEG/PNG/WebP and ZIP are optional System Health capabilities. No video pipeline
+exists, so FFmpeg/FFprobe commands are not exposed or executed.
+
+General settings already manage the site name/URL. Email now uses Vuero controls,
+with separate unsaved connection/authentication and test-message actions. SMTP
+acceptance is not inbox delivery. Cache settings probe unique expiring Redis keys
+or temporary file storage before saving, and never switch a live manager before
+atomic persistence. Redis edits are blocked when sessions or queues use its shared
+connection. Session and logging controls remain read-only in System Health.
+Worker/cron status is explicitly Not verified: there is no heartbeat mechanism.
+Long-running processes require an operator restart after environment changes.
+The admin shell no longer imports installation.css; all new screens inherit the
+existing common.settings.page, dark/light tokens and shared AJAX settings handler.
+
+### Verification of the simplified flow
+
+Focused PHPUnit coverage: 38 tests / 394 assertions, including real SQLite
+migrations, creation and login of the requested administrator, interrupted-install
+retry without duplicate users, legacy marker mapping, validation, ownership/CSRF,
+SMTP failure sanitization, cache probe failure preservation, hook veto/order and
+secret exclusion. Network adapters for installation database success are mocked;
+this is not a claim of a new live MySQL/PostgreSQL deployment.
+
+Playwright installation and system-settings scenarios passed using an isolated
+PHP router and storage/database directory. They cover English/Persian, desktop/mobile,
+light/dark, connection errors, loading states, resume, four visible steps and AJAX
+saves preserving document identity. Installer success/progress responses are
+stubbed in the browser scenario; real task execution is covered by PHPUnit.
+SMTP failure and file-cache checks use real local operations. Successful external
+SMTP delivery and a live Redis server were not available for end-to-end verification.
+The browser fixture supplies deterministic readiness checks and a test admin;
+production diagnostics always measure the server through the service layer.
+
+Vite production build passed. Existing unresolved font/demo-image asset warnings
+remain; no new dependency was installed. Screenshots are under ignored
+`test-results/` (mail, health, requirements, database, administrator and completion).
+
+### Administrator and install reference alignment
+
+The final two visible steps now share a bordered white main card, contextual side
+rail, section icons and lightweight CSS illustrations matching references 05/06.
+Administrator fields retain their original validation, password controls and hints.
+Install task rows include translated descriptions and status badges driven by server
+checkpoints, with initial pending, running, failed and completed states. No reference
+percentage, notification promise or duration estimate is used as live product data.
+English desktop and Persian dark/mobile screenshots are captured by the installer
+browser scenario; the visible sequence remains four steps.

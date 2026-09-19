@@ -13,6 +13,7 @@ use App\Support\Installation\State;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 use Mockery;
 use Tests\TestCase;
@@ -69,6 +70,28 @@ class InstallerTest extends TestCase
         ], $data));
     }
 
+    public function test_readiness_summary_uses_real_counts_and_does_not_describe_failed_checks_as_ready(): void
+    {
+        $this->app->setLocale('en');
+        $html = $this->blade('<x-installation.requirements :requirements="$requirements" />', [
+            'requirements' => ['php' => false, 'key' => true, 'extension_curl' => true],
+        ]);
+        $html->assertSee('2 Passed')->assertSee('1 Errors')
+            ->assertSee('max="3" value="2"', false)
+            ->assertSee('Some checks need attention')
+            ->assertSee('This requirement is not met.')
+            ->assertDontSee('The PHP version meets the minimum requirement.')
+            ->assertDontSee('All checks passed!');
+
+        $this->blade('<x-installation.requirements :requirements="$requirements" />', [
+            'requirements' => ['php' => true, 'extension_curl' => true],
+        ])->assertSee('2 Passed')->assertSee('0 Errors')->assertSee('All checks passed!');
+
+        $this->blade('<x-installation.requirements :requirements="$requirements" />', [
+            'requirements' => [],
+        ])->assertSee('max="1" value="0"', false)->assertDontSee('All checks passed!');
+    }
+
     public function test_installer_localizes_every_field_option_and_javascript_message(): void
     {
         foreach (['en', 'fa'] as $locale) {
@@ -82,12 +105,14 @@ class InstallerTest extends TestCase
             $this->assertSame(trans('installation.network_failed'), $registry['installation']['error']);
             $this->assertSame(trans('installation.step_count'), $registry['installation']['step_count']);
             $this->assertStringNotContainsString('data-error-message=', $html);
-            foreach (range(1, 5) as $step) {
+            foreach ([2, 5] as $step) {
                 foreach (Fields::fields($step) as $name => $field) {
-                    $this->assertTrue(\Illuminate\Support\Facades\Lang::has('installation.fields.'.$name, $locale, false));
-                    if ($field[0] !== 'select') continue;
+                    $this->assertTrue(Lang::has('installation.fields.'.$name, $locale, false));
+                    if ($field[0] !== 'select') {
+                        continue;
+                    }
                     foreach ($field[2] as $option) {
-                        $this->assertTrue(\Illuminate\Support\Facades\Lang::has('installation.options.'.$option, $locale, false));
+                        $this->assertTrue(Lang::has('installation.options.'.$option, $locale, false));
                         $response->assertSee(trans('installation.options.'.$option));
                     }
                 }
@@ -116,14 +141,14 @@ class InstallerTest extends TestCase
         config(['session.driver' => 'database']);
         $this->get('/login')->assertRedirect(route('installation.intro'));
         $this->getJson('/api/anything')->assertStatus(503)->assertJsonPath('installation_url', route('installation.intro'));
-        $this->get(route('installation.intro'))->assertOk()->assertSee('data-installation', false)->assertSee('dir="ltr"', false)->assertSee('Welcome to Jobic');
+        $this->get(route('installation.intro'))->assertOk()->assertSee('data-installation', false)->assertSee('dir="ltr"', false)->assertSee('Let’s get you set up!');
     }
 
     public function test_language_defaults_to_english_and_persian_selection_persists(): void
     {
-        $this->get(route('installation.intro'))->assertOk()->assertSee('lang="en"', false)->assertSee('Welcome to Jobic');
+        $this->get(route('installation.intro'))->assertOk()->assertSee('lang="en"', false)->assertSee('Let’s get you set up!');
         $this->post(route('installation.language'), ['locale' => 'fa'])->assertRedirect(route('installation.intro'));
-        $this->get(route('installation.intro'))->assertOk()->assertSee('lang="fa"', false)->assertSee('dir="rtl"', false)->assertSee('به خانهٔ Jobic');
+        $this->get(route('installation.intro'))->assertOk()->assertSee('lang="fa"', false)->assertSee('dir="rtl"', false)->assertSee(trans('installation.welcome', [], 'fa'));
         $this->assertSame('fa', $this->environment->read()['INSTALLATION_LOCALE']);
         $this->assertSame('fa', $this->environment->read()['APP_LOCALE']);
         $this->post(route('installation.language'), ['locale' => 'de'])->assertSessionHasErrors('locale');
@@ -166,19 +191,30 @@ class InstallerTest extends TestCase
         $this->postJson(route('installation.test.database'), $this->data(2))->assertUnprocessable()->assertDontSee('super-secret-password');
     }
 
-    public function test_redis_is_required_and_email_can_be_skipped_then_admin_is_hashed(): void
+    public function test_optional_services_are_skipped_with_safe_defaults_and_admin_is_hashed(): void
     {
         $this->environment->write(['INSTALLATION_STEP' => 2]);
         $this->postJson(route('installation.steps.store'), $this->data(3))->assertUnprocessable();
-        $this->connections->shouldReceive('redis')->once();
-        $this->postJson(route('installation.test.redis'), $this->data(3))->assertOk();
-        $this->postJson(route('installation.steps.store'), $this->data(3))->assertOk();
-        $this->assertSame('log', $this->environment->read()['MAIL_MAILER']);
-        $this->postJson(route('installation.steps.store'), $this->data(4))->assertOk();
+        $this->postJson(route('installation.steps.store'), $this->data(4))->assertUnprocessable();
         $this->postJson(route('installation.steps.store'), $this->data(5))->assertOk()->assertDontSee('strong-password');
+        $this->assertSame('file', $this->environment->read()['CACHE_STORE']);
+        $this->assertSame('file', $this->environment->read()['SESSION_DRIVER']);
+        $this->assertSame('sync', $this->environment->read()['QUEUE_CONNECTION']);
+        $this->assertSame('log', $this->environment->read()['MAIL_MAILER']);
         $this->assertTrue(Hash::check('strong-password-123', $this->state->read()['admin']['password']));
         $this->assertStringNotContainsString('ADMIN_PASSWORD', file_get_contents($this->environment->path));
         $this->get(route('installation.intro'))->assertOk()->assertDontSee('strong-password')->assertSee('data-step="6"', false);
+    }
+
+    public function test_legacy_optional_markers_resume_at_site_step_and_render_four_steps(): void
+    {
+        foreach ([2, 3, 4] as $marker) {
+            $this->environment->write(['INSTALLATION_STEP' => $marker]);
+            $response = $this->get(route('installation.intro'))->assertOk();
+            $this->assertSame(4, substr_count($response->getContent(), 'data-jump='));
+            $response->assertDontSee('form data-step="3"', false)->assertDontSee('form data-step="4"', false);
+            $this->postJson(route('installation.steps.store'), $this->data(5))->assertOk();
+        }
     }
 
     public function test_service_revalidates_step_fields_and_secure_cookie_dependency(): void
@@ -191,7 +227,7 @@ class InstallerTest extends TestCase
             $this->assertArrayHasKey('DB_HOST', $e->errors());
         }
         $this->postJson(route('installation.steps.store'), array_replace($this->data(4), ['SESSION_SAME_SITE' => 'none']))
-            ->assertUnprocessable()->assertJsonValidationErrors('SESSION_SECURE_COOKIE');
+            ->assertUnprocessable()->assertJsonValidationErrors('step');
     }
 
     public function test_other_browser_cannot_mutate_or_read_saved_configuration_and_release_recovers(): void
