@@ -56,6 +56,35 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
 }
 
 export function bindSettingsForms({ announce, applyPreferences }) {
+    const avatarModal = document.getElementById('modal-avatar-picker');
+    if (avatarModal) {
+        avatarModal.dataset.avatarModal = '';
+        const input = document.querySelector('[data-avatar-input]');
+        const close = () => { avatarModal.classList.remove('show'); avatarModal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cms-modal-open'); };
+        document.querySelector('[data-avatar-open]')?.addEventListener('click', () => { avatarModal.classList.add('show'); avatarModal.setAttribute('aria-hidden', 'false'); document.body.classList.add('cms-modal-open'); });
+        avatarModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach((button) => button.addEventListener('click', close));
+        avatarModal.addEventListener('click', (event) => { if (event.target === avatarModal) close(); });
+        avatarModal.querySelectorAll('[data-avatar-choice]').forEach((button) => button.addEventListener('click', () => {
+            avatarModal.querySelectorAll('[data-avatar-choice]').forEach((choice) => choice.classList.toggle('is-selected', choice === button));
+            input.value = button.dataset.avatarChoice;
+            document.querySelectorAll('[data-user-avatar]').forEach((avatar) => { avatar.replaceChildren(Object.assign(document.createElement('img'), { className: 'vuero-avatar__image', src: button.dataset.avatarUrl, alt: '' })); });
+            close();
+        }));
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && avatarModal.classList.contains('show')) close(); });
+    }
+    const healthModal = document.getElementById('modal-health-guide');
+    if (healthModal) {
+        const content = healthModal.querySelector('[data-health-guide-content]');
+        const close = () => { healthModal.classList.remove('show'); healthModal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cms-modal-open'); };
+        document.querySelectorAll('[data-health-guide]').forEach((button) => button.addEventListener('click', () => {
+            const template = document.getElementById(button.getAttribute('aria-controls'));
+            content.replaceChildren(template.content.cloneNode(true));
+            healthModal.classList.add('show'); healthModal.setAttribute('aria-hidden', 'false'); document.body.classList.add('cms-modal-open');
+        }));
+        healthModal.querySelectorAll('[data-bs-dismiss="modal"], [data-health-guide-close]').forEach((button) => button.addEventListener('click', close));
+        healthModal.addEventListener('click', (event) => { if (event.target === healthModal) close(); });
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && healthModal.classList.contains('show')) close(); });
+    }
     document.querySelectorAll('form.cms-settings-form').forEach((form) => {
         const update = () => form.querySelectorAll('[data-field]').forEach((row) => {
             const name = row.dataset.field;
@@ -73,6 +102,8 @@ export function bindSettingsForms({ announce, applyPreferences }) {
         if (testAction) { data.delete('_method'); data.set('action', event.submitter.value); }
         const buttons = [...form.querySelectorAll('[type="submit"]')];
         const errors = document.querySelector('[data-settings-errors]');
+        const testResult = form.querySelector('[data-test-result]');
+        testResult?.classList.remove('is-success', 'is-error');
         errors.hidden = true;
         errors.querySelector('ul').replaceChildren();
         form.querySelectorAll('[data-field-error]').forEach((message) => message.remove());
@@ -85,9 +116,10 @@ export function bindSettingsForms({ announce, applyPreferences }) {
         form.setAttribute('aria-busy', 'true');
         const restoreButtons = buttons.map(loadingButton);
         try {
-            const result = await sendSettings(testAction || form.action, data);
+            const result = await sendSettings(testAction || form.getAttribute('action'), data);
             if (testAction) {
-                form.querySelector('[data-test-result]').textContent = result.message;
+                testResult.textContent = result.message;
+                testResult.classList.add('is-success');
                 announce(result.message);
                 return;
             }
@@ -103,7 +135,10 @@ export function bindSettingsForms({ announce, applyPreferences }) {
             buttons.forEach((button) => { button.dataset.savedLabel = button.textContent; });
             announce(result.message);
         } catch (error) {
-            if (testAction) form.querySelector('[data-test-result]').textContent = error.message;
+            if (testAction) {
+                testResult.textContent = error.message;
+                testResult.classList.add('is-error');
+            }
             const messages = Object.values(error.errors || {}).flat();
             Object.entries(error.errors || {}).forEach(([name, messages]) => {
                 const input = form.elements.namedItem(name);

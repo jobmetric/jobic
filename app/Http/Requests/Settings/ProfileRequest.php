@@ -39,6 +39,11 @@ class ProfileRequest extends FormRequest
                 'email',
                 'max:254',
             ],
+            'avatar_preset' => [
+                'nullable',
+                'integer',
+                'between:1,45',
+            ],
         ];
     }
 }

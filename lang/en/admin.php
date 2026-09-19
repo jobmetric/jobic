@@ -78,6 +78,12 @@ return [
     'appearance' => 'Appearance',
     'language' => 'Language',
     'save_failed' => 'Could not save your preferences. Please try again.',
+    'form_error_title' => 'Please review the highlighted information',
+    'change_avatar' => 'Change avatar',
+    'avatar_modal_title' => 'Choose your avatar',
+    'avatar_modal_hint' => 'Select one of the available profile images. Your preview updates everywhere on this page immediately.',
+    'avatar_choice' => 'Avatar :number',
+    'avatar_apply' => 'Use selected avatar',
     'dashboard' => 'Dashboard',
     'sections' => [
         'health' => 'System health',

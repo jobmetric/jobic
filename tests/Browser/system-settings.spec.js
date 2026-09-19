@@ -23,6 +23,10 @@ test('technical settings use Vuero and save without replacing the document in En
         await page.locator('[data-test-action][value="connection"]').click();
         await expect(page.locator('[data-test-result]')).not.toBeEmpty();
         expect(await page.evaluate(() => window.settingsDocument === document)).toBe(true);
+        const mailSaved = page.waitForResponse((response) => response.url().endsWith('/settings/mail') && response.request().method() === 'POST');
+        await page.locator('.cms-settings-form button.is-primary[type="submit"]').click();
+        await mailSaved;
+        expect(await page.evaluate(() => window.settingsDocument === document)).toBe(true);
         await page.screenshot({ path: `test-results/mail-${locale}.png`, fullPage: true });
         await page.goto('/admin/settings/cache');
         await page.locator('#CACHE_STORE').selectOption('file', { force: true });
@@ -39,6 +43,16 @@ test('technical settings use Vuero and save without replacing the document in En
         await expect(page.locator('#CACHE_STORE')).toHaveValue('file');
         await page.goto('/admin/settings/health');
         await expect(page.locator('.cms-health time')).toBeVisible();
+        await expect(page.locator('.cms-health-hero')).toBeVisible();
+        const checkedAt = await page.locator('.cms-health time').getAttribute('datetime');
+        await page.waitForTimeout(1100);
+        await page.locator('.cms-health__toolbar .vuero-button').click();
+        await expect(page.locator('.cms-health time')).not.toHaveAttribute('datetime', checkedAt);
+        await expect(page.locator('.cms-health-table__row [data-health-guide]').first()).toBeVisible();
+        await page.locator('.cms-health-table__row [data-health-guide]').first().click();
+        await expect(page.locator('#modal-health-guide')).toHaveClass(/show/);
+        await expect(page.locator('[data-health-guide-content]')).not.toBeEmpty();
+        await page.locator('[data-health-guide-close]').click();
         await expect(page.locator('.installation-studio')).toHaveCount(0);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await page.screenshot({ path: `test-results/health-${locale}.png`, fullPage: true });

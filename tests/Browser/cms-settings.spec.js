@@ -12,6 +12,17 @@ test('Vuero shell supports every menu family, persisted appearance and settings 
     await expect(page.locator('input[name="email"]')).toBeVisible();
     await expect(page.locator('.cms-profile-summary')).toBeVisible();
     await expect(page.locator('.cms-settings-section')).toHaveCount(1);
+    await page.locator('[data-avatar-open]').click();
+    await expect(page.locator('[data-avatar-choice]')).toHaveCount(45);
+    await expect(page.locator('#modal-avatar-picker .modal-footer')).toBeHidden();
+    await page.screenshot({ path: 'test-results/settings-avatar-picker.png', fullPage: true });
+    await page.locator('[data-avatar-choice="12"]').click();
+    await expect(page.locator('#modal-avatar-picker')).not.toHaveClass(/show/);
+    await expect(page.locator('[data-user-avatar] img').first()).toHaveAttribute('src', /avatar-12\.webp/);
+    expect(await page.locator('[data-user-avatar] img').evaluateAll((images) => images.every((image) => image.src.includes('avatar-12.webp')))).toBe(true);
+    const avatarSaved = page.waitForResponse((response) => response.url().endsWith('/settings/profile') && response.request().method() === 'POST');
+    await page.locator('.cms-settings-form button[type="submit"]').click();
+    await avatarSaved;
     await page.screenshot({ path: 'test-results/settings-profile.png', fullPage: true });
     await page.locator('.cms-settings-links a[href$="/appearance"]').click();
     await expect(page.locator('.cms-appearance-option')).toHaveCount(3);

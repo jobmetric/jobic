@@ -9,7 +9,7 @@
                 @if ($panel === 'languages')
                     <p class="cms-language-hint">{{ __('admin.language_hint') }}</p>@include('common.language-options')
                 @else
-                    <div class="media-flex-center"><span class="vuero-avatar"><span>{{ mb_substr(auth()->user()->name, 0, 1) }}</span></span><strong>{{ auth()->user()->name }}</strong></div>
+                    <div class="media-flex-center"><x-user-avatar /><strong>{{ auth()->user()->name }}</strong></div>
                     <p>{{ __('admin.activity_hint') }}</p>
                     <a class="vuero-button is-primary" href="{{ route('admin.settings.edit', 'security') }}">{{ __('admin.recent_activity') }}</a>
                 @endif

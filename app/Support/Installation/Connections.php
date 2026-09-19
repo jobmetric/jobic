@@ -158,10 +158,7 @@ class Connections
                 if (! $redis->select((int) $database) || ! $redis->ping()) {
                     throw new RuntimeException('Redis database unavailable.');
                 }
-                if (! $redis->set($key, 'jobic', [
-                        'ex' => 30,
-                        'nx',
-                    ]) || $redis->get($key) !== 'jobic' || $redis->del($key) !== 1) {
+                if (! $redis->setex($key, 30, 'jobic') || $redis->get($key) !== 'jobic' || $redis->del($key) !== 1) {
                     throw new RuntimeException('Redis read/write/delete probe failed.');
                 }
             } finally {

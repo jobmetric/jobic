@@ -59,14 +59,17 @@ readonly class MailSettings
             $transport = new EsmtpTransport($values['MAIL_HOST'], (int) $values['MAIL_PORT'], $values['MAIL_SCHEME'] === 'smtps');
             $transport->getStream()->setTimeout(5);
             $transport->setUsername($values['MAIL_USERNAME'] ?? '');
-            $transport->setPassword(($values['MAIL_PASSWORD'] ?? '') ?: ($this->environment->read()['MAIL_PASSWORD'] ?? ''));
+            $storedPassword = $this->environment->read()['MAIL_PASSWORD'] ?? '';
+            $storedPassword = in_array($storedPassword, ['null', '(null)'], true) ? '' : $storedPassword;
+            $transport->setPassword(($values['MAIL_PASSWORD'] ?? '') ?: $storedPassword);
             $transport->start();
 
             if ($values['action'] === 'send') {
                 $message = (new Email)->from(new Address($values['MAIL_FROM_ADDRESS'], $values['MAIL_FROM_NAME']))
                     ->to($values['recipient'])
                     ->subject(trans('system.test_subject'))
-                    ->text(trans('system.test_body'));
+                    ->text(trans('system.test_body'))
+                    ->html(view('mail.test', ['senderName' => $values['MAIL_FROM_NAME']])->render());
                 $transport->send($message);
             }
 

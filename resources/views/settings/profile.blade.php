@@ -2,10 +2,11 @@
 @section('settings-content')
     <form method="POST" action="{{ route('admin.settings.profile.update') }}" class="cms-settings-form">@csrf @method('PUT')
         <section class="cms-profile-summary">
-            <span class="vuero-avatar cms-profile-summary__avatar"><span>{{ mb_substr($account->name, 0, 1) }}</span></span>
+            <button class="cms-profile-avatar-button" type="button" data-avatar-open aria-label="{{ __('admin.change_avatar') }}"><x-user-avatar :user="$account" class="cms-profile-summary__avatar" /><span><x-vuero.icon name="edit" size="14" /></span></button>
             <div><span class="cms-profile-summary__eyebrow">{{ __('admin.account') }}</span><strong>{{ $account->name }}</strong><small>{{ $account->email }}</small></div>
             <span class="cms-profile-summary__badge"><x-vuero.icon name="shield" size="15" /> {{ __('admin.profile_private') }}</span>
         </section>
+        <input type="hidden" name="avatar_preset" value="{{ old('avatar_preset', $account->avatar_preset) }}" data-avatar-input>
         <section class="cms-settings-section">
             <header class="cms-settings-section__header"><span><x-vuero.icon name="user" size="20" /></span><div><h3>{{ __('admin.profile_details') }}</h3><p>{{ __('admin.profile_details_hint') }}</p></div></header>
             <div class="cms-settings-fields">

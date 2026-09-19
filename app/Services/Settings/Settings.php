@@ -12,6 +12,8 @@ use App\Http\Requests\Settings\SecurityRequest;
 use App\Models\LoginEvent;
 use App\Models\User;
 use App\Support\Installation\Environment;
+use DateInvalidTimeZoneException;
+use DateMalformedStringException;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -44,6 +46,8 @@ readonly class Settings
      *
      * @return array<string, mixed>
      * @throws ModelNotFoundException
+     * @throws DateMalformedStringException
+     * @throws DateInvalidTimeZoneException
      */
     public function page(string $section, int $userId): array
     {
@@ -93,7 +97,10 @@ readonly class Settings
 
         try {
             $this->environment->write($values);
-            config(['app.name' => $values['APP_NAME'], 'app.url' => $values['APP_URL'], 'app.timezone' => $values['APP_TIMEZONE']]);
+            config(['app.name'     => $values['APP_NAME'],
+                    'app.url'      => $values['APP_URL'],
+                    'app.timezone' => $values['APP_TIMEZONE'],
+            ]);
             date_default_timezone_set($values['APP_TIMEZONE']);
 
             Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
@@ -172,7 +179,10 @@ readonly class Settings
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
-        return Response::make(true, trans('admin.saved'));
+        return Response::make(true, trans('admin.saved'), [
+            'avatar_url'    => $user->avatarUrl(),
+            'avatar_preset' => $user->avatar_preset,
+        ]);
     }
 
     /**

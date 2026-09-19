@@ -144,8 +144,35 @@ class MailSettingsTest extends TestCase
             'CACHE_STORE' => 'redis', 'REDIS_HOST' => '127.0.0.1', 'REDIS_PORT' => 6379,
             'REDIS_USERNAME' => '', 'REDIS_PASSWORD' => 'redis-private-secret',
             'REDIS_SCHEME' => 'tcp', 'REDIS_DB' => 0, 'REDIS_CACHE_DB' => 1,
-        ])->assertUnprocessable()->assertDontSee('redis-private-secret');
+        ])->assertUnprocessable()->assertJsonPath('message', trans('system.redis_connection_failed'))->assertDontSee('redis-private-secret');
         $this->assertSame($before, file_get_contents($this->environment->path));
+    }
+
+    public function test_null_environment_password_does_not_authenticate_redis(): void
+    {
+        file_put_contents($this->environment->path, file_get_contents($this->environment->path)."REDIS_PASSWORD=null\n");
+        $this->actingAs(User::factory()->create());
+        $connection = \Mockery::mock(\App\Support\Installation\Connections::class);
+        $connection->shouldReceive('redis')->once()->with(\Mockery::on(fn (array $values): bool => $values['REDIS_PASSWORD'] === ''));
+        $this->app->instance(\App\Support\Installation\Connections::class, $connection);
+
+        $this->postJson(route('admin.settings.cache.test'), [
+            'CACHE_STORE' => 'redis', 'REDIS_HOST' => '127.0.0.1', 'REDIS_PORT' => 6379,
+            'REDIS_USERNAME' => '', 'REDIS_PASSWORD' => '', 'REDIS_SCHEME' => 'tcp',
+            'REDIS_DB' => 0, 'REDIS_CACHE_DB' => 1,
+        ])->assertOk();
+    }
+
+    public function test_email_diagnostic_has_html_and_plain_text_bodies(): void
+    {
+        $html = view('mail.test', ['senderName' => 'Jobic'])->render();
+
+        $this->assertStringContainsString('<!doctype html>', $html);
+        $this->assertStringContainsString('Email delivery verification', $html);
+        $this->assertStringContainsString('SPF, DKIM and DMARC', $html);
+        $this->assertStringContainsString('border-radius:18px', $html);
+        $this->assertStringContainsString('box-shadow:', $html);
+        $this->assertSame('Jobic SMTP Delivery Test', trans('system.test_subject', locale: 'fa'));
     }
 
 }

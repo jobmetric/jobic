@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
+use JobMetric\Domi\Facades\Domi;
 use Throwable;
 
 /** Present technical settings within the existing Vuero administration shell. */
@@ -34,10 +35,15 @@ class SystemController extends Controller
      *
      * @return View
      * @throws SetPluginNotFoundException
+     * @throws Throwable
      */
     public function health(): View
     {
         Page::prepare('settings');
+        Domi::addModal('health-guide', 'system.guide_title', view('settings.partials.health-guide')->render(), view('settings.partials.health-guide-footer')->render(), [
+            'size'     => 'lg',
+            'centered' => true,
+        ]);
         Page::addLocalize('system', [
             'not_verified' => trans('system.not_verified'),
         ]);
@@ -55,7 +61,10 @@ class SystemController extends Controller
     {
         Page::prepare('settings');
 
-        return view('settings.cache', ['fields' => $this->settings->fields(), 'values' => $this->settings->values()]);
+        return view('settings.cache', [
+            'fields' => $this->settings->fields(),
+            'values' => $this->settings->values(),
+        ]);
     }
 
     /**
@@ -74,7 +83,9 @@ class SystemController extends Controller
         }
 
         if (! $result->ok) {
-            throw ValidationException::withMessages(['settings' => $result->message]);
+            throw ValidationException::withMessages([
+                'settings' => $result->message,
+            ]);
         }
 
         return redirect()->route('admin.settings.cache.edit')->with('status', $result->message);

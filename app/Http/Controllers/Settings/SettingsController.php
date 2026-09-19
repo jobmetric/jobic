@@ -16,6 +16,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
+use JobMetric\Domi\Facades\Domi;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
@@ -39,6 +41,7 @@ class SettingsController extends Controller
      * Render the settings directory.
      *
      * @return View
+     * @throws SetPluginNotFoundException
      */
     public function index(): View
     {
@@ -54,14 +57,29 @@ class SettingsController extends Controller
      * @param string $section
      *
      * @return View
+     * @throws Throwable
      */
     public function edit(Request $request, string $section): View
     {
-        abort_unless(in_array($section, ['general', 'profile', 'security', 'appearance'], true), 404);
+        abort_unless(in_array($section, [
+            'general',
+            'profile',
+            'security',
+            'appearance',
+        ], true), 404);
 
         Page::prepare('settings');
 
-        return view('settings.' . $section, $this->settings->page($section, (int) $request->user()->id));
+        $data = $this->settings->page($section, (int) $request->user()->id);
+        if ($section === 'profile') {
+            Domi::addModal('avatar-picker', 'admin.avatar_modal_title', view('settings.partials.avatar-picker', $data)->render(), '', [
+                'size'       => 'lg',
+                'centered'   => true,
+                'scrollable' => true,
+            ]);
+        }
+
+        return view('settings.' . $section, $data);
     }
 
     /**

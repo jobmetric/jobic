@@ -54,6 +54,24 @@ class SettingsTest extends TestCase
         $this->assertNotSame('New name', $other->fresh()->name);
     }
 
+    public function test_profile_avatar_is_validated_saved_and_returned_to_ajax(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->putJson(route('admin.settings.profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar_preset' => 45,
+        ])->assertOk()->assertJsonPath('data.avatar_preset', 45)->assertJsonPath('data.avatar_url', asset('vuero/images/admin/avatars/presets/avatar-45.webp'));
+
+        $this->assertSame(45, $user->fresh()->avatar_preset);
+        $this->putJson(route('admin.settings.profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar_preset' => 46,
+        ])->assertUnprocessable()->assertJsonValidationErrors('avatar_preset');
+    }
+
     public function test_website_timezone_is_rendered_validated_and_applied(): void
     {
         $directory = storage_path('framework/testing/general-'.bin2hex(random_bytes(8)));

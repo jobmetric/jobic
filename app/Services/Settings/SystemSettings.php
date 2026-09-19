@@ -24,11 +24,13 @@ readonly class SystemSettings
      *
      * @param Environment $environment
      * @param Connections $connections
-     *
-     * @return void
+     * @param MailSettings $mailSettings
      */
-    public function __construct(private Environment $environment, private Connections $connections)
-    {
+    public function __construct(
+        private Environment $environment,
+        private Connections $connections,
+        private MailSettings $mailSettings
+    ) {
     }
 
     /**
@@ -74,8 +76,11 @@ readonly class SystemSettings
     public function cache(array $data, int $userId, bool $save = true): Response
     {
         $values = dto($data, CacheRequest::class);
+
         if ($values['CACHE_STORE'] === 'redis') {
-            $values['REDIS_PASSWORD'] = ($values['REDIS_PASSWORD'] ?? '') ?: ($this->environment->read()['REDIS_PASSWORD'] ?? '');
+            $storedPassword = $this->environment->read()['REDIS_PASSWORD'] ?? '';
+            $storedPassword = in_array($storedPassword, ['null', '(null)'], true) ? '' : $storedPassword;
+            $values['REDIS_PASSWORD'] = ($values['REDIS_PASSWORD'] ?? '') ?: $storedPassword;
             $values += ['REDIS_CLIENT' => 'phpredis', 'REDIS_URL' => null];
         }
 
@@ -84,6 +89,7 @@ readonly class SystemSettings
             'user_id' => $userId,
             'fields'  => array_keys($values),
         ];
+
         if ($save) {
             // The default Redis connection is shared with sessions/queues. Do not strand active users.
             if (config('session.driver') === 'redis' || config('queue.default') === 'redis') {
@@ -92,14 +98,23 @@ readonly class SystemSettings
 
             Hooks::action('jobic.settings.cache.saving', $context);
         }
-        try {
-            if ($values['CACHE_STORE'] === 'redis') {
-                $this->connections->redis($values);
-            }
-            else {
-                $this->probeDirectory(storage_path('framework/cache/data'));
-            }
 
+        if ($values['CACHE_STORE'] === 'redis') {
+            try {
+                $this->connections->redis($values);
+            } catch (Throwable) {
+                return Response::make(false, trans('system.redis_connection_failed'), null, 422);
+            }
+        }
+        else {
+            try {
+                $this->probeDirectory(storage_path('framework/cache/data'));
+            } catch (Throwable) {
+                return Response::make(false, trans('system.file_cache_failed'), null, 422);
+            }
+        }
+
+        try {
             if ($save) {
                 $this->environment->write($values);
                 Hooks::notify('jobic.settings.cache.saved', $context);
@@ -108,7 +123,7 @@ readonly class SystemSettings
             return Response::make(true, trans($save ? 'admin.saved' : 'system.cache_ok'));
         } catch (Throwable) {
             // No live manager is switched before persistence; failed writes retain the old backend.
-            return Response::make(false, trans('system.cache_failed'), null, 422);
+            return Response::make(false, trans('system.configuration_write_failed'), null, 422);
         }
     }
 
@@ -156,6 +171,7 @@ readonly class SystemSettings
                 'status' => $ready ? 'ready' : 'warning',
                 'hint'   => 'core_hint',
                 'label'  => str_starts_with($key, 'extension_') ? substr($key, 10) : trans('installation.checks.' . $key),
+                'guide'  => 'guide_core',
             ];
         }
 
@@ -170,6 +186,12 @@ readonly class SystemSettings
             $checks[$key] = [
                 'status' => $ready ? 'ready' : 'unavailable',
                 'hint'   => 'optional_media',
+                'guide'  => in_array($key, [
+                    'gd',
+                    'jpeg',
+                    'png',
+                    'webp',
+                ], true) ? 'guide_gd' : 'guide_zip',
             ];
         }
 
@@ -190,27 +212,53 @@ readonly class SystemSettings
                 $checks[$key] = [
                     'status' => 'warning',
                     'hint'   => 'storage_failed',
+                    'guide'  => 'guide_storage',
                 ];
             }
         }
 
+        $mailReady = false;
+        try {
+            $mailValues = $this->mailSettings->values();
+            if (($mailValues['MAIL_MAILER'] ?? null) === 'smtp') {
+                $mailReady = $this->mailSettings->test($mailValues + [
+                        'action'    => 'connection',
+                        'recipient' => null,
+                    ])->ok;
+            }
+        } catch (Throwable) {
+            // The health page reports the failed probe without exposing transport details.
+        }
+
         $checks['mail'] = [
-            'status' => 'not_verified',
-            'hint'   => 'mail_hint',
+            'status' => $mailReady ? 'ready' : 'warning',
+            'hint'   => $mailReady ? 'mail_ok' : 'mail_hint',
             'url'    => route('admin.settings.mail.edit'),
+            'guide'  => 'guide_mail',
         ];
+
+        $cacheReady = false;
+        try {
+            $cacheReady = $this->cache($this->values(), 0, false)->ok;
+        } catch (Throwable) {
+            // The health page reports the failed probe without exposing connection details.
+        }
+
         $checks['cache'] = [
-            'status' => 'not_verified',
-            'hint'   => 'cache_hint',
+            'status' => $cacheReady ? 'ready' : 'warning',
+            'hint'   => $cacheReady ? 'cache_ok' : 'cache_hint',
             'url'    => route('admin.settings.cache.edit'),
+            'guide'  => 'guide_cache',
         ];
         $checks['jobs'] = [
             'status' => 'not_verified',
             'hint'   => 'jobs_hint',
+            'guide'  => 'guide_jobs',
         ];
         $checks['scheduler'] = [
             'status' => 'not_verified',
             'hint'   => 'scheduler_hint',
+            'guide'  => 'guide_scheduler',
         ];
 
         return [

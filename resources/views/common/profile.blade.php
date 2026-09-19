@@ -3,13 +3,11 @@
 @endphp
 
 <div class="ui-dropdown profile-dropdown profile-dropdown--{{ $placement ?? 'sidebar' }}" data-dropdown>
-    <button class="vuero-avatar" type="button" data-dropdown-toggle aria-label="{{ __('admin.account') }}" aria-haspopup="menu" aria-expanded="false">
-        <span>{{ mb_substr($userName, 0, 1) }}</span>
-    </button>
+    <button class="vuero-avatar" type="button" data-dropdown-toggle aria-label="{{ __('admin.account') }}" aria-haspopup="menu" aria-expanded="false"><x-user-avatar class="vuero-avatar--nested" /></button>
 
     <div class="ui-dropdown__menu profile-dropdown__menu" role="menu" data-dropdown-menu hidden>
         <div class="profile-dropdown__head">
-            <span class="vuero-avatar vuero-avatar--menu"><span>{{ mb_substr($userName, 0, 1) }}</span></span>
+            <x-user-avatar :menu="true" />
             <span><strong>{{ $userName }}</strong><small>{{ __('admin.account') }}</small></span>
         </div>
 
