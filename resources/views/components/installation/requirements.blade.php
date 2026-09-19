@@ -62,10 +62,7 @@
     {{-- Requirement groups --}}
     <div class="reqv-groups">
 
-        <details
-            class="reqv-group"
-            @if (!$ready) open @endif
-        >
+        <details class="reqv-group" open>
             <summary class="reqv-group__header">
 
                 <span
@@ -119,10 +116,7 @@
         </details>
 
 
-        <details
-            class="reqv-group"
-            @if (!$ready) open @endif
-        >
+        <details class="reqv-group" open>
             <summary class="reqv-group__header">
 
                 <span
