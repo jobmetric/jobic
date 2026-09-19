@@ -169,7 +169,7 @@
     ]
   },
   "admin-shell.css": {
-    "file": "assets/admin-shell-1b17de81.css",
+    "file": "assets/admin-shell-21d6865d.css",
     "src": "admin-shell.css"
   },
   "auth-login.css": {
@@ -203,9 +203,9 @@
   },
   "resources/js/admin/shell.js": {
     "css": [
-      "assets/admin-shell-1b17de81.css"
+      "assets/admin-shell-21d6865d.css"
     ],
-    "file": "assets/shell-145b4402.js",
+    "file": "assets/shell-a28196da.js",
     "imports": [
       "_toast-18d1caa1.js",
       "_settings-9f1b6b91.js",
@@ -1083,10 +1083,10 @@
   },
   "resources/js/vuero/pages/auth/login.js": {
     "css": [
-      "assets/admin-shell-1b17de81.css",
+      "assets/admin-shell-21d6865d.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/login-a49a84af.js",
+    "file": "assets/login-6c6e6080.js",
     "imports": [
       "_settings-9f1b6b91.js",
       "_toast-18d1caa1.js",
@@ -1098,10 +1098,10 @@
   },
   "resources/js/vuero/pages/auth/recovery.js": {
     "css": [
-      "assets/admin-shell-1b17de81.css",
+      "assets/admin-shell-21d6865d.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/recovery-a49a84af.js",
+    "file": "assets/recovery-6c6e6080.js",
     "imports": [
       "_settings-9f1b6b91.js",
       "_toast-18d1caa1.js",

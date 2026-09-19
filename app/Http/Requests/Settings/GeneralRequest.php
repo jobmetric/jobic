@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
+use DateTimeZone;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validate general request data.
@@ -39,6 +41,11 @@ class GeneralRequest extends FormRequest
                 'required',
                 'url:http,https',
                 'max:2048',
+            ],
+            'APP_TIMEZONE' => [
+                'required',
+                'string',
+                Rule::in(DateTimeZone::listIdentifiers()),
             ],
         ];
     }

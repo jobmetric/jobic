@@ -53,6 +53,11 @@ test('Vuero shell supports every menu family, persisted appearance and settings 
     await page.goto('/admin/settings');
     await expect(page.locator('.profile-settings')).toHaveClass(/is-ready/);
     await page.screenshot({ path: 'test-results/settings-vuero-hub.png', fullPage: true });
+    await page.goto('/admin/settings/general');
+    await expect(page.locator('#APP_TIMEZONE')).toBeVisible();
+    await expect(page.locator('.cms-timezone-clock')).toBeVisible();
+    await expect(page.locator('.cms-timezone-recommendation')).toBeVisible();
+    await page.screenshot({ path: 'test-results/settings-website-timezone.png', fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/admin/settings/mail');
     await expect(page.locator('#MAIL_MAILER')).toBeVisible();

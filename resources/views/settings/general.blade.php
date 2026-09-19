@@ -1,8 +1,19 @@
 @extends('common.settings.page')
 @section('settings-content')
     <form method="POST" action="{{ route('admin.settings.general.update') }}" class="cms-settings-form">@csrf @method('PUT')
-        <x-settings.fields :fields="['APP_NAME' => ['text', ''], 'APP_URL' => ['url', '']]" :values="$site" />
-        <button class="vuero-button is-primary" type="submit">{{ __('admin.save') }}</button>
+        <section class="cms-settings-section">
+            <header class="cms-settings-section__header"><span><x-vuero.icon name="building" size="20" /></span><div><h3>{{ __('admin.website_identity') }}</h3><p>{{ __('admin.website_identity_hint') }}</p></div></header>
+            <x-settings.fields :fields="['APP_NAME' => ['text', ''], 'APP_URL' => ['url', '']]" :values="$site" />
+        </section>
+        <section class="cms-settings-section cms-timezone-section">
+            <header class="cms-settings-section__header"><span><x-vuero.icon name="clock" size="20" /></span><div><h3>{{ __('admin.server_timezone') }}</h3><p>{{ __('admin.server_timezone_hint') }}</p></div></header>
+            <div class="cms-timezone-layout">
+                <div class="cms-settings-field" data-field="APP_TIMEZONE"><label for="APP_TIMEZONE">{{ __('admin.timezone') }}</label><div class="cms-settings-control"><select class="input" id="APP_TIMEZONE" name="APP_TIMEZONE">@foreach($timezones as $timezone)<option value="{{ $timezone }}" @selected(old('APP_TIMEZONE', $site['APP_TIMEZONE']) === $timezone)>{{ $timezone }}</option>@endforeach</select></div><small>{{ __('admin.timezone_field_hint') }}</small></div>
+                <aside class="cms-timezone-clock"><span><x-vuero.icon name="clock" size="18" /></span><div><small>{{ __('admin.current_server_time') }}</small><strong dir="ltr">{{ $serverTime }}</strong></div></aside>
+            </div>
+            <div class="cms-timezone-recommendation"><span><x-vuero.icon name="check-circle" size="19" /></span><div><strong>{{ __('admin.utc_recommended') }}</strong><p>{{ __('admin.utc_recommended_hint') }}</p></div></div>
+        </section>
+        <footer class="cms-settings-form__footer"><p>{{ __('admin.website_save_hint') }}</p><button class="vuero-button is-primary" type="submit"><x-vuero.icon name="check" size="16" />{{ __('admin.save') }}</button></footer>
     @cmsHook('jobic.admin.settings.form.end', ['section' => 'general'])
     </form>
 @endsection

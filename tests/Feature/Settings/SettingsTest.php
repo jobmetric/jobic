@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Models\User;
+use App\Support\Installation\Environment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -50,6 +52,32 @@ class SettingsTest extends TestCase
         $this->assertSame('new@example.test', $user->fresh()->email);
         $this->assertNull($user->fresh()->email_verified_at);
         $this->assertNotSame('New name', $other->fresh()->name);
+    }
+
+    public function test_website_timezone_is_rendered_validated_and_applied(): void
+    {
+        $directory = storage_path('framework/testing/general-'.bin2hex(random_bytes(8)));
+        File::ensureDirectoryExists($directory);
+        file_put_contents($directory.'/.env', "INSTALLATION=complete\nAPP_NAME=Jobic\nAPP_URL=https://example.test\nAPP_TIMEZONE=UTC\n");
+        $this->app->instance(Environment::class, new Environment($directory.'/.env', $directory.'/config.php'));
+        $originalTimezone = date_default_timezone_get();
+
+        try {
+            $this->withoutVite();
+            $this->actingAs(User::factory()->create());
+            $this->get(route('admin.settings.edit', 'general'))->assertOk()->assertSee('name="APP_TIMEZONE"', false)->assertSee('UTC is recommended for servers');
+            $this->putJson(route('admin.settings.general.update'), ['APP_NAME' => 'Jobic', 'APP_URL' => 'https://example.test', 'APP_TIMEZONE' => 'Invalid/Timezone'])
+                ->assertUnprocessable()->assertJsonValidationErrors('APP_TIMEZONE');
+            $this->putJson(route('admin.settings.general.update'), ['APP_NAME' => 'Jobic', 'APP_URL' => 'https://example.test', 'APP_TIMEZONE' => 'Asia/Tehran'])
+                ->assertOk();
+
+            $this->assertSame('Asia/Tehran', app(Environment::class)->read()['APP_TIMEZONE']);
+            $this->assertSame('Asia/Tehran', config('app.timezone'));
+            $this->assertSame('Asia/Tehran', date_default_timezone_get());
+        } finally {
+            date_default_timezone_set($originalTimezone);
+            File::deleteDirectory($directory);
+        }
     }
 
     public function test_password_change_requires_matching_confirmation_without_current_password(): void

@@ -12,6 +12,8 @@ use App\Http\Requests\Settings\SecurityRequest;
 use App\Models\LoginEvent;
 use App\Models\User;
 use App\Support\Installation\Environment;
+use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -52,9 +54,12 @@ readonly class Settings
             'section'     => $section,
             'account'     => $user,
             'site'        => [
-                'APP_NAME' => $values['APP_NAME'] ?? config('app.name'),
-                'APP_URL'  => $values['APP_URL'] ?? config('app.url'),
+                'APP_NAME'     => $values['APP_NAME'] ?? config('app.name'),
+                'APP_URL'      => $values['APP_URL'] ?? config('app.url'),
+                'APP_TIMEZONE' => $values['APP_TIMEZONE'] ?? config('app.timezone', 'UTC'),
             ],
+            'timezones'   => DateTimeZone::listIdentifiers(),
+            'serverTime'  => (new DateTimeImmutable('now', new DateTimeZone((string) ($values['APP_TIMEZONE'] ?? config('app.timezone', 'UTC')))))->format('Y-m-d H:i:s T'),
             'preferences' => array_replace(config('admin.appearance'), $user->ui_preferences ?? []),
             'loginEvents' => $section === 'security' ? LoginEvent::query()
                 ->where('user_id', $userId)
@@ -88,6 +93,8 @@ readonly class Settings
 
         try {
             $this->environment->write($values);
+            config(['app.name' => $values['APP_NAME'], 'app.url' => $values['APP_URL'], 'app.timezone' => $values['APP_TIMEZONE']]);
+            date_default_timezone_set($values['APP_TIMEZONE']);
 
             Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
