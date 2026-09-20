@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\History;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
@@ -22,6 +23,12 @@ class RecordHistory
             'calendar',
             'first_day_of_week',
             'status',
+        ],
+        'users'     => [
+            'name',
+            'email',
+            'status',
+            'email_verified_at',
         ],
     ];
 
@@ -98,7 +105,7 @@ class RecordHistory
             ], 'page', $page);
 
         $entries->getCollection()->transform(function ($entry) {
-            $entry->created_at = \Illuminate\Support\Carbon::parse($entry->created_at)->toIso8601String();
+            $entry->created_at = Carbon::parse($entry->created_at)->toIso8601String();
             $entry->changes = json_decode($entry->changes, true, 512, JSON_THROW_ON_ERROR);
 
             return $entry;

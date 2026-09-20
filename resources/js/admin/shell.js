@@ -57,10 +57,12 @@ if (shell) {
         input.type = visible ? 'text' : 'password';
         button.setAttribute('aria-pressed', String(visible));
     }));
-    document.getElementById('new-password')?.addEventListener('input', (event) => {
-        const password = event.target.value;
-        const score = Number(password.length >= 12) + Number(/[a-z]/i.test(password) && /[0-9]/.test(password)) + Number(/[^a-z0-9]/i.test(password)) + Number(password.length >= 16);
-        document.querySelector('.cms-password-strength').value = score;
+    document.querySelectorAll('.cms-password-strength').forEach((meter) => {
+        const input = document.getElementById(meter.id.replace(/-strength$/, '')) || meter.closest('.cms-settings-control')?.querySelector('input[type=password]');
+        input?.addEventListener('input', (event) => {
+            const password = event.target.value;
+            meter.value = Number(password.length >= 12) + Number(/[a-z]/i.test(password) && /[0-9]/.test(password)) + Number(/[^a-z0-9]/i.test(password)) + Number(password.length >= 16);
+        });
     });
     bindSettingsForms({ announce, applyPreferences: (values) => {
         preferences = { ...values }; saved = { ...values }; apply(true);

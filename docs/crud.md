@@ -39,3 +39,17 @@ Language forms use the shared `common/unsaved` guard: internal navigation prompt
 The history panel reads authenticated, bounded pages (20 entries) through Request → service → Response. `RecordHistory` explicitly allowlists fields per resource, writes in the existing transaction, skips no-ops, and preserves entries after deletion. User names are resolved at read time (deleted accounts show a translated fallback); user IDs are retained without email or credential snapshots. History begins when this feature is deployed; no older changes are fabricated. Only existing records currently expose their history panel; deleted-record entries remain stored for future administrative audit tooling. Apply `2026_09_18_000001_create_record_changes_table` on deployment.
 
 Optimistic edit protection: forms carry an opaque `_version` derived from persisted attributes and the latest transactional history ID. The service checks it under the same row locks used for saving, before hooks or writes. Missing/stale versions return PackageCore HTTP 409 and leave edits intact; a successful save returns a replacement version. Bulk state changes also invalidate open forms through history. Compare the current record in another tab and reload deliberately to resolve conflicts; no silent forced overwrite is offered.
+
+## User registry implementation
+
+The user registry follows the same candidate interaction contract at `/admin/users` and appears as the middle primary-navigation section. Its server-side table searches name/email, filters active and verified states, preserves selection in the current document and reports only real counts. User writes use Form Request → `Users` service → PackageCore Response, shared AJAX transport, pending buttons, inline errors, unsaved-change protection, history and optimistic versions.
+
+Passwords are write-only, require confirmation and at least 12 characters, clear after successful persistence and never enter hooks, history, table responses or Domi registries. Changing an email clears its verification timestamp. The current account cannot be deactivated or deleted, the final active account is protected transactionally, and inactive accounts cannot create new sessions or continue through the administration preference middleware. User hooks and view slots are documented in `docs/hooks.md`.
+
+## Mandatory visual parity
+
+Every registry CRUD must be copied from the complete Languages CRUD contract before substituting domain fields. This includes exact toolbar and split-save DOM, button order and dimensions, dropdown placement, loadingButton behavior, shared dialogs, table shell, filters, selection persistence, empty/error states, history panel, unsaved guard and responsive rules. Only domain labels, fields and validation may differ; new visual variants require explicit approval.
+
+## Shared form-control standard
+
+All CMS forms use one control contract. A normal input or select has one outer border and one focus state; password fields use `cms-settings-control` containing exactly one `cms-password-input`, whose inner input has no border. Do not layer CRUD input borders over password controls, add page-specific wrappers, or invent alternate control styling.

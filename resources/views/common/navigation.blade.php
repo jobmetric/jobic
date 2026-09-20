@@ -1,6 +1,7 @@
 @php
     $sections = [
         'dashboard' => ['label' => __('installation.dashboard'), 'icon' => 'activity', 'active' => request()->routeIs('admin.dashboard')],
+        'users' => ['label' => __('users.title'), 'icon' => 'users', 'active' => request()->routeIs('admin.users.*')],
         'settings' => ['label' => __('installation.settings'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')],
     ];
 @endphp
@@ -33,6 +34,9 @@
         <section id="sidebar-panel-dashboard" data-sidebar-panel="dashboard" hidden>
             <x-vuero.navigation.menu :items="[['label' => __('installation.dashboard'), 'url' => route('admin.dashboard'), 'active' => request()->routeIs('admin.dashboard')]]" />
         </section>
+        <section id="sidebar-panel-users" data-sidebar-panel="users" hidden>
+            <x-vuero.navigation.menu :items="[['label' => __('users.title'), 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')]]" />
+        </section>
         <section id="sidebar-panel-settings" data-sidebar-panel="settings" hidden>
             @include('common.settings.menu')
         </section>
@@ -43,6 +47,7 @@
     <header class="admin-sideblock__header"><a href="{{ route('admin.dashboard') }}" aria-label="Jobic"><x-brand compact /></a><h2>{{ config('app.name') }}</h2></header>
     <nav class="admin-sideblock__nav">
         <a class="admin-sideblock__action" href="{{ route('admin.dashboard') }}"><x-vuero.icon name="activity" size="19" /><span>{{ __('admin.dashboard') }}</span></a>
+        <a class="admin-sideblock__action" href="{{ route('admin.users.index') }}"><x-vuero.icon name="users" size="19" /><span>{{ __('users.title') }}</span></a>
         @include('common.settings.menu')
     </nav>
     <footer class="admin-sideblock__footer">

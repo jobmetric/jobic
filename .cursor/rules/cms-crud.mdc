@@ -13,3 +13,9 @@ Use shared backdrop dismissal for native dialogs and shared translated accordion
 Editable CRUD forms use common/unsaved and reset the dirty baseline only after successful persistence. For change history reuse RecordHistory with an explicit public-field allowlist; write in the mutation transaction, skip no-ops, never log raw input or secrets, and paginate authenticated reads. See docs/crud.md for retention and deleted-record behavior.
 
 Editable existing records must reject stale/missing optimistic versions before persistence hooks under the mutation lock. Return an explicit conflict without clearing drafts; replace the version only after a successful save. Never offer silent last-write-wins behavior.
+
+Visual parity is mandatory: every new registry CRUD must copy the complete Languages CRUD markup, shared classes, button order, split-save dimensions/alignment, dropdown placement, dialogs, loading/empty/error states, selection behavior and responsive rules exactly. Only domain fields, labels and validation may differ; do not invent a second CRUD visual pattern.
+
+Password controls are a shared application standard: use the security page's `cms-settings-control` + `cms-password-input` structure, toggle behavior, strength meter and guidance semantics wherever a CRUD edits passwords. Do not create per-page password control markup or styling.
+
+All inputs and selects are shared controls: exactly one border belongs to the control wrapper, and nested password inputs are borderless. Reuse the established security/language control DOM and classes; page-specific border, padding, focus or wrapper variants are not allowed.

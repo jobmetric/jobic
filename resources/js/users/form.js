@@ -1,0 +1,52 @@
+import { toolbar, copy, showDialog } from './shared';
+import { loadingButton, pageData } from '../common/page';
+import { sendSettings } from '../admin/settings';
+import { announce } from '../common/toast';
+import { guardUnsaved } from '../common/unsaved';
+import { bindHistory } from './history';
+toolbar('form');
+const form = document.querySelector('[data-user-form]');
+form.noValidate = true;
+const historyPanel = bindHistory(form);
+const guard = guardUnsaved(form, () => showDialog({title: copy().unsaved_title, description: copy().unsaved_body, confirm: copy().leave}));
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (form.dataset.saving || form.hasAttribute('data-readonly')) return;
+    const intent = event.submitter?.value || 'save';
+    const data = new FormData(form);
+    const submitted = guard.snapshot();
+    form.querySelectorAll('[data-error-for]').forEach(e => { e.textContent = ''; });
+    form.querySelectorAll('[aria-invalid]').forEach(e => { e.removeAttribute('aria-invalid'); e.removeAttribute('aria-describedby'); });
+    const buttons = [...form.querySelectorAll('button[type=submit]')];
+    form.querySelectorAll('.crud-dropdown').forEach(menu => { menu.open = false; });
+    form.querySelector('.crud-split-save')?.setAttribute('inert', '');
+    const restore = buttons.map(loadingButton);
+    form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
+    try {
+        const result = await sendSettings(form.action, data);
+        let version = form.querySelector('[name=_version]');
+        if (!version) { version = document.createElement('input'); version.type = 'hidden'; version.name = '_version'; form.append(version); }
+        version.value = result.data.version;
+        form.action = result.data.save_url;
+        if (!form.querySelector('[name=_method]')) { const method = document.createElement('input'); method.type = 'hidden'; method.name = '_method'; method.value = 'PUT'; form.append(method); }
+        history.replaceState({}, '', result.data.edit_url);
+        form.querySelector('h1').textContent = copy().edit_title;
+        form.querySelectorAll('[name=password],[name=password_confirmation]').forEach(field => { field.value = ''; });
+        guard.saved(guard.snapshot());
+        historyPanel.refresh();
+        announce(result.message);
+        if (intent !== 'save') guard.leave();
+        if (intent === 'close') location.assign(pageData().userRoutes.index);
+        else if (intent === 'new') location.assign(`${pageData().userRoutes.index}/create`);
+    } catch (error) {
+        Object.entries(error.errors || {}).forEach(([name, messages]) => {
+            const field = form.elements.namedItem(name);
+            const message = form.querySelector(`[data-error-for="${CSS.escape(name)}"]`);
+            if (field && message) { message.textContent = [].concat(messages).join(' '); field.setAttribute('aria-invalid', 'true'); field.setAttribute('aria-describedby', message.id); }
+        });
+        form.querySelector('[aria-invalid=true]')?.focus();
+        announce(error.status ? error.message : copy().failed, true);
+    } finally { restore.forEach(fn => fn()); form.querySelector('.crud-split-save')?.removeAttribute('inert'); delete form.dataset.saving; form.removeAttribute('aria-busy'); }
+});
+// Shared AJAX locale changes preserve the form and refresh page-local actions.
+new MutationObserver(() => toolbar('form')).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});

@@ -67,6 +67,20 @@ Language mutations now also validate the last-active-language invariant before p
 
 Language persistence delegates to the package service. Package language events execute inside the CMS transaction; an exception rolls back persistence and prevents CMS post-notifications. CMS `saving`/`deleting` remain before the package call; CMS `saved`/`deleted` remain after the outer transaction succeeds. Package events retain their own documented model/input contracts; CMS hook contexts remain limited to the safe fields above.
 
+## User registry
+
+| Hook | Type | Context | Timing and errors |
+| --- | --- | --- | --- |
+| `jobic.admin.users.list.before`, `jobic.admin.users.list.after` | view | empty | Around list content; standard view exception semantics |
+| `jobic.admin.users.form.before`, `jobic.admin.users.form.after` | view | `id` (null for creation) | Around public form fields; extensions own and validate their persistence |
+| `jobic.admin.users.history.before`, `jobic.admin.users.history.after` | view | `id` (null on creation) | Around the bounded history panel; standard view exception semantics |
+| `jobic.users.saving` | action | `user_id` (actor), `id` (null before create), `operation` (`create`, `update`, `activate`, `deactivate`) | After dto, uniqueness, self-protection and last-active checks; before persistence inside the transaction; exceptions veto and roll back |
+| `jobic.users.saved` | notification | same safe context with persisted `id` | After transaction success; observer failures are isolated by `Hooks::notify` |
+| `jobic.users.deleting` | action | `user_id` (actor), `id`, `operation=delete` | Before each deletion in the atomic selection transaction; an exception rolls back the complete selection |
+| `jobic.users.deleted` | notification | same safe context | After the complete selection commits; observer failures are isolated |
+
+User hooks never receive email addresses, passwords, password hashes, tokens, two-factor material, preferences or raw requests. For example, a package may use `jobic.users.saved` with the persisted `id` to refresh a separately authorized directory. Password changes intentionally do not appear in history; the public history allowlist contains only name, email, status and email-verification timestamp.
+
 | Hook | Type | Context | Timing / errors |
 | --- | --- | --- | --- |
 | `jobic.admin.languages.history.before`, `jobic.admin.languages.history.after` | view | `id` (null on create) | Around the record history panel; standard view error semantics |

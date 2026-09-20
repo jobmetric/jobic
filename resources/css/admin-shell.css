@@ -137,7 +137,7 @@ html[dir='rtl'] .cms-settings-card__arrow svg { transform: scaleX(-1); }
 .cms-settings-field { min-width: 0; }
 .cms-settings-field > label { display: block; margin-block-end: 7px; color: var(--text); font-size: 11px; font-weight: 650; }
 .cms-settings-field > small { display: block; margin-block-start: 6px; color: var(--muted); font-size: 10px; line-height: 1.55; }
-.cms-settings-control > .input, .cms-settings-control > select, .cms-settings-control .cms-password-input { width: 100%; min-height: 46px; color: var(--text); border: 1px solid var(--border); border-radius: 11px; transition: border-color .2s, box-shadow .2s, background .2s; }
+.cms-settings-control > .input, .cms-settings-control > input, .cms-settings-control > select, .cms-settings-control .cms-password-input { width: 100%; min-height: 46px; color: var(--text); border: 1px solid var(--border); border-radius: 11px; transition: border-color .2s, box-shadow .2s, background .2s; }
 .cms-settings-control > .input, .cms-settings-control > select { padding: 10px 12px; font: inherit; font-size: 13px; }
 .cms-settings-control > .input:focus, .cms-settings-control > select:focus, .cms-settings-control .cms-password-input:focus-within { outline: 0; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-soft); }
 .cms-settings-control .select2-container { width: 100% !important; }

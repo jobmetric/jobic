@@ -25,11 +25,16 @@ use Throwable;
  */
 class Authentication
 {
+    private const int LOGIN_MAX_ATTEMPTS = 5;
+
+    private const int FORGOT_MAX_ATTEMPTS = 5;
+
     /**
      * Validate and persist the guest interface language in the current session.
      *
      * @param array<string, mixed> $data
      *
+     * @return Response
      * @throws Throwable
      */
     public function language(array $data): Response
@@ -47,16 +52,13 @@ class Authentication
         return Response::make(true, trans('auth.screen.language_saved'));
     }
 
-    private const int LOGIN_MAX_ATTEMPTS = 5;
-
-    private const int FORGOT_MAX_ATTEMPTS = 5;
-
     /**
      * Login user with email and password.
      *
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
      *
+     * @return Response
      * @throws Throwable
      */
     public function login(array $data, array $context = []): Response
@@ -93,6 +95,13 @@ class Authentication
             return Response::make(false, trans('auth.failed'), null, 422);
         }
 
+        if (! $user->status) {
+            RateLimiter::hit($throttleKey);
+            $this->recordLoginEvent($email, $user->id, $ip, $userAgent, false);
+
+            return Response::make(false, trans('auth.failed'), null, 422);
+        }
+
         RateLimiter::clear($throttleKey);
 
         $provider->rehashPasswordIfRequired($user, $credentials);
@@ -122,6 +131,7 @@ class Authentication
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
      *
+     * @return Response
      * @throws Throwable
      */
     public function challenge(array $data, array $context = []): Response
@@ -147,7 +157,7 @@ class Authentication
 
         $user = DB::transaction(function () use ($pending, $values): ?User {
             $user = User::query()->lockForUpdate()->find($pending['user_id']);
-            if (! $user || ! hash_equals($pending['password_hash'], hash('sha256', $user->password)) || ! hash_equals($pending['factor_hash'], hash('sha256', $user->two_factor_secret ?? '')) || ! app(TwoFactor::class)->consume($user, $values['code'])) {
+            if (! $user || ! $user->status || ! hash_equals($pending['password_hash'], hash('sha256', $user->password)) || ! hash_equals($pending['factor_hash'], hash('sha256', $user->two_factor_secret ?? '')) || ! app(TwoFactor::class)->consume($user, $values['code'])) {
                 return null;
             }
 
@@ -176,6 +186,7 @@ class Authentication
      *
      * @param array<string, mixed> $context
      *
+     * @return Response
      * @throws Throwable
      */
     public function logout(array $context = []): Response
@@ -196,6 +207,7 @@ class Authentication
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
      *
+     * @return Response
      * @throws Throwable
      */
     public function sendResetLink(array $data, array $context = []): Response
@@ -228,6 +240,7 @@ class Authentication
      *
      * @param array<string, mixed> $data
      *
+     * @return Response
      * @throws Throwable
      */
     public function resetPassword(array $data): Response
@@ -281,6 +294,8 @@ class Authentication
      * @param string $ip        The user's IP address.
      * @param string $userAgent The user's user agent string.
      * @param bool $successful  Whether the login attempt was successful.
+     *
+     * @return void
      */
     private function recordLoginEvent(
         string $email,

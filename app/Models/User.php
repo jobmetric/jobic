@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Notifications\ResetPasswordNotification;
@@ -25,6 +27,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property HigherOrderCollectionProxy|mixed $two_factor_pending_at
  * @property HigherOrderCollectionProxy|mixed $two_factor_pending_secret
  * @property mixed $two_factor_secret
+ * @property bool $status
  */
 class User extends Authenticatable implements JWTSubject
 {
@@ -40,6 +43,7 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'status',
         'avatar_preset',
     ];
 
@@ -66,6 +70,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verified_at'         => 'datetime',
             'password'                  => 'hashed',
+            'status'                    => 'boolean',
             'ui_preferences'            => 'array',
             'two_factor_secret'         => 'encrypted',
             'two_factor_pending_secret' => 'encrypted',
@@ -78,6 +83,8 @@ class User extends Authenticatable implements JWTSubject
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
      */
     public function getJWTIdentifier(): mixed
     {
@@ -98,6 +105,8 @@ class User extends Authenticatable implements JWTSubject
      * Send the password reset notification to the user.
      *
      * @param string $token
+     *
+     * @return void
      */
     public function sendPasswordResetNotification($token): void
     {
@@ -106,6 +115,8 @@ class User extends Authenticatable implements JWTSubject
 
     /**
      * Get the selected preset avatar URL when one is configured.
+     *
+     * @return string|null
      */
     public function avatarUrl(): ?string
     {
