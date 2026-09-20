@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\HigherOrderCollectionProxy;
+use JobMetric\Metadata\HasMeta;
 use Laravel\Sanctum\HasApiTokens;
+use Throwable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -32,7 +34,14 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasMeta, Notifiable;
+
+    /**
+     * Restrict account metadata to profile attributes owned by this model.
+     *
+     * @var list<string>
+     */
+    private array $metadata = ['first_name', 'last_name', 'gender'];
 
     /**
      * The attributes that are mass assignable.
@@ -145,5 +154,27 @@ class User extends Authenticatable implements JWTSubject
         $fallback = $requireImage ? '404' : 'mp';
 
         return "https://www.gravatar.com/avatar/{$hash}?s=256&d={$fallback}&r=g";
+    }
+
+    /**
+     * Build the full name from metadata and update the users table when needed.
+     *
+     * @return void
+     * @throws Throwable
+     */
+    public function synchronizeFullName(): void
+    {
+        $fullName = trim((string) $this->getMetadata('first_name', '') . ' ' . (string) $this->getMetadata('last_name', ''));
+        if ($fullName === '' || $fullName === $this->getAttribute('name')) {
+            return;
+        }
+
+        $this->forceFill([
+            'name' => $fullName,
+        ]);
+
+        static::query()->whereKey($this->getKey())->update([
+            'name' => $fullName,
+        ]);
     }
 }

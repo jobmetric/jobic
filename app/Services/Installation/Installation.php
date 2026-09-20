@@ -488,7 +488,12 @@ class Installation
                     }
 
                     if (! $user) {
-                        User::query()->create($state['admin']);
+                        $admin = $state['admin'];
+                        $admin['metadata'] = [
+                            'first_name' => $admin['name'],
+                        ];
+
+                        User::query()->create($admin);
                     }
 
                     break;

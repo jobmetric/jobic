@@ -58,6 +58,11 @@ readonly class Settings
         return [
             'section'     => $section,
             'account'     => $user,
+            'profileMeta' => [
+                'first_name' => $user->getMetadata('first_name'),
+                'last_name'  => $user->getMetadata('last_name'),
+                'gender'     => $user->getMetadata('gender'),
+            ],
             'site'        => [
                 'APP_NAME'     => $values['APP_NAME'] ?? config('app.name'),
                 'APP_URL'      => $values['APP_URL'] ?? config('app.url'),
@@ -165,6 +170,17 @@ readonly class Settings
             'fields'  => array_keys($values),
         ];
         $values['email'] = Str::lower($values['email']);
+        $profileMetadata = [
+            'first_name' => trim((string) ($values['first_name'] ?? '')),
+            'last_name'  => trim((string) ($values['last_name'] ?? '')),
+            'gender'     => $values['gender'] ?? null,
+        ];
+        unset($values['first_name'], $values['last_name'], $values['gender']);
+
+        $displayName = trim($profileMetadata['first_name'] . ' ' . $profileMetadata['last_name']);
+        if ($displayName !== '') {
+            $values['name'] = $displayName;
+        }
 
         if (User::query()->where('email', $values['email'])->whereKeyNot($userId)->exists()) {
             return Response::make(false, trans('admin.email_taken'), null, 422);
@@ -177,7 +193,7 @@ readonly class Settings
 
         Hooks::action('jobic.settings.profile.saving', $context);
 
-        $user->fill($values)->save();
+        $user->fill(['email' => $values['email'], 'name' => $values['name'] ?? $user->name, 'avatar_preset' => $values['avatar_preset'] ?? $user->avatar_preset, 'metadata' => $profileMetadata])->save();
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 

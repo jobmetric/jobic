@@ -30,10 +30,15 @@ class ProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'          => [
-                'required',
+            'first_name'    => [
+                'nullable',
                 'string',
-                'max:255',
+                'max:100',
+            ],
+            'last_name'     => [
+                'nullable',
+                'string',
+                'max:100',
             ],
             'email'         => [
                 'required',
@@ -44,6 +49,11 @@ class ProfileRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::in(array_merge([-1], range(1, 45))),
+            ],
+            'gender'        => [
+                'nullable',
+                'string',
+                Rule::in(['male', 'female', 'other', 'prefer_not_to_say']),
             ],
         ];
     }

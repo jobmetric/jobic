@@ -17,6 +17,7 @@
         "jobmetric/domi": "^1.14.2",
         "jobmetric/laravel-env-modifier": "^2.2",
         "jobmetric/laravel-flow": "^2.4",
+        "jobmetric/laravel-metadata": "^3.6",
         "jobmetric/laravel-language": "^2.5.1",
         "jobmetric/laravel-package-core": "^1.38.1",
         "jobmetric/laravel-setting": "^1.0|^2.0",
