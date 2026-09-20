@@ -5,7 +5,7 @@
     $bottomScripts = \JobMetric\Domi\Facades\Domi::bottomScript();
 @endphp
 <!DOCTYPE html>
-<html lang="@yield('language', app()->getLocale())" dir="@yield('direction', \App\Support\LocaleCatalog::direction())" data-theme="light">
+<html lang="@yield('language', app()->getLocale())" dir="@if($__env->hasSection('direction'))@yield('direction')@else{{ \App\Support\LocaleCatalog::direction() }}@endif" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -30,7 +30,7 @@ Services validate using dto before `saving`, then persist, then emit `saved`. `s
 
 | Hook | Type | Context / value |
 | --- | --- | --- |
-| `jobic.page.head.end`, `jobic.page.body.start`, `jobic.page.body.end` | view | empty; shared by admin, auth and installer |
+| `jobic.page.head.end`, `jobic.page.body.start`, `jobic.page.body.end` | view | empty; shared by admin, auth, installer and HTTP error pages |
 | `jobic.admin.settings.sections` | filter | keyed section array: label, description, icon, url; context user_id |
 | `jobic.admin.header.after` | view | empty |
 | `jobic.admin.content.before`, `jobic.admin.content.after` | view | empty |

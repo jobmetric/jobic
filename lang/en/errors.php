@@ -1,0 +1,102 @@
+<?php
+
+return [
+    'home' => 'Back to home',
+    'login' => 'Sign in again',
+    'footer' => 'A little pause. A clear way forward.',
+    'code' => 'Error :code',
+    '419' => ['label' => 'Time for a fresh start', 'title' => 'Your session has expired', 'description' => 'This page was open for a while. Sign in again to continue securely.', 'hint' => 'Your last submission may not have been saved.'],
+    '404' => ['label' => 'A small detour', 'title' => 'This page is out of reach', 'description' => 'The address may have changed, or the page may no longer exist. Let’s get you back on track.', 'hint' => 'Check the address or start again from home.'],
+    '500' => ['label' => 'An unexpected pause', 'title' => 'Something went wrong', 'description' => 'We couldn’t complete your request. Please give it a moment and try again.', 'hint' => 'If this keeps happening, contact your site administrator.'],
+    'sign_in' => 'Sign in',
+    '400' => [
+        'label' => 'Let’s start again',
+        'title' => 'This request couldn’t be understood',
+        'description' => 'Something in this request was incomplete or unexpected. Return home and try the action again.',
+        'hint' => 'If you used a saved link, check that the address is complete.',
+    ],
+    '401' => [
+        'label' => 'One step before you continue',
+        'title' => 'Please sign in to continue',
+        'description' => 'You need to sign in to access this page.',
+        'hint' => 'Use the account associated with this site.',
+    ],
+    '403' => [
+        'label' => 'A protected space',
+        'title' => 'You don’t have access to this page',
+        'description' => 'Your account doesn’t have permission to open this page or perform this action.',
+        'hint' => 'Contact your site administrator if you need access.',
+    ],
+    '405' => [
+        'label' => 'A different way forward',
+        'title' => 'This action isn’t available here',
+        'description' => 'This address doesn’t support the action you requested.',
+        'hint' => 'Return home and use the available links and controls.',
+    ],
+    '408' => [
+        'label' => 'A little more time',
+        'title' => 'The request took too long',
+        'description' => 'The server didn’t receive the complete request in time. Please check your connection.',
+        'hint' => 'Check whether your changes were saved before submitting again.',
+    ],
+    '409' => [
+        'label' => 'Things have changed',
+        'title' => 'This request conflicts with a recent change',
+        'description' => 'The information may have changed since you opened the page. Review the latest version before trying again.',
+        'hint' => 'Keep a copy of your edits before leaving the page.',
+    ],
+    '410' => [
+        'label' => 'The end of this path',
+        'title' => 'This page is no longer available',
+        'description' => 'This content has been removed and is no longer available at this address.',
+        'hint' => 'Return home to find other available pages.',
+    ],
+    '413' => [
+        'label' => 'A little too much to carry',
+        'title' => 'The upload is too large',
+        'description' => 'The files or information you sent exceed the size allowed by the server.',
+        'hint' => 'Choose a smaller file or reduce the amount of information before trying again.',
+    ],
+    '422' => [
+        'label' => 'A small adjustment',
+        'title' => 'Some information needs checking',
+        'description' => 'The information submitted couldn’t be accepted. Review your entries before trying again.',
+        'hint' => 'Check the required fields and use the requested formats.',
+    ],
+    '429' => [
+        'label' => 'Let’s take a breath',
+        'title' => 'Too many requests in a short time',
+        'description' => 'You’ve made several requests close together. Please wait a while before trying again.',
+        'hint' => 'Repeated attempts may keep the request limit in place.',
+    ],
+    '502' => [
+        'label' => 'A brief interruption',
+        'title' => 'We couldn’t reach the next service',
+        'description' => 'A service needed to complete your request returned an unexpected response.',
+        'hint' => 'Please try again later. Contact your site administrator if this continues.',
+    ],
+    '503' => [
+        'label' => 'A moment to pause',
+        'title' => 'The service is temporarily unavailable',
+        'description' => 'The site may be busy or undergoing maintenance. Please come back in a little while.',
+        'hint' => 'There’s no need to resubmit your request repeatedly.',
+    ],
+    '504' => [
+        'label' => 'Still waiting for a response',
+        'title' => 'A service took too long to respond',
+        'description' => 'A service needed for your request didn’t respond in time.',
+        'hint' => 'Check whether your action completed before trying again.',
+    ],
+    '4xx' => [
+        'label' => 'Let’s find another way',
+        'title' => 'This request couldn’t be completed',
+        'description' => 'The requested page or action isn’t available for this request.',
+        'hint' => 'Return home to continue. Contact your site administrator if you need help.',
+    ],
+    '5xx' => [
+        'label' => 'An unexpected pause',
+        'title' => 'The service couldn’t complete your request',
+        'description' => 'A server problem interrupted this request. Please try again later.',
+        'hint' => 'If this keeps happening, contact your site administrator.',
+    ],
+];

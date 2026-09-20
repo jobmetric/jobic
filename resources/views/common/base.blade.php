@@ -1,10 +1,12 @@
 @extends('domi::layout')
 
+@unless($__env->hasSection('domi-head'))
 @section('domi-head')
     @include('common.head')
     @stack('styles')
     @cmsHook('jobic.page.head.end')
 @endsection
+@endunless
 
 @section('body-attribute')class="cms-page @yield('body-class')"@endsection
 
