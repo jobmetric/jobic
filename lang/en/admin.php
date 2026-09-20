@@ -84,6 +84,13 @@ return [
     'avatar_modal_hint' => 'Select one of the available profile images. Your preview updates everywhere on this page immediately.',
     'avatar_choice' => 'Avatar :number',
     'avatar_apply' => 'Use selected avatar',
+    'avatar_saved' => 'Your avatar was changed successfully.',
+    'gravatar' => 'Gravatar',
+    'gravatar_title' => 'Use your Gravatar photo',
+    'gravatar_help' => 'Gravatar connects a profile photo to your email address. Create or update the photo for this account email, then select it here.',
+    'gravatar_upload' => 'Upload a photo on Gravatar',
+    'use_gravatar' => 'Use Gravatar',
+    'preset_avatars' => 'Ready-made avatars',
     'dashboard' => 'Dashboard',
     'sections' => [
         'health' => 'System health',

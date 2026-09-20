@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\AppearanceRequest;
+use App\Http\Requests\Settings\AvatarRequest;
 use App\Http\Requests\Settings\GeneralRequest;
 use App\Http\Requests\Settings\ProfileRequest;
 use App\Http\Requests\Settings\SecurityRequest;
@@ -113,6 +114,19 @@ class SettingsController extends Controller
     }
 
     /**
+     * Immediately save the authenticated account avatar selection.
+     *
+     * @param AvatarRequest $request
+     *
+     * @return JsonResponse|RedirectResponse
+     * @throws Throwable
+     */
+    public function avatar(AvatarRequest $request): JsonResponse|RedirectResponse
+    {
+        return $this->respond($request, $this->settings->avatar($request->validated(), (int) $request->user()->id), 'profile');
+    }
+
+    /**
      * Change the account password and regenerate the session.
      *
      * @param SecurityRequest $request
@@ -143,7 +157,11 @@ class SettingsController extends Controller
         $result = app(TwoFactor::class)->update($request->validated(), (int) $request->user()->id);
         $state = $result->data;
         if ($request->expectsJson()) {
-            $response = Response::make(true, $result->message, ['html' => view('settings.partials.two-factor', ['state' => $state])->render()]);
+            $response = Response::make(true, $result->message, [
+                'html' => view('settings.partials.two-factor', [
+                    'state' => $state,
+                ])->render(),
+            ]);
 
             return response()
                 ->json($response)

@@ -59,17 +59,43 @@ export function bindSettingsForms({ announce, applyPreferences }) {
     const avatarModal = document.getElementById('modal-avatar-picker');
     if (avatarModal) {
         avatarModal.dataset.avatarModal = '';
+        const form = document.querySelector('form[data-avatar-save-url]');
         const input = document.querySelector('[data-avatar-input]');
         const close = () => { avatarModal.classList.remove('show'); avatarModal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('cms-modal-open'); };
         document.querySelector('[data-avatar-open]')?.addEventListener('click', () => { avatarModal.classList.add('show'); avatarModal.setAttribute('aria-hidden', 'false'); document.body.classList.add('cms-modal-open'); });
         avatarModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach((button) => button.addEventListener('click', close));
         avatarModal.addEventListener('click', (event) => { if (event.target === avatarModal) close(); });
-        avatarModal.querySelectorAll('[data-avatar-choice]').forEach((button) => button.addEventListener('click', () => {
-            avatarModal.querySelectorAll('[data-avatar-choice]').forEach((choice) => choice.classList.toggle('is-selected', choice === button));
-            input.value = button.dataset.avatarChoice;
-            document.querySelectorAll('[data-user-avatar]').forEach((avatar) => { avatar.replaceChildren(Object.assign(document.createElement('img'), { className: 'vuero-avatar__image', src: button.dataset.avatarUrl, alt: '' })); });
-            close();
-        }));
+        const saveAvatar = async (button) => {
+            if (!form || form.dataset.avatarSaving) return;
+            form.dataset.avatarSaving = 'true';
+            button.disabled = true;
+            const data = new FormData();
+            data.set('_method', 'PUT');
+            data.set('avatar_preset', button.dataset.avatarChoice);
+            try {
+                const result = await sendSettings(form.dataset.avatarSaveUrl, data);
+                input.value = result.data.avatar_preset;
+                avatarModal.querySelectorAll('[data-avatar-choice]').forEach((choice) => choice.classList.toggle('is-selected', choice === button));
+                document.querySelectorAll('[data-user-avatar]').forEach((avatar) => { avatar.replaceChildren(Object.assign(document.createElement('img'), { className: 'vuero-avatar__image', src: result.data.avatar_url, alt: '' })); });
+                close();
+                announce(result.message);
+            } catch (error) {
+                announce(error.status ? error.message : document.querySelector('[data-cms-shell]').dataset.saveFailed);
+            } finally {
+                delete form.dataset.avatarSaving;
+                button.disabled = false;
+            }
+        };
+        avatarModal.querySelectorAll('[data-avatar-choice]').forEach((button) => button.addEventListener('click', () => saveAvatar(button)));
+        const gravatarPreview = avatarModal.querySelector('[data-gravatar-preview]');
+        gravatarPreview?.addEventListener('error', () => {
+            gravatarPreview.hidden = true;
+            avatarModal.querySelector('[data-gravatar-fallback]').hidden = false;
+            avatarModal.querySelector('[data-avatar-gravatar]').disabled = true;
+            avatarModal.querySelector('.cms-gravatar-card')?.classList.add('is-unavailable');
+        });
+        gravatarPreview?.addEventListener('load', () => { avatarModal.querySelector('[data-gravatar-fallback]').hidden = true; });
+        if (gravatarPreview?.complete && !gravatarPreview.naturalWidth) gravatarPreview.dispatchEvent(new Event('error'));
         document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && avatarModal.classList.contains('show')) close(); });
     }
     const healthModal = document.getElementById('modal-health-guide');

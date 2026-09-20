@@ -30,6 +30,7 @@ Route::middleware([
     Route::prefix('settings')->name('settings.')->group(function (): void {
         Route::controller(SettingsController::class)->group(function () {
             Route::post('security/two-factor', 'twoFactor')->middleware('throttle:5,1')->name('security.two-factor');
+            Route::put('profile/avatar', 'avatar')->middleware('throttle:30,1')->name('profile.avatar');
             Route::get('/', 'index')->name('index');
 
             $settingPages = [

@@ -6,6 +6,7 @@ namespace App\Services\Settings;
 
 use App\Facades\Hooks;
 use App\Http\Requests\Settings\AppearanceRequest;
+use App\Http\Requests\Settings\AvatarRequest;
 use App\Http\Requests\Settings\GeneralRequest;
 use App\Http\Requests\Settings\ProfileRequest;
 use App\Http\Requests\Settings\SecurityRequest;
@@ -97,9 +98,10 @@ readonly class Settings
 
         try {
             $this->environment->write($values);
-            config(['app.name'     => $values['APP_NAME'],
-                    'app.url'      => $values['APP_URL'],
-                    'app.timezone' => $values['APP_TIMEZONE'],
+            config([
+                'app.name'     => $values['APP_NAME'],
+                'app.url'      => $values['APP_URL'],
+                'app.timezone' => $values['APP_TIMEZONE'],
             ]);
             date_default_timezone_set($values['APP_TIMEZONE']);
 
@@ -180,6 +182,41 @@ readonly class Settings
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
         return Response::make(true, trans('admin.saved'), [
+            'avatar_url'    => $user->avatarUrl(),
+            'avatar_preset' => $user->avatar_preset,
+        ]);
+    }
+
+    /**
+     * Validate and immediately save the current account avatar selection.
+     *
+     * @param array<string, mixed> $data
+     * @param int $userId
+     *
+     * @return Response
+     * @throws ValidationException
+     * @throws ModelNotFoundException
+     * @throws Throwable
+     */
+    public function avatar(array $data, int $userId): Response
+    {
+        $values = dto($data, AvatarRequest::class);
+        $context = [
+            'section' => 'profile',
+            'user_id' => $userId,
+            'fields'  => ['avatar_preset'],
+        ];
+        $user = User::query()->findOrFail($userId);
+
+        Hooks::action('jobic.settings.profile.saving', $context);
+
+        $user->forceFill([
+            'avatar_preset' => $values['avatar_preset'],
+        ])->save();
+
+        Hooks::notify('jobic.settings.profile.saved', $context);
+
+        return Response::make(true, trans('admin.avatar_saved'), [
             'avatar_url'    => $user->avatarUrl(),
             'avatar_preset' => $user->avatar_preset,
         ]);

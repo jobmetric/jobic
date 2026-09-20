@@ -72,6 +72,31 @@ class SettingsTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('avatar_preset');
     }
 
+    public function test_avatar_selection_saves_immediately_and_supports_gravatar(): void
+    {
+        $user = User::factory()->create(['email' => 'Avatar.User@example.test']);
+
+        $this->actingAs($user)->putJson(route('admin.settings.profile.avatar'), [
+            'avatar_preset' => 12,
+        ])->assertOk()
+            ->assertJsonPath('message', trans('admin.avatar_saved'))
+            ->assertJsonPath('data.avatar_preset', 12);
+
+        $this->putJson(route('admin.settings.profile.avatar'), [
+            'avatar_preset' => -1,
+        ])->assertOk()
+            ->assertJsonPath('data.avatar_preset', -1)
+            ->assertJsonPath('data.avatar_url', $user->gravatarUrl());
+
+        $user->refresh();
+        $this->assertSame(-1, $user->avatar_preset);
+        $this->assertStringContainsString(md5('avatar.user@example.test'), (string) $user->avatarUrl());
+
+        $this->putJson(route('admin.settings.profile.avatar'), [
+            'avatar_preset' => 0,
+        ])->assertUnprocessable()->assertJsonValidationErrors('avatar_preset');
+    }
+
     public function test_website_timezone_is_rendered_validated_and_applied(): void
     {
         $directory = storage_path('framework/testing/general-'.bin2hex(random_bytes(8)));

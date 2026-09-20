@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Settings;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validate profile request data.
@@ -29,12 +30,12 @@ class ProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'  => [
+            'name'          => [
                 'required',
                 'string',
                 'max:255',
             ],
-            'email' => [
+            'email'         => [
                 'required',
                 'email',
                 'max:254',
@@ -42,7 +43,7 @@ class ProfileRequest extends FormRequest
             'avatar_preset' => [
                 'nullable',
                 'integer',
-                'between:1,45',
+                Rule::in(array_merge([-1], range(1, 45))),
             ],
         ];
     }

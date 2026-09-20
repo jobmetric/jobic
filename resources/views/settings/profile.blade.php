@@ -1,6 +1,6 @@
 @extends('common.settings.page')
 @section('settings-content')
-    <form method="POST" action="{{ route('admin.settings.profile.update') }}" class="cms-settings-form">@csrf @method('PUT')
+    <form method="POST" action="{{ route('admin.settings.profile.update') }}" class="cms-settings-form" data-avatar-save-url="{{ route('admin.settings.profile.avatar') }}">@csrf @method('PUT')
         <section class="cms-profile-summary">
             <button class="cms-profile-avatar-button" type="button" data-avatar-open aria-label="{{ __('admin.change_avatar') }}"><x-user-avatar :user="$account" class="cms-profile-summary__avatar" /><span><x-vuero.icon name="edit" size="14" /></span></button>
             <div><span class="cms-profile-summary__eyebrow">{{ __('admin.account') }}</span><strong>{{ $account->name }}</strong><small>{{ $account->email }}</small></div>

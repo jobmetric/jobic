@@ -71,6 +71,7 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at'         => 'datetime',
             'password'                  => 'hashed',
             'status'                    => 'boolean',
+            'avatar_preset'             => 'integer',
             'ui_preferences'            => 'array',
             'two_factor_secret'         => 'encrypted',
             'two_factor_pending_secret' => 'encrypted',
@@ -114,16 +115,35 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Get the selected preset avatar URL when one is configured.
+     * Get the selected avatar URL for the configured provider.
      *
      * @return string|null
      */
     public function avatarUrl(): ?string
     {
+        if ($this->avatar_preset === -1) {
+            return $this->gravatarUrl();
+        }
+
         if ($this->avatar_preset === null || $this->avatar_preset < 1 || $this->avatar_preset > 45) {
             return null;
         }
 
         return asset(sprintf('vuero/images/admin/avatars/presets/avatar-%02d.webp', $this->avatar_preset));
+    }
+
+    /**
+     * Build the Gravatar URL for the account email address.
+     *
+     * @param bool $requireImage
+     *
+     * @return string
+     */
+    public function gravatarUrl(bool $requireImage = false): string
+    {
+        $hash = md5(strtolower(trim((string) $this->email)));
+        $fallback = $requireImage ? '404' : 'mp';
+
+        return "https://www.gravatar.com/avatar/{$hash}?s=256&d={$fallback}&r=g";
     }
 }
