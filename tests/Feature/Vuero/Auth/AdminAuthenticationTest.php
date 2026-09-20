@@ -77,6 +77,32 @@ class AdminAuthenticationTest extends TestCase
             ->assertSee($user->name);
     }
 
+    public function test_successful_login_carries_the_guest_language_into_the_dashboard(): void
+    {
+        $user = User::factory()->create([
+            'password' => 'secret-password',
+            'ui_preferences' => array_replace(config('admin.appearance'), [
+                'locale' => 'en',
+                'theme' => 'dark',
+            ]),
+        ]);
+
+        $this->withSession(['auth_locale' => 'fa'])
+            ->post(route('login.store'), [
+                'email' => $user->email,
+                'password' => 'secret-password',
+            ])
+            ->assertRedirect(route('admin.dashboard'));
+
+        $this->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee(trans('admin.dashboard', [], 'fa'));
+
+        $preferences = $user->fresh()->ui_preferences;
+        $this->assertSame('fa', $preferences['locale']);
+        $this->assertSame('dark', $preferences['theme']);
+    }
+
     public function test_invalid_credentials_are_rejected(): void
     {
         $user = User::factory()->create([
@@ -92,5 +118,21 @@ class AdminAuthenticationTest extends TestCase
             ->assertSessionHasErrors('email');
 
         $this->assertGuest();
+    }
+
+    public function test_logout_preserves_the_selected_authentication_language(): void
+    {
+        $user = User::factory()->create([
+            'password' => 'secret-password',
+            'ui_preferences' => array_replace(config('admin.appearance'), ['locale' => 'en']),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('logout'))
+            ->assertRedirect(route('login'));
+
+        $this->get(route('login'))
+            ->assertSee(trans('auth.screen.heading', [], 'en'))
+            ->assertDontSee(trans('auth.screen.heading', [], 'fa'));
     }
 }

@@ -140,10 +140,13 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $intendedUrl = $this->resolveLogoutIntendedUrl($request);
+        $authLocale = LocaleCatalog::resolve($request->user()?->ui_preferences['locale'] ?? session('auth_locale', 'fa'));
 
         Authentication::logout([
             'session' => $request->session(),
         ]);
+
+        $request->session()->put('auth_locale', $authLocale);
 
         if ($intendedUrl !== null) {
             $request->session()->put('url.intended', $intendedUrl);

@@ -12,6 +12,7 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\TwoFactorChallengeRequest;
 use App\Models\LoginEvent;
 use App\Models\User;
+use App\Support\LocaleCatalog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
@@ -119,6 +120,7 @@ class Authentication
         Auth::guard('web')->login($user, $remember);
 
         request()->session()->regenerate();
+        $this->synchronizeAuthenticatedLocale($user);
 
         $this->recordLoginEvent($email, $user->id, $ip, $userAgent, true);
 
@@ -175,6 +177,7 @@ class Authentication
         Auth::guard('web')->login($user, false);
 
         session()->regenerate();
+        $this->synchronizeAuthenticatedLocale($user);
 
         $this->recordLoginEvent($user->email, $user->id, (string) ($context['ip'] ?? ''), (string) ($context['user_agent'] ?? ''), true);
 
@@ -199,6 +202,22 @@ class Authentication
         }
 
         return Response::make(true, trans('auth.logout_success'));
+    }
+
+    /**
+     * Carry the successful sign-in language into the account preferences.
+     *
+     * @param User $user
+     *
+     * @return void
+     */
+    private function synchronizeAuthenticatedLocale(User $user): void
+    {
+        $locale = LocaleCatalog::resolve(session('auth_locale', app()->getLocale()));
+        $preferences = array_replace(config('admin.appearance'), $user->ui_preferences ?? [], ['locale' => $locale]);
+
+        $user->forceFill(['ui_preferences' => $preferences])->save();
+        app()->setLocale($locale);
     }
 
     /**
