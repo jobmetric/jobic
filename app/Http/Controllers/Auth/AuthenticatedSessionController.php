@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LanguageRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\TwoFactorChallengeRequest;
+use App\Services\Auth\Authentication as AuthenticationService;
 use App\Support\LocaleCatalog;
 use App\Support\Page;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
 use Throwable;
 
 /**
@@ -25,6 +27,8 @@ class AuthenticatedSessionController extends Controller
 {
     /**
      * Render the authentication form.
+     *
+     * @throws SetPluginNotFoundException
      */
     public function create(): View
     {
@@ -41,7 +45,9 @@ class AuthenticatedSessionController extends Controller
     /**
      * Save the guest language and return the standard settings response.
      *
+     * @param LanguageRequest $request
      *
+     * @return JsonResponse|RedirectResponse
      * @throws Throwable
      */
     public function language(LanguageRequest $request): JsonResponse|RedirectResponse
@@ -54,7 +60,9 @@ class AuthenticatedSessionController extends Controller
     /**
      * Process the submitted authentication data.
      *
+     * @param LoginRequest $request
      *
+     * @return RedirectResponse
      * @throws Throwable
      */
     public function store(LoginRequest $request): RedirectResponse
@@ -87,7 +95,9 @@ class AuthenticatedSessionController extends Controller
         if (session('auth.two_factor.expires', 0) < time()) {
             return redirect()->route('login');
         }
+
         app()->setLocale(LocaleCatalog::resolve(session('auth_locale', 'fa')));
+
         Page::prepare('auth');
         Page::addLocalize('auth', [
             'show_password' => __('auth.screen.show'),
@@ -100,15 +110,18 @@ class AuthenticatedSessionController extends Controller
     /**
      * Finish login after validating the second factor.
      *
+     * @param TwoFactorChallengeRequest $request
      *
+     * @return RedirectResponse
      * @throws Throwable
      */
     public function challenge(TwoFactorChallengeRequest $request): RedirectResponse
     {
-        $result = app(\App\Services\Auth\Authentication::class)->challenge($request->validated(), [
+        $result = app(AuthenticationService::class)->challenge($request->validated(), [
             'ip'         => $request->ip(),
             'user_agent' => (string) $request->userAgent(),
         ]);
+
         if (! $result->ok) {
             throw ValidationException::withMessages(['code' => $result->message]);
         }
@@ -119,15 +132,51 @@ class AuthenticatedSessionController extends Controller
     /**
      * Log out the authenticated user.
      *
+     * @param Request $request
      *
+     * @return RedirectResponse
      * @throws Throwable
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $intendedUrl = $this->resolveLogoutIntendedUrl($request);
+
         Authentication::logout([
             'session' => $request->session(),
         ]);
 
+        if ($intendedUrl !== null) {
+            $request->session()->put('url.intended', $intendedUrl);
+        }
+
         return redirect()->route('login');
+    }
+
+    /**
+     * Resolve the internal page that initiated the logout request.
+     *
+     * @param Request $request
+     *
+     * @return string|null
+     */
+    private function resolveLogoutIntendedUrl(Request $request): ?string
+    {
+        $referer = $request->headers->get('referer');
+        if (! is_string($referer) || $referer === '') {
+            return null;
+        }
+
+        $refererHost = parse_url($referer, PHP_URL_HOST);
+        $refererScheme = parse_url($referer, PHP_URL_SCHEME);
+        if ($refererHost !== $request->getHost() || $refererScheme !== $request->getScheme()) {
+            return null;
+        }
+
+        $path = parse_url($referer, PHP_URL_PATH);
+        if (! is_string($path) || $path === '/login' || $path === '/logout') {
+            return null;
+        }
+
+        return $referer;
     }
 }

@@ -85,6 +85,22 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_logout_returns_user_to_the_page_where_logout_started(): void
+    {
+        $user = User::factory()->create();
+        $previousUrl = route('admin.settings.index');
+
+        $this->actingAs($user)
+            ->withHeader('Referer', $previousUrl)
+            ->post(route('logout'))
+            ->assertRedirect(route('login'));
+
+        $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect($previousUrl);
+    }
+
     public function test_successful_login_records_login_event(): void
     {
         $user = User::factory()->create([
