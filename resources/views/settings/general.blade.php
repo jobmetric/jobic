@@ -8,7 +8,7 @@
         <section class="cms-settings-section cms-timezone-section">
             <header class="cms-settings-section__header"><span><x-vuero.icon name="clock" size="20" /></span><div><h3>{{ __('admin.server_timezone') }}</h3><p>{{ __('admin.server_timezone_hint') }}</p></div></header>
             <div class="cms-timezone-layout">
-                <div class="cms-settings-field" data-field="APP_TIMEZONE"><label for="APP_TIMEZONE">{{ __('admin.timezone') }}</label><div class="cms-settings-control"><select class="input" id="APP_TIMEZONE" name="APP_TIMEZONE">@foreach($timezones as $timezone)<option value="{{ $timezone }}" @selected(old('APP_TIMEZONE', $site['APP_TIMEZONE']) === $timezone)>{{ $timezone }}</option>@endforeach</select></div><small>{{ __('admin.timezone_field_hint') }}</small></div>
+                <x-form.field data-field="APP_TIMEZONE" :label="__('admin.timezone')" for="APP_TIMEZONE" hint="{{ __('admin.timezone_field_hint') }}"><x-form.select id="APP_TIMEZONE" name="APP_TIMEZONE">@foreach($timezones as $timezone)<option value="{{ $timezone }}" @selected(old('APP_TIMEZONE', $site['APP_TIMEZONE']) === $timezone)>{{ $timezone }}</option>@endforeach</x-form.select></x-form.field>
                 <aside class="cms-timezone-clock"><span><x-vuero.icon name="clock" size="18" /></span><div><small>{{ __('admin.current_server_time') }}</small><strong dir="ltr">{{ $serverTime }}</strong></div></aside>
             </div>
             <div class="cms-timezone-recommendation"><span><x-vuero.icon name="check-circle" size="19" /></span><div><strong>{{ __('admin.utc_recommended') }}</strong><p>{{ __('admin.utc_recommended_hint') }}</p></div></div>

@@ -129,20 +129,20 @@
       "_page-315b051b.js"
     ]
   },
-  "_shared-5f6539b1.js": {
+  "_shared-40814940.js": {
     "css": [
-      "assets/crud-4b64e6a8.css"
+      "assets/crud-fields-eacaeb88.css"
     ],
-    "file": "assets/shared-5f6539b1.js",
+    "file": "assets/shared-40814940.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-dc2d2c57.js": {
+  "_shared-e202df1c.js": {
     "css": [
-      "assets/crud-4b64e6a8.css"
+      "assets/crud-fields-eacaeb88.css"
     ],
-    "file": "assets/shared-dc2d2c57.js",
+    "file": "assets/shared-e202df1c.js",
     "imports": [
       "_page-315b051b.js"
     ]
@@ -188,9 +188,9 @@
     "file": "assets/auth-login-8fff407d.css",
     "src": "auth-login.css"
   },
-  "crud.css": {
-    "file": "assets/crud-4b64e6a8.css",
-    "src": "crud.css"
+  "crud-fields.css": {
+    "file": "assets/crud-fields-eacaeb88.css",
+    "src": "crud-fields.css"
   },
   "dashboard-runtime.css": {
     "file": "assets/dashboard-runtime-079a4fb7.css",
@@ -248,11 +248,11 @@
   },
   "resources/js/languages/form.js": {
     "css": [
-      "assets/crud-4b64e6a8.css"
+      "assets/crud-fields-eacaeb88.css"
     ],
-    "file": "assets/form-20c5fac9.js",
+    "file": "assets/form-7e284c7a.js",
     "imports": [
-      "_shared-dc2d2c57.js",
+      "_shared-e202df1c.js",
       "_page-315b051b.js",
       "_settings-1f3a49b7.js",
       "_toast-18d1caa1.js",
@@ -263,11 +263,11 @@
   },
   "resources/js/languages/index.js": {
     "css": [
-      "assets/crud-4b64e6a8.css"
+      "assets/crud-fields-eacaeb88.css"
     ],
-    "file": "assets/index-a40db9d4.js",
+    "file": "assets/index-3c6ac646.js",
     "imports": [
-      "_shared-dc2d2c57.js",
+      "_shared-e202df1c.js",
       "_page-315b051b.js",
       "_settings-1f3a49b7.js",
       "_toast-18d1caa1.js",
@@ -278,11 +278,11 @@
   },
   "resources/js/users/form.js": {
     "css": [
-      "assets/crud-4b64e6a8.css"
+      "assets/crud-fields-eacaeb88.css"
     ],
-    "file": "assets/form-0646717c.js",
+    "file": "assets/form-cadbc084.js",
     "imports": [
-      "_shared-5f6539b1.js",
+      "_shared-40814940.js",
       "_page-315b051b.js",
       "_settings-1f3a49b7.js",
       "_toast-18d1caa1.js",
@@ -293,11 +293,11 @@
   },
   "resources/js/users/index.js": {
     "css": [
-      "assets/crud-4b64e6a8.css"
+      "assets/crud-fields-eacaeb88.css"
     ],
-    "file": "assets/index-71a3edc4.js",
+    "file": "assets/index-4cf60ac3.js",
     "imports": [
-      "_shared-5f6539b1.js",
+      "_shared-40814940.js",
       "_page-315b051b.js",
       "_settings-1f3a49b7.js",
       "_toast-18d1caa1.js",

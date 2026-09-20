@@ -5,7 +5,7 @@
             <header class="cms-settings-section__header"><span><x-vuero.icon name="lock" size="20" /></span><div><h3>{{ __('admin.password_title') }}</h3><p>{{ __('admin.password_intro') }}</p></div></header>
             <div class="cms-settings-fields">
                 @foreach(['password' => 'new-password', 'password_confirmation' => 'confirm-password'] as $field => $id)
-                    <div class="cms-settings-field"><label for="{{ $id }}">{{ __('admin.fields.'.$field) }}</label><div class="cms-settings-control"><div class="cms-password-input"><input id="{{ $id }}" name="{{ $field }}" type="password" minlength="12" required autocomplete="new-password" aria-describedby="password-guidance @if($field === 'password') password-strength @endif" /><button type="button" data-password-toggle="{{ $id }}" aria-label="{{ __('admin.show_password') }}" aria-pressed="false"><x-vuero.icon name="eye" size="20" /></button></div>@if($field === 'password')<meter id="password-strength" class="cms-password-strength" min="0" max="4" value="0" low="2" high="3" optimum="4" aria-label="{{ __('admin.password_strength') }}"></meter>@endif</div></div>
+                    <x-form.field :label="__('admin.fields.'.$field)" for="{{ $id }}"><x-form.password id="{{ $id }}" :name="$field" minlength="12" required autocomplete="new-password" aria-describedby="password-guidance @if($field === 'password') password-strength @endif" :meter="$field === 'password'" /></x-form.field>
                 @endforeach
             </div>
         </section>

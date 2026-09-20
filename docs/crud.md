@@ -53,3 +53,5 @@ Every registry CRUD must be copied from the complete Languages CRUD contract bef
 ## Shared form-control standard
 
 All CMS forms use one control contract. A normal input or select has one outer border and one focus state; password fields use `cms-settings-control` containing exactly one `cms-password-input`, whose inner input has no border. Do not layer CRUD input borders over password controls, add page-specific wrappers, or invent alternate control styling.
+
+Form fields are rendered through the shared Blade components in `resources/views/components/form` (`x-form.field`, `x-form.input`, `x-form.select`, `x-form.textarea`, and `x-form.password`). New CMS forms must reuse these components instead of duplicating field markup.

@@ -1,5 +1,6 @@
 import { pageData } from '../common/page';
 import '../../css/crud.css';
+import '../../css/crud-fields.css';
 export const copy = () => pageData().users;
 export function escape(value) {
     const span = document.createElement('span');

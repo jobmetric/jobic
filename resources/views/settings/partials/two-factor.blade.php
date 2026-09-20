@@ -13,9 +13,9 @@
     @endif
     <input type="hidden" name="action" value="{{ $enabled ? 'disable' : ($setup ? 'enable' : 'setup') }}" />
     <div class="cms-settings-fields">
-        <div class="cms-settings-field"><label for="two-factor-password">{{ __('two-factor.password') }}</label><div class="cms-settings-control"><input class="input" id="two-factor-password" name="current_password" type="password" autocomplete="current-password" required /></div></div>
+        <x-form.field :label="__('two-factor.password')" for="two-factor-password"><x-form.input id="two-factor-password" name="current_password" type="password" autocomplete="current-password" required /></x-form.field>
         @if($setup || $enabled)
-            <div class="cms-settings-field"><label for="two-factor-code">{{ __('two-factor.code') }}</label><div class="cms-settings-control"><input class="input" id="two-factor-code" name="code" type="text" dir="ltr" autocomplete="one-time-code" inputmode="{{ $enabled ? 'text' : 'numeric' }}" maxlength="{{ $enabled ? 16 : 6 }}" required data-secret aria-describedby="two-factor-code-hint" /></div><small id="two-factor-code-hint">{{ __('two-factor.'.($enabled ? 'disable_hint' : 'enable_hint')) }}</small></div>
+            <x-form.field :label="__('two-factor.code')" for="two-factor-code" hint="{{ __('two-factor.'.($enabled ? 'disable_hint' : 'enable_hint')) }}"><x-form.input id="two-factor-code" name="code" type="text" dir="ltr" autocomplete="one-time-code" :inputmode="$enabled ? 'text' : 'numeric'" :maxlength="$enabled ? 16 : 6" required data-secret aria-describedby="two-factor-code-hint" /></x-form.field>
         @endif
     </div>
 </section>

@@ -19,3 +19,5 @@ Visual parity is mandatory: every new registry CRUD must copy the complete Langu
 Password controls are a shared application standard: use the security page's `cms-settings-control` + `cms-password-input` structure, toggle behavior, strength meter and guidance semantics wherever a CRUD edits passwords. Do not create per-page password control markup or styling.
 
 All inputs and selects are shared controls: exactly one border belongs to the control wrapper, and nested password inputs are borderless. Reuse the established security/language control DOM and classes; page-specific border, padding, focus or wrapper variants are not allowed.
+
+Render fields with the shared Blade components under `resources/views/components/form` (`x-form.field`, `x-form.input`, `x-form.select`, `x-form.textarea`, `x-form.password`) so labels, errors, accessibility attributes, and control markup stay consistent across every CMS form.

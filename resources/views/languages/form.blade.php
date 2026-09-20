@@ -8,11 +8,17 @@
     @unless($readonly)<p class="crud-hint">{{ __('languages.save_hint') }}</p>@endunless
     @cmsHook('jobic.admin.languages.form.before', ['id' => $record?->id])
     <fieldset class="crud-form-fields" @disabled($readonly)>
-        @foreach(['name','locale'] as $field)<label for="language-{{ $field }}">{{ __('languages.'.$field) }}<input id="language-{{ $field }}" name="{{ $field }}" value="{{ old($field, $record?->$field) }}" maxlength="{{ $field === 'locale' ? 2 : 100 }}" @required($field !== 'flag') @if($field === 'locale') dir="ltr" pattern="[a-z]{2}" @endif><small data-error-for="{{ $field }}" id="error-{{ $field }}"></small></label>@endforeach
+        @foreach(['name','locale'] as $field)
+            <x-form.field variant="crud" :label="__('languages.'.$field)" for="language-{{ $field }}" :error="$field">
+                <x-form.input id="language-{{ $field }}" :name="$field" :value="old($field, $record?->$field)" :maxlength="$field === 'locale' ? 2 : 100" :required="$field !== 'flag'" :dir="$field === 'locale' ? 'ltr' : null" :pattern="$field === 'locale' ? '[a-z]{2}' : null" />
+            </x-form.field>
+        @endforeach
         @php($selectedFlagUrl = \App\Support\LocaleCatalog::flagUrl(old('flag', $record?->flag)))
-        <label for="language-flag">{{ __('languages.flag') }}<select id="language-flag" name="flag"><option value="">{{ __('languages.no_flag') }}</option>@foreach(\JobMetric\Language\Facades\Language::getFlags() as $flag)<option value="{{ $flag['value'] }}" data-flag-url="{{ $flag['url'] }}" @selected($selectedFlagUrl === $flag['url'])>{{ $flag['name'] }}</option>@endforeach</select><small data-error-for="flag" id="error-flag"></small></label>
+        <x-form.field variant="crud" :label="__('languages.flag')" for="language-flag" error="flag">
+            <x-form.select id="language-flag" name="flag"><option value="">{{ __('languages.no_flag') }}</option>@foreach(\JobMetric\Language\Facades\Language::getFlags() as $flag)<option value="{{ $flag['value'] }}" data-flag-url="{{ $flag['url'] }}" @selected($selectedFlagUrl === $flag['url'])>{{ $flag['name'] }}</option>@endforeach</x-form.select>
+        </x-form.field>
         @foreach(['direction'=>['ltr'=>__('languages.ltr'),'rtl'=>__('languages.rtl')], 'calendar'=>__('languages.calendars'), 'first_day_of_week'=>__('languages.weekdays'), 'status'=>[1=>__('languages.active'),0=>__('languages.inactive')]] as $field=>$options)
-        <label for="language-{{ $field }}">{{ __('languages.'.$field) }}<select id="language-{{ $field }}" name="{{ $field }}">@foreach($options as $value=>$label)<option value="{{ $value }}" @selected((string)old($field, $record?->$field ?? ($field === 'status' ? 1 : ($field === 'calendar' ? 'gregorian' : ($field === 'direction' ? 'ltr' : 0)))) === (string)$value)>{{ $label }}</option>@endforeach</select><small data-error-for="{{ $field }}" id="error-{{ $field }}"></small></label>
+        <x-form.field variant="crud" :label="__('languages.'.$field)" for="language-{{ $field }}" :error="$field"><x-form.select id="language-{{ $field }}" :name="$field">@foreach($options as $value=>$label)<option value="{{ $value }}" @selected((string)old($field, $record?->$field ?? ($field === 'status' ? 1 : ($field === 'calendar' ? 'gregorian' : ($field === 'direction' ? 'ltr' : 0)))) === (string)$value)>{{ $label }}</option>@endforeach</x-form.select></x-form.field>
         @endforeach
     </fieldset>
     @cmsHook('jobic.admin.languages.form.after', ['id' => $record?->id])
