@@ -225,6 +225,11 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
 .circular-menu__item > .toolbar-button { width: 100%; height: 100%; color: inherit; background: transparent; }
 .circular-menu__item > .toolbar-button:hover { color: inherit; background: transparent; }
 .circular-menu__item .country-flag { width: 24px; height: 24px; min-width: 24px; border-color: rgb(255 255 255 / 85%); box-shadow: none; }
+.circular-menu__language .country-flag.cms-package-flag,
+.circular-menu__language .country-flag.cms-locale-mark { width: 24px; height: 24px; min-width: 24px; aspect-ratio: 1; border-radius: 50% !important; background-size: cover; overflow: hidden; }
+.circular-menu__notification { overflow: visible; }
+.circular-menu__notification .toolbar-button { width: 100%; height: 100%; color: inherit; background: transparent; }
+.circular-menu__notification .toolbar-button:hover { color: inherit; background: transparent; }
 .circular-menu__item .notification-dot { top: 8px; right: 8px; border-color: #247d69; }
 .toolbar-notifications--circular .notification-dropdown__menu { top: calc(100% + 12px); right: 0; }
 :root[dir='rtl'] .circular-menu { --circular-direction: -1; right: auto; left: 1em; }

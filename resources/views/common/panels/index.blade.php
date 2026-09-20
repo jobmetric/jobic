@@ -21,8 +21,8 @@
     <button class="circular-menu__toggle" type="button" aria-label="{{ __('admin.control_open_quick_actions') }}" aria-controls="circular-menu-items" aria-expanded="false" data-circular-menu-toggle><x-vuero.icon class="circular-menu__menu-icon" name="menu" size="20" /><x-vuero.icon class="circular-menu__close-icon" name="x" size="20" /></button>
     <div id="circular-menu-items" class="circular-menu__items" aria-hidden="true" inert data-circular-menu-items>
         <button class="circular-menu__item theme-toggle" type="button" data-theme-toggle aria-label="{{ __('admin.theme') }}" aria-pressed="false"><x-vuero.icon class="theme-toggle__sun" name="sun" size="21" /><x-vuero.icon class="theme-toggle__moon" name="moon" size="21" /></button>
-        <button class="circular-menu__item" type="button" data-modal-open="layout-switcher" aria-label="{{ __('admin.layout') }}"><x-vuero.icon name="panel" size="20" /></button>
-        <button class="circular-menu__item" type="button" data-panel-open="search" aria-label="{{ __('admin.search') }}"><x-vuero.icon name="search" size="20" /></button>
+        <button class="circular-menu__item circular-menu__language" type="button" data-panel-open="languages" aria-label="{{ __('admin.language') }}">@include('common.language-mark', ['locale' => app()->getLocale()])</button>
+        @include('common.notifications', ['notificationClass' => 'toolbar-notifications--circular circular-menu__item circular-menu__notification'])
         <button class="circular-menu__item" type="button" data-panel-open="activity" aria-label="{{ __('admin.activity') }}"><x-vuero.icon name="apps" size="20" /></button>
     </div>
 </nav>

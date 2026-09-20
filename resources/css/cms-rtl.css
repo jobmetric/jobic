@@ -82,3 +82,17 @@ html[dir='rtl'] [data-cms-shell][data-selected-layout*='sideblock'][data-selecte
 .admin-toolbar .country-flag.cms-package-flag,
 .admin-topbar .country-flag.cms-package-flag,
 .login-panel-actions .country-flag.cms-package-flag { width:26px; height:26px; border-radius:50%; background-size:cover; overflow:hidden; }
+
+/* The quick-actions flag uses the package's square SVG as a circular icon. */
+[data-cms-shell] .circular-menu__language .country-flag.cms-package-flag,
+[data-cms-shell] .circular-menu__language .country-flag.cms-locale-mark {
+    display: block;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    background-size: cover;
+    border-radius: 50%;
+    clip-path: circle(50% at 50% 50%);
+    overflow: hidden;
+}
