@@ -103,7 +103,9 @@ class SettingsTest extends TestCase
         $user = User::factory()->create(['password' => 'old-password']);
         $this->withoutVite();
         $this->actingAs($user);
-        $this->get(route('admin.settings.edit', 'security'))->assertOk()->assertDontSee('name="current_password"', false);
+        $response = $this->get(route('admin.settings.edit', 'security'))->assertOk();
+        $passwordForm = explode('</form>', $response->getContent())[0];
+        $this->assertStringNotContainsString('name="current_password"', $passwordForm);
         $input = ['password' => 'new-strong-password', 'password_confirmation' => 'mismatched-password'];
         $this->put(route('admin.settings.security.update'), $input)->assertSessionHasErrors();
         $this->assertTrue(Hash::check('old-password', $user->fresh()->password));

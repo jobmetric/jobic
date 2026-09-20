@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function (): void {
     Route::controller(AuthenticatedSessionController::class)->group(function () {
         Route::prefix('login')->group(function () {
+            Route::get('two-factor', 'twoFactor')->name('login.two-factor');
+            Route::post('two-factor', 'challenge')->middleware('throttle:10,1')->name('login.two-factor.store');
             Route::get('/', 'create')->name('login');
             Route::post('/', 'store')->name('login.store');
             Route::post('language', [AuthenticatedSessionController::class, 'language'])->middleware('throttle:30,1')->name('login.language');

@@ -340,3 +340,33 @@ html[dir='rtl'] .cms-health-card__guide { border-radius: 9px 0 0 9px; }
     .cms-health-core-row { grid-template-columns: minmax(0, 1fr) auto; padding-block: 8px; }
     .cms-health-core-row .cms-health-help { grid-column: 1 / -1; justify-self: start; }
 }
+
+.cms-two-factor-setup { display: flex; align-items: center; gap: 24px; margin-block: 20px; }
+.cms-two-factor-setup img { max-inline-size: 100%; block-size: auto; border-radius: 12px; }
+.cms-two-factor-setup code { overflow-wrap: anywhere; user-select: all; }
+.cms-two-factor-recovery { margin-block: 20px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; }
+.cms-two-factor-recovery ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding-inline-start: 20px; }
+.cms-two-factor-status { display: inline-flex; align-items: center; gap: 8px; width: fit-content; margin-block: -4px 18px; padding: 7px 12px; border: 1px solid; border-radius: 999px; font-size: 11px; font-weight: 650; line-height: 1.2; }
+.cms-two-factor-header { align-items: center; }
+.cms-two-factor-header > div { flex: 1; min-width: 0; }
+.cms-two-factor-header .cms-two-factor-status { flex: 0 0 auto; margin: 0 0 0 auto; }
+.cms-two-factor-status.is-enabled { color: #15803d; border-color: color-mix(in srgb, #16a34a 28%, var(--border)); background: color-mix(in srgb, #22c55e 10%, var(--surface)); }
+.cms-two-factor-status.is-disabled { color: #a16207; border-color: color-mix(in srgb, #eab308 32%, var(--border)); background: color-mix(in srgb, #eab308 11%, var(--surface)); }
+.cms-two-factor-status__dot { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 14%, transparent); }
+@media (max-width: 600px) { .cms-two-factor-setup { flex-direction: column; align-items: start; } .cms-two-factor-recovery ul { grid-template-columns: 1fr; } .cms-two-factor-header { align-items: flex-start; flex-wrap: wrap; } .cms-two-factor-header .cms-two-factor-status { margin-inline-start: 51px; } }
+
+/* Security follows the same card language used by the other settings forms. */
+.cms-security-form + .cms-security-form { border-block-start: 1px solid var(--border); }
+.cms-security-form .cms-settings-section { padding: 0; border: 0; background: transparent; }
+.cms-security-form .cms-settings-form__footer p { display: flex; align-items: flex-start; gap: 7px; }
+.cms-security-form .cms-settings-form__footer p svg { flex: 0 0 auto; margin-block-start: 2px; color: var(--primary); }
+.cms-security-activity .cms-settings-section__header { margin-block-end: 14px; }
+.cms-security-activity__table { margin-block-start: 0; }
+.cms-security-activity__table > header, .cms-security-activity__table .cms-health-table__row { grid-template-columns: minmax(150px, 1.15fr) minmax(120px, 1fr) 110px minmax(150px, 1.2fr); }
+.cms-settings-empty { padding: 18px; border: 1px dashed var(--border); border-radius: 10px; color: var(--muted); background: var(--surface-soft); font-size: 11px; text-align: center; }
+.cms-password-strength { display: block; width: 100%; height: 8px; margin-block-start: 8px; border: 0; border-radius: 8px; overflow: hidden; }
+.cms-password-strength::-webkit-meter-bar { border: 0; background: var(--surface-soft); border-radius: 8px; }
+.cms-password-strength::-webkit-meter-optimum-value { background: #16a34a; border-radius: 8px; }
+.cms-password-strength::-webkit-meter-suboptimum-value { background: #eab308; border-radius: 8px; }
+.cms-password-strength::-webkit-meter-even-less-good-value { background: #ef4444; border-radius: 8px; }
+@media (max-width: 700px) { .cms-security-form .cms-settings-form__footer { align-items: stretch; flex-direction: column; gap: 14px; } .cms-security-form .cms-settings-form__footer .vuero-button { width: 100%; } }

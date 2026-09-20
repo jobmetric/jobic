@@ -16,10 +16,7 @@ class SecurityHeaders
     /**
      * Add security headers to the outgoing response.
      *
-     * @param Request $request
-     * @param Closure(Request): Response $next
-     *
-     * @return Response
+     * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -29,6 +26,10 @@ class SecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+        if ($request->is('admin/settings/security*', 'login*')) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+        }
 
         return $response;
     }

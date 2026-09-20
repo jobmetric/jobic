@@ -13,6 +13,7 @@
         "ext-pdo": "*",
         "ext-redis": "*",
         "ext-zip": "*",
+        "bacon/bacon-qr-code": "^3.0",
         "jobmetric/domi": "^1.14.2",
         "jobmetric/laravel-env-modifier": "^2.2",
         "jobmetric/laravel-flow": "^2.4",
@@ -24,6 +25,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "lorisleiva/laravel-actions": "^2.9",
+        "pragmarx/google2fa": "^9.0",
         "spatie/laravel-query-builder": "^6.3|^7.0",
         "tymon/jwt-auth": "^2.2"
     },

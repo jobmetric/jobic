@@ -21,6 +21,10 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property HigherOrderCollectionProxy|mixed $email
  * @property HigherOrderCollectionProxy|mixed|null $email_verified_at
  * @property int|null $avatar_preset
+ * @property HigherOrderCollectionProxy|mixed $two_factor_enabled_at
+ * @property HigherOrderCollectionProxy|mixed $two_factor_pending_at
+ * @property HigherOrderCollectionProxy|mixed $two_factor_pending_secret
+ * @property mixed $two_factor_secret
  */
 class User extends Authenticatable implements JWTSubject
 {
@@ -47,6 +51,9 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_pending_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -57,16 +64,20 @@ class User extends Authenticatable implements JWTSubject
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'ui_preferences'    => 'array',
+            'email_verified_at'         => 'datetime',
+            'password'                  => 'hashed',
+            'ui_preferences'            => 'array',
+            'two_factor_secret'         => 'encrypted',
+            'two_factor_pending_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_enabled_at'     => 'datetime',
+            'two_factor_pending_at'     => 'datetime',
+            'two_factor_last_step'      => 'integer',
         ];
     }
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
      */
     public function getJWTIdentifier(): mixed
     {
@@ -87,8 +98,6 @@ class User extends Authenticatable implements JWTSubject
      * Send the password reset notification to the user.
      *
      * @param string $token
-     *
-     * @return void
      */
     public function sendPasswordResetNotification($token): void
     {
@@ -97,8 +106,6 @@ class User extends Authenticatable implements JWTSubject
 
     /**
      * Get the selected preset avatar URL when one is configured.
-     *
-     * @return string|null
      */
     public function avatarUrl(): ?string
     {

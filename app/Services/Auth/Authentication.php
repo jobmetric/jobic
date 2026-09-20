@@ -9,9 +9,11 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LanguageRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\TwoFactorChallengeRequest;
 use App\Models\LoginEvent;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -28,7 +30,6 @@ class Authentication
      *
      * @param array<string, mixed> $data
      *
-     * @return Response
      * @throws Throwable
      */
     public function language(array $data): Response
@@ -56,7 +57,6 @@ class Authentication
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
      *
-     * @return Response
      * @throws Throwable
      */
     public function login(array $data, array $context = []): Response
@@ -81,7 +81,11 @@ class Authentication
 
         Auth::guard('web')->setRememberDuration(max(1, (int) config('auth.remember_days', 30)) * 24 * 60);
 
-        if (! Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']], $remember)) {
+        session()->forget('auth.two_factor');
+        $credentials = ['email' => $validated['email'], 'password' => $validated['password']];
+        $provider = Auth::guard('web')->getProvider();
+        $user = $provider->retrieveByCredentials($credentials);
+        if (! $user || ! $provider->validateCredentials($user, $credentials)) {
             RateLimiter::hit($throttleKey);
 
             $this->recordLoginEvent($email, null, $ip, $userAgent, false);
@@ -91,8 +95,19 @@ class Authentication
 
         RateLimiter::clear($throttleKey);
 
-        /** @var User $user */
-        $user = Auth::user();
+        $provider->rehashPasswordIfRequired($user, $credentials);
+        if ($user->two_factor_enabled_at) {
+            session()->regenerate();
+            session()->put('auth.two_factor', [
+                'user_id'       => $user->id,
+                'expires'       => time() + 300,
+                'password_hash' => hash('sha256', $user->password),
+                'factor_hash'   => hash('sha256', $user->two_factor_secret),
+            ]);
+
+            return Response::make(true, __('two-factor.challenge_title'), ['two_factor' => true]);
+        }
+        Auth::guard('web')->login($user, $remember);
 
         request()->session()->regenerate();
 
@@ -102,11 +117,65 @@ class Authentication
     }
 
     /**
+     * Complete a password-verified session using a single-use second factor.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
+     *
+     * @throws Throwable
+     */
+    public function challenge(array $data, array $context = []): Response
+    {
+        $values = dto($data, TwoFactorChallengeRequest::class);
+
+        $pending = session('auth.two_factor');
+        if (! is_array($pending) || ($pending['expires'] ?? 0) < time()) {
+            session()->forget('auth.two_factor');
+
+            return Response::make(false, __('two-factor.expired'), null, 422);
+        }
+
+        $key = 'two-factor:' . $pending['user_id'];
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            return Response::make(false, __('auth.throttle', [
+                'seconds' => RateLimiter::availableIn($key),
+                'minutes' => 1,
+            ]), null, 429);
+        }
+
+        RateLimiter::hit($key, 300);
+
+        $user = DB::transaction(function () use ($pending, $values): ?User {
+            $user = User::query()->lockForUpdate()->find($pending['user_id']);
+            if (! $user || ! hash_equals($pending['password_hash'], hash('sha256', $user->password)) || ! hash_equals($pending['factor_hash'], hash('sha256', $user->two_factor_secret ?? '')) || ! app(TwoFactor::class)->consume($user, $values['code'])) {
+                return null;
+            }
+
+            return $user;
+        });
+
+        if (! $user) {
+            return Response::make(false, __('two-factor.invalid'), null, 422);
+        }
+
+        RateLimiter::clear($key);
+        session()->forget('auth.two_factor');
+
+        // Persistent remember cookies would bypass the required second factor on a later login.
+        Auth::guard('web')->login($user, false);
+
+        session()->regenerate();
+
+        $this->recordLoginEvent($user->email, $user->id, (string) ($context['ip'] ?? ''), (string) ($context['user_agent'] ?? ''), true);
+
+        return Response::make(true, __('auth.login_success'));
+    }
+
+    /**
      * Logout user.
      *
      * @param array<string, mixed> $context
      *
-     * @return Response
      * @throws Throwable
      */
     public function logout(array $context = []): Response
@@ -127,7 +196,6 @@ class Authentication
      * @param array<string, mixed> $data
      * @param array<string, mixed> $context
      *
-     * @return Response
      * @throws Throwable
      */
     public function sendResetLink(array $data, array $context = []): Response
@@ -145,7 +213,7 @@ class Authentication
             return Response::make(false, trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => (int) ceil($seconds / 60),
-            ]), null, 429,);
+            ]), null, 429);
         }
 
         RateLimiter::hit($throttleKey);
@@ -160,7 +228,6 @@ class Authentication
      *
      * @param array<string, mixed> $data
      *
-     * @return Response
      * @throws Throwable
      */
     public function resetPassword(array $data): Response
@@ -214,8 +281,6 @@ class Authentication
      * @param string $ip        The user's IP address.
      * @param string $userAgent The user's user agent string.
      * @param bool $successful  Whether the login attempt was successful.
-     *
-     * @return void
      */
     private function recordLoginEvent(
         string $email,

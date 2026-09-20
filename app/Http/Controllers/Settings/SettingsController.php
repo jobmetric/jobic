@@ -9,8 +9,12 @@ use App\Http\Requests\Settings\AppearanceRequest;
 use App\Http\Requests\Settings\GeneralRequest;
 use App\Http\Requests\Settings\ProfileRequest;
 use App\Http\Requests\Settings\SecurityRequest;
+use App\Http\Requests\Settings\TwoFactorRequest;
+use App\Services\Auth\TwoFactor;
 use App\Services\Settings\Settings;
 use App\Support\Page;
+use DateInvalidTimeZoneException;
+use DateMalformedStringException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,8 +33,6 @@ class SettingsController extends Controller
     /**
      * Initialize the service dependencies.
      *
-     * @param Settings $settings
-     *
      * @return void
      */
     public function __construct(private readonly Settings $settings)
@@ -40,7 +42,6 @@ class SettingsController extends Controller
     /**
      * Render the settings directory.
      *
-     * @return View
      * @throws SetPluginNotFoundException
      */
     public function index(): View
@@ -57,7 +58,10 @@ class SettingsController extends Controller
      * @param string $section
      *
      * @return View
+     * @throws SetPluginNotFoundException
      * @throws Throwable
+     * @throws DateInvalidTimeZoneException
+     * @throws DateMalformedStringException
      */
     public function edit(Request $request, string $section): View
     {
@@ -124,6 +128,33 @@ class SettingsController extends Controller
         }
 
         return $this->respond($request, $result, 'security');
+    }
+
+    /**
+     * Save authenticator settings and render the next in-place form state.
+     *
+     * @param TwoFactorRequest $request
+     *
+     * @return JsonResponse|RedirectResponse
+     * @throws Throwable
+     */
+    public function twoFactor(TwoFactorRequest $request): JsonResponse|RedirectResponse
+    {
+        $result = app(TwoFactor::class)->update($request->validated(), (int) $request->user()->id);
+        $state = $result->data;
+        if ($request->expectsJson()) {
+            $response = Response::make(true, $result->message, ['html' => view('settings.partials.two-factor', ['state' => $state])->render()]);
+
+            return response()
+                ->json($response)
+                ->header('Cache-Control', 'no-store')
+                ->header('X-CSRF-TOKEN', csrf_token());
+        }
+
+        return redirect()
+            ->route('admin.settings.edit', 'security')
+            ->with('two_factor_state', $state)
+            ->with('status', $result->message);
     }
 
     /**

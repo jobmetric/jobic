@@ -123,6 +123,12 @@ export function bindSettingsForms({ announce, applyPreferences }) {
                 announce(result.message);
                 return;
             }
+            if (form.matches('[data-two-factor-form]')) {
+                form.querySelector('[data-two-factor-content]').innerHTML = result.data.html;
+                form.querySelector('input:not([type=hidden])')?.focus();
+                announce(result.message);
+                return;
+            }
             if (form.matches('[data-appearance-form]')) applyPreferences(result.data);
             form.querySelectorAll('input[type="password"], input[data-secret]').forEach((input) => { input.value = ''; });
             form.querySelectorAll('[data-password-toggle]').forEach((button) => { const input = document.getElementById(button.dataset.passwordToggle); input.value = ''; input.type = 'password'; button.setAttribute('aria-pressed', 'false'); });

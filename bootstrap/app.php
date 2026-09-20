@@ -56,7 +56,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['DB_PASSWORD', 'REDIS_PASSWORD', 'MAIL_PASSWORD', 'ADMIN_PASSWORD', 'ADMIN_PASSWORD_confirmation']);
+        $exceptions->dontFlash(['code', 'DB_PASSWORD', 'REDIS_PASSWORD', 'MAIL_PASSWORD', 'ADMIN_PASSWORD', 'ADMIN_PASSWORD_confirmation']);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
