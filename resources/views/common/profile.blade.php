@@ -12,9 +12,12 @@
         </div>
 
         @foreach (['profile' => 'user', 'security' => 'shield', 'appearance' => 'panel'] as $key => $icon)
-            <a class="profile-dropdown__item" href="{{ route('admin.settings.edit', $key) }}" role="menuitem"><span class="profile-dropdown__icon"><x-vuero.icon :name="$icon" size="19" /></span><span><strong>{{ __('admin.sections.'.$key) }}</strong><small>{{ __('admin.descriptions.'.$key) }}</small></span></a>
+            <a class="profile-dropdown__item" href="{{ route('admin.account.'.$key.'.edit') }}" role="menuitem"><span class="profile-dropdown__icon"><x-vuero.icon :name="$icon" size="19" /></span><span><strong>{{ __('admin.sections.'.$key) }}</strong><small>{{ __('admin.descriptions.'.$key) }}</small></span></a>
         @endforeach
-        <hr><a class="profile-dropdown__item" href="{{ route('admin.settings.index') }}" role="menuitem"><span class="profile-dropdown__icon"><x-vuero.icon name="settings" size="19" /></span><span><strong>{{ __('admin.all_settings') }}</strong></span></a><hr>
+        @if(!empty($settingsSections))
+            <hr><a class="profile-dropdown__item" href="{{ route('admin.settings.index') }}" role="menuitem"><span class="profile-dropdown__icon"><x-vuero.icon name="settings" size="19" /></span><span><strong>{{ __('admin.all_settings') }}</strong></span></a>
+        @endif
+        <hr>
         <form method="POST" action="{{ route('logout') }}">@csrf<button class="profile-dropdown__logout" type="submit" role="menuitem"><x-vuero.icon name="logout" size="17" /> {{ __('admin.signout') }}</button></form>
     </div>
 </div>

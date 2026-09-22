@@ -23,11 +23,12 @@ function dropdown(label, items, submit = false) {
 export function toolbar(kind) {
     const root = document.querySelector('[data-crud-toolbar]'); root.replaceChildren(); const routes = pageData().roleRoutes;
     if (kind === 'list') {
-        const add = document.createElement('a'); add.href = `${routes.index}/create`; add.className = 'vuero-button is-primary'; add.dataset.crudAction = 'create'; add.innerHTML = `${icon('plus')}${escape(copy().create)}`;
-        root.append(add, dropdown('actions', pageData().roleToolbar.list)); return;
+        if (pageData().roleAccess?.manage) { const add = document.createElement('a'); add.href = `${routes.index}/create`; add.className = 'vuero-button is-primary'; add.dataset.crudAction = 'create'; add.innerHTML = `${icon('plus')}${escape(copy().create)}`; root.append(add); }
+        root.append(dropdown('actions', pageData().roleAccess?.manage ? pageData().roleToolbar.list : ['help'])); return;
     }
     const cancel = document.createElement('a'); cancel.href = routes.index; cancel.className = 'vuero-button crud-cancel'; cancel.dataset.crudAction = 'cancel'; cancel.textContent = copy().cancel; root.append(cancel);
     if (document.querySelector('[data-readonly]')) {
+        if (!pageData().roleAccess?.manage) return;
         const edit = document.createElement('a'); edit.href = document.querySelector('[data-role-form]').action + '/edit'; edit.className = 'vuero-button is-primary'; edit.innerHTML = `${icon('edit')}${escape(copy().edit)}`; root.append(edit); return;
     }
     const group = document.createElement('div'); group.className = 'crud-split-save'; const save = button('save', 'submit'); save.className = 'vuero-button is-primary'; group.append(save, dropdown('save_options', pageData().roleToolbar.form, true)); root.append(group);

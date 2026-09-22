@@ -35,7 +35,7 @@ class RolesTest extends TestCase
             'is_default' => 0,
             'is_super' => 0,
             'allow' => ['admin', 'admin.users'],
-            'deny' => ['admin.settings.security'],
+            'deny' => ['admin.settings.general'],
             'rules' => [['driver' => 'time', 'payload' => ['from' => '08:00', 'to' => '18:00', 'timezone' => 'UTC']]],
         ], $changes);
     }

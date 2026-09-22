@@ -6,9 +6,11 @@
             <label class="search-panel__field"><x-vuero.icon name="search" size="19" /><input type="search" placeholder="{{ __('admin.search_placeholder') }}" aria-label="{{ __('admin.search') }}" data-cms-search autocomplete="off" /></label>
             <div class="search-block">
                 <a class="search-entry" href="{{ route('admin.dashboard') }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon name="activity" size="20" /></span><span>{{ __('admin.dashboard') }}</span></a>
-                <a class="search-entry" href="{{ route('admin.settings.index') }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon name="apps" size="20" /></span><span>{{ __('admin.all_settings') }}</span></a>
-                @foreach(config('admin.settings') as $key => $item)
-                    <a class="search-entry" href="{{ match ($key) { 'mail' => route('admin.settings.mail.edit'), 'languages' => route('admin.settings.languages.index'), default => route('admin.settings.edit', $key) } }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon :name="$item['icon']" size="20" /></span><span><strong>{{ __('admin.sections.'.$key) }}</strong><small>{{ __('admin.descriptions.'.$key) }}</small></span></a>
+                @if(!empty($settingsSections))
+                    <a class="search-entry" href="{{ route('admin.settings.index') }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon name="apps" size="20" /></span><span>{{ __('admin.all_settings') }}</span></a>
+                @endif
+                @foreach($settingsSections as $item)
+                    <a class="search-entry" href="{{ $item['url'] }}" data-cms-search-item><span class="search-entry__icon"><x-vuero.icon :name="$item['icon']" size="20" /></span><span><strong>{{ $item['label'] }}</strong><small>{{ $item['description'] }}</small></span></a>
                 @endforeach
                 <p class="search-empty" data-cms-search-empty hidden>{{ __('admin.no_results') }}</p>
             </div>

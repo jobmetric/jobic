@@ -123,36 +123,36 @@
       "_page-315b051b.js"
     ]
   },
-  "_settings-00ef040b.js": {
-    "file": "assets/settings-00ef040b.js",
+  "_settings-fd4a70b3.js": {
+    "file": "assets/settings-fd4a70b3.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-31339161.js": {
+  "_shared-6fbc1607.js": {
     "css": [
-      "assets/shared-464ecd1b.css",
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/shared-31339161.js",
+    "file": "assets/shared-6fbc1607.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-b89fd3d8.js": {
+  "_shared-ca560946.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/shared-c7ea7a6b.css",
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/shared-b89fd3d8.js",
+    "file": "assets/shared-ca560946.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-d0915510.js": {
+  "_shared-f72242ef.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/shared-d0915510.js",
+    "file": "assets/shared-f72242ef.js",
     "imports": [
       "_page-315b051b.js"
     ]
@@ -191,7 +191,7 @@
     ]
   },
   "admin-shell.css": {
-    "file": "assets/admin-shell-fb088a89.css",
+    "file": "assets/admin-shell-76c1f2a3.css",
     "src": "admin-shell.css"
   },
   "auth-login.css": {
@@ -199,7 +199,7 @@
     "src": "auth-login.css"
   },
   "crud-fields.css": {
-    "file": "assets/crud-fields-91ac6257.css",
+    "file": "assets/crud-fields-f2d96d3c.css",
     "src": "crud-fields.css"
   },
   "dashboard-runtime.css": {
@@ -229,12 +229,12 @@
   },
   "resources/js/admin/shell.js": {
     "css": [
-      "assets/admin-shell-fb088a89.css"
+      "assets/admin-shell-76c1f2a3.css"
     ],
-    "file": "assets/shell-51c9d41e.js",
+    "file": "assets/shell-9e50c2de.js",
     "imports": [
       "_toast-18d1caa1.js",
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_page-315b051b.js"
     ],
     "isEntry": true,
@@ -258,13 +258,13 @@
   },
   "resources/js/languages/form.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/form-4498c61e.js",
+    "file": "assets/form-c297f986.js",
     "imports": [
-      "_shared-d0915510.js",
+      "_shared-f72242ef.js",
       "_page-315b051b.js",
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -273,13 +273,13 @@
   },
   "resources/js/languages/index.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/index-687f8112.js",
+    "file": "assets/index-ca891bf8.js",
     "imports": [
-      "_shared-d0915510.js",
+      "_shared-f72242ef.js",
       "_page-315b051b.js",
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_selects-9f57de85.js"
     ],
@@ -288,13 +288,13 @@
   },
   "resources/js/roles/form.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/form-8ecf4f40.js",
+    "file": "assets/form-e6c2ebd3.js",
     "imports": [
-      "_shared-31339161.js",
+      "_shared-ca560946.js",
       "_page-315b051b.js",
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js",
       "_selects-9f57de85.js"
@@ -304,13 +304,13 @@
   },
   "resources/js/roles/index.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/index-1bb4cdf8.js",
+    "file": "assets/index-0028e940.js",
     "imports": [
-      "_shared-31339161.js",
+      "_shared-ca560946.js",
       "_page-315b051b.js",
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_selects-9f57de85.js"
     ],
@@ -319,13 +319,13 @@
   },
   "resources/js/users/form.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/form-cb11e48e.js",
+    "file": "assets/form-8d6d3cad.js",
     "imports": [
-      "_shared-b89fd3d8.js",
+      "_shared-6fbc1607.js",
       "_page-315b051b.js",
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -334,13 +334,13 @@
   },
   "resources/js/users/index.js": {
     "css": [
-      "assets/crud-fields-91ac6257.css"
+      "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/index-7191e30b.js",
+    "file": "assets/index-9d76ff7b.js",
     "imports": [
-      "_shared-b89fd3d8.js",
+      "_shared-6fbc1607.js",
       "_page-315b051b.js",
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_selects-9f57de85.js"
     ],
@@ -1177,12 +1177,12 @@
   },
   "resources/js/vuero/pages/auth/login.js": {
     "css": [
-      "assets/admin-shell-fb088a89.css",
+      "assets/admin-shell-76c1f2a3.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/login-232ef820.js",
+    "file": "assets/login-bbdb4493.js",
     "imports": [
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_page-315b051b.js",
       "_jquery-83fec99f.js"
@@ -1192,12 +1192,12 @@
   },
   "resources/js/vuero/pages/auth/recovery.js": {
     "css": [
-      "assets/admin-shell-fb088a89.css",
+      "assets/admin-shell-76c1f2a3.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/recovery-232ef820.js",
+    "file": "assets/recovery-bbdb4493.js",
     "imports": [
-      "_settings-00ef040b.js",
+      "_settings-fd4a70b3.js",
       "_toast-18d1caa1.js",
       "_page-315b051b.js",
       "_jquery-83fec99f.js"
@@ -1232,7 +1232,7 @@
     "src": "resources/js/vuero/pages/utility-status.js"
   },
   "shared.css": {
-    "file": "assets/shared-464ecd1b.css",
+    "file": "assets/shared-c7ea7a6b.css",
     "src": "shared.css"
   }
 }

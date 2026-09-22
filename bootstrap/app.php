@@ -3,6 +3,7 @@
 use App\Http\Middleware\Installation\Install;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\Installation\Bootstrap;
+use App\Support\Page;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -60,6 +62,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        $exceptions->render(function (HttpExceptionInterface $exception, Request $request) {
+            if ($exception->getStatusCode() === 403 && $request->is('admin/*') && $request->user() && ! $request->expectsJson()) {
+                Page::prepare('admin-error', app()->getLocale());
+
+                return response()->view('errors.admin-403', status: 403);
+            }
+        });
     })->create();
 
 $app->beforeBootstrapping(LoadEnvironmentVariables::class, fn ($app) => Bootstrap::prepare($app));

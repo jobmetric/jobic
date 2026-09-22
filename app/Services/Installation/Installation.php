@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use JobMetric\PackageCore\Output\Response;
+use JobMetric\Rolix\Facades\Role as RoleService;
+use JobMetric\Rolix\Models\Role;
 use JsonException;
 use RuntimeException;
 use Throwable;
@@ -321,8 +323,7 @@ class Installation
                         'APP_NAME',
                         'APP_URL',
                     ])) + ['SESSION_SECURE_COOKIE' => str_starts_with($values['APP_URL'], 'https://')] + $this->defaults();
-            }
-            else {
+            } else {
                 unset($state['admin']);
             }
             // State is committed before advancing the durable environment marker.
@@ -355,7 +356,9 @@ class Installation
                 return Response::make(false, trans('installation.order'), null, 422);
             }
 
-            $this->environment->write(['INSTALLATION_STATUS' => 'running'] + $this->defaults());
+            $this->environment->write([
+                    'INSTALLATION_STATUS' => 'running',
+                ] + $this->defaults());
 
             return Response::make(true, trans('installation.started'), $this->progress());
         });
@@ -386,17 +389,19 @@ class Installation
             $task = (int) ($values['INSTALLATION_TASK'] ?? 0);
             try {
                 $this->execute($task, $state, $values);
+
                 if ($task === count(self::TASKS) - 1) {
                     $this->environment->write([
                         'INSTALLATION'        => now()->toIso8601String(),
                         'INSTALLATION_STATUS' => 'completed',
                         'INSTALLATION_TASK'   => count(self::TASKS),
                     ]);
-                    config(['installation.completed' => true]);
+                    config([
+                        'installation.completed' => true,
+                    ]);
                     $state = [];
                     $this->state->clear();
-                }
-                else {
+                } else {
                     $this->environment->write([
                         'INSTALLATION_STATUS' => 'running',
                         'INSTALLATION_TASK'   => $task + 1,
@@ -493,8 +498,24 @@ class Installation
                             'first_name' => $admin['name'],
                         ];
 
-                        User::query()->create($admin);
+                        $user = User::query()->create($admin);
                     }
+
+                    $superRole = Role::query()
+                        ->where('type', 'system')
+                        ->where('is_super', true)
+                        ->first() ?? RoleService::store([
+                        'type'        => 'system',
+                        'name'        => 'System administrator',
+                        'description' => 'Full CMS access for the installation administrator.',
+                        'is_super'    => true,
+                        'is_default'  => false,
+                        'ordering'    => 0,
+                        'allow'       => [],
+                        'deny'        => [],
+                        'rules'       => [],
+                    ])->data;
+                    $user->syncRoles([(int) $superRole->id]);
 
                     break;
                 case 4:

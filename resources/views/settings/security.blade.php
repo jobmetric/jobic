@@ -1,6 +1,6 @@
-@extends('common.settings.page')
-@section('settings-content')
-    <form method="POST" action="{{ route('admin.settings.security.update') }}" class="cms-settings-form cms-security-form">@csrf @method('PUT')
+@extends('common.account.page')
+@section('account-content')
+    <form method="POST" action="{{ route('admin.account.security.update') }}" class="cms-settings-form cms-security-form">@csrf @method('PUT')
         <section class="cms-settings-section">
             <header class="cms-settings-section__header"><span><x-vuero.icon name="lock" size="20" /></span><div><h3>{{ __('admin.password_title') }}</h3><p>{{ __('admin.password_intro') }}</p></div></header>
             <div class="cms-settings-fields">
@@ -12,7 +12,7 @@
         <footer class="cms-settings-form__footer"><p id="password-guidance"><x-vuero.icon name="info" size="15" />{{ __('admin.password_guidance') }}</p><button class="vuero-button is-primary" type="submit"><x-vuero.icon name="check" size="16" />{{ __('admin.save_password') }}</button></footer>
     @cmsHook('jobic.admin.settings.form.end', ['section' => 'security'])
     </form>
-    <form method="POST" action="{{ route('admin.settings.security.two-factor') }}" class="cms-settings-form cms-security-form" data-two-factor-form>
+    <form method="POST" action="{{ route('admin.account.security.two-factor') }}" class="cms-settings-form cms-security-form" data-two-factor-form>
         @csrf
         <div data-two-factor-content>@include('settings.partials.two-factor', ['state' => session('two_factor_state', ['enabled' => (bool) $account->two_factor_enabled_at])])</div>
     </form>

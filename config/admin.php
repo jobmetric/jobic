@@ -5,15 +5,6 @@ return [
         'general'    => [
             'icon' => 'building',
         ],
-        'profile'    => [
-            'icon' => 'user',
-        ],
-        'security'   => [
-            'icon' => 'shield',
-        ],
-        'appearance' => [
-            'icon' => 'panel',
-        ],
         'health'     => [
             'icon' => 'shield',
         ],

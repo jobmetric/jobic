@@ -11,7 +11,8 @@ return [
     'admin.roles.manage' => 'roles.permissions.roles_manage',
     'admin.settings' => 'roles.permissions.settings',
     'admin.settings.general' => 'roles.permissions.settings_general',
-    'admin.settings.security' => 'roles.permissions.settings_security',
+    'admin.settings.health' => 'roles.permissions.settings_health',
+    'admin.settings.cache' => 'roles.permissions.settings_cache',
     'admin.settings.languages' => 'roles.permissions.settings_languages',
     'admin.settings.mail' => 'roles.permissions.settings_mail',
 ];

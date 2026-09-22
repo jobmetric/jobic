@@ -20,7 +20,7 @@
     <header class="ecommerce-v1-header">
         <x-brand compact />
         <div><h1>{{ __('admin.welcome', ['name' => $name]) }}</h1><p>{{ __('dashboard.intro') }}</p></div>
-        <nav><a class="vuero-button is-primary" href="{{ route('admin.settings.index') }}">{{ __('admin.settings') }}</a></nav>
+        @if(!empty($settingsSections))<nav><a class="vuero-button is-primary" href="{{ route('admin.settings.index') }}">{{ __('admin.settings') }}</a></nav>@endif
     </header>
 
     <section class="ecommerce-tile-grid" aria-label="Store overview">

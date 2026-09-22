@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Admin;
 
 use App\Facades\Hooks;
+use App\Support\AdminAccess;
 use App\Support\LocaleCatalog;
 use Closure;
 use Illuminate\Http\Request;
@@ -32,7 +33,9 @@ class Preferences
             $request->session()->regenerateToken();
 
             if ($request->expectsJson()) {
-                return response()->json(['message' => __('auth.failed')], 401);
+                return response()->json([
+                    'message' => __('auth.failed'),
+                ], 401);
             }
 
             return redirect()->route('login');
@@ -43,18 +46,23 @@ class Preferences
         view()->share('adminPreferences', $preferences);
 
         $sections = [];
+        $access = app(AdminAccess::class);
         foreach (config('admin.settings') as $key => $item) {
+            if (! $access->allows($request->user(), $access->settingsPermission($key))) {
+                continue;
+            }
+
             $sections[$key] = $item + [
-                'label' => trans('admin.sections.'.$key),
-                'description' => trans('admin.descriptions.'.$key),
-                'url' => match ($key) {
-                    'health' => route('admin.settings.health'),
-                    'cache' => route('admin.settings.cache.edit'),
-                    'mail' => route('admin.settings.mail.edit'),
-                    'languages' => route('admin.settings.languages.index'),
-                    default => route('admin.settings.edit', $key)
-                },
-            ];
+                    'label'       => trans('admin.sections.' . $key),
+                    'description' => trans('admin.descriptions.' . $key),
+                    'url'         => match ($key) {
+                        'health' => route('admin.settings.health'),
+                        'cache' => route('admin.settings.cache.edit'),
+                        'mail' => route('admin.settings.mail.edit'),
+                        'languages' => route('admin.settings.languages.index'),
+                        default => route('admin.settings.edit', $key)
+                    },
+                ];
         }
 
         view()->share('settingsSections', Hooks::filter('jobic.admin.settings.sections', $sections, [

@@ -46,6 +46,13 @@
 .crud-user-form .crud-form-fields > .cms-password-guidance .ui-icon { flex:0 0 auto; color:var(--primary); }
 .crud-user-form .crud-form-fields > .crud-switch-field { grid-column:1; display:grid; min-height:54px; grid-template-columns:1fr auto; align-items:center; color:var(--text); font-size:14px; }
 .crud-user-form .crud-form-fields > .crud-switch-field > small { grid-column:1/-1; }
+.user-form-tabs { display:flex; gap:8px; margin-block:24px 14px; border-block-end:1px solid var(--border); overflow-x:auto; }
+.user-form-tabs button { padding:13px 18px; color:var(--muted); border:0; border-block-end:3px solid transparent; background:none; white-space:nowrap; cursor:pointer; }
+.user-form-tabs button[aria-selected=true] { color:var(--primary); border-block-end-color:var(--primary); font-weight:700; }
+.crud-user-security-intro { display:flex; align-items:flex-start; gap:13px; margin-block:20px; padding:18px; color:var(--text); background:var(--surface-soft); border-radius:12px; }
+.crud-user-security-intro > span { display:grid; width:42px; height:42px; flex:0 0 42px; place-items:center; color:var(--primary); background:var(--primary-soft); border-radius:11px; }
+.crud-user-security-intro h2 { font-size:15px; }
+.crud-user-security-intro p { margin-block-start:5px; color:var(--muted); font-size:11px; line-height:1.7; }
 .form-switch-control { display:flex; min-height:43px; align-items:center; }
 .form-switch-control .remember-control { display:flex; min-height:38px; align-items:center; cursor:pointer; user-select:none; }
 .form-switch-control .remember-control input { position:absolute; width:1px; height:1px; opacity:0; }

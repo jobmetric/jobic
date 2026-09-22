@@ -4,6 +4,7 @@ namespace Tests\Feature\Vuero\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use JobMetric\Rolix\Models\Role;
 use Tests\TestCase;
 
 class AdminAuthenticationTest extends TestCase
@@ -63,6 +64,7 @@ class AdminAuthenticationTest extends TestCase
         $user = User::factory()->create([
             'password' => 'secret-password',
         ]);
+        $user->assignRole($this->dashboardRole());
 
         $this->post(route('login.store'), [
             'email' => $user->email,
@@ -86,6 +88,7 @@ class AdminAuthenticationTest extends TestCase
                 'theme' => 'dark',
             ]),
         ]);
+        $user->assignRole($this->dashboardRole());
 
         $this->withSession(['auth_locale' => 'fa'])
             ->post(route('login.store'), [
@@ -118,6 +121,24 @@ class AdminAuthenticationTest extends TestCase
             ->assertSessionHasErrors('email');
 
         $this->assertGuest();
+    }
+
+    /**
+     * Create a role that grants access to the administration dashboard.
+     *
+     * @return Role
+     */
+    private function dashboardRole(): Role
+    {
+        return Role::query()->create([
+            'type' => 'system',
+            'name' => 'Dashboard access',
+            'allow' => ['admin.dashboard'],
+            'deny' => [],
+            'is_super' => false,
+            'is_default' => false,
+            'ordering' => 1,
+        ]);
     }
 
     public function test_logout_preserves_the_selected_authentication_language(): void

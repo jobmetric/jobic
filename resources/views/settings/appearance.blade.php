@@ -1,6 +1,6 @@
-@extends('common.settings.page')
-@section('settings-content')
-    <form method="POST" action="{{ route('admin.settings.appearance.update') }}" class="cms-settings-form" data-appearance-form>@csrf @method('PUT')
+@extends('common.account.page')
+@section('account-content')
+    <form method="POST" action="{{ route('admin.account.appearance.update') }}" class="cms-settings-form" data-appearance-form>@csrf @method('PUT')
         <section class="cms-settings-section cms-appearance-layout">
             <header class="cms-settings-section__header"><span><x-vuero.icon name="layout" size="20" /></span><div><h3>{{ __('admin.workspace_layout') }}</h3><p>{{ __('admin.workspace_layout_hint') }}</p></div></header>
             <div class="cms-appearance-layout__row">

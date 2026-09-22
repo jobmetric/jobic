@@ -39,7 +39,7 @@ class TwoFactorTest extends TestCase
                 $events[] = [$phase, $context];
             });
         }
-        $url = route('admin.settings.security.two-factor');
+        $url = route('admin.account.security.two-factor');
         $this->actingAs($user)->postJson($url, ['action' => 'setup', 'current_password' => 'wrong'])->assertUnprocessable();
         $this->assertSame([], $events);
         $this->postJson($url, ['action' => 'setup', 'current_password' => 'example-password'])->assertOk()->assertHeader('Cache-Control', 'no-store, private');
@@ -57,7 +57,7 @@ class TwoFactorTest extends TestCase
             ['saving', ['user_id' => $user->id, 'operation' => 'setup']], ['saved', ['user_id' => $user->id, 'operation' => 'setup']],
             ['saving', ['user_id' => $user->id, 'operation' => 'enable']], ['saved', ['user_id' => $user->id, 'operation' => 'enable']],
         ], $events);
-        $this->get(route('admin.settings.edit', 'security'))->assertOk()->assertDontSee($secret)->assertDontSee('cms-two-factor-recovery');
+        $this->get(route('admin.account.security.edit'))->assertOk()->assertDontSee($secret)->assertDontSee('cms-two-factor-recovery');
     }
 
     public function test_password_only_cannot_access_admin_and_valid_code_completes_login_without_remember_cookie(): void
@@ -111,7 +111,7 @@ class TwoFactorTest extends TestCase
     public function test_disable_requires_verification_and_hook_veto_rolls_back_code_consumption(): void
     {
         $user = $this->enabledAccount();
-        $url = route('admin.settings.security.two-factor');
+        $url = route('admin.account.security.two-factor');
         $this->actingAs($user)->postJson($url, ['action' => 'disable', 'current_password' => 'example-password', 'code' => '000000'])->assertUnprocessable();
         Hooks::addAction('jobic.settings.two_factor.saving', function (): void {
             throw ValidationException::withMessages(['code' => 'Veto']);
@@ -127,7 +127,7 @@ class TwoFactorTest extends TestCase
         Hooks::addAction('jobic.settings.two_factor.saved', function (): void {
             throw new \RuntimeException('Observer failed');
         });
-        $this->actingAs($user)->postJson(route('admin.settings.security.two-factor'), ['action' => 'disable', 'current_password' => 'example-password', 'code' => 'abcdef1234567890'])->assertOk();
+        $this->actingAs($user)->postJson(route('admin.account.security.two-factor'), ['action' => 'disable', 'current_password' => 'example-password', 'code' => 'abcdef1234567890'])->assertOk();
         $this->assertNull($user->fresh()->two_factor_enabled_at);
         $this->assertNull($user->fresh()->two_factor_secret);
     }

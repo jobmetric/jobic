@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\LanguageRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\TwoFactorChallengeRequest;
 use App\Services\Auth\Authentication as AuthenticationService;
+use App\Support\AdminAccess;
 use App\Support\LocaleCatalog;
 use App\Support\Page;
 use Illuminate\Http\JsonResponse;
@@ -82,7 +83,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('login.two-factor');
         }
 
-        return redirect()->intended(route('admin.dashboard', absolute: false));
+        return $this->redirectAfterAuthentication($request);
     }
 
     /**
@@ -126,7 +127,46 @@ class AuthenticatedSessionController extends Controller
             throw ValidationException::withMessages(['code' => $result->message]);
         }
 
-        return redirect()->intended(route('admin.dashboard', absolute: false));
+        return $this->redirectAfterAuthentication($request);
+    }
+
+    /**
+     * Redirect an authenticated user to an intended or permitted landing page.
+     *
+     * @param Request $request
+     *
+     * @return RedirectResponse
+     */
+    private function redirectAfterAuthentication(Request $request): RedirectResponse
+    {
+        $access = app(AdminAccess::class);
+        $landingRoute = $access->landingRoute($request->user());
+        $landingUrl = route($landingRoute, $landingRoute === 'admin.settings.edit' ? [
+            'section' => 'general',
+        ] : [], false);
+        $intended = $request->session()->get('url.intended');
+        if (is_string($intended) && $this->isDashboardUrl($intended) && ! $access->allows($request->user(), 'admin.dashboard')) {
+            $request->session()->forget('url.intended');
+
+            return redirect($landingUrl);
+        }
+
+        return redirect()->intended($landingUrl);
+    }
+
+    /**
+     * Determine whether an intended URL points to the administration dashboard.
+     *
+     * @param string $url
+     *
+     * @return bool
+     */
+    private function isDashboardUrl(string $url): bool
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        $dashboardPath = parse_url(route('admin.dashboard'), PHP_URL_PATH);
+
+        return is_string($path) && is_string($dashboardPath) && rtrim($path, '/') === rtrim($dashboardPath, '/');
     }
 
     /**

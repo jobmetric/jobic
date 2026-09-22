@@ -34,7 +34,7 @@ class HooksTest extends TestCase
         Hooks::addAction('jobic.settings.profile.saved', function () use (&$saved): void {
             $saved = true;
         });
-        $this->actingAs($user)->put(route('admin.settings.profile.update'), ['name' => 'Changed', 'email' => 'changed@example.test'])->assertSessionHasErrors('name');
+        $this->actingAs($user)->put(route('admin.account.profile.update'), ['name' => 'Changed', 'email' => 'changed@example.test'])->assertSessionHasErrors('name');
         $this->assertNotSame('Changed', $user->fresh()->name);
         $this->assertFalse($saved);
     }
@@ -48,7 +48,7 @@ class HooksTest extends TestCase
         Hooks::addAction('jobic.settings.security.saved', function ($context) use (&$contexts): void {
             $contexts[] = $context;
         });
-        $this->actingAs($user)->put(route('admin.settings.security.update'), ['password' => 'new-password-123', 'password_confirmation' => 'new-password-123'])->assertSessionHas('status');
+        $this->actingAs($user)->put(route('admin.account.security.update'), ['password' => 'new-password-123', 'password_confirmation' => 'new-password-123'])->assertSessionHas('status');
         $this->assertCount(1, $contexts);
         $this->assertSame(['section', 'user_id', 'fields'], array_keys($contexts[0]));
         $this->assertStringNotContainsString('old-password', json_encode($contexts));

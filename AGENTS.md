@@ -10,6 +10,7 @@ Read `.cursor/rules/` and `docs/hooks.md` before changing CMS features.
 - New CMS pages inherit common layouts and expose documented view slots where extensions belong.
 - New settings/save operations must expose namespaced saving/saved hooks in the service, after validation and around persistence. Reuse App\Facades\Hooks; do not invent another dispatcher.
 - Preserve authentication, authorization, CSRF and dto validation. Never pass passwords, hashes, tokens, connection credentials or raw request arrays into hook contexts.
+- Every CMS page and mutation must enforce a registered Rolix permission at the route boundary. Unauthorized direct HTML requests render the centered in-shell 403 state; JSON requests return 403. Hide unauthorized navigation/actions and remove a parent menu when it has no authorized children. UI hiding never replaces route enforcement; use the shared AdminAccess decision service for identical parent-inheritance and explicit-deny behavior.
 - Use value filters for extensible navigation/registries; validate modified input again if adding a future input filter.
 - Document every hook in docs/hooks.md in the same change, including its name, type, context, timing and error semantics. Test ordering, failure behavior and secret exclusion.
 - Use translated UI copy, shared toast notifications and logical CSS properties; check English and Persian desktop/mobile views.

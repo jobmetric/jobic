@@ -1,9 +1,19 @@
 @php
-    $sections = [
-        'dashboard' => ['label' => __('installation.dashboard'), 'icon' => 'activity', 'active' => request()->routeIs('admin.dashboard')],
-        'users' => ['label' => __('users.title'), 'icon' => 'users', 'active' => request()->routeIs('admin.users.*', 'admin.roles.*')],
-        'settings' => ['label' => __('installation.settings'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')],
-    ];
+    $adminAccess = app(\App\Support\AdminAccess::class);
+    $adminUser = auth()->user();
+    $canDashboard = $adminAccess->allows($adminUser, 'admin.dashboard');
+    $canUsers = $adminAccess->allowsAny($adminUser, ['admin.users.view', 'admin.users.manage']);
+    $canRoles = $adminAccess->allowsAny($adminUser, ['admin.roles.view', 'admin.roles.manage']);
+    $canSettings = !empty($settingsSections);
+    $userMenuItems = array_values(array_filter([
+        $canUsers ? ['label' => __('users.title'), 'icon' => 'users', 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')] : null,
+        $canRoles ? ['label' => __('roles.title'), 'icon' => 'shield', 'url' => route('admin.roles.index'), 'active' => request()->routeIs('admin.roles.*')] : null,
+    ]));
+    $sections = array_filter([
+        'dashboard' => $canDashboard ? ['label' => __('installation.dashboard'), 'icon' => 'activity', 'active' => request()->routeIs('admin.dashboard')] : null,
+        'users' => $userMenuItems ? ['label' => __('users.title'), 'icon' => 'users', 'active' => request()->routeIs('admin.users.*', 'admin.roles.*')] : null,
+        'settings' => $canSettings ? ['label' => __('installation.settings'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')] : null,
+    ]);
 @endphp
 <nav class="admin-mobile-navbar" aria-label="Mobile navigation">
     <div class="admin-mobile-navbar__inner">
@@ -24,32 +34,30 @@
     <div class="admin-sidebar__footer">
         <button class="admin-sidebar__link" type="button" data-modal-open="layout-switcher" aria-label="{{ __('admin.layout') }}"><x-vuero.icon name="panel" size="20" /><span>{{ __('admin.layout') }}</span></button>
         <button class="admin-sidebar__link" type="button" data-panel-open="search" aria-label="{{ __('admin.search') }}"><x-vuero.icon name="search" size="20" /><span>{{ __('admin.search') }}</span></button>
-        <a class="admin-sidebar__link" href="{{ route('admin.settings.index') }}" aria-label="{{ __('admin.settings') }}"><x-vuero.icon name="settings" size="20" /><span>{{ __('admin.settings') }}</span></a>
+        @if($canSettings)<a class="admin-sidebar__link" href="{{ route('admin.settings.index') }}" aria-label="{{ __('admin.settings') }}"><x-vuero.icon name="settings" size="20" /><span>{{ __('admin.settings') }}</span></a>@endif
         @include('common.profile', ['placement' => 'sidebar'])
     </div>
 </aside>
 <aside class="admin-subsidebar" id="admin-subsidebar" aria-label="Secondary navigation" aria-hidden="true" data-subsidebar>
     <header class="admin-subsidebar__header"><h2 data-subsidebar-title>{{ config('app.name') }}</h2><button type="button" data-subsidebar-close aria-label="{{ __('admin.control_close_navigation') }}">&times;</button></header>
     <div class="admin-subsidebar__body">
-        <section id="sidebar-panel-dashboard" data-sidebar-panel="dashboard" hidden>
+        @if($canDashboard)<section id="sidebar-panel-dashboard" data-sidebar-panel="dashboard" hidden>
             <x-vuero.navigation.menu :items="[['label' => __('installation.dashboard'), 'url' => route('admin.dashboard'), 'active' => request()->routeIs('admin.dashboard')]]" />
-        </section>
-        <section id="sidebar-panel-users" data-sidebar-panel="users" hidden>
-            <x-vuero.navigation.menu :items="[
-                ['label' => __('users.title'), 'icon' => 'users', 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')],
-                ['label' => __('roles.title'), 'icon' => 'shield', 'url' => route('admin.roles.index'), 'active' => request()->routeIs('admin.roles.*')],
-            ]" />
-        </section>
-        <section id="sidebar-panel-settings" data-sidebar-panel="settings" hidden>
+        </section>@endif
+        @if($userMenuItems)<section id="sidebar-panel-users" data-sidebar-panel="users" hidden>
+            <x-vuero.navigation.menu :items="$userMenuItems" />
+        </section>@endif
+        @if($canSettings)<section id="sidebar-panel-settings" data-sidebar-panel="settings" hidden>
             @include('common.settings.menu')
-        </section>
+        </section>@endif
     </div>
 </aside>
 
 <aside class="admin-sideblock" id="admin-sideblock" aria-label="{{ __('admin.control_navigation') }}" aria-hidden="true" data-sideblock inert>
     <header class="admin-sideblock__header"><a href="{{ route('admin.dashboard') }}" aria-label="Jobic"><x-brand compact /></a><h2>{{ config('app.name') }}</h2></header>
     <nav class="admin-sideblock__nav">
-        <a class="admin-sideblock__action" href="{{ route('admin.dashboard') }}"><x-vuero.icon name="activity" size="19" /><span>{{ __('admin.dashboard') }}</span></a>
+        @if($canDashboard)<a class="admin-sideblock__action" href="{{ route('admin.dashboard') }}"><x-vuero.icon name="activity" size="19" /><span>{{ __('admin.dashboard') }}</span></a>@endif
+        @if($userMenuItems)
         <section class="admin-sideblock__group {{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'is-open' : '' }}" data-sideblock-group>
             <button type="button" aria-expanded="{{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'true' : 'false' }}" aria-controls="sideblock-panel-users" data-sideblock-group-toggle>
                 <span class="admin-sideblock__group-icon"><x-vuero.icon name="users" size="20" /></span>
@@ -57,13 +65,11 @@
                 <x-vuero.icon name="chevron-right" size="17" />
             </button>
             <div class="admin-sideblock__children" id="sideblock-panel-users" @unless(request()->routeIs('admin.users.*', 'admin.roles.*')) hidden @endunless>
-                <x-vuero.navigation.menu :items="[
-                    ['label' => __('users.title'), 'icon' => 'users', 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')],
-                    ['label' => __('roles.title'), 'icon' => 'shield', 'url' => route('admin.roles.index'), 'active' => request()->routeIs('admin.roles.*')],
-                ]" />
+                <x-vuero.navigation.menu :items="$userMenuItems" />
             </div>
         </section>
-        @include('common.settings.menu')
+        @endif
+        @if($canSettings)@include('common.settings.menu')@endif
     </nav>
     <footer class="admin-sideblock__footer">
         <button class="admin-sideblock__action" type="button" data-modal-open="layout-switcher"><x-vuero.icon name="panel" size="19" /><span>{{ __('admin.layout') }}</span></button>

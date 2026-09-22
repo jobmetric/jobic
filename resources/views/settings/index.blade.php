@@ -7,11 +7,12 @@
             <div><span class="cms-settings-hub__eyebrow">{{ __('system.control_center') }}</span><h2>{{ __('admin.settings') }}</h2><p>{{ __('admin.settings_intro') }}</p></div>
         </header>
         @foreach (['ordinary', 'technical'] as $group)
+        @php($groupItems = collect($settingsSections)->filter(fn ($item, $key) => in_array($key, ['mail', 'cache', 'health'], true) === ($group === 'technical')))
+        @continue($groupItems->isEmpty())
         <section class="cms-settings-group">
-            <header class="cms-settings-group__header"><div><h3>{{ __('system.'.$group) }}</h3><p>{{ __('system.'.$group.'_hint') }}</p></div><span>{{ $group === 'technical' ? 3 : count($settingsSections) - 3 }}</span></header>
+            <header class="cms-settings-group__header"><div><h3>{{ __('system.'.$group) }}</h3><p>{{ __('system.'.$group.'_hint') }}</p></div><span>{{ $groupItems->count() }}</span></header>
         <div class="cms-settings-grid">
-            @foreach($settingsSections as $key => $item)
-                @continue(in_array($key, ['mail', 'cache', 'health'], true) !== ($group === 'technical'))
+            @foreach($groupItems as $key => $item)
                 <a class="cms-settings-card" href="{{ $item['url'] }}">
                     <span class="cms-settings-card__icon"><x-vuero.icon :name="$item['icon']" size="25" /></span>
                     <span class="cms-settings-card__copy"><strong>{{ $item['label'] }}</strong><small>{{ $item['description'] }}</small></span>

@@ -36,12 +36,15 @@ export function toolbar(kind) {
     root.replaceChildren();
     const routes = pageData().userRoutes;
     if (kind === 'list') {
-        const add = document.createElement('a');
-        add.href = `${routes.index}/create`;
-        add.className = 'vuero-button is-primary';
-        add.dataset.crudAction = 'create';
-        add.innerHTML = `${icon('plus')}${escape(copy().create)}`;
-        root.append(add, dropdown('actions', pageData().userToolbar.list));
+        if (pageData().userAccess?.manage) {
+            const add = document.createElement('a');
+            add.href = `${routes.index}/create`;
+            add.className = 'vuero-button is-primary';
+            add.dataset.crudAction = 'create';
+            add.innerHTML = `${icon('plus')}${escape(copy().create)}`;
+            root.append(add);
+        }
+        root.append(dropdown('actions', pageData().userAccess?.manage ? pageData().userToolbar.list : ['help']));
         return;
     }
     const cancel = document.createElement('a');
@@ -51,6 +54,7 @@ export function toolbar(kind) {
     cancel.textContent = copy().cancel;
     root.append(cancel);
     if (document.querySelector('[data-readonly]')) {
+        if (!pageData().userAccess?.manage) return;
         const edit = document.createElement('a');
         edit.href = document.querySelector('[data-user-form]').action + '/edit';
         edit.className = 'vuero-button is-primary';

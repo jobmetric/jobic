@@ -10,6 +10,7 @@ use App\Http\Requests\Roles\HistoryRequest;
 use App\Http\Requests\Roles\RoleRequest;
 use App\Http\Requests\Roles\TableRequest;
 use App\Services\Roles\Roles;
+use App\Support\AdminAccess;
 use App\Support\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -201,7 +202,19 @@ class RoleController extends Controller
             'data'  => route('admin.roles.data'),
             'bulk'  => route('admin.roles.bulk'),
         ]);
-        Page::addLocalize('roleToolbar', ['list' => ['delete', 'help'], 'form' => ['new', 'close']]);
+        Page::addLocalize('roleToolbar', [
+            'list' => [
+                'delete',
+                'help',
+            ],
+            'form' => [
+                'new',
+                'close',
+            ],
+        ]);
+        Page::addLocalize('roleAccess', [
+            'manage' => app(AdminAccess::class)->allows(auth()->user(), 'admin.roles.manage'),
+        ]);
     }
 
     /**

@@ -11,7 +11,7 @@
                 @else
                     <div class="media-flex-center"><x-user-avatar /><strong>{{ auth()->user()->name }}</strong></div>
                     <p>{{ __('admin.activity_hint') }}</p>
-                    <a class="vuero-button is-primary" href="{{ route('admin.settings.edit', 'security') }}">{{ __('admin.recent_activity') }}</a>
+                    <a class="vuero-button is-primary" href="{{ route('admin.account.security.edit') }}">{{ __('admin.recent_activity') }}</a>
                 @endif
             </div>
         </aside>

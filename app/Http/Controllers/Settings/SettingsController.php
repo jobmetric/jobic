@@ -66,25 +66,73 @@ class SettingsController extends Controller
      */
     public function edit(Request $request, string $section): View
     {
-        abort_unless(in_array($section, [
-            'general',
-            'profile',
-            'security',
-            'appearance',
-        ], true), 404);
+        abort_unless($section === 'general', 404);
 
         Page::prepare('settings');
 
         $data = $this->settings->page($section, (int) $request->user()->id);
-        if ($section === 'profile') {
-            Domi::addModal('avatar-picker', 'admin.avatar_modal_title', view('settings.partials.avatar-picker', $data)->render(), '', [
-                'size'       => 'lg',
-                'centered'   => true,
-                'scrollable' => true,
-            ]);
-        }
 
         return view('settings.' . $section, $data);
+    }
+
+    /**
+     * Render profile controls for the authenticated account.
+     *
+     * @param Request $request
+     *
+     * @return View
+     * @throws SetPluginNotFoundException
+     * @throws Throwable
+     * @throws DateInvalidTimeZoneException
+     * @throws DateMalformedStringException
+     */
+    public function accountProfile(Request $request): View
+    {
+        Page::prepare('account-profile');
+        $data = $this->settings->page('profile', (int) $request->user()->id);
+        Domi::addModal('avatar-picker', 'admin.avatar_modal_title', view('settings.partials.avatar-picker', $data)->render(), '', [
+            'size'       => 'lg',
+            'centered'   => true,
+            'scrollable' => true,
+        ]);
+
+        return view('settings.profile', $data);
+    }
+
+    /**
+     * Render security controls for the authenticated account.
+     *
+     * @param Request $request
+     *
+     * @return View
+     * @throws SetPluginNotFoundException
+     * @throws Throwable
+     * @throws DateInvalidTimeZoneException
+     * @throws DateMalformedStringException
+     */
+    public function accountSecurity(Request $request): View
+    {
+        Page::prepare('account-security');
+
+        return view('settings.security', $this->settings->page('security', (int) $request->user()->id));
+    }
+
+    /**
+     * Render appearance controls for the authenticated account.
+     *
+     * @param Request $request
+     *
+     * @return View
+     * @throws SetPluginNotFoundException
+     * @throws Throwable
+     * @throws DateInvalidTimeZoneException
+     * @throws DateMalformedStringException
+     */
+    public function accountAppearance(Request $request): View
+    {
+        Page::prepare('account-appearance');
+
+        return view('settings.appearance', $this->settings->page('appearance', (int) $request->user()->id));
     }
 
     /**
@@ -155,7 +203,9 @@ class SettingsController extends Controller
     public function twoFactor(TwoFactorRequest $request): JsonResponse|RedirectResponse
     {
         $result = app(TwoFactor::class)->update($request->validated(), (int) $request->user()->id);
+
         $state = $result->data;
+
         if ($request->expectsJson()) {
             $response = Response::make(true, $result->message, [
                 'html' => view('settings.partials.two-factor', [
@@ -170,7 +220,7 @@ class SettingsController extends Controller
         }
 
         return redirect()
-            ->route('admin.settings.edit', 'security')
+            ->route('admin.account.security.edit')
             ->with('two_factor_state', $state)
             ->with('status', $result->message);
     }
@@ -209,6 +259,11 @@ class SettingsController extends Controller
             throw ValidationException::withMessages(['settings' => $result->message]);
         }
 
-        return redirect()->route('admin.settings.edit', $section)->with('status', $result->message);
+        $route = match ($section) {
+            'profile', 'security', 'appearance' => route('admin.account.' . $section . '.edit'),
+            default => route('admin.settings.edit', $section),
+        };
+
+        return redirect($route)->with('status', $result->message);
     }
 }

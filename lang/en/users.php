@@ -4,6 +4,7 @@ return [
     'title' => 'Users', 'intro' => 'Manage administrator accounts, access status and credentials.',
     'create' => 'Add user', 'edit_title' => 'Edit user', 'view_title' => 'View user',
     'name' => 'Name', 'email' => 'Email address', 'identity_title' => 'Account identity', 'identity_hint' => 'These details identify the account throughout the administration area.', 'password_title' => 'Password security', 'password' => 'Password', 'password_confirmation' => 'Confirm password',
+    'form_sections' => 'User form sections', 'details_tab' => 'Details and access', 'security_tab' => 'Security', 'security_hint' => 'Set or change this user’s sign-in password. Sensitive values are never displayed or stored in history.', 'security_readonly' => 'User security details cannot be displayed. A new password can only be set while editing.',
     'password_hint' => 'Use at least 12 characters.', 'password_optional' => 'Leave blank to keep the current password.',
     'status' => 'Status', 'roles' => 'System roles', 'role_ids' => 'System roles', 'verified' => 'Email verification', 'created_at' => 'Created', 'actions' => 'Actions',
     'active' => 'Active', 'inactive' => 'Inactive', 'verified_yes' => 'Verified', 'verified_no' => 'Unverified', 'all' => 'All',

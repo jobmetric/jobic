@@ -10,6 +10,7 @@ use App\Http\Requests\Users\HistoryRequest;
 use App\Http\Requests\Users\TableRequest;
 use App\Http\Requests\Users\UserRequest;
 use App\Services\Users\Users;
+use App\Support\AdminAccess;
 use App\Support\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -71,7 +72,11 @@ class UserController extends Controller
     {
         $this->prepare();
 
-        return view('users.form', ['record' => null, 'readonly' => false, 'roles' => $this->users->roleOptions()]);
+        return view('users.form', [
+            'record'   => null,
+            'readonly' => false,
+            'roles'    => $this->users->roleOptions(),
+        ]);
     }
 
     /**
@@ -197,6 +202,9 @@ class UserController extends Controller
         Page::addLocalize('userToolbar', [
             'list' => ['activate', 'deactivate', 'delete', 'help'],
             'form' => ['new', 'close'],
+        ]);
+        Page::addLocalize('userAccess', [
+            'manage' => app(AdminAccess::class)->allows(auth()->user(), 'admin.users.manage'),
         ]);
     }
 

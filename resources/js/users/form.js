@@ -9,6 +9,10 @@ const form = document.querySelector('[data-user-form]');
 form.noValidate = true;
 const historyPanel = bindHistory(form);
 const guard = guardUnsaved(form, () => showDialog({title: copy().unsaved_title, description: copy().unsaved_body, confirm: copy().leave}));
+document.querySelectorAll('[data-user-tab]').forEach(tab => tab.addEventListener('click', () => {
+    document.querySelectorAll('[data-user-tab]').forEach(item => item.setAttribute('aria-selected', String(item === tab)));
+    document.querySelectorAll('[data-user-panel]').forEach(panel => { panel.hidden = panel.dataset.userPanel !== tab.dataset.userTab; });
+}));
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (form.dataset.saving || form.hasAttribute('data-readonly')) return;
@@ -44,6 +48,9 @@ form.addEventListener('submit', async (event) => {
             const message = form.querySelector(`[data-error-for="${CSS.escape(name)}"]`);
             if (field && message) { message.textContent = [].concat(messages).join(' '); field.setAttribute('aria-invalid', 'true'); field.setAttribute('aria-describedby', message.id); }
         });
+        if (Object.keys(error.errors || {}).some(name => ['password', 'password_confirmation'].includes(name))) {
+            document.querySelector('[data-user-tab="1"]')?.click();
+        }
         form.querySelector('[aria-invalid=true]')?.focus();
         announce(error.status ? error.message : copy().failed, true);
     } finally { restore.forEach(fn => fn()); form.querySelector('.crud-split-save')?.removeAttribute('inert'); delete form.dataset.saving; form.removeAttribute('aria-busy'); }

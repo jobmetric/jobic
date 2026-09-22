@@ -6,6 +6,8 @@
         $readyCount = collect($checks)->where('status', 'ready')->count();
         $core = array_filter($checks, fn ($key) => str_starts_with($key, 'core_'), ARRAY_FILTER_USE_KEY);
         $visibleChecks = array_filter($checks, fn ($key) => !str_starts_with($key, 'core_'), ARRAY_FILTER_USE_KEY);
+        $adminAccess = app(\App\Support\AdminAccess::class);
+        $healthActionPermissions = ['mail' => 'admin.settings.mail', 'cache' => 'admin.settings.cache'];
     @endphp
     <section class="cms-health-hero">
         <div><span class="cms-health-hero__icon"><x-vuero.icon name="activity" size="25" /></span><div><h3>{{ __('system.health_overview') }}</h3><p>{{ __('system.health_overview_hint') }}</p></div></div>
@@ -24,7 +26,7 @@
                 <div class="cms-health-table__name"><span><x-vuero.icon :name="in_array($key, ['mail'], true) ? 'mail' : (in_array($key, ['cache', 'file_cache'], true) ? 'server' : (in_array($key, ['jobs', 'scheduler'], true) ? 'clock' : 'check-circle'))" size="18" /></span><strong>{{ __('system.'.$key) }}</strong></div>
                 <div><span class="cms-health-status is-{{ str_replace('_', '-', $check['status']) }}">{{ __('system.'.$check['status']) }}</span></div>
                 <p>{{ __('system.'.$check['hint']) }}</p>
-                <div class="cms-health-table__actions">@if($check['status'] !== 'ready' && isset($check['guide']))<button type="button" class="cms-health-help" data-health-guide aria-controls="health-guide-{{ $key }}"><x-vuero.icon name="help-circle" size="15" />{{ __('system.guide_button') }}</button><template id="health-guide-{{ $key }}"><h4>{{ __('system.'.$key) }}</h4><p>{{ __('system.'.$check['guide']) }}</p>@isset($check['url'])<a class="vuero-button is-primary" href="{{ $check['url'] }}">{{ __('system.review_settings') }}</a>@endisset</template>@endif</div>
+                <div class="cms-health-table__actions">@if($check['status'] !== 'ready' && isset($check['guide']))<button type="button" class="cms-health-help" data-health-guide aria-controls="health-guide-{{ $key }}"><x-vuero.icon name="help-circle" size="15" />{{ __('system.guide_button') }}</button><template id="health-guide-{{ $key }}"><h4>{{ __('system.'.$key) }}</h4><p>{{ __('system.'.$check['guide']) }}</p>@if(isset($check['url']) && isset($healthActionPermissions[$key]) && $adminAccess->allows(auth()->user(), $healthActionPermissions[$key]))<a class="vuero-button is-primary" href="{{ $check['url'] }}">{{ __('system.review_settings') }}</a>@endif</template>@endif</div>
             </article>
         @endforeach
     </section>

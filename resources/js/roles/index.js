@@ -4,7 +4,8 @@ import { sendSettings } from '../admin/settings';
 import { announce } from '../common/toast';
 import { enhanceSelects } from '../common/selects';
 
-const $ = window.jQuery; const routes = pageData().roleRoutes; const selected = new Map(); const card = document.querySelector('[data-table-card]'); const empty = document.querySelector('[data-table-empty]'); const footer = document.querySelector('[data-table-footer]'); const filterDialog = document.querySelector('[data-filter-dialog]'); const filterForm = document.querySelector('[data-filter-form]'); const selectAll = document.querySelector('[data-select-all]'); const selectionButton = document.querySelector('[data-show-selected]'); let pending = false, loading = false, rows = [], controller, timer, restoreFilter;
+const $ = window.jQuery; const routes = pageData().roleRoutes; const canManage = Boolean(pageData().roleAccess?.manage); const selected = new Map(); const card = document.querySelector('[data-table-card]'); const empty = document.querySelector('[data-table-empty]'); const footer = document.querySelector('[data-table-footer]'); const filterDialog = document.querySelector('[data-filter-dialog]'); const filterForm = document.querySelector('[data-filter-form]'); const selectAll = document.querySelector('[data-select-all]'); const selectionButton = document.querySelector('[data-show-selected]'); let pending = false, loading = false, rows = [], controller, timer, restoreFilter;
+selectAll.hidden = !canManage;
 toolbar('list');
 
 function lock() { const busy = pending || loading; card.setAttribute('aria-busy', String(busy)); document.querySelector('[data-table-loading]').hidden = !busy; document.querySelector('.crud-table-scroll').inert = busy; document.querySelectorAll('[data-list-controls]').forEach(node => { node.inert = busy; }); filterForm.inert = busy; }
@@ -24,12 +25,12 @@ const table = $('#role-table').DataTable({
         finally { if (controller === current) { loading=false; lock(); selection(); enhanceSelects(footer); restoreFilter?.(); restoreFilter=undefined; } }
     },
     columns:[
-        {data:'id',orderable:false,render:id=>`<input type="checkbox" data-row-id="${Number(id)}" aria-label="${escape(copy().select_row)}">`},
+        {data:'id',orderable:false,render:id=>canManage?`<input type="checkbox" data-row-id="${Number(id)}" aria-label="${escape(copy().select_row)}">`:''},
         {data:'path_label',render:(value,type,row)=>`<span class="role-path">${rolePath(value,row.name)}</span>`},
         {data:'is_default',className:'role-boolean',render:value=>value?`<span class="role-check" title="${escape(copy().yes)}">${icon('check')}</span>`:'<span aria-hidden="true">—</span>'},
         {data:'is_super',className:'role-boolean',render:value=>value?`<span class="role-check" title="${escape(copy().yes)}">${icon('check')}</span>`:'<span aria-hidden="true">—</span>'},
         {data:'ordering'},
-        {data:'id',orderable:false,render:id=>`<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><a href="${routes.index}/${Number(id)}">${icon('eye')}${escape(copy().view)}</a><button type="button" data-delete="${Number(id)}">${icon('trash')}${escape(copy().delete)}</button></div></details></div>`},
+        {data:'id',orderable:false,render:id=>canManage?`<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><a href="${routes.index}/${Number(id)}">${icon('eye')}${escape(copy().view)}</a><button type="button" data-delete="${Number(id)}">${icon('trash')}${escape(copy().delete)}</button></div></details></div>`:`<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}" aria-label="${escape(copy().view)}">${icon('eye')}</a></div>`},
     ],
     drawCallback(){ const info=this.api().page.info(); const controls=document.querySelector('#role-table_wrapper .crud-table-footer'); if(controls) footer.append(controls); document.querySelector('#role-table_info').textContent=copy().page.replace(':page',info.pages?info.page+1:0).replace(':pages',info.pages); selection(); }
 });

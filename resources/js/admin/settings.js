@@ -20,7 +20,7 @@ export async function sendSettings(url, data) {
 // Match static element structure; dynamic widgets and extension slots remain intact.
 export async function refreshPresentation(selector = '[data-cms-shell]') {
     const response = await fetch(location.href, { headers: { Accept: 'text/html' }, credentials: 'same-origin', cache: 'no-store' });
-    if (!response.ok || response.redirected) return;
+    if ((!response.ok && response.status !== 403) || response.redirected) return;
     const next = new DOMParser().parseFromString(await response.text(), 'text/html');
     document.documentElement.lang = next.documentElement.lang;
     document.documentElement.dir = next.documentElement.dir;

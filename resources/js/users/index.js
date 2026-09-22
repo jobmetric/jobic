@@ -15,6 +15,8 @@ function initialize() {
     const filterForm = document.querySelector('[data-filter-form]');
     const selectAll = document.querySelector('[data-select-all]');
     const selectionButton = document.querySelector('[data-show-selected]');
+    const canManage = Boolean(pageData().userAccess?.manage);
+    selectAll.hidden = !canManage;
     let pending = false;
     let loading = false;
     let controller;
@@ -95,13 +97,13 @@ function initialize() {
             }
         },
         columns: [
-            {data: 'id', orderable: false, render: id => `<input type="checkbox" data-row-id="${Number(id)}" aria-label="${escape(copy().select_row)}">`},
+            {data: 'id', orderable: false, render: id => canManage ? `<input type="checkbox" data-row-id="${Number(id)}" aria-label="${escape(copy().select_row)}">` : ''},
             {data: 'name', render: $.fn.dataTable.render.text()},
             {data: 'email', render: $.fn.dataTable.render.text()},
             {data: 'status', render: value => `<span class="crud-status ${value ? 'is-active' : ''}">${escape(copy()[value ? 'active' : 'inactive'])}</span>`},
             {data: 'email_verified_at', render: value => `<span class="crud-status ${value ? 'is-active' : ''}">${escape(copy()[value ? 'verified_yes' : 'verified_no'])}</span>`},
             {data: 'created_at', render: value => value ? new Intl.DateTimeFormat(document.documentElement.lang).format(new Date(value)) : '—'},
-            {data: 'id', orderable: false, render: id => `<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><a href="${routes.index}/${Number(id)}">${icon('eye')}${escape(copy().view)}</a><button type="button" data-delete="${Number(id)}">${icon('trash')}${escape(copy().delete)}</button></div></details></div>`},
+            {data: 'id', orderable: false, render: id => canManage ? `<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><a href="${routes.index}/${Number(id)}">${icon('eye')}${escape(copy().view)}</a><button type="button" data-delete="${Number(id)}">${icon('trash')}${escape(copy().delete)}</button></div></details></div>` : `<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}" aria-label="${escape(copy().view)}" data-tooltip="${escape(copy().view)}">${icon('eye')}</a></div>`},
         ],
         drawCallback() {
             const info = this.api().page.info();

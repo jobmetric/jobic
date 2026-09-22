@@ -20,9 +20,10 @@ class SettingsTest extends TestCase
         $this->withoutVite();
         $this->actingAs(User::factory()->create());
         $this->get(route('admin.settings.index'))->assertOk()->assertSee('settings-grid')->assertSee('layout-switcher')->assertSee('profile-dropdown--sidebar');
-        foreach (['general', 'profile', 'security', 'appearance'] as $section) {
+        foreach (['general'] as $section) {
             $this->get(route('admin.settings.edit', $section))->assertOk()->assertSee('cms-settings-links')->assertSee('admin-desktop-navbar')->assertSee('admin-sideblock')->assertSee(route('admin.settings.index'));
         }
+        $this->get(route('admin.account.appearance.edit'))->assertOk()->assertSee('cms-settings-links')->assertSee(route('admin.account.profile.edit'));
         $this->get(route('admin.settings.mail.edit'))->assertOk()->assertSee('cms-settings-links');
     }
 
@@ -33,22 +34,22 @@ class SettingsTest extends TestCase
         $other = User::factory()->create();
         $this->actingAs($user);
         foreach (config('admin.layouts') as $layout) {
-            $this->putJson(route('admin.settings.appearance.update'), ['layout' => $layout, 'theme' => 'dark', 'motion' => 'reduced', 'locale' => 'fa', 'user_id' => $other->id])->assertOk();
+            $this->putJson(route('admin.account.appearance.update'), ['layout' => $layout, 'theme' => 'dark', 'motion' => 'reduced', 'locale' => 'fa', 'user_id' => $other->id])->assertOk();
             $this->assertSame($layout, $user->fresh()->ui_preferences['layout']);
         }
         $this->assertNull($other->fresh()->ui_preferences);
         $this->actingAs($user->fresh());
         $this->get(route('admin.dashboard'))->assertOk()->assertSee('lang="fa"', false)->assertSee('data-initial-layout="navbar-clean-fade"', false);
         $this->get(route('admin.settings.mail.edit'))->assertOk()->assertSee('lang="fa"', false);
-        $this->putJson(route('admin.settings.appearance.update'), ['layout' => 'invalid', 'theme' => 'dark', 'motion' => 'full', 'locale' => 'en'])->assertUnprocessable();
+        $this->putJson(route('admin.account.appearance.update'), ['layout' => 'invalid', 'theme' => 'dark', 'motion' => 'full', 'locale' => 'en'])->assertUnprocessable();
     }
 
     public function test_profile_rejects_duplicate_email_and_updates_only_current_user(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
-        $this->actingAs($user)->put(route('admin.settings.profile.update'), ['name' => 'New name', 'email' => $other->email])->assertSessionHasErrors();
-        $this->put(route('admin.settings.profile.update'), ['name' => 'New name', 'email' => 'new@example.test', 'id' => $other->id])->assertRedirect(route('admin.settings.edit', 'profile'));
+        $this->actingAs($user)->put(route('admin.account.profile.update'), ['first_name' => 'New', 'last_name' => 'name', 'email' => $other->email])->assertSessionHasErrors();
+        $this->put(route('admin.account.profile.update'), ['first_name' => 'New', 'last_name' => 'name', 'email' => 'new@example.test', 'id' => $other->id])->assertRedirect(route('admin.account.profile.edit'));
         $this->assertSame('new@example.test', $user->fresh()->email);
         $this->assertNull($user->fresh()->email_verified_at);
         $this->assertNotSame('New name', $other->fresh()->name);
@@ -58,15 +59,17 @@ class SettingsTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->putJson(route('admin.settings.profile.update'), [
-            'name' => $user->name,
+        $this->actingAs($user)->putJson(route('admin.account.profile.update'), [
+            'first_name' => 'Avatar',
+            'last_name' => 'User',
             'email' => $user->email,
             'avatar_preset' => 45,
         ])->assertOk()->assertJsonPath('data.avatar_preset', 45)->assertJsonPath('data.avatar_url', asset('vuero/images/admin/avatars/presets/avatar-45.webp'));
 
         $this->assertSame(45, $user->fresh()->avatar_preset);
-        $this->putJson(route('admin.settings.profile.update'), [
-            'name' => $user->name,
+        $this->putJson(route('admin.account.profile.update'), [
+            'first_name' => 'Avatar',
+            'last_name' => 'User',
             'email' => $user->email,
             'avatar_preset' => 46,
         ])->assertUnprocessable()->assertJsonValidationErrors('avatar_preset');
@@ -76,13 +79,13 @@ class SettingsTest extends TestCase
     {
         $user = User::factory()->create(['email' => 'Avatar.User@example.test']);
 
-        $this->actingAs($user)->putJson(route('admin.settings.profile.avatar'), [
+        $this->actingAs($user)->putJson(route('admin.account.profile.avatar'), [
             'avatar_preset' => 12,
         ])->assertOk()
             ->assertJsonPath('message', trans('admin.avatar_saved'))
             ->assertJsonPath('data.avatar_preset', 12);
 
-        $this->putJson(route('admin.settings.profile.avatar'), [
+        $this->putJson(route('admin.account.profile.avatar'), [
             'avatar_preset' => -1,
         ])->assertOk()
             ->assertJsonPath('data.avatar_preset', -1)
@@ -92,7 +95,7 @@ class SettingsTest extends TestCase
         $this->assertSame(-1, $user->avatar_preset);
         $this->assertStringContainsString(md5('avatar.user@example.test'), (string) $user->avatarUrl());
 
-        $this->putJson(route('admin.settings.profile.avatar'), [
+        $this->putJson(route('admin.account.profile.avatar'), [
             'avatar_preset' => 0,
         ])->assertUnprocessable()->assertJsonValidationErrors('avatar_preset');
     }
@@ -128,29 +131,32 @@ class SettingsTest extends TestCase
         $user = User::factory()->create(['password' => 'old-password']);
         $this->withoutVite();
         $this->actingAs($user);
-        $response = $this->get(route('admin.settings.edit', 'security'))->assertOk();
+        $response = $this->get(route('admin.account.security.edit'))->assertOk();
         $passwordForm = explode('</form>', $response->getContent())[0];
         $this->assertStringNotContainsString('name="current_password"', $passwordForm);
         $input = ['password' => 'new-strong-password', 'password_confirmation' => 'mismatched-password'];
-        $this->put(route('admin.settings.security.update'), $input)->assertSessionHasErrors();
+        $this->put(route('admin.account.security.update'), $input)->assertSessionHasErrors();
         $this->assertTrue(Hash::check('old-password', $user->fresh()->password));
-        $this->put(route('admin.settings.security.update'), array_replace($input, ['password_confirmation' => 'new-strong-password']))->assertRedirect(route('admin.settings.edit', 'security'));
+        $this->put(route('admin.account.security.update'), array_replace($input, ['password_confirmation' => 'new-strong-password']))->assertRedirect(route('admin.account.security.edit'));
         $this->assertTrue(Hash::check('new-strong-password', $user->fresh()->password));
         $this->post(route('logout'));
-        $this->putJson(route('admin.settings.security.update'), ['password' => 'guest-password-123', 'password_confirmation' => 'guest-password-123'])->assertUnauthorized();
+        $this->putJson(route('admin.account.security.update'), ['password' => 'guest-password-123', 'password_confirmation' => 'guest-password-123'])->assertUnauthorized();
     }
 
     public function test_guest_cannot_change_preferences(): void
     {
         $this->get(route('admin.settings.index'))->assertRedirect(route('login'));
-        $this->putJson(route('admin.settings.appearance.update'), [])->assertUnauthorized();
+        $this->get(route('admin.account.profile.edit'))->assertRedirect(route('login'));
+        $this->get(route('admin.account.security.edit'))->assertRedirect(route('login'));
+        $this->get(route('admin.account.appearance.edit'))->assertRedirect(route('login'));
+        $this->putJson(route('admin.account.appearance.update'), [])->assertUnauthorized();
     }
 
     public function test_ajax_settings_return_json_and_security_renews_csrf_without_secrets(): void
     {
         $user = User::factory()->create(['password' => 'old-password']);
-        $this->actingAs($user)->putJson(route('admin.settings.profile.update'), ['name' => 'AJAX name', 'email' => $user->email])->assertOk()->assertJsonPath('ok', true)->assertHeader('X-CSRF-TOKEN');
-        $this->putJson(route('admin.settings.security.update'), ['password' => 'new-password-123', 'password_confirmation' => 'new-password-123'])->assertOk()->assertJsonPath('ok', true)->assertHeader('X-CSRF-TOKEN')->assertDontSee('new-password-123')->assertDontSee('old-password');
-        $this->putJson(route('admin.settings.profile.update'), ['name' => '', 'email' => 'invalid'])->assertUnprocessable()->assertJsonValidationErrors(['name', 'email']);
+        $this->actingAs($user)->putJson(route('admin.account.profile.update'), ['first_name' => 'AJAX', 'last_name' => 'name', 'email' => $user->email])->assertOk()->assertJsonPath('ok', true)->assertHeader('X-CSRF-TOKEN');
+        $this->putJson(route('admin.account.security.update'), ['password' => 'new-password-123', 'password_confirmation' => 'new-password-123'])->assertOk()->assertJsonPath('ok', true)->assertHeader('X-CSRF-TOKEN')->assertDontSee('new-password-123')->assertDontSee('old-password');
+        $this->putJson(route('admin.account.profile.update'), ['first_name' => str_repeat('a', 101), 'email' => 'invalid'])->assertUnprocessable()->assertJsonValidationErrors(['first_name', 'email']);
     }
 }
