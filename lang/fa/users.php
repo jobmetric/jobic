@@ -5,7 +5,7 @@ return [
     'create' => 'افزودن کاربر', 'edit_title' => 'ویرایش کاربر', 'view_title' => 'مشاهدهٔ کاربر',
     'name' => 'نام', 'email' => 'نشانی ایمیل', 'identity_title' => 'هویت حساب', 'identity_hint' => 'این اطلاعات برای شناسایی حساب در سراسر محیط مدیریت استفاده می‌شوند.', 'password_title' => 'امنیت رمز عبور', 'password' => 'رمز عبور', 'password_confirmation' => 'تأیید رمز عبور',
     'password_hint' => 'حداقل ۱۲ کاراکتر وارد کنید.', 'password_optional' => 'برای حفظ رمز فعلی، این فیلد را خالی بگذارید.',
-    'status' => 'وضعیت', 'verified' => 'تأیید ایمیل', 'created_at' => 'تاریخ ایجاد', 'actions' => 'عملیات',
+    'status' => 'وضعیت', 'roles' => 'نقش‌های سیستم', 'role_ids' => 'نقش‌های سیستم', 'verified' => 'تأیید ایمیل', 'created_at' => 'تاریخ ایجاد', 'actions' => 'عملیات',
     'active' => 'فعال', 'inactive' => 'غیرفعال', 'verified_yes' => 'تأییدشده', 'verified_no' => 'تأییدنشده', 'all' => 'همه',
     'total' => 'همهٔ کاربران', 'active_count' => 'کاربران فعال', 'verified_count' => 'ایمیل‌های تأییدشده', 'recent' => 'افزوده‌شده در ۳۰ روز',
     'filters' => 'فیلترها', 'search' => 'جستجوی نام یا ایمیل', 'apply' => 'اعمال فیلترها', 'reset' => 'پاک‌کردن فیلترها',

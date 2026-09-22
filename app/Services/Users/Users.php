@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use JobMetric\PackageCore\Output\Response;
 use JobMetric\PackageCore\Services\AbstractCrudService;
+use JobMetric\Rolix\Facades\Role as RoleService;
 use Throwable;
 
 /**
@@ -30,6 +31,21 @@ class Users extends AbstractCrudService
     protected static string $modelClass = User::class;
 
     protected static string $resourceClass = UserResource::class;
+
+    /**
+     * Return ordered system-role choices for membership editing.
+     *
+     * @return array<int, array{id: int, name: string, path_label: string, depth: int}>
+     */
+    public function roleOptions(): array
+    {
+        return RoleService::flatTree('system')->map(fn ($role) => [
+            'id'         => (int) $role->id,
+            'name'       => (string) $role->name,
+            'path_label' => (string) $role->getAttribute('path_label'),
+            'depth'      => (int) $role->getAttribute('depth'),
+        ])->values()->all();
+    }
 
     /**
      * Read a bounded user table page with real unfiltered statistics.
@@ -108,7 +124,11 @@ class Users extends AbstractCrudService
         $data = dto($input, UserRequest::class);
 
         $data['email'] = Str::lower($data['email']);
-        $context = ['user_id' => $actorId, 'id' => $id, 'operation' => $id ? 'update' : 'create'];
+        $context = [
+            'user_id'   => $actorId,
+            'id'        => $id,
+            'operation' => $id ? 'update' : 'create',
+        ];
         $version = null;
 
         $record = DB::transaction(function () use ($data, $id, $actorId, $context, &$version) {
@@ -124,6 +144,8 @@ class Users extends AbstractCrudService
             }
 
             unset($data['_version'], $data['password_confirmation']);
+            $roleIds = array_map('intval', $data['role_ids'] ?? []);
+            unset($data['role_ids']);
             if (($id === $actorId || $all->where('status', true)
                         ->where('id', '!=', $id)
                         ->isEmpty()) && ! $data['status']) {
@@ -141,19 +163,32 @@ class Users extends AbstractCrudService
                 unset($data['password']);
             }
 
-            $before = $record->exists ? $record->toArray() : [];
+            $before = $record->exists ? array_replace($record->toArray(), [
+                'role_ids' => $record->memberships()
+                    ->whereNull('memberable_type')
+                    ->whereNull('memberable_id')
+                    ->pluck('role_id')
+                    ->map(fn ($roleId) => (int) $roleId)
+                    ->sort()
+                    ->values()
+                    ->all(),
+            ]) : [];
+
             Hooks::action('jobic.users.saving', $context);
+
             try {
                 $record->fill($data);
                 if ($record->exists && $record->isDirty('email')) {
                     $record->email_verified_at = null;
                 }
                 $record->save();
+                $record->syncRoles($roleIds);
             } catch (UniqueConstraintViolationException) {
                 throw ValidationException::withMessages(['email' => __('users.duplicate')]);
             }
 
-            app(RecordHistory::class)->record('users', (int) $record->id, $actorId, $context['operation'], $before, $record->toArray());
+            $after = array_replace($record->toArray(), ['role_ids' => collect($roleIds)->sort()->values()->all()]);
+            app(RecordHistory::class)->record('users', (int) $record->id, $actorId, $context['operation'], $before, $after);
 
             $version = RecordVersion::token($record->fresh(), 'users');
 
@@ -190,6 +225,7 @@ class Users extends AbstractCrudService
         $contexts = DB::transaction(function () use ($data, $actorId) {
             $all = User::query()->orderBy('id')->lockForUpdate()->get();
             $records = $all->whereIn('id', $data['ids']);
+
             if ($records->count() !== count($data['ids'])) {
                 throw ValidationException::withMessages(['ids' => __('users.missing')]);
             }
@@ -214,8 +250,7 @@ class Users extends AbstractCrudService
                 $before = $record->toArray();
                 if ($deleting) {
                     $record->delete();
-                }
-                else {
+                } else {
                     $record->forceFill(['status' => $data['operation'] === 'activate'])->save();
                 }
 

@@ -41,6 +41,7 @@
                     </ul>
                 @else
                     <a class="subsidebar-menu__link {{ $isActive ? 'is-active' : '' }}" href="{{ $item['url'] ?? '#' }}" @if ($isActive) aria-current="page" @endif>
+                        @if ($item['icon'] ?? null)<x-vuero.icon class="subsidebar-menu__item-icon" :name="$item['icon']" size="18" />@endif
                         <span>{{ $item['label'] }}</span>
                         @if ($item['chevron'] ?? false)<x-vuero.icon name="chevron-right" size="16" />@endif
                     </a>

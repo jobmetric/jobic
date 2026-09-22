@@ -5,7 +5,7 @@ return [
     'create' => 'Add user', 'edit_title' => 'Edit user', 'view_title' => 'View user',
     'name' => 'Name', 'email' => 'Email address', 'identity_title' => 'Account identity', 'identity_hint' => 'These details identify the account throughout the administration area.', 'password_title' => 'Password security', 'password' => 'Password', 'password_confirmation' => 'Confirm password',
     'password_hint' => 'Use at least 12 characters.', 'password_optional' => 'Leave blank to keep the current password.',
-    'status' => 'Status', 'verified' => 'Email verification', 'created_at' => 'Created', 'actions' => 'Actions',
+    'status' => 'Status', 'roles' => 'System roles', 'role_ids' => 'System roles', 'verified' => 'Email verification', 'created_at' => 'Created', 'actions' => 'Actions',
     'active' => 'Active', 'inactive' => 'Inactive', 'verified_yes' => 'Verified', 'verified_no' => 'Unverified', 'all' => 'All',
     'total' => 'All users', 'active_count' => 'Active users', 'verified_count' => 'Verified emails', 'recent' => 'Added in 30 days',
     'filters' => 'Filters', 'search' => 'Search name or email', 'apply' => 'Apply filters', 'reset' => 'Clear filters',

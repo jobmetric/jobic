@@ -29,6 +29,18 @@ class RecordHistory
             'email',
             'status',
             'email_verified_at',
+            'role_ids',
+        ],
+        'roles'     => [
+            'name',
+            'description',
+            'parent_id',
+            'allow',
+            'deny',
+            'is_default',
+            'is_super',
+            'ordering',
+            'rules',
         ],
     ];
 

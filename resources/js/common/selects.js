@@ -9,6 +9,20 @@ export function enhanceSelects(root = document) {
         const dialog = select.closest('dialog');
         const renderOption = item => {
             const flag = item.element?.dataset.flagUrl;
+            const rolePath = item.element?.dataset.rolePath;
+            if (rolePath) {
+                const path = document.createElement('span'); path.className = 'cms-role-path';
+                rolePath.split(' > ').forEach((part, index) => {
+                    if (index) {
+                        const separator = document.createElement('i'); separator.className = 'cms-role-path__separator'; separator.setAttribute('aria-hidden', 'true');
+                        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '2'); svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+                        const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); chevron.setAttribute('points', '9 18 15 12 9 6'); svg.append(chevron); separator.append(svg);
+                        path.append(separator);
+                    }
+                    const label = document.createElement('span'); label.textContent = part; path.append(label);
+                });
+                return $(path);
+            }
             if (!flag) return item.text;
             const row = document.createElement('span'); row.className = 'cms-select-flag';
             const image = document.createElement('img'); image.src = flag; image.alt = ''; image.width = 24; image.height = 18;

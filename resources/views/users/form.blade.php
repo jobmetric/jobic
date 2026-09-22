@@ -16,7 +16,9 @@
         @endforeach
         <p id="user-password-guidance" class="cms-password-guidance"><x-vuero.icon name="info" size="15" />{{ __('admin.password_guidance') }}</p>
         @endunless
-        <x-form.field variant="crud" :label="__('users.status')" for="user-status" error="status"><x-form.select id="user-status" name="status"><option value="1" @selected((string)old('status', $record?->status ?? 1) === '1')>{{ __('users.active') }}</option><option value="0" @selected((string)old('status', $record?->status ?? 1) === '0')>{{ __('users.inactive') }}</option></x-form.select></x-form.field>
+        @php($selectedRoles = old('role_ids', $record?->memberships()->whereNull('memberable_type')->whereNull('memberable_id')->pluck('role_id')->all() ?? []))
+        <x-form.field variant="crud" :label="__('users.roles')" for="user-roles" error="role_ids"><x-form.role-select id="user-roles" :roles="$roles" :selected="$selectedRoles" /></x-form.field>
+        <div class="crud-switch-field"><span>{{ __('users.status') }}</span><x-form.switch id="user-status" name="status" :label="__('users.status')" :checked="(bool)old('status', $record?->status ?? true)" /><small data-error-for="status" id="error-status"></small></div>
     </fieldset>
     @cmsHook('jobic.admin.users.form.after', ['id' => $record?->id])
 </form>

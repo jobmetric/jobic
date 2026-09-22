@@ -48,4 +48,4 @@ form.addEventListener('submit', async (event) => {
     } finally { restore.forEach(fn => fn()); form.querySelector('.crud-split-save')?.removeAttribute('inert'); delete form.dataset.saving; form.removeAttribute('aria-busy'); }
 });
 // Shared AJAX locale changes preserve the form and refresh page-local actions.
-new MutationObserver(() => toolbar('form')).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});
+window.addEventListener('cms:presentation-refreshed', () => toolbar('form'));

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Users;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -45,23 +46,23 @@ class UserRequest extends FormRequest
         $creating = ! isset($input['_version']) || $input['_version'] === '';
 
         return [
-            '_version'              => [
+            '_version' => [
                 $creating ? 'prohibited' : 'required',
                 'string',
                 'size:64',
             ],
-            'name'                  => [
+            'name' => [
                 'required',
                 'string',
                 'max:100',
             ],
-            'email'                 => [
+            'email' => [
                 'required',
                 'string',
                 'email',
                 'max:255',
             ],
-            'password'              => [
+            'password' => [
                 $creating ? 'required' : 'nullable',
                 'string',
                 Password::min(12),
@@ -71,9 +72,19 @@ class UserRequest extends FormRequest
                 $creating ? 'required' : 'nullable',
                 'string',
             ],
-            'status'                => [
+            'status' => [
                 'required',
                 'boolean',
+            ],
+            'role_ids' => [
+                'sometimes',
+                'array',
+                'max:50',
+            ],
+            'role_ids.*' => [
+                'integer',
+                'distinct',
+                Rule::exists(config('rolix.tables.role'), 'id')->where('type', 'system'),
             ],
         ];
     }

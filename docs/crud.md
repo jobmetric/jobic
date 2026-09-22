@@ -46,6 +46,14 @@ The user registry follows the same candidate interaction contract at `/admin/use
 
 Passwords are write-only, require confirmation and at least 12 characters, clear after successful persistence and never enter hooks, history, table responses or Domi registries. Changing an email clears its verification timestamp. The current account cannot be deactivated or deleted, the final active account is protected transactionally, and inactive accounts cannot create new sessions or continue through the administration preference middleware. User hooks and view slots are documented in `docs/hooks.md`.
 
+## System role registry implementation
+
+The role registry is available at `/admin/roles` and manages only Rolix `type=system` records. Its list follows the complete Languages CRUD contract with server-side searching, role-kind filtering, persistent in-document selection, real statistics, confirmation, history and optimistic versions. Role writes delegate to the Rolix service so closure-table hierarchy updates, default/super invariants, permission validation, rule validation, package events, activity logs and cache invalidation remain package-owned.
+
+The form has details, permissions and role-rules tabs. Allow and deny are parallel permission trees built from Rolix's registered permission catalog. Selecting a parent visually inherits and locks descendants until that parent is cleared; only explicit selections are submitted. Rule cards are built from each registered evaluator's JobMetric Form schema, not from a second application driver registry. The user form assigns system roles through Rolix memberships and the User model uses `HasRole` for Gate, middleware and Blade permission evaluation.
+
+Deployments must run the Rolix package migrations before using roles or assigning memberships. Permission catalogs live in `config/permissions`; packages may contribute additional catalogs through Rolix's documented registration event.
+
 ## Mandatory visual parity
 
 Every registry CRUD must be copied from the complete Languages CRUD contract before substituting domain fields. This includes exact toolbar and split-save DOM, button order and dimensions, dropdown placement, loadingButton behavior, shared dialogs, table shell, filters, selection persistence, empty/error states, history panel, unsaved guard and responsive rules. Only domain labels, fields and validation may differ; new visual variants require explicit approval.

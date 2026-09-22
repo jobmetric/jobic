@@ -42,7 +42,7 @@ export function bindHistory(form) {
         finally { busy = false; restore(); panel.removeAttribute('aria-busy'); previous.disabled = page <= 1; next.disabled = page >= pages; }
     }
     refresh.onclick = () => load(); previous.onclick = () => load(page - 1); next.onclick = () => load(page + 1);
-    new MutationObserver(() => load(page)).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});
+    window.addEventListener('cms:presentation-refreshed', () => load(page));
     load();
     return {refresh: () => load()};
 }

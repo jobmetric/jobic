@@ -11,7 +11,6 @@ use App\Http\Requests\Users\TableRequest;
 use App\Http\Requests\Users\UserRequest;
 use App\Services\Users\Users;
 use App\Support\Page;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
@@ -55,6 +54,7 @@ class UserController extends Controller
      * @param TableRequest $request
      *
      * @return JsonResponse
+     * @throws Throwable
      */
     public function data(TableRequest $request): JsonResponse
     {
@@ -65,12 +65,13 @@ class UserController extends Controller
      * Render a blank user form.
      *
      * @return View
+     * @throws SetPluginNotFoundException
      */
     public function create(): View
     {
         $this->prepare();
 
-        return view('users.form', ['record' => null, 'readonly' => false]);
+        return view('users.form', ['record' => null, 'readonly' => false, 'roles' => $this->users->roleOptions()]);
     }
 
     /**
@@ -79,13 +80,17 @@ class UserController extends Controller
      * @param int $user
      *
      * @return View
-     * @throws ModelNotFoundException
+     * @throws SetPluginNotFoundException
      */
     public function edit(int $user): View
     {
         $this->prepare();
 
-        return view('users.form', ['record' => $this->users->record($user), 'readonly' => false]);
+        return view('users.form', [
+            'record'   => $this->users->record($user),
+            'readonly' => false,
+            'roles'    => $this->users->roleOptions(),
+        ]);
     }
 
     /**
@@ -94,13 +99,17 @@ class UserController extends Controller
      * @param int $user
      *
      * @return View
-     * @throws ModelNotFoundException
+     * @throws SetPluginNotFoundException
      */
     public function show(int $user): View
     {
         $this->prepare();
 
-        return view('users.form', ['record' => $this->users->record($user), 'readonly' => true]);
+        return view('users.form', [
+            'record'   => $this->users->record($user),
+            'readonly' => true,
+            'roles'    => $this->users->roleOptions(),
+        ]);
     }
 
     /**
@@ -190,4 +199,5 @@ class UserController extends Controller
             'form' => ['new', 'close'],
         ]);
     }
+
 }

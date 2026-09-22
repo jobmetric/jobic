@@ -93,6 +93,21 @@ Optimistic-version conflicts are rejected with HTTP 409 before language saving h
 | --- | --- | --- | --- |
 | `jobic.auth.recovery.form.before`, `jobic.auth.recovery.form.after` | view | empty | Around the forgot/reset password form in common.auth-recovery; standard view exception behavior. Tokens, passwords and account email never enter context. |
 
+## System role registry
+
+| Hook | Type | Context | Timing and errors |
+| --- | --- | --- | --- |
+| `jobic.admin.roles.list.before`, `jobic.admin.roles.list.after` | view | empty | Around the server-side role list; standard view exception semantics |
+| `jobic.admin.roles.form.before`, `jobic.admin.roles.form.after` | view | `id` (null for creation) | Around the tabbed details, permissions, and rule-driver form |
+| `jobic.roles.saving` | action | `user_id` (actor), `id` (null before create), `operation` (`create`, `update`) | After CMS dto validation and optimistic-version checks, before Rolix persistence inside the transaction; exceptions veto and roll back |
+| `jobic.roles.saved` | notification | same safe context with persisted `id` | After the outer transaction commits; observer failures are isolated by `Hooks::notify` |
+| `jobic.roles.deleting` | action | `user_id` (actor), `id`, `operation=delete` | Before each Rolix deletion in the atomic selection transaction; an exception rolls back the complete selection |
+| `jobic.roles.deleted` | notification | same safe context | After the complete selection commits; observer failures are isolated |
+
+Role hook contexts never contain permission lists, rule payloads, environment values, IP ranges, request data, credentials, or membership details. Package role events still execute inside Rolix persistence. Super-role protection, hierarchy validation, registered-permission validation, and driver-payload validation occur before a successful post-notification. User role assignment is persisted as system-scoped Rolix membership and follows the existing `jobic.users.saving` / `jobic.users.saved` lifecycle without exposing selected role identifiers to hooks.
+
+For example, an extension may observe `jobic.roles.saved`, retrieve the authorized role by `$context['id']`, and invalidate its own public navigation cache. It must not infer that the actor is authorized merely because the notification ran.
+
 ## Optional cache settings
 
 `jobic.settings.cache.saving` and `jobic.settings.cache.saved` use the existing action/notification dispatcher. Context is `section=cache`, authenticated `user_id`, and `fields` (names only). The service revalidates with dto and rejects shared Redis session/queue changes before `saving`; saving exceptions veto persistence. Connectivity and temporary read/write/delete checks run before atomic environment persistence. `saved` runs only after persistence succeeds; observer errors are isolated by `Hooks::notify`. Diagnostic test actions emit neither hook and never save. No host, username, password or raw values enter context. Example: observe `jobic.settings.cache.saved` to record that `$context['user_id']` changed the cache configuration, without logging configuration values. These screens reuse the documented settings content and form slots with sections `cache` and `health` (health has no form).

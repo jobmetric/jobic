@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
+use App\Http\Controllers\Roles\RoleController;
 use App\Http\Controllers\Settings\MailController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Settings\SystemController;
@@ -25,6 +26,18 @@ Route::middleware([
         Route::get('{user}/edit', 'edit')->whereNumber('user')->name('edit');
         Route::get('{user}', 'show')->whereNumber('user')->name('show');
         Route::put('{user}', 'update')->whereNumber('user')->middleware('throttle:30,1')->name('update');
+    });
+
+    Route::prefix('roles')->name('roles.')->controller(RoleController::class)->group(function (): void {
+        Route::get('/', 'index')->name('index');
+        Route::get('data', 'data')->name('data');
+        Route::get('create', 'create')->name('create');
+        Route::post('/', 'store')->middleware('throttle:30,1')->name('store');
+        Route::post('bulk', 'bulk')->middleware('throttle:30,1')->name('bulk');
+        Route::get('{role}/history', 'history')->whereNumber('role')->name('history');
+        Route::get('{role}/edit', 'edit')->whereNumber('role')->name('edit');
+        Route::get('{role}', 'show')->whereNumber('role')->name('show');
+        Route::put('{role}', 'update')->whereNumber('role')->middleware('throttle:30,1')->name('update');
     });
 
     Route::prefix('settings')->name('settings.')->group(function (): void {

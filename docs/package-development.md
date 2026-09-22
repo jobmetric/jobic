@@ -17,6 +17,7 @@ JobMetric packages are developed in sibling repositories under `../maral/package
 | --- | --- | --- | --- |
 | `jobmetric/domi` | `../maral/packages/domi` | `1.14.2` | EnumMacros/nullable compatibility and standalone DataTable initialization without KTUtil |
 | `jobmetric/laravel-translation` | `../maral/packages/laravel-translation` | `3.9.1` | Explicit nullable locale in translation helpers |
+| `jobmetric/rolix` | `../maral/packages/rolix` | `1.3.0` | Hierarchical system roles, permission catalogs, memberships, focused localized form-driven rule evaluators, and PHP 8 named-context flattening |
 
 The application keeps its documented Domi view override for CMS presentation. That supported view customization is separate from repairing package PHP source.
 

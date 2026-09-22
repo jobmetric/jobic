@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\HigherOrderCollectionProxy;
 use JobMetric\Metadata\HasMeta;
+use JobMetric\Rolix\Traits\HasRole;
 use Laravel\Sanctum\HasApiTokens;
 use Throwable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -34,7 +35,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasMeta, Notifiable;
+    use HasApiTokens, HasFactory, HasMeta, HasRole, Notifiable;
 
     /**
      * Restrict account metadata to profile attributes owned by this model.

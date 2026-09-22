@@ -419,7 +419,7 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
 .admin-navdrop__item.is-open > button svg { transform: rotate(-90deg); }
 .admin-navdrop__menu { position: absolute; top: 70px; left: 50%; display: grid; width: 220px; padding: 12px 0; color: var(--text); background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow-md); transform: translateX(-50%); }
 .admin-navdrop__menu strong { padding: 5px 16px 9px; color: var(--muted); font-family: var(--font-alt); font-size: 9px; letter-spacing: .05em; text-transform: uppercase; }
-.admin-navdrop__menu a { padding: 9px 16px; color: var(--text-soft); font-size: 11px; }
+.admin-navdrop__menu a { display: flex; padding: 9px 16px; align-items: center; gap: 9px; color: var(--text-soft); font-size: 11px; }
 .admin-navdrop__menu a:hover { color: var(--primary); background: var(--surface-soft); }
 
 .admin-navbar-clean { display: none; height: 100px; }

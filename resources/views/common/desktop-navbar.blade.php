@@ -14,13 +14,21 @@
                 <nav class="{{ $variant === 'standard' ? 'admin-navbar__centered' : 'admin-navdrop' }}" aria-label="{{ __('admin.control_navigation') }}">
                     <a class="admin-navbar__centered-link" href="{{ route('admin.dashboard') }}"><x-vuero.icon name="activity" size="20" /><span>{{ __('admin.dashboard') }}</span></a>
                     <div class="admin-navdrop__item" data-navdrop>
+                        <button type="button" data-navdrop-toggle aria-expanded="false">{{ __('users.title') }}<x-vuero.icon name="chevron-right" size="13" /></button>
+                        <div class="admin-navdrop__menu" data-navdrop-menu hidden>
+                            <strong>{{ __('users.title') }}</strong>
+                            <a href="{{ route('admin.users.index') }}"><x-vuero.icon name="users" size="18" /><span>{{ __('users.title') }}</span></a>
+                            <a href="{{ route('admin.roles.index') }}"><x-vuero.icon name="shield" size="18" /><span>{{ __('roles.title') }}</span></a>
+                        </div>
+                    </div>
+                    <div class="admin-navdrop__item" data-navdrop>
                         <button type="button" data-navdrop-toggle aria-expanded="false">{{ __('admin.settings') }}<x-vuero.icon name="chevron-right" size="13" /></button>
                         <div class="admin-navdrop__menu" data-navdrop-menu hidden><strong>{{ __('admin.settings') }}</strong>@include('common.settings.menu')</div>
                     </div>
                 </nav>
                 @include('common.toolbar', ['navbarToolbar' => true])
             @else
-                <div class="admin-navbar-clean__lower"><time datetime="{{ now()->toDateString() }}">{{ now()->format('Y-m-d') }}</time><nav aria-label="Workspace"><a href="{{ route('admin.dashboard') }}">{{ __('admin.dashboard') }}</a><a href="{{ route('admin.settings.index') }}">{{ __('admin.settings') }}</a></nav></div>
+                <div class="admin-navbar-clean__lower"><time datetime="{{ now()->toDateString() }}">{{ now()->format('Y-m-d') }}</time><nav aria-label="Workspace"><a href="{{ route('admin.dashboard') }}">{{ __('admin.dashboard') }}</a><div class="admin-navdrop__item" data-navdrop><button type="button" data-navdrop-toggle aria-expanded="false">{{ __('users.title') }}<x-vuero.icon name="chevron-right" size="13" /></button><div class="admin-navdrop__menu" data-navdrop-menu hidden><strong>{{ __('users.title') }}</strong><a href="{{ route('admin.users.index') }}"><x-vuero.icon name="users" size="18" /><span>{{ __('users.title') }}</span></a><a href="{{ route('admin.roles.index') }}"><x-vuero.icon name="shield" size="18" /><span>{{ __('roles.title') }}</span></a></div></div><a href="{{ route('admin.settings.index') }}">{{ __('admin.settings') }}</a></nav></div>
             @endif
         </header>
     @endforeach

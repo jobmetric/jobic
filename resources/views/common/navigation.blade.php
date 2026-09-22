@@ -1,7 +1,7 @@
 @php
     $sections = [
         'dashboard' => ['label' => __('installation.dashboard'), 'icon' => 'activity', 'active' => request()->routeIs('admin.dashboard')],
-        'users' => ['label' => __('users.title'), 'icon' => 'users', 'active' => request()->routeIs('admin.users.*')],
+        'users' => ['label' => __('users.title'), 'icon' => 'users', 'active' => request()->routeIs('admin.users.*', 'admin.roles.*')],
         'settings' => ['label' => __('installation.settings'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')],
     ];
 @endphp
@@ -35,7 +35,10 @@
             <x-vuero.navigation.menu :items="[['label' => __('installation.dashboard'), 'url' => route('admin.dashboard'), 'active' => request()->routeIs('admin.dashboard')]]" />
         </section>
         <section id="sidebar-panel-users" data-sidebar-panel="users" hidden>
-            <x-vuero.navigation.menu :items="[['label' => __('users.title'), 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')]]" />
+            <x-vuero.navigation.menu :items="[
+                ['label' => __('users.title'), 'icon' => 'users', 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')],
+                ['label' => __('roles.title'), 'icon' => 'shield', 'url' => route('admin.roles.index'), 'active' => request()->routeIs('admin.roles.*')],
+            ]" />
         </section>
         <section id="sidebar-panel-settings" data-sidebar-panel="settings" hidden>
             @include('common.settings.menu')
@@ -47,7 +50,19 @@
     <header class="admin-sideblock__header"><a href="{{ route('admin.dashboard') }}" aria-label="Jobic"><x-brand compact /></a><h2>{{ config('app.name') }}</h2></header>
     <nav class="admin-sideblock__nav">
         <a class="admin-sideblock__action" href="{{ route('admin.dashboard') }}"><x-vuero.icon name="activity" size="19" /><span>{{ __('admin.dashboard') }}</span></a>
-        <a class="admin-sideblock__action" href="{{ route('admin.users.index') }}"><x-vuero.icon name="users" size="19" /><span>{{ __('users.title') }}</span></a>
+        <section class="admin-sideblock__group {{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'is-open' : '' }}" data-sideblock-group>
+            <button type="button" aria-expanded="{{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'true' : 'false' }}" aria-controls="sideblock-panel-users" data-sideblock-group-toggle>
+                <span class="admin-sideblock__group-icon"><x-vuero.icon name="users" size="20" /></span>
+                <span>{{ __('users.title') }}</span>
+                <x-vuero.icon name="chevron-right" size="17" />
+            </button>
+            <div class="admin-sideblock__children" id="sideblock-panel-users" @unless(request()->routeIs('admin.users.*', 'admin.roles.*')) hidden @endunless>
+                <x-vuero.navigation.menu :items="[
+                    ['label' => __('users.title'), 'icon' => 'users', 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')],
+                    ['label' => __('roles.title'), 'icon' => 'shield', 'url' => route('admin.roles.index'), 'active' => request()->routeIs('admin.roles.*')],
+                ]" />
+            </div>
+        </section>
         @include('common.settings.menu')
     </nav>
     <footer class="admin-sideblock__footer">

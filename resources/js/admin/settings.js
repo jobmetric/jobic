@@ -53,6 +53,7 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
     const currentRoot = document.querySelector(selector);
     const nextRoot = next.querySelector(selector);
     if (currentRoot && nextRoot) copy(currentRoot, nextRoot);
+    window.dispatchEvent(new CustomEvent('cms:presentation-refreshed', {detail: {locale: document.documentElement.lang}}));
 }
 
 export function bindSettingsForms({ announce, applyPreferences }) {
