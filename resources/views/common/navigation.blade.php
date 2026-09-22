@@ -32,7 +32,6 @@
         @endforeach
     </nav>
     <div class="admin-sidebar__footer">
-        <button class="admin-sidebar__link" type="button" data-modal-open="layout-switcher" aria-label="{{ __('admin.layout') }}"><x-vuero.icon name="panel" size="20" /><span>{{ __('admin.layout') }}</span></button>
         <button class="admin-sidebar__link" type="button" data-panel-open="search" aria-label="{{ __('admin.search') }}"><x-vuero.icon name="search" size="20" /><span>{{ __('admin.search') }}</span></button>
         @if($canSettings)<a class="admin-sidebar__link" href="{{ route('admin.settings.index') }}" aria-label="{{ __('admin.settings') }}"><x-vuero.icon name="settings" size="20" /><span>{{ __('admin.settings') }}</span></a>@endif
         @include('common.profile', ['placement' => 'sidebar'])
@@ -72,7 +71,6 @@
         @if($canSettings)@include('common.settings.menu')@endif
     </nav>
     <footer class="admin-sideblock__footer">
-        <button class="admin-sideblock__action" type="button" data-modal-open="layout-switcher"><x-vuero.icon name="panel" size="19" /><span>{{ __('admin.layout') }}</span></button>
         <button class="admin-sideblock__action" type="button" data-panel-open="search"><x-vuero.icon name="search" size="19" /><span>{{ __('admin.search') }}</span></button>
         @include('common.profile', ['placement' => 'sidebar'])
     </footer>

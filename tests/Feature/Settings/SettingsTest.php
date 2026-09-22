@@ -19,7 +19,13 @@ class SettingsTest extends TestCase
     {
         $this->withoutVite();
         $this->actingAs(User::factory()->create());
-        $this->get(route('admin.settings.index'))->assertOk()->assertSee('settings-grid')->assertSee('layout-switcher')->assertSee('profile-dropdown--sidebar');
+        $this->get(route('admin.settings.index'))
+            ->assertOk()
+            ->assertSee('settings-grid')
+            ->assertSee('layout-switcher')
+            ->assertSee('profile-dropdown--sidebar')
+            ->assertDontSee('admin-sidebar__link" type="button" data-modal-open="layout-switcher', false)
+            ->assertDontSee('admin-sideblock__action" type="button" data-modal-open="layout-switcher', false);
         foreach (['general'] as $section) {
             $this->get(route('admin.settings.edit', $section))->assertOk()->assertSee('cms-settings-links')->assertSee('admin-desktop-navbar')->assertSee('admin-sideblock')->assertSee(route('admin.settings.index'));
         }
