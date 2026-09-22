@@ -26,7 +26,7 @@ class SettingsTest extends TestCase
             ->assertSee('profile-dropdown--sidebar')
             ->assertDontSee('admin-sidebar__link" type="button" data-modal-open="layout-switcher', false)
             ->assertDontSee('admin-sideblock__action" type="button" data-modal-open="layout-switcher', false);
-        foreach (['general'] as $section) {
+        foreach (['general', 'seo'] as $section) {
             $this->get(route('admin.settings.edit', $section))->assertOk()->assertSee('cms-settings-links')->assertSee('admin-desktop-navbar')->assertSee('admin-sideblock')->assertSee(route('admin.settings.index'));
         }
         $this->get(route('admin.account.appearance.edit'))->assertOk()->assertSee('cms-settings-links')->assertSee(route('admin.account.profile.edit'));

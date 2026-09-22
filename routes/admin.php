@@ -7,8 +7,8 @@ use App\Http\Controllers\Settings\MailController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Settings\SystemController;
 use App\Http\Controllers\Users\UserController;
-use App\Http\Middleware\Admin\Preferences;
 use App\Http\Middleware\Admin\EnsurePermission;
+use App\Http\Middleware\Admin\Preferences;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([
@@ -54,10 +54,11 @@ Route::middleware([
 
     Route::prefix('settings')->name('settings.')->group(function (): void {
         Route::controller(SettingsController::class)->group(function () {
-            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.general,admin.settings.health,admin.settings.cache,admin.settings.mail,admin.settings.languages')->name('index');
+            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.general,admin.settings.seo,admin.settings.health,admin.settings.cache,admin.settings.mail,admin.settings.languages')->name('index');
 
             $settingPages = [
                 'general',
+                'seo',
             ];
             Route::get('{section}', 'edit')->whereIn('section', $settingPages)->middleware(EnsurePermission::class.':admin.settings.section')->name('edit');
 

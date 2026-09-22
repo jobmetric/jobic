@@ -11,7 +11,14 @@ export async function sendSettings(url, data) {
         document.querySelector('meta[name="csrf-token"]').content = token;
         document.querySelectorAll('input[name="_token"]').forEach((input) => { input.value = token; });
     }
-    const result = await response.json();
+    const body = await response.text();
+    let result;
+    try {
+        result = JSON.parse(body);
+    } catch {
+        const fallback = document.querySelector('[data-cms-shell]')?.dataset.saveFailed || 'The server could not process the request.';
+        result = { ok: false, message: `${fallback} (HTTP ${response.status})`, errors: {} };
+    }
     if (!response.ok || !result.ok) throw Object.assign(new Error(result.message), { errors: result.errors || {}, status: response.status });
     return result;
 }
@@ -57,6 +64,84 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
 }
 
 export function bindSettingsForms({ announce, applyPreferences }) {
+    document.querySelectorAll('[data-seo-form]').forEach((form) => {
+        const title = form.querySelector('[data-seo-title]');
+        const description = form.querySelector('[data-seo-description]');
+        const image = form.querySelector('[data-seo-image]');
+        const imagePreview = form.querySelector('[data-seo-preview-image]');
+        const uploader = form.querySelector('[data-seo-uploader]');
+        const uploaderPreview = form.querySelector('[data-seo-uploader-preview]');
+        const selection = form.querySelector('[data-seo-selection]');
+        const fileName = form.querySelector('[data-seo-file-name]');
+        const removeImage = form.querySelector('[data-seo-remove-image]');
+        const removeValue = form.querySelector('[data-seo-remove-value]');
+        const initialImagePreview = imagePreview?.cloneNode(true);
+        const initialUploaderPreview = uploaderPreview?.cloneNode(true);
+        const initialFileName = fileName?.textContent || '';
+        const hasCurrentImage = uploader?.dataset.hasCurrentImage === 'true';
+        const titleFallback = form.querySelector('[data-seo-preview-title]')?.textContent || '';
+        const descriptionFallback = form.querySelector('[data-seo-preview-description]')?.textContent || '';
+        const updateText = () => {
+            const previewTitle = title?.value.trim() || titleFallback;
+            const previewDescription = description?.value.trim() || descriptionFallback;
+            form.querySelectorAll('[data-seo-preview-title], [data-seo-preview-og-title]').forEach((element) => { element.textContent = previewTitle; });
+            form.querySelectorAll('[data-seo-preview-description], [data-seo-preview-og-description]').forEach((element) => { element.textContent = previewDescription; });
+        };
+        [title, description].forEach((input) => input?.addEventListener('input', updateText));
+        const restoreInitialImage = () => {
+            if (imagePreview && initialImagePreview) imagePreview.replaceChildren(...[...initialImagePreview.childNodes].map((node) => node.cloneNode(true)));
+            if (uploaderPreview && initialUploaderPreview) uploaderPreview.replaceChildren(...[...initialUploaderPreview.childNodes].map((node) => node.cloneNode(true)));
+            if (fileName) fileName.textContent = initialFileName;
+        };
+        const showEmptyImage = () => {
+            [imagePreview, uploaderPreview].forEach((preview) => {
+                if (!preview) return;
+                const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                icon.setAttribute('class', 'ui-icon'); icon.setAttribute('width', '28'); icon.setAttribute('height', '28'); icon.setAttribute('viewBox', '0 0 24 24');
+                const use = document.createElementNS('http://www.w3.org/2000/svg', 'use'); use.setAttribute('href', '#icon-upload'); icon.append(use); preview.replaceChildren(icon);
+            });
+        };
+        image?.addEventListener('change', () => {
+            const file = image.files?.[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            if (removeValue) removeValue.value = '0';
+            removeImage?.classList.remove('is-active');
+            if (removeImage) removeImage.disabled = false;
+            if (selection) selection.hidden = false;
+            const removeLabel = removeImage?.querySelector('span');
+            if (removeLabel) removeLabel.textContent = removeImage.dataset.removeLabel;
+            if (fileName) fileName.textContent = file.name;
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                if (imagePreview) imagePreview.replaceChildren(Object.assign(document.createElement('img'), { src: reader.result, alt: '' }));
+                if (uploaderPreview) uploaderPreview.replaceChildren(Object.assign(document.createElement('img'), { src: reader.result, alt: '' }));
+            });
+            reader.readAsDataURL(file);
+        });
+        removeImage?.addEventListener('click', () => {
+            if (image.files?.length) {
+                image.value = '';
+                removeValue.value = '0';
+                removeImage.classList.remove('is-active');
+                removeImage.querySelector('span').textContent = removeImage.dataset.removeLabel;
+                removeImage.disabled = !hasCurrentImage;
+                if (hasCurrentImage) restoreInitialImage(); else if (selection) selection.hidden = true;
+                return;
+            }
+            const removing = removeValue.value !== '1';
+            removeValue.value = removing ? '1' : '0';
+            removeImage.classList.toggle('is-active', removing);
+            removeImage.querySelector('span').textContent = removing ? removeImage.dataset.restoreLabel : removeImage.dataset.removeLabel;
+            if (removing) {
+                if (selection) selection.hidden = true;
+                showEmptyImage();
+            } else {
+                if (selection) selection.hidden = false;
+                restoreInitialImage();
+            }
+        });
+        updateText();
+    });
     const avatarModal = document.getElementById('modal-avatar-picker');
     if (avatarModal) {
         avatarModal.dataset.avatarModal = '';
@@ -125,6 +210,9 @@ export function bindSettingsForms({ announce, applyPreferences }) {
         event.preventDefault();
         if (form.dataset.saving) return;
         const data = new FormData(form);
+        form.querySelectorAll('input[type="file"]').forEach((input) => {
+            if (!input.files?.length || input.files[0].size === 0) data.delete(input.name);
+        });
         const testAction = event.submitter?.dataset.testAction;
         if (testAction) { data.delete('_method'); data.set('action', event.submitter.value); }
         const buttons = [...form.querySelectorAll('[type="submit"]')];

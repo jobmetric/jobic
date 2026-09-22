@@ -24,7 +24,15 @@ class AdminAccess
             'admin.dashboard'                => ['admin.dashboard'],
             'admin.users.index'              => ['admin.users.view'],
             'admin.roles.index'              => ['admin.roles.view'],
-            'admin.settings.index'           => ['admin.settings'],
+            'admin.settings.index'           => [
+                'admin.settings',
+                'admin.settings.general',
+                'admin.settings.seo',
+                'admin.settings.health',
+                'admin.settings.cache',
+                'admin.settings.languages',
+                'admin.settings.mail',
+            ],
             'admin.settings.edit'            => ['admin.settings.general'],
             'admin.settings.health'          => ['admin.settings.health'],
             'admin.settings.cache.edit'      => ['admin.settings.cache'],
@@ -94,6 +102,7 @@ class AdminAccess
     {
         return match ($section) {
             'general' => 'admin.settings.general',
+            'seo' => 'admin.settings.seo',
             'health' => 'admin.settings.health',
             'cache' => 'admin.settings.cache',
             'languages' => 'admin.settings.languages',
@@ -120,7 +129,7 @@ class AdminAccess
             if (str_ends_with($entry, '.*') && str_starts_with($permission, substr($entry, 0, -1))) {
                 return true;
             }
-            
+
             if (str_starts_with($permission, $entry . '.')) {
                 return true;
             }

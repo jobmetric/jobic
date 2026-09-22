@@ -37,12 +37,15 @@ Services validate using dto before `saving`, then persist, then emit `saved`. `s
 | `jobic.admin.settings.content.before`, `jobic.admin.settings.content.after` | view | section |
 | `jobic.admin.settings.form.end` | view | section; inside the form |
 | `jobic.settings.general.saving`, `jobic.settings.general.saved` | action | section, user_id (nullable for CLI), fields (names only) |
+| `jobic.settings.seo.saving`, `jobic.settings.seo.saved` | action | section, user_id, fields (names only) |
 | `jobic.settings.profile.saving`, `jobic.settings.profile.saved` | action | section, user_id, fields |
 | `jobic.settings.security.saving`, `jobic.settings.security.saved` | action | section, user_id, fields; no passwords/hashes |
 | `jobic.settings.appearance.saving`, `jobic.settings.appearance.saved` | action | section, user_id, fields |
 | `jobic.settings.mail.saving`, `jobic.settings.mail.saved` | action | section, user_id (nullable for CLI), fields; no credentials |
 
 For every new feature update this registry in the same change: name, type, value/context schema, timing, validation boundary, failure behavior and an example. Add tests for ordering, veto, success-only notification, escaping and absence of secrets. Existing auth/installer security flows are not implicitly extensible: introduce lifecycle hooks there only with explicit contracts and regression tests.
+
+SEO settings use `jobic.settings.seo.saving` immediately after DTO validation and before `jobmetric/laravel-setting` persists the `jobic_seo` form. An exception from `saving` vetoes persistence. `jobic.settings.seo.saved` runs through the isolated notification dispatcher only after persistence succeeds. Both receive only `section=seo`, the authenticated `user_id`, and validated field names; metadata values and raw request data are excluded. For example, an extension may observe `saved` to invalidate a rendered-head cache, then read authorized values from the setting service.
 
 ## Guest language preference
 

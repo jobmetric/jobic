@@ -10,6 +10,7 @@ use App\Http\Requests\Settings\AvatarRequest;
 use App\Http\Requests\Settings\GeneralRequest;
 use App\Http\Requests\Settings\ProfileRequest;
 use App\Http\Requests\Settings\SecurityRequest;
+use App\Http\Requests\Settings\SeoRequest;
 use App\Http\Requests\Settings\TwoFactorRequest;
 use App\Services\Auth\TwoFactor;
 use App\Services\Settings\Settings;
@@ -43,6 +44,7 @@ class SettingsController extends Controller
     /**
      * Render the settings directory.
      *
+     * @return View
      * @throws SetPluginNotFoundException
      */
     public function index(): View
@@ -66,7 +68,7 @@ class SettingsController extends Controller
      */
     public function edit(Request $request, string $section): View
     {
-        abort_unless($section === 'general', 404);
+        abort_unless(in_array($section, ['general', 'seo'], true), 404);
 
         Page::prepare('settings');
 
@@ -146,6 +148,19 @@ class SettingsController extends Controller
     public function general(GeneralRequest $request): JsonResponse|RedirectResponse
     {
         return $this->respond($request, $this->settings->general($request->validated(), (int) $request->user()->id), 'general');
+    }
+
+    /**
+     * Save website SEO settings and return the service result.
+     *
+     * @param SeoRequest $request
+     *
+     * @return JsonResponse|RedirectResponse
+     * @throws Throwable
+     */
+    public function seo(SeoRequest $request): JsonResponse|RedirectResponse
+    {
+        return $this->respond($request, $this->settings->seo($request->validated(), (int) $request->user()->id), 'seo');
     }
 
     /**

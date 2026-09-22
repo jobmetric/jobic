@@ -2,19 +2,22 @@
 
 return [
     'settings'   => [
-        'general'    => [
+        'general'   => [
             'icon' => 'building',
         ],
-        'health'     => [
+        'seo'       => [
+            'icon' => 'search',
+        ],
+        'health'    => [
             'icon' => 'shield',
         ],
-        'cache'      => [
+        'cache'     => [
             'icon' => 'server',
         ],
-        'mail'       => [
+        'mail'      => [
             'icon' => 'mail',
         ],
-        'languages'  => [
+        'languages' => [
             'icon' => 'globe',
         ],
     ],

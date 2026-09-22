@@ -10,6 +10,7 @@ use App\Http\Requests\Settings\AvatarRequest;
 use App\Http\Requests\Settings\GeneralRequest;
 use App\Http\Requests\Settings\ProfileRequest;
 use App\Http\Requests\Settings\SecurityRequest;
+use App\Http\Requests\Settings\SeoRequest;
 use App\Models\LoginEvent;
 use App\Models\User;
 use App\Support\Installation\Environment;
@@ -18,9 +19,14 @@ use DateMalformedStringException;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use JobMetric\PackageCore\Output\Response;
+use JobMetric\Setting\Facades\Setting as SettingStore;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -46,6 +52,7 @@ readonly class Settings
      * @param int $userId
      *
      * @return array<string, mixed>
+     *
      * @throws ModelNotFoundException
      * @throws DateMalformedStringException
      * @throws DateInvalidTimeZoneException
@@ -68,6 +75,16 @@ readonly class Settings
                 'APP_URL'      => $values['APP_URL'] ?? config('app.url'),
                 'APP_TIMEZONE' => $values['APP_TIMEZONE'] ?? config('app.timezone', 'UTC'),
             ],
+            'seo'         => $section === 'seo' ? [
+                'meta_title'           => SettingStore::get('jobic_seo_meta_title', ''),
+                'meta_description'     => SettingStore::get('jobic_seo_meta_description', ''),
+                'meta_keywords'        => SettingStore::get('jobic_seo_meta_keywords', ''),
+                'open_graph_image'     => SettingStore::get('jobic_seo_open_graph_image'),
+                'open_graph_image_url' => filled(SettingStore::get('jobic_seo_open_graph_image')) ? Storage::disk('public')
+                    ->url((string) SettingStore::get('jobic_seo_open_graph_image')) : null,
+                'robots_index'         => filter_var(SettingStore::get('jobic_seo_robots_index', true), FILTER_VALIDATE_BOOL),
+                'robots_follow'        => filter_var(SettingStore::get('jobic_seo_robots_follow', true), FILTER_VALIDATE_BOOL),
+            ] : [],
             'timezones'   => DateTimeZone::listIdentifiers(),
             'serverTime'  => (new DateTimeImmutable('now', new DateTimeZone((string) ($values['APP_TIMEZONE'] ?? config('app.timezone', 'UTC')))))->format('Y-m-d H:i:s T'),
             'preferences' => array_replace(config('admin.appearance'), $user->ui_preferences ?? []),
@@ -116,6 +133,77 @@ readonly class Settings
         } catch (Throwable) {
             return Response::make(false, trans('installation.save_failed'), null, 422);
         }
+    }
+
+    /**
+     * Validate and save public website SEO metadata in the settings table.
+     *
+     * @param array<string, mixed> $data
+     * @param int|null $userId
+     *
+     * @return Response
+     * @throws ValidationException
+     * @throws Throwable
+     */
+    public function seo(array $data, ?int $userId = null): Response
+    {
+        $values = dto($data, SeoRequest::class);
+
+        $currentImage = SettingStore::get('jobic_seo_open_graph_image');
+
+        $uploadedImage = $values['open_graph_image'] ?? null;
+        $uploadedPath = $uploadedImage instanceof UploadedFile ? $uploadedImage->getPathname() : '';
+        $hasUploadedImage = $uploadedImage instanceof UploadedFile && $uploadedImage->isValid() && $uploadedPath !== '' && is_file($uploadedPath) && filesize($uploadedPath) > 0;
+        $removeImage = (bool) $values['remove_open_graph_image'];
+
+        $context = [
+            'section' => 'seo',
+            'user_id' => $userId,
+            'fields'  => array_keys($values),
+        ];
+
+        Hooks::action('jobic.settings.seo.saving', $context);
+
+        try {
+            if ($hasUploadedImage) {
+                $storedPath = 'seo/open-graph/' . Str::uuid() . '.' . $uploadedImage->extension();
+                $contents = file_get_contents($uploadedPath);
+                if ($contents === false || ! Storage::disk('public')->put($storedPath, $contents)) {
+                    throw new RuntimeException('Open Graph image storage failed.');
+                }
+                $values['open_graph_image'] = $storedPath;
+            } else if ($removeImage) {
+                $values['open_graph_image'] = null;
+            } else {
+                $values['open_graph_image'] = $currentImage;
+            }
+            unset($values['remove_open_graph_image']);
+
+            SettingStore::dispatchByForm('jobic_seo', collect($values)->mapWithKeys(fn (
+                    mixed $value,
+                    string $key
+                ): array => ['jobic_seo_' . $key => $value])->all());
+        } catch (Throwable $exception) {
+            if ($hasUploadedImage && filled($values['open_graph_image'] ?? null)) {
+                Storage::disk('public')->delete((string) $values['open_graph_image']);
+            }
+
+            Log::error('SEO settings persistence failed.', [
+                'exception_type' => $exception::class,
+                'phase'          => isset($storedPath) && ($values['open_graph_image'] ?? null) === $storedPath ? 'settings' : 'image',
+                'error'          => $exception->getMessage(),
+            ]);
+
+            return Response::make(false, trans('admin.seo.save_failed'), null, 422);
+        }
+
+        if (($removeImage || $hasUploadedImage) && filled($currentImage) && $currentImage !== $values['open_graph_image']) {
+            Storage::disk('public')->delete((string) $currentImage);
+        }
+
+        Hooks::notify('jobic.settings.seo.saved', $context);
+
+        return Response::make(true, trans('admin.saved'));
     }
 
     /**
@@ -193,7 +281,12 @@ readonly class Settings
 
         Hooks::action('jobic.settings.profile.saving', $context);
 
-        $user->fill(['email' => $values['email'], 'name' => $values['name'] ?? $user->name, 'avatar_preset' => $values['avatar_preset'] ?? $user->avatar_preset, 'metadata' => $profileMetadata])->save();
+        $user->fill([
+            'email'         => $values['email'],
+            'name'          => $values['name'] ?? $user->name,
+            'avatar_preset' => $values['avatar_preset'] ?? $user->avatar_preset,
+            'metadata'      => $profileMetadata,
+        ])->save();
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 

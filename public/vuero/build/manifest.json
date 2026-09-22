@@ -123,8 +123,8 @@
       "_page-315b051b.js"
     ]
   },
-  "_settings-fd4a70b3.js": {
-    "file": "assets/settings-fd4a70b3.js",
+  "_settings-41baf779.js": {
+    "file": "assets/settings-41baf779.js",
     "imports": [
       "_page-315b051b.js"
     ]
@@ -191,7 +191,7 @@
     ]
   },
   "admin-shell.css": {
-    "file": "assets/admin-shell-76c1f2a3.css",
+    "file": "assets/admin-shell-ef4b1455.css",
     "src": "admin-shell.css"
   },
   "auth-login.css": {
@@ -229,12 +229,12 @@
   },
   "resources/js/admin/shell.js": {
     "css": [
-      "assets/admin-shell-76c1f2a3.css"
+      "assets/admin-shell-ef4b1455.css"
     ],
-    "file": "assets/shell-9e50c2de.js",
+    "file": "assets/shell-2052f3ff.js",
     "imports": [
       "_toast-18d1caa1.js",
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_page-315b051b.js"
     ],
     "isEntry": true,
@@ -260,11 +260,11 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/form-c297f986.js",
+    "file": "assets/form-3483b366.js",
     "imports": [
       "_shared-f72242ef.js",
       "_page-315b051b.js",
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -275,11 +275,11 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/index-ca891bf8.js",
+    "file": "assets/index-dc688a80.js",
     "imports": [
       "_shared-f72242ef.js",
       "_page-315b051b.js",
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_selects-9f57de85.js"
     ],
@@ -290,11 +290,11 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/form-e6c2ebd3.js",
+    "file": "assets/form-b9050e36.js",
     "imports": [
       "_shared-ca560946.js",
       "_page-315b051b.js",
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js",
       "_selects-9f57de85.js"
@@ -306,11 +306,11 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/index-0028e940.js",
+    "file": "assets/index-eaa1c1f8.js",
     "imports": [
       "_shared-ca560946.js",
       "_page-315b051b.js",
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_selects-9f57de85.js"
     ],
@@ -321,11 +321,11 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/form-8d6d3cad.js",
+    "file": "assets/form-b6ff0424.js",
     "imports": [
       "_shared-6fbc1607.js",
       "_page-315b051b.js",
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -336,11 +336,11 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/index-9d76ff7b.js",
+    "file": "assets/index-56a72a59.js",
     "imports": [
       "_shared-6fbc1607.js",
       "_page-315b051b.js",
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_selects-9f57de85.js"
     ],
@@ -1177,12 +1177,12 @@
   },
   "resources/js/vuero/pages/auth/login.js": {
     "css": [
-      "assets/admin-shell-76c1f2a3.css",
+      "assets/admin-shell-ef4b1455.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/login-bbdb4493.js",
+    "file": "assets/login-adf1c858.js",
     "imports": [
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_page-315b051b.js",
       "_jquery-83fec99f.js"
@@ -1192,12 +1192,12 @@
   },
   "resources/js/vuero/pages/auth/recovery.js": {
     "css": [
-      "assets/admin-shell-76c1f2a3.css",
+      "assets/admin-shell-ef4b1455.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/recovery-bbdb4493.js",
+    "file": "assets/recovery-adf1c858.js",
     "imports": [
-      "_settings-fd4a70b3.js",
+      "_settings-41baf779.js",
       "_toast-18d1caa1.js",
       "_page-315b051b.js",
       "_jquery-83fec99f.js"

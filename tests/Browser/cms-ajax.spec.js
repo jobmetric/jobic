@@ -13,9 +13,16 @@ test('settings save without document navigation and use product branding', async
     await expect(page.locator('[data-field-error]')).toBeVisible();
     await expect(page.locator('input[name="name"]')).toHaveAttribute('aria-invalid', 'true');
     expect(await page.evaluate(() => window.documentIdentity)).toBe('same-document');
-    for (const section of ['general', 'mail']) {
+    for (const section of ['general', 'seo', 'mail']) {
         await page.goto(`/admin/settings/${section}`);
         await page.evaluate(() => { window.documentIdentity = 'settings-save'; });
+        if (section === 'seo') {
+            await page.locator('#meta_title').fill('Live SEO preview');
+            await page.locator('#meta_description').fill('Live preview description');
+            await expect(page.locator('[data-seo-preview-title]')).toHaveText('Live SEO preview');
+            await expect(page.locator('[data-seo-preview-og-title]')).toHaveText('Live SEO preview');
+            await expect(page.locator('[data-seo-preview-description]')).toHaveText('Live preview description');
+        }
         const saved = page.waitForResponse((response) => response.url().endsWith(`/settings/${section}`) && response.request().method() === 'POST');
         await page.locator('form.cms-settings-form button[type="submit"]').click();
         expect((await saved).status()).toBe(200);

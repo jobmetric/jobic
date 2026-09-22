@@ -25,6 +25,6 @@ return [
     'fields' => ['name' => 'نام', 'description' => 'توضیحات', 'parent_id' => 'نقش والد', 'ordering' => 'ترتیب', 'is_default' => 'نقش پیش‌فرض', 'is_super' => 'نقش ارشد', 'allow' => 'مجوزها', 'deny' => 'ممانعت‌ها', 'rules' => 'قوانین نقش'],
     'permissions' => [
         'admin' => 'مدیریت', 'dashboard' => 'داشبورد', 'users' => 'کاربران', 'users_view' => 'مشاهدهٔ کاربران', 'users_manage' => 'مدیریت کاربران',
-        'roles' => 'نقش‌ها', 'roles_view' => 'مشاهدهٔ نقش‌ها', 'roles_manage' => 'مدیریت نقش‌ها', 'settings' => 'تنظیمات', 'settings_general' => 'تنظیمات عمومی', 'settings_health' => 'سلامت سیستم', 'settings_cache' => 'تنظیمات کش', 'settings_languages' => 'زبان‌ها', 'settings_mail' => 'تنظیمات ایمیل',
+        'roles' => 'نقش‌ها', 'roles_view' => 'مشاهدهٔ نقش‌ها', 'roles_manage' => 'مدیریت نقش‌ها', 'settings' => 'تنظیمات', 'settings_general' => 'تنظیمات عمومی', 'settings_seo' => 'تنظیمات سئو', 'settings_health' => 'سلامت سیستم', 'settings_cache' => 'تنظیمات کش', 'settings_languages' => 'زبان‌ها', 'settings_mail' => 'تنظیمات ایمیل',
     ],
 ];

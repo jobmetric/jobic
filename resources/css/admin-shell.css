@@ -135,6 +135,45 @@ html[dir='rtl'] .cms-settings-card__arrow svg { transform: scaleX(-1); }
 .cms-settings-section__header h3 { color: var(--text); font-family: var(--font-alt); font-size: 15px; font-weight: 650; }
 .cms-settings-section__header p { margin-block-start: 4px; color: var(--muted); font-size: 12px; line-height: 1.65; }
 .cms-settings-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px 20px; }
+.cms-seo-fields { grid-template-columns: minmax(0, 1fr); }
+.cms-seo-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 34%); gap: 20px; align-items: start; }
+.cms-seo-content, .cms-seo-aside { min-width: 0; }
+.cms-seo-aside__sticky { position: sticky; inset-block-start: 88px; display: grid; gap: 20px; }
+.cms-seo-toggles { overflow: hidden; border: 1px solid var(--border); border-radius: 11px; }
+.cms-seo-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 58px; padding: 11px 14px; border-block-end: 1px solid var(--border); }
+.cms-seo-toggle-row:last-child { border-block-end: 0; }
+.cms-seo-toggle-row > label { color: var(--text); font-size: 12px; font-weight: 650; cursor: pointer; }
+.cms-seo-toggle-row .form-switch-control { flex: 0 0 auto; }
+.cms-seo-uploader { display: grid; gap: 13px; }
+.cms-seo-uploader > input[type='file'] { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+.cms-seo-uploader__dropzone { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 13px 15px; border: 1.5px dashed color-mix(in srgb, var(--primary) 45%, var(--border)); border-radius: 12px; background: color-mix(in srgb, var(--primary-soft) 22%, var(--surface)); cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
+.cms-seo-uploader__dropzone:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary-soft) 58%, var(--surface)); transform: translateY(-1px); }
+.cms-seo-uploader__icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; color: var(--primary); border-radius: 11px; background: var(--surface); }
+.cms-seo-uploader__copy { min-width: 0; flex: 1; }
+.cms-seo-uploader__copy strong, .cms-seo-uploader__copy small { display: block; }
+.cms-seo-uploader__copy strong { color: var(--text); font-size: 12px; font-weight: 700; }
+.cms-seo-uploader__copy small { margin-block-start: 5px; color: var(--muted); font-size: 10px; line-height: 1.6; }
+.cms-seo-uploader__selection { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 11px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-soft); }
+.cms-seo-uploader__thumb { display: grid; place-items: center; width: 56px; height: 46px; overflow: hidden; color: var(--muted); border-radius: 8px; background: var(--surface); }
+.cms-seo-uploader__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.cms-seo-uploader__meta { min-width: 0; }
+.cms-seo-uploader__meta strong, .cms-seo-uploader__meta small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cms-seo-uploader__meta strong { color: var(--text); font-size: 11px; }
+.cms-seo-uploader__meta small { margin-block-start: 4px; color: var(--muted); font-size: 9px; }
+.cms-seo-remove-image { display: inline-flex; align-items: center; gap: 5px; padding: 7px 8px; color: #c24155; border: 0; background: transparent; font: inherit; font-size: 10px; font-weight: 650; cursor: pointer; }
+.cms-seo-remove-image:hover { color: #fff; border-radius: 7px; background: #c24155; }
+.cms-seo-remove-image.is-active { color: var(--primary); }
+.cms-seo-preview { min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 15px; background: var(--surface); }
+.cms-seo-preview > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 18px; border-block-end: 1px solid var(--border); }
+.cms-seo-preview > header strong { color: var(--text); font-size: 13px; }
+.cms-seo-preview > header span { color: var(--primary); background: var(--primary-soft); border-radius: 999px; padding: 4px 9px; font-size: 10px; font-weight: 700; }
+.cms-seo-preview__body { padding: 18px; }
+.cms-seo-preview__body small { display: block; overflow: hidden; color: #188038; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.cms-seo-preview__body h3 { margin-block: 7px 5px; overflow: hidden; color: #1a0dab; font-size: 18px; font-weight: 500; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.cms-seo-preview__body p { display: -webkit-box; overflow: hidden; color: var(--muted); font-size: 12px; line-height: 1.7; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.cms-seo-preview__image { display: grid; place-items: center; aspect-ratio: 1200 / 630; overflow: hidden; color: var(--muted); background: var(--background); }
+.cms-seo-preview__image img { width: 100%; height: 100%; object-fit: cover; }
+.cms-seo-preview--og .cms-seo-preview__body h3 { color: var(--text); font-size: 15px; font-weight: 650; }
 .cms-settings-field { min-width: 0; }
 .cms-settings-field > label { display: block; margin-block-end: 7px; color: var(--text); font-size: 11px; font-weight: 650; }
 .cms-settings-field > small { display: block; margin-block-start: 6px; color: var(--muted); font-size: 10px; line-height: 1.55; }
@@ -361,6 +400,12 @@ html[dir='rtl'] .cms-health-card__guide { border-radius: 9px 0 0 9px; }
     .cms-avatar-presets .cms-avatar-modal__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .cms-settings-hub__hero { align-items: flex-start; padding: 21px; }
     .cms-settings-grid, .cms-settings-fields, .cms-health-grid, .cms-health-list { grid-template-columns: 1fr; }
+    .cms-seo-workspace { grid-template-columns: 1fr; }
+    .cms-seo-aside__sticky { position: static; grid-template-columns: 1fr; }
+    .cms-seo-uploader__dropzone { align-items: flex-start; flex-wrap: wrap; }
+    .cms-seo-uploader__dropzone .vuero-button { width: 100%; }
+    .cms-seo-uploader__selection { grid-template-columns: 48px minmax(0, 1fr); }
+    .cms-seo-uploader__selection .vuero-button { grid-column: 1 / -1; width: 100%; }
     .cms-settings-box__header, .cms-settings-form, .cms-health { padding: 20px; }
     .cms-settings-section { padding: 17px; }
     .cms-settings-test-row { grid-template-columns: 1fr; }

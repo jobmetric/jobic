@@ -18,8 +18,6 @@ class AdminAuthorizationTest extends TestCase
 
     /**
      * Deny direct page requests and hide complete unauthorized menu branches.
-     *
-     * @return void
      */
     public function test_direct_requests_are_denied_and_unauthorized_menus_are_hidden(): void
     {
@@ -51,8 +49,6 @@ class AdminAuthorizationTest extends TestCase
 
     /**
      * Inherit parent permission grants while allowing explicit child denials.
-     *
-     * @return void
      */
     public function test_parent_grants_and_child_denials_protect_view_and_manage_routes(): void
     {
@@ -80,8 +76,6 @@ class AdminAuthorizationTest extends TestCase
 
     /**
      * Send a signed-in user to the first administration page allowed by their role.
-     *
-     * @return void
      */
     public function test_login_uses_the_first_permitted_page_when_dashboard_is_denied(): void
     {
@@ -114,8 +108,6 @@ class AdminAuthorizationTest extends TestCase
 
     /**
      * Keep personal presentation controls available on an unauthorized page.
-     *
-     * @return void
      */
     public function test_personal_controls_remain_available_without_settings_permission(): void
     {
@@ -157,8 +149,6 @@ class AdminAuthorizationTest extends TestCase
 
     /**
      * Enforce a separate permission for every settings menu item.
-     *
-     * @return void
      */
     public function test_each_settings_item_has_an_independent_permission(): void
     {
@@ -182,12 +172,14 @@ class AdminAuthorizationTest extends TestCase
             ->assertDontSee(route('admin.settings.health'), false)
             ->assertDontSee(route('admin.settings.mail.edit'), false)
             ->assertDontSee(route('admin.settings.languages.index'), false)
+            ->assertDontSee(route('admin.settings.edit', 'seo'), false)
             ->assertDontSee(route('admin.settings.edit', 'general'), false);
         $this->get(route('admin.settings.cache.edit'))->assertOk();
         $this->putJson(route('admin.settings.cache.update'), [])->assertUnprocessable();
         $this->get(route('admin.settings.health'))->assertForbidden();
         $this->get(route('admin.settings.mail.edit'))->assertForbidden();
         $this->get(route('admin.settings.languages.index'))->assertForbidden();
+        $this->get(route('admin.settings.edit', 'seo'))->assertForbidden();
         $this->get(route('admin.settings.edit', 'general'))->assertForbidden();
     }
 }
