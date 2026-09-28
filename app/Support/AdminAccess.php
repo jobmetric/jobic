@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\User;
+use App\Services\Settings\DynamicSettings;
 
 /**
  * Resolve hierarchical CMS permissions from effective Rolix grants and denials.
@@ -13,13 +14,15 @@ class AdminAccess
 {
     /**
      * Resolve the first useful administration route available to a user.
-     *
-     * @param User|null $user
-     *
-     * @return string
      */
     public function landingRoute(?User $user): string
     {
+        foreach ($this->dynamicSettingDescriptors() as $setting) {
+            if ($this->allows($user, $this->dynamicSettingsPermission($setting['application'], $setting['key']))) {
+                return 'admin.settings.index';
+            }
+        }
+
         $destinations = [
             'admin.dashboard'                => ['admin.dashboard'],
             'admin.users.index'              => ['admin.users.view'],
@@ -51,11 +54,6 @@ class AdminAccess
 
     /**
      * Determine whether a user may use one CMS permission key.
-     *
-     * @param User|null $user
-     * @param string $permission
-     *
-     * @return bool
      */
     public function allows(?User $user, string $permission): bool
     {
@@ -75,10 +73,7 @@ class AdminAccess
     /**
      * Determine whether a user may use at least one CMS permission key.
      *
-     * @param User|null $user
      * @param array<int, string> $permissions
-     *
-     * @return bool
      */
     public function allowsAny(?User $user, array $permissions): bool
     {
@@ -93,10 +88,6 @@ class AdminAccess
 
     /**
      * Resolve the permission key protecting a settings section.
-     *
-     * @param string $section
-     *
-     * @return string
      */
     public function settingsPermission(string $section): string
     {
@@ -112,12 +103,39 @@ class AdminAccess
     }
 
     /**
+     * Build the permission protecting one discovered settings form.
+     */
+    public function dynamicSettingsPermission(string $application, string $key): string
+    {
+        return app(DynamicSettings::class)->permission($application, $key);
+    }
+
+    /** Determine whether a user can access at least one discovered settings form. */
+    public function allowsAnyDynamicSetting(?User $user): bool
+    {
+        foreach ($this->dynamicSettingDescriptors() as $setting) {
+            if ($this->allows($user, $this->dynamicSettingsPermission($setting['application'], $setting['key']))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Read dynamic descriptors when the supporting package version is installed.
+     *
+     * @return array<int, array<string, string>>
+     */
+    private function dynamicSettingDescriptors(): array
+    {
+        return app(DynamicSettings::class)->descriptors();
+    }
+
+    /**
      * Match exact, wildcard, or inherited parent permissions.
      *
-     * @param string $permission
      * @param array<int, string> $entries
-     *
-     * @return bool
      */
     private function matches(string $permission, array $entries): bool
     {

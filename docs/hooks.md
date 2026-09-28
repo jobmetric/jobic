@@ -113,6 +113,29 @@ For example, an extension may observe `jobic.roles.saved`, retrieve the authoriz
 
 ## Optional cache settings
 
+## Discovered setting forms
+
+`jobic.admin.settings.form.builder` is a value filter for forms discovered through `jobmetric/laravel-setting`. Its value is the mutable `FormBuilder`; context contains only `application`, `key`, `form_name`, and nullable `user_id`. It runs after the package `BuildingSettingForm` Laravel event and before duplicate/reserved-name checks, rendering, validation, or persistence. Callbacks must return the builder. Added fields therefore participate in the same validation and database save as native fields.
+
+`jobic.admin.settings.dynamic.form.before` and `jobic.admin.settings.dynamic.form.after` are view slots around the generated form. Their context contains `application`, `key`, and `form_name`; extensions must own validation and persistence for any markup not added through the builder filter.
+
+`jobic.settings.dynamic.saving` runs after DTO validation and before atomic persistence. It may throw to veto the write. `jobic.settings.dynamic.saved` is an isolated success-only notification after persistence. Both receive `application`, `key`, `form_name`, authenticated `user_id`, and non-sensitive field names only. Password/secret values, uploaded files, stored paths, raw requests, tokens, and field values are never included. For example, an extension can add a validated field in the builder filter and invalidate its cache from `saved` by resolving the authorized form through `form_name`.
+
+The package Laravel event and CMS builder filter are synchronous. Their fixed order is base `AbstractSetting::form()`, `BuildingSettingForm`, then `jobic.admin.settings.form.builder`. Route authorization defaults to the independent Rolix permission `admin.settings.{application}.{key}`. A trusted application-owned setting may expose `permission()` to place itself at another explicit point in the same settings tree; the social-network form uses `admin.settings.social_networks`, directly below `admin.settings`. Neither extension mechanism grants access.
+
+### Social-network registry
+
+Social profile types are registered through the application singleton `App\Support\SocialNetworks\SocialNetworkRegistry`. An extension may resolve it in its service provider `boot()` method and call `register($key, $translationKey, $icon, $urlTemplate)`. Keys and icon references must use safe lowercase identifiers; templates must use HTTPS and contain exactly one `{slug}` placeholder. Duplicate keys and unsafe templates throw `InvalidArgumentException` during boot. The settings field, validation allowlist, URL preview, and public `App\Services\Settings\SocialNetworks::configured()` reader all use this same registry. The reader returns only `type`, translated `name`, icon reference, slug, and the resolved public URL.
+
+```php
+app(\App\Support\SocialNetworks\SocialNetworkRegistry::class)->register(
+    'mastodon',
+    'acme::social.mastodon',
+    'brand-mastodon',
+    'https://social.example/@{slug}',
+);
+```
+
 `jobic.settings.cache.saving` and `jobic.settings.cache.saved` use the existing action/notification dispatcher. Context is `section=cache`, authenticated `user_id`, and `fields` (names only). The service revalidates with dto and rejects shared Redis session/queue changes before `saving`; saving exceptions veto persistence. Connectivity and temporary read/write/delete checks run before atomic environment persistence. `saved` runs only after persistence succeeds; observer errors are isolated by `Hooks::notify`. Diagnostic test actions emit neither hook and never save. No host, username, password or raw values enter context. Example: observe `jobic.settings.cache.saved` to record that `$context['user_id']` changed the cache configuration, without logging configuration values. These screens reuse the documented settings content and form slots with sections `cache` and `health` (health has no form).
 
 ## Account authenticator

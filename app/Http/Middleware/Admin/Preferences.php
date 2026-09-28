@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Admin;
 
 use App\Facades\Hooks;
+use App\Services\Settings\DynamicSettings;
 use App\Support\AdminAccess;
 use App\Support\LocaleCatalog;
 use Closure;
@@ -19,11 +20,6 @@ class Preferences
 {
     /**
      * Apply account locale and appearance preferences to the request.
-     *
-     * @param Request $request
-     * @param Closure $next
-     *
-     * @return Response
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -63,6 +59,25 @@ class Preferences
                         default => route('admin.settings.edit', $key)
                     },
                 ];
+        }
+
+        $descriptors = app(DynamicSettings::class)->descriptors();
+        foreach ($descriptors as $descriptor) {
+            $permission = $access->dynamicSettingsPermission($descriptor['application'], $descriptor['key']);
+            if (! $access->allows($request->user(), $permission)) {
+                continue;
+            }
+
+            $sectionKey = 'dynamic-' . $descriptor['form_name'];
+            $sections[$sectionKey] = [
+                'icon'        => $descriptor['icon'],
+                'group'       => 'ordinary',
+                'order'       => 100,
+                'label'       => trans($descriptor['title']),
+                'description' => trans($descriptor['description']),
+                'url'         => route('admin.settings.forms.edit', [$descriptor['application'], $descriptor['key']]),
+                'permission'  => $permission,
+            ];
         }
 
         view()->share('settingsSections', Hooks::filter('jobic.admin.settings.sections', $sections, [

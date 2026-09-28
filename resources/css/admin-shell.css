@@ -177,6 +177,17 @@ html[dir='rtl'] .cms-settings-card__arrow svg { transform: scaleX(-1); }
 .cms-settings-field { min-width: 0; }
 .cms-settings-field > label { display: block; margin-block-end: 7px; color: var(--text); font-size: 11px; font-weight: 650; }
 .cms-settings-field > small { display: block; margin-block-start: 6px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.cms-dynamic-fields .cms-settings-field > .input,
+.cms-dynamic-fields .cms-settings-field > select,
+.cms-dynamic-fields .cms-settings-field > textarea { width: 100%; min-height: 46px; padding: 10px 12px; color: var(--text); border: 1px solid var(--border); border-radius: 11px; background: var(--surface-soft); outline: 0; font: inherit; font-size: 13px; transition: border-color .2s, box-shadow .2s, background .2s; }
+.cms-dynamic-fields .cms-settings-field > textarea { min-height: 110px; resize: vertical; }
+.cms-dynamic-fields .cms-settings-field > .input:focus,
+.cms-dynamic-fields .cms-settings-field > select:focus,
+.cms-dynamic-fields .cms-settings-field > textarea:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-soft); }
+.cms-dynamic-fields .cms-settings-field .form-label { display: flex; justify-content: space-between; align-items: center; margin-block-end: 7px; color: var(--text); font-size: 11px; font-weight: 650; }
+.cms-dynamic-fields .cms-settings-field .required::after { margin-inline-start: 3px; color: #c24155; content: '*'; }
+.cms-dynamic-fields .cms-settings-field .text-gray-600 { margin-block-start: 6px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.cms-dynamic-fields .cms-settings-field .custom-field-error { margin-block-start: 6px; color: #c24155; font-size: 10px; }
 .cms-settings-control > .input, .cms-settings-control > input, .cms-settings-control > select, .cms-settings-control .cms-password-input { width: 100%; min-height: 46px; color: var(--text); border: 1px solid var(--border); border-radius: 11px; transition: border-color .2s, box-shadow .2s, background .2s; }
 .cms-settings-control > .input, .cms-settings-control > select { padding: 10px 12px; font: inherit; font-size: 13px; }
 .cms-settings-control > .input:focus, .cms-settings-control > select:focus, .cms-settings-control .cms-password-input:focus-within { outline: 0; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-soft); }

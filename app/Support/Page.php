@@ -6,7 +6,9 @@ namespace App\Support;
 
 use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
 use JobMetric\Domi\Facades\Domi;
+use JobMetric\Setting\Contracts\AbstractSetting;
 use Throwable;
+use UnexpectedValueException;
 
 /** Page-only presentation data; never pass requests, models or credentials. */
 class Page
@@ -44,15 +46,56 @@ class Page
      * @param string $url
      * @param string $position
      * @param string $type
+     * @param bool $async
+     * @param bool $defer
      *
      * @return void
      */
     public static function addScript(
         string $url,
         string $position = 'bottom',
-        string $type = 'application/javascript'
+        string $type = 'application/javascript',
+        bool $async = false,
+        bool $defer = false
     ): void {
-        Domi::setScript($url, $type, false, false, $position);
+        Domi::setScript($url, $type, $async, $defer, $position);
+    }
+
+    /**
+     * Register the styles and scripts declared by one settings driver.
+     *
+     * @param AbstractSetting $setting
+     *
+     * @return void
+     * @throws Throwable
+     */
+    public static function addSettingAssets(AbstractSetting $setting): void
+    {
+        $styles = method_exists($setting, 'domiStyles') ? $setting->domiStyles() : [];
+        $scripts = method_exists($setting, 'domiScripts') ? $setting->domiScripts() : [];
+
+        foreach ($styles as $style) {
+            $definition = is_string($style) ? ['href' => $style] : $style;
+            if (! is_array($definition) || ! is_string($definition['href'] ?? null) || $definition['href'] === '') {
+                throw new UnexpectedValueException('Setting driver styles must define a non-empty href.');
+            }
+            Domi::setStyle($definition['href'], $definition['media'] ?? null, $definition['integrity'] ?? null, $definition['crossorigin'] ?? null);
+        }
+
+        foreach ($scripts as $script) {
+            $definition = is_string($script) ? ['src' => $script] : $script;
+            if (! is_array($definition)) {
+                throw new UnexpectedValueException('Setting driver scripts must define a non-empty src and a valid position.');
+            }
+            $position = $definition['position'] ?? 'bottom';
+            if (! is_string($definition['src'] ?? null) || $definition['src'] === '' || ! in_array($position, [
+                    'top',
+                    'bottom',
+                ], true)) {
+                throw new UnexpectedValueException('Setting driver scripts must define a non-empty src and a valid position.');
+            }
+            Domi::setScript($definition['src'], $definition['type'] ?? 'application/javascript', (bool) ($definition['async'] ?? false), (bool) ($definition['defer'] ?? false), $position);
+        }
     }
 
     /**

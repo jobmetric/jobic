@@ -25,6 +25,6 @@ return [
     'fields' => ['name' => 'name', 'description' => 'description', 'parent_id' => 'parent role', 'ordering' => 'order', 'is_default' => 'default role', 'is_super' => 'super role', 'allow' => 'allowed permissions', 'deny' => 'denied permissions', 'rules' => 'role rules'],
     'permissions' => [
         'admin' => 'Administration', 'dashboard' => 'Dashboard', 'users' => 'Users', 'users_view' => 'View users', 'users_manage' => 'Manage users',
-        'roles' => 'Roles', 'roles_view' => 'View roles', 'roles_manage' => 'Manage roles', 'settings' => 'Settings', 'settings_general' => 'General settings', 'settings_seo' => 'SEO settings', 'settings_health' => 'System health', 'settings_cache' => 'Cache settings', 'settings_languages' => 'Languages', 'settings_mail' => 'Mail settings',
+        'roles' => 'Roles', 'roles_view' => 'View roles', 'roles_manage' => 'Manage roles', 'settings' => 'Settings', 'settings_application' => 'Application settings', 'settings_general' => 'General settings', 'settings_seo' => 'SEO settings', 'settings_health' => 'System health', 'settings_cache' => 'Cache settings', 'settings_languages' => 'Languages', 'settings_mail' => 'Mail settings',
     ],
 ];

@@ -7,6 +7,7 @@ namespace Tests\Feature\Presentation;
 use App\Support\Page;
 use Illuminate\Support\Facades\Blade;
 use JobMetric\Domi\Facades\Domi;
+use Tests\Fixtures\DynamicSetting;
 use Tests\TestCase;
 
 class PageTest extends TestCase
@@ -42,5 +43,36 @@ class PageTest extends TestCase
         $this->assertLessThan(strpos($html, '</head>'), strpos($html, '/test/top.js'));
         $this->assertGreaterThan(strpos($html, 'window.localize'), strpos($html, '/test/bottom.js'));
         $this->assertStringContainsString('assets/vendor/domi/domi.js', $html);
+    }
+
+    /**
+     * Register settings-driver assets through the shared Domi document.
+     *
+     * @return void
+     */
+    public function test_setting_driver_assets_are_registered_with_domi(): void
+    {
+        $setting = new class extends DynamicSetting
+        {
+            public function domiStyles(): array
+            {
+                return [['href' => '/driver.css', 'media' => 'screen']];
+            }
+
+            public function domiScripts(): array
+            {
+                return [['src' => '/driver.js', 'type' => 'module', 'defer' => true]];
+            }
+        };
+
+        Page::prepare('driver-assets');
+        Page::addSettingAssets($setting);
+        $this->withoutVite();
+        $html = Blade::render("@extends('common.base')");
+
+        $this->assertStringContainsString('/driver.css', $html);
+        $this->assertStringContainsString('media="screen"', $html);
+        $this->assertStringContainsString('/driver.js', $html);
+        $this->assertStringContainsString('type="module"', $html);
     }
 }

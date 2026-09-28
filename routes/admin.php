@@ -6,6 +6,7 @@ use App\Http\Controllers\Roles\RoleController;
 use App\Http\Controllers\Settings\MailController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Settings\SystemController;
+use App\Http\Controllers\Settings\DynamicSettingController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Middleware\Admin\EnsurePermission;
 use App\Http\Middleware\Admin\Preferences;
@@ -53,8 +54,12 @@ Route::middleware([
     });
 
     Route::prefix('settings')->name('settings.')->group(function (): void {
+        Route::prefix('forms/{application}/{key}')->name('forms.')->controller(DynamicSettingController::class)->group(function (): void {
+            Route::get('/', 'edit')->middleware(EnsurePermission::class.':admin.settings.dynamic')->name('edit');
+            Route::put('/', 'update')->middleware([EnsurePermission::class.':admin.settings.dynamic', 'throttle:30,1'])->name('update');
+        });
         Route::controller(SettingsController::class)->group(function () {
-            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.general,admin.settings.seo,admin.settings.health,admin.settings.cache,admin.settings.mail,admin.settings.languages')->name('index');
+            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.general,admin.settings.seo,admin.settings.health,admin.settings.cache,admin.settings.mail,admin.settings.languages,admin.settings.dynamic.any')->name('index');
 
             $settingPages = [
                 'general',

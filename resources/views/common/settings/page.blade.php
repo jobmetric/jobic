@@ -1,5 +1,5 @@
 @extends('common.admin')
-@section('title', __('admin.sections.'.$section))
+@section('title', $settingsSections[$section]['label'] ?? __('admin.sections.'.$section))
 @section('content')
     <section class="profile-layout-page cms-settings-page" data-cms-reveal>
         <div class="cms-settings-layout">
@@ -14,7 +14,7 @@
             </aside>
             <div class="cms-settings-main">
                 <div class="cms-settings-box">
-                    <header class="cms-settings-box__header"><span class="cms-settings-box__icon"><x-vuero.icon :name="$settingsSections[$section]['icon'] ?? 'settings'" size="25" /></span><div><h2>{{ __('admin.sections.'.$section) }}</h2><p>{{ __('admin.descriptions.'.$section) }}</p></div></header>
+                    <header class="cms-settings-box__header"><span class="cms-settings-box__icon"><x-vuero.icon :name="$settingsSections[$section]['icon'] ?? 'settings'" size="25" /></span><div><h2>{{ $settingsSections[$section]['label'] ?? __('admin.sections.'.$section) }}</h2><p>{{ $settingsSections[$section]['description'] ?? __('admin.descriptions.'.$section) }}</p></div></header>
                     <div class="alert alert--danger cms-form-alert" data-settings-errors role="alert" tabindex="-1" @if(!$errors->any()) hidden @endif><span class="cms-form-alert__icon"><x-vuero.icon name="info" size="19" /></span><div><strong>{{ __('admin.form_error_title') }}</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div></div>
                     @cmsHook('jobic.admin.settings.content.before', ['section' => $section])
                     @yield('settings-content')

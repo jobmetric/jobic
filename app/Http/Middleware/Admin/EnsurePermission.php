@@ -17,7 +17,6 @@ readonly class EnsurePermission
     /**
      * Create the CMS permission middleware.
      *
-     * @param AdminAccess $access
      *
      * @return void
      */
@@ -27,19 +26,18 @@ readonly class EnsurePermission
 
     /**
      * Authorize the request against one of the supplied permission keys.
-     *
-     * @param Request $request
-     * @param Closure $next
-     * @param string ...$permissions
-     *
-     * @return Response
      */
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
-        $permissions = array_map(fn (string $permission
-        ) => $permission === 'admin.settings.section' ? $this->access->settingsPermission((string) $request->route('section')) : $permission, $permissions,);
+        $permissions = array_map(fn (string $permission) => match ($permission) {
+            'admin.settings.section' => $this->access->settingsPermission((string) $request->route('section')),
+            'admin.settings.dynamic' => $this->access->dynamicSettingsPermission((string) $request->route('application'), (string) $request->route('key')),
+            default => $permission,
+        }, $permissions);
 
-        if (! $this->access->allowsAny($request->user(), $permissions)) {
+        $allowsDynamic = in_array('admin.settings.dynamic.any', $permissions, true) && $this->access->allowsAnyDynamicSetting($request->user());
+
+        if (! $allowsDynamic && ! $this->access->allowsAny($request->user(), array_diff($permissions, ['admin.settings.dynamic.any']))) {
             $landingRoute = $this->access->landingRoute($request->user());
 
             if ($request->routeIs('admin.dashboard') && $landingRoute !== 'admin.dashboard') {

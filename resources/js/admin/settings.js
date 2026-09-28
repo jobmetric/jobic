@@ -215,7 +215,8 @@ export function bindSettingsForms({ announce, applyPreferences }) {
         });
         const testAction = event.submitter?.dataset.testAction;
         if (testAction) { data.delete('_method'); data.set('action', event.submitter.value); }
-        const buttons = [...form.querySelectorAll('[type="submit"]')];
+        const associatedButtons = form.id ? document.querySelectorAll(`[type="submit"][form="${CSS.escape(form.id)}"]`) : [];
+        const buttons = [...form.querySelectorAll('[type="submit"]'), ...associatedButtons];
         const errors = document.querySelector('[data-settings-errors]');
         const testResult = form.querySelector('[data-test-result]');
         testResult?.classList.remove('is-success', 'is-error');
@@ -262,7 +263,8 @@ export function bindSettingsForms({ announce, applyPreferences }) {
             }
             const messages = Object.values(error.errors || {}).flat();
             Object.entries(error.errors || {}).forEach(([name, messages]) => {
-                const input = form.elements.namedItem(name);
+                const bracketName = name.replace(/\.([^.]+)/g, '[$1]');
+                const input = form.elements.namedItem(name) || form.elements.namedItem(bracketName);
                 if (!(input instanceof HTMLElement)) return;
                 input.setAttribute('aria-invalid', 'true');
                 const message = document.createElement('small');

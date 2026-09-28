@@ -7,7 +7,7 @@
             <div><span class="cms-settings-hub__eyebrow">{{ __('system.control_center') }}</span><h2>{{ __('admin.settings') }}</h2><p>{{ __('admin.settings_intro') }}</p></div>
         </header>
         @foreach (['ordinary', 'technical'] as $group)
-        @php($groupItems = collect($settingsSections)->filter(fn ($item, $key) => in_array($key, ['mail', 'cache', 'health'], true) === ($group === 'technical')))
+        @php($groupItems = collect($settingsSections)->filter(fn ($item, $key) => ($item['group'] ?? (in_array($key, ['mail', 'cache', 'health'], true) ? 'technical' : 'ordinary')) === $group)->sortBy('order'))
         @continue($groupItems->isEmpty())
         <section class="cms-settings-group">
             <header class="cms-settings-group__header"><div><h3>{{ __('system.'.$group) }}</h3><p>{{ __('system.'.$group.'_hint') }}</p></div><span>{{ $groupItems->count() }}</span></header>

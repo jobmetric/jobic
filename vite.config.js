@@ -30,6 +30,8 @@ export default defineConfig({
                 'resources/js/users/form.js',
                 'resources/js/roles/index.js',
                 'resources/js/roles/form.js',
+                'resources/css/settings/social-networks.css',
+                'resources/js/settings/social-networks.js',
                 'resources/js/vuero/pages/admin/starter.js',
                 'resources/js/vuero/pages/utility-roadmap.js',
                 'resources/js/vuero/pages/utility-status.js',
