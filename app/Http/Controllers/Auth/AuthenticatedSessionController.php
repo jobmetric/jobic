@@ -141,9 +141,7 @@ class AuthenticatedSessionController extends Controller
     {
         $access = app(AdminAccess::class);
         $landingRoute = $access->landingRoute($request->user());
-        $landingUrl = route($landingRoute, $landingRoute === 'admin.settings.edit' ? [
-            'section' => 'general',
-        ] : [], false);
+        $landingUrl = route($landingRoute, $access->landingParameters($request->user()), false);
         $intended = $request->session()->get('url.intended');
         if (is_string($intended) && $this->isDashboardUrl($intended) && ! $access->allows($request->user(), 'admin.dashboard')) {
             $request->session()->forget('url.intended');

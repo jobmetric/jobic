@@ -6,54 +6,55 @@ namespace App\Support;
 
 use App\Models\User;
 use App\Services\Settings\DynamicSettings;
+use App\Support\Permissions\PermissionRegistry;
 
 /**
  * Resolve hierarchical CMS permissions from effective Rolix grants and denials.
  */
-class AdminAccess
+readonly class AdminAccess
 {
     /**
+     * Create the centralized CMS access decision service.
+     *
+     * @param PermissionRegistry $permissions
+     *
+     * @return void
+     */
+    public function __construct(private PermissionRegistry $permissions)
+    {
+    }
+
+    /**
      * Resolve the first useful administration route available to a user.
+     *
+     * @param User|null $user
+     *
+     * @return string
      */
     public function landingRoute(?User $user): string
     {
-        foreach ($this->dynamicSettingDescriptors() as $setting) {
-            if ($this->allows($user, $this->dynamicSettingsPermission($setting['application'], $setting['key']))) {
-                return 'admin.settings.index';
-            }
-        }
+        return $this->landingDefinition($user)['route'];
+    }
 
-        $destinations = [
-            'admin.dashboard'                => ['admin.dashboard'],
-            'admin.users.index'              => ['admin.users.view'],
-            'admin.roles.index'              => ['admin.roles.view'],
-            'admin.settings.index'           => [
-                'admin.settings',
-                'admin.settings.general',
-                'admin.settings.seo',
-                'admin.settings.health',
-                'admin.settings.cache',
-                'admin.settings.languages',
-                'admin.settings.mail',
-            ],
-            'admin.settings.edit'            => ['admin.settings.general'],
-            'admin.settings.health'          => ['admin.settings.health'],
-            'admin.settings.cache.edit'      => ['admin.settings.cache'],
-            'admin.settings.languages.index' => ['admin.settings.languages'],
-            'admin.settings.mail.edit'       => ['admin.settings.mail'],
-        ];
-
-        foreach ($destinations as $route => $permissions) {
-            if ($this->allowsAny($user, $permissions)) {
-                return $route;
-            }
-        }
-
-        return 'admin.dashboard';
+    /**
+     * Resolve route parameters for the user's first authorized CMS destination.
+     *
+     * @param User|null $user
+     *
+     * @return array<string, scalar>
+     */
+    public function landingParameters(?User $user): array
+    {
+        return $this->landingDefinition($user)['parameters'];
     }
 
     /**
      * Determine whether a user may use one CMS permission key.
+     *
+     * @param User|null $user
+     * @param string $permission
+     *
+     * @return bool
      */
     public function allows(?User $user, string $permission): bool
     {
@@ -73,7 +74,10 @@ class AdminAccess
     /**
      * Determine whether a user may use at least one CMS permission key.
      *
+     * @param User|null $user
      * @param array<int, string> $permissions
+     *
+     * @return bool
      */
     public function allowsAny(?User $user, array $permissions): bool
     {
@@ -88,54 +92,72 @@ class AdminAccess
 
     /**
      * Resolve the permission key protecting a settings section.
+     *
+     * @param string $section
+     *
+     * @return string
      */
     public function settingsPermission(string $section): string
     {
-        return match ($section) {
-            'general' => 'admin.settings.general',
-            'seo' => 'admin.settings.seo',
-            'health' => 'admin.settings.health',
-            'cache' => 'admin.settings.cache',
-            'languages' => 'admin.settings.languages',
-            'mail' => 'admin.settings.mail',
-            default => 'admin.settings',
-        };
+        $permission = 'admin.settings.' . strtolower($section);
+
+        return $this->permissions->has($permission) ? $permission : 'admin.settings';
     }
 
     /**
      * Build the permission protecting one discovered settings form.
+     *
+     * @param string $application
+     * @param string $key
+     *
+     * @return string
      */
     public function dynamicSettingsPermission(string $application, string $key): string
     {
         return app(DynamicSettings::class)->permission($application, $key);
     }
 
-    /** Determine whether a user can access at least one discovered settings form. */
-    public function allowsAnyDynamicSetting(?User $user): bool
+    /**
+     * Determine whether a user can access any registered permission in a namespace.
+     *
+     * @param User|null $user
+     * @param string $prefix
+     *
+     * @return bool
+     */
+    public function allowsAnyRegistered(?User $user, string $prefix): bool
     {
-        foreach ($this->dynamicSettingDescriptors() as $setting) {
-            if ($this->allows($user, $this->dynamicSettingsPermission($setting['application'], $setting['key']))) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->allowsAny($user, $this->permissions->beneath($prefix));
     }
 
     /**
-     * Read dynamic descriptors when the supporting package version is installed.
+     * Resolve the first registered landing definition allowed for a user.
      *
-     * @return array<int, array<string, string>>
+     * @param User|null $user
+     *
+     * @return array{route: string, parameters: array<string, scalar>}
      */
-    private function dynamicSettingDescriptors(): array
+    private function landingDefinition(?User $user): array
     {
-        return app(DynamicSettings::class)->descriptors();
+        foreach ($this->permissions->landingPermissions() as $permission => $definition) {
+            if ($this->allows($user, $permission)) {
+                return [
+                    'route'      => (string) $definition['route'],
+                    'parameters' => $definition['parameters'],
+                ];
+            }
+        }
+
+        return ['route' => 'admin.dashboard', 'parameters' => []];
     }
 
     /**
      * Match exact, wildcard, or inherited parent permissions.
      *
+     * @param string $permission
      * @param array<int, string> $entries
+     *
+     * @return bool
      */
     private function matches(string $permission, array $entries): bool
     {

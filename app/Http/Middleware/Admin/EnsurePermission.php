@@ -35,15 +35,13 @@ readonly class EnsurePermission
             default => $permission,
         }, $permissions);
 
-        $allowsDynamic = in_array('admin.settings.dynamic.any', $permissions, true) && $this->access->allowsAnyDynamicSetting($request->user());
+        $allowsRegistered = in_array('admin.settings.any', $permissions, true) && $this->access->allowsAnyRegistered($request->user(), 'admin.settings');
 
-        if (! $allowsDynamic && ! $this->access->allowsAny($request->user(), array_diff($permissions, ['admin.settings.dynamic.any']))) {
+        if (! $allowsRegistered && ! $this->access->allowsAny($request->user(), array_diff($permissions, ['admin.settings.any']))) {
             $landingRoute = $this->access->landingRoute($request->user());
 
             if ($request->routeIs('admin.dashboard') && $landingRoute !== 'admin.dashboard') {
-                return redirect()->route($landingRoute, $landingRoute === 'admin.settings.edit' ? [
-                    'section' => 'general',
-                ] : []);
+                return redirect()->route($landingRoute, $this->access->landingParameters($request->user()));
             }
 
             abort(403);

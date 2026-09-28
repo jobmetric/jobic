@@ -59,7 +59,7 @@ Route::middleware([
             Route::put('/', 'update')->middleware([EnsurePermission::class.':admin.settings.dynamic', 'throttle:30,1'])->name('update');
         });
         Route::controller(SettingsController::class)->group(function () {
-            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.general,admin.settings.seo,admin.settings.health,admin.settings.cache,admin.settings.mail,admin.settings.languages,admin.settings.dynamic.any')->name('index');
+            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.any')->name('index');
 
             $settingPages = [
                 'general',
