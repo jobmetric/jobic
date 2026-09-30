@@ -45,8 +45,10 @@ Route::middleware([
 
     Route::prefix('menus')->name('menus.')->controller(MenuController::class)->group(function (): void {
         Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.menus.view')->name('index');
+        Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.menus.view')->name('data');
         Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.menus.manage')->name('create');
         Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('store');
+        Route::post('bulk', 'bulk')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('bulk');
         Route::get('{menu}/edit', 'edit')->whereNumber('menu')->middleware(EnsurePermission::class.':admin.menus.manage')->name('edit');
         Route::get('{menu}', 'show')->whereNumber('menu')->middleware(EnsurePermission::class.':admin.menus.view')->name('show');
         Route::put('{menu}', 'update')->whereNumber('menu')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('update');

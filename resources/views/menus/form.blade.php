@@ -4,7 +4,8 @@
 <form class="crud-page" data-menu-form method="POST" action="{{ $record ? route('admin.menus.update', $record->id) : route('admin.menus.store') }}" @if($readonly) data-readonly @endif>
     @if($record)<input type="hidden" name="_version" value="{{ \App\Support\RecordVersion::token($record, 'menus') }}">@endif
     @csrf @if($record) @method('PUT') @endif
-    <header class="crud-toolbar is-sticky"><div><h1>{{ __('menus.'.($readonly ? 'view_title' : ($record ? 'edit_title' : 'create_title'))) }}</h1></div><div data-menu-toolbar><a class="vuero-button" href="{{ route('admin.menus.index') }}">{{ __('menus.cancel') }}</a>@unless($readonly)<button class="vuero-button is-primary" type="submit">{{ __('menus.save') }}</button>@endunless</div></header>
+    <header class="crud-toolbar is-sticky"><div><h1>{{ __('menus.'.($readonly ? 'view_title' : ($record ? 'edit_title' : 'create_title'))) }}</h1></div><div data-crud-toolbar></div></header>
+    @unless($readonly)<p class="crud-hint">{{ __('menus.save_hint') }}</p>@endunless
     @cmsHook('jobic.admin.menus.form.before', ['id' => $record?->id])
     <fieldset class="crud-form-fields" @disabled($readonly)>
         <x-form.field variant="crud" :label="__('menus.name')" for="menu-name" error="name"><x-form.input id="menu-name" name="name" :value="old('name', $record?->getTranslation('name'))" maxlength="150" required /></x-form.field>
@@ -13,5 +14,6 @@
     </fieldset>
     @cmsHook('jobic.admin.menus.form.after', ['id' => $record?->id])
 </form>
+@include('common.crud.dialog')
 @endsection
 @push('scripts') @vite('resources/js/menus/form.js', 'vuero/build') @endpush

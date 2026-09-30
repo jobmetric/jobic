@@ -43,6 +43,23 @@ class MenusTest extends TestCase
         $this->assertTrue(TaxonomyTypeRegistry::has('menu_'.$id));
         $this->assertTrue(TaxonomyTypeRegistry::for('menu_'.$id)->hasHierarchical());
 
+        $this->getJson(route('admin.menus.data', [
+            'draw' => 1,
+            'start' => 0,
+            'length' => 10,
+            'search' => ['value' => 'Primary'],
+            'order' => [['column' => 2, 'dir' => 'asc']],
+        ]))->assertOk()
+            ->assertJsonPath('data.recordsFiltered', 1)
+            ->assertJsonPath('data.data.0.name', 'Primary');
+
+        $this->postJson(route('admin.menus.bulk'), [
+            'ids' => [$id],
+            'operation' => 'deactivate',
+        ])->assertOk();
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['id' => $id, 'status' => false]);
+        $menu->refresh();
+
         $this->putJson(route('admin.menus.update', $id), $this->values([
             '_version' => RecordVersion::token($menu, 'menus'),
             'name' => 'Footer',

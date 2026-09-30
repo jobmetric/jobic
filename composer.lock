@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "56749c9539dbc88262d10cfe8f629aa7",
+    "content-hash": "e5625d0f29dbd860b171b0805d8cb108",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1238,16 +1238,16 @@
         },
         {
             "name": "jobmetric/laravel-comment",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-comment.git",
-                "reference": "5203a82ba5e98e10d80a7a4ecc3b90d5270a8931"
+                "reference": "f551d2d2a667e2bdc63f8edc13ca142b2f9169de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-comment/zipball/5203a82ba5e98e10d80a7a4ecc3b90d5270a8931",
-                "reference": "5203a82ba5e98e10d80a7a4ecc3b90d5270a8931",
+                "url": "https://api.github.com/repos/jobmetric/laravel-comment/zipball/f551d2d2a667e2bdc63f8edc13ca142b2f9169de",
+                "reference": "f551d2d2a667e2bdc63f8edc13ca142b2f9169de",
                 "shasum": ""
             },
             "require": {
@@ -1298,7 +1298,7 @@
                 "issues": "https://github.com/jobmetric/laravel-comment/issues",
                 "source": "https://github.com/jobmetric/laravel-comment"
             },
-            "time": "2024-06-18T19:18:47+00:00"
+            "time": "2026-09-30T19:02:51+00:00"
         },
         {
             "name": "jobmetric/laravel-custom-field",

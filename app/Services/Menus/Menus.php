@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Menus;
 
 use App\Facades\Hooks;
+use App\Http\Requests\Menus\BulkRequest;
 use App\Http\Requests\Menus\MenuRequest;
+use App\Http\Requests\Menus\TableRequest;
 use App\Services\History\RecordHistory;
 use App\Support\RecordVersion;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,6 +26,64 @@ use Throwable;
  */
 class Menus
 {
+    /**
+     * Return a bounded, filtered menu table page and registry statistics.
+     *
+     * @param  array<string, mixed>  $input
+     *
+     * @throws Throwable
+     */
+    public function table(array $input): Response
+    {
+        $data = dto($input, TableRequest::class);
+        $query = Taxonomy::query()->where('type', 'menu');
+        $total = (clone $query)->count();
+        $stats = [
+            $total,
+            (clone $query)->where('status', true)->count(),
+            (clone $query)->where('status', false)->count(),
+            (clone $query)->where('created_at', '>=', now()->subDays(30))->count(),
+        ];
+
+        if (isset($data['status']) && $data['status'] !== '') {
+            $query->where('status', $data['status']);
+        }
+
+        if ($term = ($data['search']['value'] ?? null)) {
+            $query->whereHas('translations', fn ($translation) => $translation
+                ->where('field', 'name')
+                ->where('value', 'like', '%'.$term.'%'));
+        }
+
+        $filtered = (clone $query)->count();
+        $columns = [
+            1 => 'id',
+            2 => 'ordering',
+            3 => 'status',
+            4 => 'created_at',
+        ];
+        $query->with('translations')
+            ->orderBy($columns[$data['order'][0]['column'] ?? 2], $data['order'][0]['dir'] ?? 'asc')
+            ->orderBy('id');
+
+        $records = $query->offset((int) $data['start'])->limit((int) $data['length'])->get()
+            ->map(fn (Taxonomy $menu): array => [
+                'id' => $menu->id,
+                'name' => $menu->getTranslation('name') ?? __('menus.unnamed'),
+                'ordering' => $menu->ordering,
+                'status' => $menu->status,
+                'created_at' => $menu->created_at?->toISOString(),
+            ]);
+
+        return Response::make(true, '', [
+            'draw' => (int) $data['draw'],
+            'recordsTotal' => $total,
+            'recordsFiltered' => $filtered,
+            'data' => $records,
+            'stats' => $stats,
+        ]);
+    }
+
     /**
      * Return menu containers in their configured display order.
      *
@@ -132,5 +192,58 @@ class Menus
         Hooks::notify('jobic.content.menus.deleted', $context);
 
         return Response::make(true, __('menus.deleted'));
+    }
+
+    /**
+     * Apply an all-or-nothing mutation to selected menus.
+     *
+     * @param  array<string, mixed>  $input
+     *
+     * @throws Throwable
+     */
+    public function bulk(array $input, int $userId): Response
+    {
+        $data = dto($input, BulkRequest::class);
+        $contexts = DB::transaction(function () use ($data, $userId): array {
+            $records = Taxonomy::query()
+                ->where('type', 'menu')
+                ->whereIn('id', $data['ids'])
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            if ($records->count() !== count($data['ids'])) {
+                throw ValidationException::withMessages(['ids' => __('menus.missing')]);
+            }
+
+            $contexts = [];
+            foreach ($records as $record) {
+                $context = ['id' => $record->id, 'user_id' => $userId, 'operation' => $data['operation']];
+
+                if ($data['operation'] === 'delete') {
+                    Hooks::action('jobic.content.menus.deleting', $context);
+                    Taxonomy::query()->where('type', 'menu_'.$record->id)->get()
+                        ->each(fn (Taxonomy $item) => TaxonomyService::delete($item->id));
+                    TaxonomyService::delete($record->id);
+                    TaxonomyTypeRegistry::unregister('menu_'.$record->id);
+                } else {
+                    Hooks::action('jobic.content.menus.saving', $context);
+                    TaxonomyService::update($record->id, ['status' => $data['operation'] === 'activate']);
+                }
+
+                $contexts[] = $context;
+            }
+
+            return $contexts;
+        });
+
+        foreach ($contexts as $context) {
+            Hooks::notify(
+                'jobic.content.menus.'.($context['operation'] === 'delete' ? 'deleted' : 'saved'),
+                $context,
+            );
+        }
+
+        return Response::make(true, __('menus.saved'));
     }
 }

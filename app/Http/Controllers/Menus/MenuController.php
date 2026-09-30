@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Menus;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Menus\BulkRequest;
 use App\Http\Requests\Menus\DeleteMenuRequest;
 use App\Http\Requests\Menus\MenuRequest;
+use App\Http\Requests\Menus\TableRequest;
 use App\Services\Menus\Menus;
 use App\Support\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
+use JobMetric\Domi\Facades\Domi;
 use Throwable;
 
 /**
@@ -29,13 +33,25 @@ class MenuController extends Controller
     /**
      * Render the menu container list.
      *
-     * @throws Throwable
+     * @throws SetPluginNotFoundException
      */
     public function index(): View
     {
         $this->prepare();
+        Domi::setPlugins(['jquery', 'datatable']);
 
-        return view('menus.index', ['records' => $this->menus->records()]);
+        return view('menus.index');
+    }
+
+    /**
+     * Return a bounded server-side page of menus.
+     *
+     *
+     * @throws Throwable
+     */
+    public function data(TableRequest $request): JsonResponse
+    {
+        return response()->json($this->menus->table($request->validated()));
     }
 
     /**
@@ -116,6 +132,19 @@ class MenuController extends Controller
     }
 
     /**
+     * Apply an atomic operation to selected menus.
+     *
+     *
+     * @throws Throwable
+     */
+    public function bulk(BulkRequest $request): JsonResponse
+    {
+        $result = $this->menus->bulk($request->validated(), (int) $request->user()->id);
+
+        return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
+    }
+
+    /**
      * Publish menu labels and routes through the page presentation registry.
      *
      * @throws Throwable
@@ -124,8 +153,14 @@ class MenuController extends Controller
     {
         Page::prepare('menus');
         Page::addLocalize('menus', trans('menus'));
-        Page::addLocalize('menuRoutes', ['index' => route('admin.menus.index')]);
+        Page::addLocalize('crudHelp', trans('crud.help_sections'));
+        Page::addLocalize('menuRoutes', [
+            'index' => route('admin.menus.index'),
+            'data' => route('admin.menus.data'),
+            'bulk' => route('admin.menus.bulk'),
+        ]);
         Page::addLocalize('menuToolbar', [
+            'list' => ['activate', 'deactivate', 'delete', 'help'],
             'form' => ['new', 'close'],
         ]);
     }
