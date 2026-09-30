@@ -129,30 +129,33 @@
       "_page-315b051b.js"
     ]
   },
-  "_shared-6fbc1607.js": {
+  "_shared-2b43018e.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/shared-6fbc1607.js",
+    "file": "assets/shared-2b43018e.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-ca560946.js": {
+  "_shared-9735f6cb.js": {
     "css": [
       "assets/shared-c7ea7a6b.css",
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/shared-ca560946.js",
+    "file": "assets/shared-9735f6cb.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-f72242ef.js": {
+  "_shared-f44afe3d.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/shared-f72242ef.js",
+    "file": "assets/shared-f44afe3d.js",
     "imports": [
       "_page-315b051b.js"
     ]
@@ -199,8 +202,12 @@
     "src": "auth-login.css"
   },
   "crud-fields.css": {
-    "file": "assets/crud-fields-f2d96d3c.css",
+    "file": "assets/crud-fields-46027314.css",
     "src": "crud-fields.css"
+  },
+  "crud.css": {
+    "file": "assets/crud-f2703e75.css",
+    "src": "crud.css"
   },
   "dashboard-runtime.css": {
     "file": "assets/dashboard-runtime-079a4fb7.css",
@@ -263,11 +270,12 @@
   },
   "resources/js/languages/form.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/form-dac3209a.js",
+    "file": "assets/form-c85a22ff.js",
     "imports": [
-      "_shared-f72242ef.js",
+      "_shared-f44afe3d.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -278,11 +286,12 @@
   },
   "resources/js/languages/index.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/index-a10909b1.js",
+    "file": "assets/index-2fa6ce0a.js",
     "imports": [
-      "_shared-f72242ef.js",
+      "_shared-f44afe3d.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -291,13 +300,42 @@
     "isEntry": true,
     "src": "resources/js/languages/index.js"
   },
+  "resources/js/menus/form.js": {
+    "css": [
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
+    ],
+    "file": "assets/form-75b11dfb.js",
+    "imports": [
+      "_page-315b051b.js",
+      "_settings-ad6cde3b.js",
+      "_toast-18d1caa1.js",
+      "_unsaved-d11e9639.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/menus/form.js"
+  },
+  "resources/js/menus/index.js": {
+    "css": [
+      "assets/crud-f2703e75.css"
+    ],
+    "file": "assets/index-1ff12e0e.js",
+    "imports": [
+      "_page-315b051b.js",
+      "_settings-ad6cde3b.js",
+      "_toast-18d1caa1.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/menus/index.js"
+  },
   "resources/js/roles/form.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/form-8af74085.js",
+    "file": "assets/form-b524d502.js",
     "imports": [
-      "_shared-ca560946.js",
+      "_shared-9735f6cb.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -309,11 +347,12 @@
   },
   "resources/js/roles/index.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/index-e8f9f3e4.js",
+    "file": "assets/index-d6df6d8c.js",
     "imports": [
-      "_shared-ca560946.js",
+      "_shared-9735f6cb.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -329,11 +368,12 @@
   },
   "resources/js/users/form.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/form-eb6e5c1c.js",
+    "file": "assets/form-0c7748af.js",
     "imports": [
-      "_shared-6fbc1607.js",
+      "_shared-2b43018e.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -344,11 +384,12 @@
   },
   "resources/js/users/index.js": {
     "css": [
-      "assets/crud-fields-f2d96d3c.css"
+      "assets/crud-f2703e75.css",
+      "assets/crud-fields-46027314.css"
     ],
-    "file": "assets/index-20d3d7c8.js",
+    "file": "assets/index-137c09eb.js",
     "imports": [
-      "_shared-6fbc1607.js",
+      "_shared-2b43018e.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",

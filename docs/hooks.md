@@ -70,6 +70,19 @@ Language mutations now also validate the last-active-language invariant before p
 
 Language persistence delegates to the package service. Package language events execute inside the CMS transaction; an exception rolls back persistence and prevents CMS post-notifications. CMS `saving`/`deleting` remain before the package call; CMS `saved`/`deleted` remain after the outer transaction succeeds. Package events retain their own documented model/input contracts; CMS hook contexts remain limited to the safe fields above.
 
+## Menu registry
+
+| Hook | Type | Context | Timing and errors |
+| --- | --- | --- | --- |
+| `jobic.admin.menus.list.before`, `jobic.admin.menus.list.after` | view | empty | Around menu list content; standard view exception semantics |
+| `jobic.admin.menus.form.before`, `jobic.admin.menus.form.after` | view | `id` (null for creation) | Around validated core menu fields; extensions own persistence for additional markup |
+| `jobic.content.menus.saving` | action | `user_id`, `id` (null before create), `operation` (`create`, `update`) | After DTO and optimistic-version validation, before taxonomy persistence inside the transaction; exceptions veto and roll back |
+| `jobic.content.menus.saved` | notification | same context with persisted `id` | After transaction success; observer failures are isolated by `Hooks::notify` |
+| `jobic.content.menus.deleting` | action | `user_id`, `id`, `operation=delete` | Before menu items and their menu taxonomy are deleted inside one transaction; exceptions veto and roll back |
+| `jobic.content.menus.deleted` | notification | same safe context | After deletion commits; observer failures are isolated |
+
+Menu contexts never contain translated names, slugs, request data, version tokens, or taxonomy payloads. The service validates through `MenuRequest`, persists through `jobmetric/laravel-taxonomy`, and registers the dynamic `menu_{id}` type only after successful persistence. For example, an extension may observe `jobic.content.menus.saved`, resolve the authorized menu by `id`, and refresh its own navigation cache.
+
 ## User registry
 
 | Hook | Type | Context | Timing and errors |

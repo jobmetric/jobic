@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
+use App\Http\Controllers\Menus\MenuController;
 use App\Http\Controllers\Roles\RoleController;
 use App\Http\Controllers\Settings\MailController;
 use App\Http\Controllers\Settings\SettingsController;
@@ -40,6 +41,16 @@ Route::middleware([
         Route::get('{role}/edit', 'edit')->whereNumber('role')->middleware(EnsurePermission::class.':admin.roles.manage')->name('edit');
         Route::get('{role}', 'show')->whereNumber('role')->middleware(EnsurePermission::class.':admin.roles.view')->name('show');
         Route::put('{role}', 'update')->whereNumber('role')->middleware([EnsurePermission::class.':admin.roles.manage', 'throttle:30,1'])->name('update');
+    });
+
+    Route::prefix('menus')->name('menus.')->controller(MenuController::class)->group(function (): void {
+        Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.menus.view')->name('index');
+        Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.menus.manage')->name('create');
+        Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('store');
+        Route::get('{menu}/edit', 'edit')->whereNumber('menu')->middleware(EnsurePermission::class.':admin.menus.manage')->name('edit');
+        Route::get('{menu}', 'show')->whereNumber('menu')->middleware(EnsurePermission::class.':admin.menus.view')->name('show');
+        Route::put('{menu}', 'update')->whereNumber('menu')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('update');
+        Route::delete('{menu}', 'destroy')->whereNumber('menu')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('destroy');
     });
 
     Route::prefix('account')->name('account.')->controller(SettingsController::class)->group(function (): void {
