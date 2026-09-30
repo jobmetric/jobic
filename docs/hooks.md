@@ -83,6 +83,14 @@ Language persistence delegates to the package service. Package language events e
 
 Menu contexts never contain translated names, slugs, request data, version tokens, or taxonomy payloads. The service validates through `MenuRequest`, persists through `jobmetric/laravel-taxonomy`, and registers the dynamic `menu_{id}` type only after successful persistence. For example, an extension may observe `jobic.content.menus.saved`, resolve the authorized menu by `id`, and refresh its own navigation cache.
 
+## General taxonomy administration
+
+The native taxonomy screen is shared by every `TaxonomyTypeRegistry` type, including the `menu` containers and dynamic `menu_{id}` item types. Its filters receive the current value plus `['type' => string]`: `jobic.taxonomies.list.columns`, `jobic.taxonomies.list.actions`, `jobic.taxonomies.list.toolbar`, and `jobic.taxonomies.help.items`. `jobic.taxonomies.list.row` filters the safe table row with context `type,id`. Custom toolbar and row actions dispatch browser events `jobic:taxonomies:toolbar-action` and `jobic:taxonomies:row-action`.
+
+Blade slots surround the page, toolbar, filters, filter fields, table, and form fields: `jobic.admin.taxonomies.list.page.before|after`, `list.toolbar.after`, `list.filters.before|after`, `list.filters.actions.before|after`, `list.filter_fields.before|after`, `list.table.before|after`, and `jobic.admin.taxonomies.form.page.before|after`, `form.fields.before|after`. Every slot receives `type`; form slots also receive `id`.
+
+Mutation actions are `jobic.taxonomies.saving`, `saved`, `deleting`, and `deleted`. Context is limited to `type`, `id`, `operation`, and `user_id`; raw fields, translations, slugs, metadata, media, and request input are excluded. Pre-actions may veto. Post-actions use isolated notifications after successful persistence.
+
 ## User registry
 
 | Hook | Type | Context | Timing and errors |

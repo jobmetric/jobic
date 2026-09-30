@@ -29,6 +29,7 @@ export default defineConfig({
                 'resources/js/menus/index.js',
                 'resources/js/menus/form.js',
                 'resources/js/taxonomies/form.js',
+                'resources/js/taxonomies/index.js',
                 'resources/js/users/index.js',
                 'resources/js/users/form.js',
                 'resources/js/roles/index.js',

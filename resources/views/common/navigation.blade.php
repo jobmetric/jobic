@@ -15,7 +15,7 @@
         $canRoles ? ['label' => __('roles.title'), 'icon' => 'shield', 'url' => route('admin.roles.index'), 'active' => request()->routeIs('admin.roles.*')] : null,
     ]));
     $contentMenuItems = array_values(array_filter([
-        $canMenus ? ['label' => __('menus.title'), 'icon' => 'menu', 'url' => route('admin.menus.index'), 'active' => request()->routeIs('admin.menus.*')] : null,
+        $canMenus ? ['label' => __('menus.title'), 'icon' => 'menu', 'url' => route('admin.taxonomies.index', 'menu'), 'active' => request()->routeIs('admin.taxonomies.*') && request()->route('type') === 'menu'] : null,
         ...$taxonomyMenuItems,
     ]));
     $sections = array_filter([

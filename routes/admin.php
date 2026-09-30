@@ -58,8 +58,10 @@ Route::middleware([
 
     Route::prefix('taxonomies/{type}')->name('taxonomies.')->controller(TaxonomyController::class)->group(function (): void {
         Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.content')->name('index');
+        Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.content')->name('data');
         Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.content')->name('create');
         Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('store');
+        Route::post('bulk', 'bulk')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('bulk');
         Route::get('{taxonomy}/edit', 'edit')->whereNumber('taxonomy')->middleware(EnsurePermission::class.':admin.content')->name('edit');
         Route::put('{taxonomy}', 'update')->whereNumber('taxonomy')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('update');
         Route::delete('{taxonomy}', 'destroy')->whereNumber('taxonomy')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('destroy');

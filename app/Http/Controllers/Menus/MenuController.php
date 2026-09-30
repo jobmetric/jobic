@@ -10,11 +10,8 @@ use App\Http\Requests\Menus\DeleteMenuRequest;
 use App\Http\Requests\Menus\MenuRequest;
 use App\Http\Requests\Menus\TableRequest;
 use App\Services\Menus\Menus;
-use App\Support\Page;
 use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
-use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
-use JobMetric\Domi\Facades\Domi;
+use Illuminate\Http\RedirectResponse;
 use Throwable;
 
 /**
@@ -32,15 +29,10 @@ class MenuController extends Controller
 
     /**
      * Render the menu container list.
-     *
-     * @throws SetPluginNotFoundException
      */
-    public function index(): View
+    public function index(): RedirectResponse
     {
-        $this->prepare();
-        Domi::setPlugins(['jquery', 'datatable']);
-
-        return view('menus.index');
+        return redirect()->route('admin.taxonomies.index', 'menu');
     }
 
     /**
@@ -59,11 +51,9 @@ class MenuController extends Controller
      *
      * @throws Throwable
      */
-    public function create(): View
+    public function create(): RedirectResponse
     {
-        $this->prepare();
-
-        return view('menus.form', ['record' => null, 'readonly' => false]);
+        return redirect()->route('admin.taxonomies.create', 'menu');
     }
 
     /**
@@ -72,11 +62,9 @@ class MenuController extends Controller
      *
      * @throws Throwable
      */
-    public function edit(int $menu): View
+    public function edit(int $menu): RedirectResponse
     {
-        $this->prepare();
-
-        return view('menus.form', ['record' => $this->menus->record($menu), 'readonly' => false]);
+        return redirect()->route('admin.taxonomies.edit', ['menu', $menu]);
     }
 
     /**
@@ -85,11 +73,9 @@ class MenuController extends Controller
      *
      * @throws Throwable
      */
-    public function show(int $menu): View
+    public function show(int $menu): RedirectResponse
     {
-        $this->prepare();
-
-        return view('menus.form', ['record' => $this->menus->record($menu), 'readonly' => true]);
+        return redirect()->route('admin.taxonomies.edit', ['menu', $menu]);
     }
 
     /**
@@ -142,27 +128,5 @@ class MenuController extends Controller
         $result = $this->menus->bulk($request->validated(), (int) $request->user()->id);
 
         return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
-    }
-
-    /**
-     * Publish menu labels and routes through the page presentation registry.
-     *
-     * @throws Throwable
-     */
-    private function prepare(): void
-    {
-        Page::prepare('menus');
-        Page::addLocalize('menus', trans('menus'));
-        Page::addLocalize('crudHelp', trans('crud.help_sections'));
-        Page::addLocalize('menuRoutes', [
-            'index' => route('admin.menus.index'),
-            'data' => route('admin.menus.data'),
-            'bulk' => route('admin.menus.bulk'),
-            'taxonomies' => url('/admin/taxonomies'),
-        ]);
-        Page::addLocalize('menuToolbar', [
-            'list' => ['activate', 'deactivate', 'delete', 'help'],
-            'form' => ['new', 'close'],
-        ]);
     }
 }

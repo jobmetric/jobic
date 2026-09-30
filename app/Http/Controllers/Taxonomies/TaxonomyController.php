@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Taxonomies;
 
+use App\Facades\Hooks;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Taxonomies\BulkRequest;
+use App\Http\Requests\Taxonomies\TableRequest;
 use App\Http\Requests\Taxonomies\TaxonomyRequest;
 use App\Services\Taxonomies\Taxonomies;
 use App\Support\Page;
@@ -21,7 +24,12 @@ class TaxonomyController extends Controller
     {
         $this->prepare($type);
 
-        return view('taxonomies.index', ['records' => $this->taxonomies->records($type), 'type' => $type]);
+        return view('taxonomies.index', ['type' => $type]);
+    }
+
+    public function data(TableRequest $request, string $type): JsonResponse
+    {
+        return response()->json($this->taxonomies->table($type, $request->validated()));
     }
 
     public function create(string $type): View
@@ -61,12 +69,30 @@ class TaxonomyController extends Controller
         return response()->json($result, $result->status);
     }
 
+    public function bulk(BulkRequest $request, string $type): JsonResponse
+    {
+        $result = $this->taxonomies->bulk($type, $request->validated());
+
+        return response()->json($result, $result->status);
+    }
+
     private function prepare(string $type): void
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
         $builder = TaxonomyTypeRegistry::for($type);
         Page::prepare('taxonomies');
-        Page::addLocalize('taxonomyPage', ['index' => route('admin.taxonomies.index', $type), 'type' => $type, 'label' => $builder->getLabel()]);
+        $context = ['type' => $type];
+        Page::addLocalize('taxonomies', trans('taxonomies'));
+        Page::addLocalize('crudHelp', trans('crud.help_sections'));
+        Page::addLocalize('taxonomyPage', [
+            'index' => route('admin.taxonomies.index', $type), 'data' => route('admin.taxonomies.data', $type),
+            'bulk' => route('admin.taxonomies.bulk', $type), 'type' => $type, 'label' => $builder->getLabel(),
+            'columns' => Hooks::filter('jobic.taxonomies.list.columns', ['name', 'ordering', 'status', 'created_at'], $context),
+            'rowActions' => Hooks::filter('jobic.taxonomies.list.actions', ['edit', 'delete'], $context),
+            'toolbar' => Hooks::filter('jobic.taxonomies.list.toolbar', ['activate', 'deactivate', 'delete', 'help'], $context),
+            'formToolbar' => Hooks::filter('jobic.taxonomies.form.toolbar', ['new', 'close'], $context),
+            'help' => Hooks::filter('jobic.taxonomies.help.items', trans('taxonomies.help_items'), $context),
+        ]);
     }
 
     private function formData(string $type, mixed $record = null): array

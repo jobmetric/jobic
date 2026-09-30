@@ -66,7 +66,7 @@ class MenusTest extends TestCase
             'ordering' => 2,
         ]))->assertOk();
 
-        $this->get(route('admin.menus.show', $id))->assertOk()->assertSee('data-readonly', false)->assertSee('Footer');
+        $this->get(route('admin.menus.show', $id))->assertRedirect(route('admin.taxonomies.edit', ['menu', $id]));
         $this->deleteJson(route('admin.menus.destroy', $id))->assertOk();
         $this->assertDatabaseMissing(config('taxonomy.tables.taxonomy'), ['id' => $id]);
         $this->assertFalse(TaxonomyTypeRegistry::has('menu_'.$id));
