@@ -8,6 +8,7 @@ use App\Http\Controllers\Settings\MailController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Settings\SystemController;
 use App\Http\Controllers\Settings\DynamicSettingController;
+use App\Http\Controllers\Taxonomies\TaxonomyController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Middleware\Admin\EnsurePermission;
 use App\Http\Middleware\Admin\Preferences;
@@ -53,6 +54,15 @@ Route::middleware([
         Route::get('{menu}', 'show')->whereNumber('menu')->middleware(EnsurePermission::class.':admin.menus.view')->name('show');
         Route::put('{menu}', 'update')->whereNumber('menu')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('update');
         Route::delete('{menu}', 'destroy')->whereNumber('menu')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('destroy');
+    });
+
+    Route::prefix('taxonomies/{type}')->name('taxonomies.')->controller(TaxonomyController::class)->group(function (): void {
+        Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.content')->name('index');
+        Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.content')->name('create');
+        Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('store');
+        Route::get('{taxonomy}/edit', 'edit')->whereNumber('taxonomy')->middleware(EnsurePermission::class.':admin.content')->name('edit');
+        Route::put('{taxonomy}', 'update')->whereNumber('taxonomy')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('update');
+        Route::delete('{taxonomy}', 'destroy')->whereNumber('taxonomy')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('destroy');
     });
 
     Route::prefix('account')->name('account.')->controller(SettingsController::class)->group(function (): void {

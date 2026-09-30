@@ -58,6 +58,7 @@
         <path d="m3 11 16-6v14L3 13v-2ZM11.6 16.2 10 21H6l1.3-6.3" /><path d="M19 10a2 2 0 0 1 0 4" />
     </symbol>
     <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h12M4 17h16" /></symbol>
+    <symbol id="icon-list-tree" viewBox="0 0 24 24"><path d="M8 6h13M8 12h9M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></symbol>
     <symbol id="icon-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12" /></symbol>
     <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.5 15.2A9 9 0 0 1 8.8 3.5 9 9 0 1 0 20.5 15.2Z" /></symbol>
     <symbol id="icon-puzzle" viewBox="0 0 24 24">

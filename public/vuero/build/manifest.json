@@ -129,20 +129,20 @@
       "_page-315b051b.js"
     ]
   },
-  "_shared-41d39759.js": {
-    "css": [
-      "assets/crud-fields-f2d96d3c.css"
-    ],
-    "file": "assets/shared-41d39759.js",
-    "imports": [
-      "_page-315b051b.js"
-    ]
-  },
   "_shared-6fbc1607.js": {
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
     "file": "assets/shared-6fbc1607.js",
+    "imports": [
+      "_page-315b051b.js"
+    ]
+  },
+  "_shared-8bdcf25e.js": {
+    "css": [
+      "assets/crud-fields-f2d96d3c.css"
+    ],
+    "file": "assets/shared-8bdcf25e.js",
     "imports": [
       "_page-315b051b.js"
     ]
@@ -304,9 +304,9 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/form-a643ae8e.js",
+    "file": "assets/form-6a57d694.js",
     "imports": [
-      "_shared-41d39759.js",
+      "_shared-8bdcf25e.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -319,9 +319,9 @@
     "css": [
       "assets/crud-fields-f2d96d3c.css"
     ],
-    "file": "assets/index-137a5ee1.js",
+    "file": "assets/index-f670f555.js",
     "imports": [
-      "_shared-41d39759.js",
+      "_shared-8bdcf25e.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -365,6 +365,19 @@
     "file": "assets/social-networks-16f8ac92.js",
     "isEntry": true,
     "src": "resources/js/settings/social-networks.js"
+  },
+  "resources/js/taxonomies/form.js": {
+    "css": [
+      "assets/crud-fields-f2d96d3c.css"
+    ],
+    "file": "assets/form-3ac33772.js",
+    "imports": [
+      "_page-315b051b.js",
+      "_settings-ad6cde3b.js",
+      "_toast-18d1caa1.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/taxonomies/form.js"
   },
   "resources/js/users/form.js": {
     "css": [

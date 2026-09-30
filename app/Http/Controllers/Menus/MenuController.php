@@ -158,6 +158,7 @@ class MenuController extends Controller
             'index' => route('admin.menus.index'),
             'data' => route('admin.menus.data'),
             'bulk' => route('admin.menus.bulk'),
+            'taxonomies' => url('/admin/taxonomies'),
         ]);
         Page::addLocalize('menuToolbar', [
             'list' => ['activate', 'deactivate', 'delete', 'help'],

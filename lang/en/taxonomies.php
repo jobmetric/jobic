@@ -1,0 +1,2 @@
+<?php
+return ['create' => 'Add item', 'edit' => 'Edit item', 'name' => 'Name', 'parent' => 'Parent', 'no_parent' => 'No parent', 'slug' => 'URL slug', 'ordering' => 'Ordering', 'status' => 'Status', 'active' => 'Active', 'inactive' => 'Inactive', 'actions' => 'Actions', 'empty' => 'No items have been created.', 'save' => 'Save', 'cancel' => 'Cancel', 'saved' => 'Taxonomy item saved.', 'deleted' => 'Taxonomy item deleted.'];

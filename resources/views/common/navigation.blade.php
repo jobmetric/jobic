@@ -5,6 +5,10 @@
     $canUsers = $adminAccess->allowsAny($adminUser, ['admin.users.view', 'admin.users.manage']);
     $canRoles = $adminAccess->allowsAny($adminUser, ['admin.roles.view', 'admin.roles.manage']);
     $canMenus = $adminAccess->allowsAny($adminUser, ['admin.menus.view', 'admin.menus.manage']);
+    $taxonomyMenuItems = collect(\JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::values())
+        ->reject(fn ($type) => $type === 'menu')
+        ->map(fn ($type) => ['label' => \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($type)->getLabel(), 'icon' => 'list-tree', 'url' => route('admin.taxonomies.index', $type), 'active' => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type])
+        ->values()->all();
     $canSettings = !empty($settingsSections);
     $userMenuItems = array_values(array_filter([
         $canUsers ? ['label' => __('users.title'), 'icon' => 'users', 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')] : null,
@@ -12,11 +16,12 @@
     ]));
     $contentMenuItems = array_values(array_filter([
         $canMenus ? ['label' => __('menus.title'), 'icon' => 'menu', 'url' => route('admin.menus.index'), 'active' => request()->routeIs('admin.menus.*')] : null,
+        ...$taxonomyMenuItems,
     ]));
     $sections = array_filter([
         'dashboard' => $canDashboard ? ['label' => __('installation.dashboard'), 'icon' => 'activity', 'active' => request()->routeIs('admin.dashboard')] : null,
         'users' => $userMenuItems ? ['label' => __('users.title'), 'icon' => 'users', 'active' => request()->routeIs('admin.users.*', 'admin.roles.*')] : null,
-        'content' => $contentMenuItems ? ['label' => __('roles.permissions.content'), 'icon' => 'layers', 'active' => request()->routeIs('admin.menus.*')] : null,
+        'content' => $contentMenuItems ? ['label' => __('roles.permissions.content'), 'icon' => 'content', 'active' => request()->routeIs('admin.menus.*', 'admin.taxonomies.*')] : null,
         'settings' => $canSettings ? ['label' => __('installation.settings'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')] : null,
     ]);
 @endphp
@@ -77,11 +82,11 @@
         </section>
         @endif
         @if($contentMenuItems)
-        <section class="admin-sideblock__group {{ request()->routeIs('admin.menus.*') ? 'is-open' : '' }}" data-sideblock-group>
+        <section class="admin-sideblock__group {{ request()->routeIs('admin.menus.*', 'admin.taxonomies.*') ? 'is-open' : '' }}" data-sideblock-group>
             <button type="button" aria-expanded="{{ request()->routeIs('admin.menus.*') ? 'true' : 'false' }}" aria-controls="sideblock-panel-content" data-sideblock-group-toggle>
-                <span class="admin-sideblock__group-icon"><x-vuero.icon name="layers" size="20" /></span><span>{{ __('roles.permissions.content') }}</span><x-vuero.icon name="chevron-right" size="17" />
+                <span class="admin-sideblock__group-icon"><x-vuero.icon name="content" size="20" /></span><span>{{ __('roles.permissions.content') }}</span><x-vuero.icon name="chevron-right" size="17" />
             </button>
-            <div class="admin-sideblock__children" id="sideblock-panel-content" @unless(request()->routeIs('admin.menus.*')) hidden @endunless><x-vuero.navigation.menu :items="$contentMenuItems" /></div>
+            <div class="admin-sideblock__children" id="sideblock-panel-content" @unless(request()->routeIs('admin.menus.*', 'admin.taxonomies.*')) hidden @endunless><x-vuero.navigation.menu :items="$contentMenuItems" /></div>
         </section>
         @endif
         @if($canSettings)@include('common.settings.menu')@endif

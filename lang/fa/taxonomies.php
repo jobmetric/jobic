@@ -1,0 +1,2 @@
+<?php
+return ['create' => 'افزودن آیتم', 'edit' => 'ویرایش آیتم', 'name' => 'نام', 'parent' => 'والد', 'no_parent' => 'بدون والد', 'slug' => 'نامک نشانی', 'ordering' => 'ترتیب', 'status' => 'وضعیت', 'active' => 'فعال', 'inactive' => 'غیرفعال', 'actions' => 'عملیات', 'empty' => 'هنوز آیتمی ساخته نشده است.', 'save' => 'ذخیره', 'cancel' => 'انصراف', 'saved' => 'آیتم Taxonomy ذخیره شد.', 'deleted' => 'آیتم Taxonomy حذف شد.'];
