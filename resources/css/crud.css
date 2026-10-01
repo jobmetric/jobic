@@ -74,7 +74,7 @@
 .crud-history-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; direction:ltr; }
 .crud-history-value { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); }
 .crud-history-value strong { display:block; padding:8px 11px; border-block-end:1px solid currentColor; font-size:11px; direction:var(--direction,rtl); }
-.crud-history-value pre { min-height:46px; margin:0; padding:11px; color:var(--text); font:inherit; font-size:12px; line-height:1.75; white-space:pre-wrap; overflow-wrap:anywhere; direction:var(--direction,rtl); }
+.crud-history-value pre { min-height:46px; margin:0; padding:11px; color:var(--text); font-family:var(--font-monospace,ui-monospace,SFMono-Regular,Consolas,monospace); font-size:12px; line-height:1.75; white-space:pre-wrap; overflow-wrap:anywhere; direction:ltr; text-align:start; tab-size:2; }
 .crud-history-value.is-before { border-color:color-mix(in srgb,#e34d65 28%,var(--border)); background:color-mix(in srgb,#e34d65 6%,var(--surface)); }
 .crud-history-value.is-before strong { color:#c83f56; }
 .crud-history-value.is-before strong::before { content:'−'; margin-inline-end:6px; }

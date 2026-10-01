@@ -14,7 +14,7 @@ export function bindHistory(form) {
         if (raw === null) return '—';
         if (field === 'status') return copy()[raw ? 'active' : 'inactive'];
         if (field === 'email_verified_at') return raw ? copy().verified_yes : copy().verified_no;
-        return String(raw);
+        return raw;
     }
     async function load(requested = 1) {
         if (busy || !/\/\d+$/.test(form.action)) return;

@@ -5,7 +5,7 @@ import { appendHistoryChange } from '../common/history';
 
 export function bindHistory(form) {
     const panel = document.querySelector('[data-record-history]'); const body = panel.querySelector('[data-history-entries]'); const previous = panel.querySelector('[data-history-previous]'); const next = panel.querySelector('[data-history-next]'); const refresh = panel.querySelector('[data-history-refresh]'); let page = 1, pages = 1, busy = false;
-    const value = raw => raw === null ? '—' : (typeof raw === 'object' ? JSON.stringify(raw) : String(raw));
+    const value = raw => raw;
     async function load(requested = 1) {
         if (busy || !/\/\d+$/.test(form.action)) return; busy = true; panel.hidden = false; panel.setAttribute('aria-busy', 'true'); const restore = loadingButton(refresh); previous.disabled = next.disabled = true;
         try {

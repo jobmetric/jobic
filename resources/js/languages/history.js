@@ -16,7 +16,7 @@ export function bindHistory(form) {
         if (field === 'direction') return copy()[raw];
         if (field === 'calendar') return copy().calendars[raw] || raw;
         if (field === 'first_day_of_week') return copy().weekdays[raw] || raw;
-        return String(raw);
+        return raw;
     }
     async function load(requested = 1) {
         if (busy || !/\/\d+$/.test(form.action)) return;

@@ -15,10 +15,25 @@ export function appendHistoryChange(section, {label, beforeLabel, afterLabel, be
         const title = document.createElement('strong');
         title.textContent = caption;
         const content = document.createElement('pre');
-        content.textContent = value;
+        content.textContent = formatHistoryValue(value);
         side.append(title, content);
         comparison.append(side);
     });
     change.append(comparison);
     section.append(change);
+}
+
+/** Pretty-print structured audit values while leaving normal text unchanged. */
+export function formatHistoryValue(value) {
+    if (value === null || value === undefined || value === '') return '—';
+    if (typeof value === 'object') return JSON.stringify(value, null, 2);
+    if (typeof value !== 'string') return String(value);
+    const trimmed = value.trim();
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return value;
+    try {
+        const parsed = JSON.parse(trimmed);
+        return parsed && typeof parsed === 'object' ? JSON.stringify(parsed, null, 2) : value;
+    } catch {
+        return value;
+    }
 }

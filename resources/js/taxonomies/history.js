@@ -11,7 +11,7 @@ export function bindHistory(form) {
     let page = 1;
     let pages = 1;
     let busy = false;
-    const value = (item) => item === null || item === undefined || item === '' ? '—' : typeof item === 'object' ? JSON.stringify(item) : String(item);
+    const value = (item) => item;
     async function load(requested = page) {
         if (busy) return;
         busy = true;
