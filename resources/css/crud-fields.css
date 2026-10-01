@@ -2,3 +2,16 @@
 .crud-page select,
 .crud-filter-form select,
 .crud-page .cms-password-input { height:44px; min-height:44px; box-sizing:border-box; }
+.crud-capability-card { margin-block:18px; padding:20px; border:1px solid var(--border, #e5e7eb); border-radius:12px; background:var(--card-bg, #fff); }
+.crud-capability-card > header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+.crud-capability-card > header h2 { margin:0 0 4px; font-size:1rem; }
+.crud-capability-card > header p { margin:0; color:var(--muted-grey, #6b7280); }
+.crud-url-field { display:flex; align-items:center; gap:8px; direction:ltr; }
+.crud-url-field > span { color:var(--muted-grey, #6b7280); white-space:nowrap; }
+.crud-url-field input { flex:1; }
+.crud-translation-dialog { width:min(720px, calc(100vw - 32px)); }
+.crud-translation-locales { max-height:65vh; overflow:auto; padding:18px; }
+.crud-translation-locales section + section { border-top:1px solid var(--border, #e5e7eb); margin-top:18px; padding-top:18px; }
+.crud-translation-locales h3 { margin:0 0 14px; }
+.crud-translation-locales h3 small { color:var(--muted-grey, #6b7280); }
+.crud-taxonomy-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; }

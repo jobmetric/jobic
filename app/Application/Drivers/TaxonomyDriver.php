@@ -7,6 +7,7 @@ namespace App\Application\Drivers;
 use App\Contracts\ApplicationDriver;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
+use App\Support\TaxonomyPresentation;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 use JobMetric\Taxonomy\Models\Taxonomy;
 
@@ -38,7 +39,7 @@ class TaxonomyDriver implements ApplicationDriver
 
             Taxonomy::query()->where('type', 'menu')->get()->each(function (Taxonomy $menu): void {
                 TaxonomyTypeRegistry::register('menu_'.$menu->id)
-                    ->label($menu->getTranslation('name') ?? __('menus.unnamed'))
+                    ->label(TaxonomyPresentation::name($menu))
                     ->hierarchical()
                     ->changeStatusInList();
             });

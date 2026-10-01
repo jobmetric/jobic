@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Taxonomies;
 
 use App\Facades\Hooks;
+use App\Support\TaxonomyPresentation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -12,6 +13,7 @@ use JobMetric\PackageCore\Output\Response;
 use JobMetric\Taxonomy\Facades\Taxonomy;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 use JobMetric\Taxonomy\Models\Taxonomy as TaxonomyModel;
+use JobMetric\Media\Facades\Media;
 
 /** Provide one shared application service for every registered taxonomy type. */
 class Taxonomies
@@ -20,6 +22,7 @@ class Taxonomies
     public function table(string $type, array $input): Response
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
+        $builder = TaxonomyTypeRegistry::for($type);
         $query = TaxonomyModel::query()->where('type', $type);
         $total = (clone $query)->count();
         if (($input['status'] ?? '') !== '') {
@@ -29,11 +32,19 @@ class Taxonomies
             $query->whereHas('translations', fn ($translation) => $translation->where('field', 'name')->where('value', 'like', '%'.$term.'%'));
         }
         $filtered = (clone $query)->count();
-        $columns = [1 => 'id', 2 => 'ordering', 3 => 'status', 4 => 'created_at'];
+        $columns = ['name', 'ordering', 'status', 'created_at', 'translations'];
+        if ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) {
+            array_unshift($columns, 'media');
+        }
+        $requestedColumn = $columns[max(0, (int) ($input['order'][0]['column'] ?? 1) - 1)] ?? 'ordering';
+        $orderColumn = in_array($requestedColumn, ['ordering', 'status', 'created_at'], true) ? $requestedColumn : 'id';
         $rows = $query->with('translations')->offset((int) $input['start'])->limit((int) $input['length'])
-            ->orderBy($columns[$input['order'][0]['column'] ?? 2], $input['order'][0]['dir'] ?? 'asc')->orderBy('id')->get()
+            ->orderBy($orderColumn, $input['order'][0]['dir'] ?? 'asc')->orderBy('id')->get()
             ->map(fn (TaxonomyModel $record): array => Hooks::filter('jobic.taxonomies.list.row', [
-                'id' => $record->id, 'name' => $record->getTranslation('name'), 'ordering' => $record->ordering,
+                'id' => $record->id, 'name' => TaxonomyPresentation::name($record),
+                'translations' => $record->getTranslations(),
+                'media' => ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) ? $this->mediaPreview($record) : null,
+                'ordering' => $record->ordering,
                 'status' => $record->status, 'created_at' => $record->created_at?->toISOString(),
             ], ['type' => $type, 'id' => $record->id]))->values();
 
@@ -71,13 +82,29 @@ class Taxonomies
             'type' => $type,
             'ordering' => $data['ordering'],
             'status' => $data['status'],
-            'translation' => [app()->getLocale() => ['name' => $data['name']]],
+            'translation' => array_filter($data['translation'], fn (array $fields): bool => collect($fields)->contains(fn ($value) => filled($value))),
         ];
         if ($builder->hasHierarchical()) {
             $payload['parent_id'] = $data['parent_id'] ?? null;
         }
         if ($builder->hasUrl() && filled($data['slug'] ?? null)) {
             $payload['slug'] = $data['slug'];
+        }
+        $mediaPayload = [];
+        foreach ((array) ($data['media_upload'] ?? []) as $collection => $uploads) {
+            $ids = [];
+            foreach (is_array($uploads) ? $uploads : [$uploads] as $index => $upload) {
+                if (! $upload) {
+                    continue;
+                }
+                $field = is_array($uploads) ? "media_upload.$collection.$index" : "media_upload.$collection";
+                $uploaded = Media::upload(collection: 'public', field: $field);
+                $ids[] = (int) $uploaded['data']->resource->id;
+            }
+            if ($ids !== []) {
+                $multiple = $builder->getMedia()->first(fn ($item) => $item->getCollection() === $collection)?->getMultiple() ?? false;
+                $mediaPayload[$collection] = $multiple ? $ids : $ids[0];
+            }
         }
 
         $context = ['type' => $type, 'id' => $id, 'operation' => $id ? 'update' : 'create', 'user_id' => (int) auth()->id()];
@@ -88,8 +115,20 @@ class Taxonomies
         }
 
         $savedId = (int) $result['data']->id;
+        foreach ($mediaPayload as $collection => $mediaIds) {
+            DB::table(config('media.tables.media_relation'))->where([
+                'mediaable_type' => TaxonomyModel::class, 'mediaable_id' => $savedId, 'collection' => $collection,
+            ])->delete();
+            foreach ((array) $mediaIds as $mediaId) {
+                DB::table(config('media.tables.media_relation'))->insert([
+                    'media_id' => $mediaId, 'mediaable_type' => TaxonomyModel::class,
+                    'mediaable_id' => $savedId, 'collection' => $collection, 'created_at' => now(),
+                ]);
+            }
+        }
         if ($type === 'menu') {
-            TaxonomyTypeRegistry::register('menu_'.$savedId)->label($data['name'])->hierarchical()->changeStatusInList();
+            $saved = $this->record($type, $savedId);
+            TaxonomyTypeRegistry::register('menu_'.$savedId)->label(TaxonomyPresentation::name($saved))->hierarchical()->changeStatusInList();
         }
         Hooks::notify('jobic.taxonomies.saved', array_replace($context, ['id' => $savedId]));
 
@@ -121,10 +160,23 @@ class Taxonomies
                 $this->delete($type, (int) $id);
             } else {
                 $record = $this->record($type, (int) $id);
-                $this->save($type, ['name' => $record->getTranslation('name'), 'ordering' => $record->ordering, 'status' => $data['operation'] === 'activate', 'parent_id' => $record->parent_id], $record->id);
+                $this->save($type, ['translation' => $record->getTranslations(), 'ordering' => $record->ordering, 'status' => $data['operation'] === 'activate', 'parent_id' => $record->parent_id], $record->id);
             }
         }
 
         return Response::make(true, __('taxonomies.saved'));
+    }
+
+    private function mediaPreview(TaxonomyModel $record): ?string
+    {
+        $media = DB::table(config('media.tables.media').' as media')
+            ->join(config('media.tables.media_relation').' as relation', 'relation.media_id', '=', 'media.id')
+            ->where('relation.mediaable_type', TaxonomyModel::class)->where('relation.mediaable_id', $record->id)
+            ->select('media.uuid', 'media.mime_type')->first();
+        if (! $media || ! str_starts_with((string) $media->mime_type, 'image/')) {
+            return null;
+        }
+
+        return route('media.image.responsive', ['uuid' => $media->uuid, 'w' => 96, 'h' => 96, 'm' => 'cover']);
     }
 }

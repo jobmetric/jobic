@@ -11,6 +11,7 @@ use App\Http\Requests\Taxonomies\TableRequest;
 use App\Http\Requests\Taxonomies\TaxonomyRequest;
 use App\Services\Taxonomies\Taxonomies;
 use App\Support\Page;
+use App\Support\LocaleCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
@@ -88,6 +89,10 @@ class TaxonomyController extends Controller
         $context = ['type' => $type];
         Page::addLocalize('taxonomies', trans('taxonomies'));
         Page::addLocalize('crudHelp', trans('crud.help_sections'));
+        $columns = ['name', 'ordering', 'status', 'created_at', 'translations'];
+        if ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) {
+            array_unshift($columns, 'media');
+        }
         $rowActions = Hooks::filter('jobic.taxonomies.list.actions', ['edit', 'delete'], $context);
         if ($type === 'menu') {
             $rowActions[] = [
@@ -100,7 +105,9 @@ class TaxonomyController extends Controller
         Page::addLocalize('taxonomyPage', [
             'index' => route('admin.taxonomies.index', $type), 'data' => route('admin.taxonomies.data', $type),
             'bulk' => route('admin.taxonomies.bulk', $type), 'type' => $type, 'label' => $builder->getLabel(),
-            'columns' => Hooks::filter('jobic.taxonomies.list.columns', ['name', 'ordering', 'status', 'created_at'], $context),
+            'columns' => Hooks::filter('jobic.taxonomies.list.columns', $columns, $context),
+            'languages' => LocaleCatalog::all(),
+            'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
             'rowActions' => $rowActions,
             'toolbar' => Hooks::filter('jobic.taxonomies.list.toolbar', ['activate', 'deactivate', 'delete', 'help'], $context),
             'formToolbar' => Hooks::filter('jobic.taxonomies.form.toolbar', ['new', 'close'], $context),
@@ -112,6 +119,9 @@ class TaxonomyController extends Controller
     {
         $builder = TaxonomyTypeRegistry::for($type);
 
-        return ['type' => $type, 'record' => $record, 'builder' => $builder, 'parents' => $builder->hasHierarchical() ? $this->taxonomies->records($type) : collect()];
+        return ['type' => $type, 'record' => $record, 'builder' => $builder,
+            'parents' => $builder->hasHierarchical() ? $this->taxonomies->records($type) : collect(),
+            'languages' => LocaleCatalog::all(), 'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
+            'translations' => $record?->getTranslations() ?? []];
     }
 }

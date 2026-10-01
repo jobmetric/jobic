@@ -15,7 +15,8 @@
     @cmsHook('jobic.admin.taxonomies.list.table.before', ['type' => $type])
     <div class="crud-table-card" data-table-card>
         <div class="crud-loading" data-table-loading hidden role="status"><span class="crud-spinner"></span><strong>{{ __('taxonomies.loading') }}</strong></div>
-        <div class="crud-table-scroll"><table id="taxonomy-table"><thead><tr><th><input type="checkbox" data-select-all aria-label="{{ __('taxonomies.select_all') }}"></th>@foreach(app(\App\Support\Hooks::class)->filter('jobic.taxonomies.list.columns', ['name','ordering','status','created_at'], ['type'=>$type]) as $column)<th data-column="{{ $column }}">{{ __('taxonomies.'.$column) }}</th>@endforeach<th>{{ __('taxonomies.actions') }}</th></tr></thead><tbody></tbody></table></div>
+        @php($defaultColumns = $builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty() ? ['media','name','ordering','status','created_at','translations'] : ['name','ordering','status','created_at','translations'])
+        <div class="crud-table-scroll"><table id="taxonomy-table"><thead><tr><th><input type="checkbox" data-select-all aria-label="{{ __('taxonomies.select_all') }}"></th>@foreach(app(\App\Support\Hooks::class)->filter('jobic.taxonomies.list.columns', $defaultColumns, ['type'=>$type]) as $column)<th data-column="{{ $column }}">{{ __('taxonomies.'.$column) }}</th>@endforeach<th>{{ __('taxonomies.actions') }}</th></tr></thead><tbody></tbody></table></div>
         @include('common.crud.empty', ['title' => __('taxonomies.empty'), 'hint' => __('taxonomies.empty_hint')])
         <div data-table-error hidden role="alert"><span>{{ __('taxonomies.failed') }}</span><button type="button" data-retry class="vuero-button">{{ __('taxonomies.retry') }}</button></div>
     </div>
