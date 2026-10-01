@@ -95,7 +95,13 @@ export function showDialog({title, description, items = [], confirm = null, remo
         if (remove) {
             const control = document.createElement('button'); control.type = 'button'; control.className = 'crud-icon-button';
             control.setAttribute('aria-label', copy().unselect); control.innerHTML = icon('x');
-            control.onclick = () => { remove(item.id); row.remove(); heading.textContent = copy().selected.replace(':count', body.querySelectorAll('.crud-dialog-item').length); }; row.append(control);
+            control.onclick = () => {
+                remove(item.id);
+                row.remove();
+                const count = body.querySelectorAll('.crud-dialog-item').length;
+                heading.textContent = copy().selected.replace(':count', count);
+                if (count === 0) dialog.close();
+            }; row.append(control);
         }
         body.append(row);
     });

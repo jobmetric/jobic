@@ -35,12 +35,12 @@ export function toolbar(kind) {
 }
 
 export function showDialog({title, description, items = [], confirm = null, remove = null, accordion = false}) {
-    const dialog = document.querySelector('[data-crud-dialog]'); const body = dialog.querySelector('[data-dialog-body]'); dialog.querySelector('[data-dialog-title]').textContent = title; body.replaceChildren();
+    const dialog = document.querySelector('[data-crud-dialog]'); const body = dialog.querySelector('[data-dialog-body]'); const heading = dialog.querySelector('[data-dialog-title]'); heading.textContent = title; body.replaceChildren();
     const intro = document.createElement('p'); intro.textContent = description; body.append(intro);
     items.forEach((item, index) => {
         if (accordion) { const section = document.createElement('details'); section.className = 'crud-help-section'; const summary = document.createElement('summary'); summary.textContent = Object.values(pageData().crudHelp)[index]; const text = document.createElement('p'); text.textContent = item; section.append(summary, text); section.open = index === 0; body.append(section); return; }
         const row = document.createElement('div'); row.className = 'crud-dialog-item'; const label = document.createElement('span'); label.textContent = item.name ?? item; row.append(label);
-        if (remove) { const control = document.createElement('button'); control.type = 'button'; control.className = 'crud-icon-button'; control.innerHTML = icon('x'); control.onclick = () => { remove(item.id); row.remove(); }; row.append(control); }
+        if (remove) { const control = document.createElement('button'); control.type = 'button'; control.className = 'crud-icon-button'; control.innerHTML = icon('x'); control.onclick = () => { remove(item.id); row.remove(); const count = body.querySelectorAll('.crud-dialog-item').length; heading.textContent = copy().selected.replace(':count', count); if (count === 0) dialog.close(); }; row.append(control); }
         body.append(row);
     });
     const accept = dialog.querySelector('[data-dialog-confirm]'); accept.hidden = !confirm; accept.textContent = confirm || ''; dialog.querySelector('[data-dialog-cancel]').textContent = confirm ? copy().cancel : copy().dismiss;
