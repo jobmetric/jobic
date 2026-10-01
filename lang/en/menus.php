@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Menus',
-    'intro' => 'Create navigation containers. Each menu receives its own hierarchical taxonomy type for items.',
+    'intro' => 'Create and arrange your website menus and their items.',
     'total' => 'All menus',
     'recent' => 'Added in 30 days',
     'search' => 'Search menus',

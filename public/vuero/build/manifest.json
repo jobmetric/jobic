@@ -129,48 +129,48 @@
       "_page-315b051b.js"
     ]
   },
-  "_shared-02495c4e.js": {
+  "_shared-3fe96ca5.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/shared-02495c4e.js",
+    "file": "assets/shared-3fe96ca5.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-149dbb0f.js": {
+  "_shared-51c71842.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/shared-149dbb0f.js",
+    "file": "assets/shared-51c71842.js",
     "imports": [
       "_page-315b051b.js"
     ]
   },
-  "_shared-1841992c.js": {
-    "css": [
-      "assets/crud-fields-1c3e2dd5.css"
-    ],
-    "file": "assets/shared-1841992c.js",
-    "imports": [
-      "_page-315b051b.js"
-    ]
-  },
-  "_shared-7a52acfe.js": {
-    "css": [
-      "assets/crud-fields-1c3e2dd5.css"
-    ],
-    "file": "assets/shared-7a52acfe.js",
-    "imports": [
-      "_page-315b051b.js"
-    ]
-  },
-  "_shared-e2d4a056.js": {
+  "_shared-640d5626.js": {
     "css": [
       "assets/shared-c7ea7a6b.css",
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/shared-e2d4a056.js",
+    "file": "assets/shared-640d5626.js",
+    "imports": [
+      "_page-315b051b.js"
+    ]
+  },
+  "_shared-902da9a1.js": {
+    "css": [
+      "assets/crud-fields-113462c1.css"
+    ],
+    "file": "assets/shared-902da9a1.js",
+    "imports": [
+      "_page-315b051b.js"
+    ]
+  },
+  "_shared-a3fd5a92.js": {
+    "css": [
+      "assets/crud-fields-113462c1.css"
+    ],
+    "file": "assets/shared-a3fd5a92.js",
     "imports": [
       "_page-315b051b.js"
     ]
@@ -217,7 +217,7 @@
     "src": "auth-login.css"
   },
   "crud-fields.css": {
-    "file": "assets/crud-fields-1c3e2dd5.css",
+    "file": "assets/crud-fields-113462c1.css",
     "src": "crud-fields.css"
   },
   "dashboard-runtime.css": {
@@ -281,11 +281,11 @@
   },
   "resources/js/languages/form.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/form-3860b66b.js",
+    "file": "assets/form-a03397a6.js",
     "imports": [
-      "_shared-02495c4e.js",
+      "_shared-902da9a1.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -296,11 +296,11 @@
   },
   "resources/js/languages/index.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/index-2b4011ba.js",
+    "file": "assets/index-13e60bbf.js",
     "imports": [
-      "_shared-02495c4e.js",
+      "_shared-902da9a1.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -311,11 +311,11 @@
   },
   "resources/js/menus/form.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/form-3c742f88.js",
+    "file": "assets/form-b693a9e3.js",
     "imports": [
-      "_shared-149dbb0f.js",
+      "_shared-51c71842.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -326,11 +326,11 @@
   },
   "resources/js/menus/index.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/index-26923916.js",
+    "file": "assets/index-036f4ffc.js",
     "imports": [
-      "_shared-149dbb0f.js",
+      "_shared-51c71842.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -341,11 +341,11 @@
   },
   "resources/js/roles/form.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/form-69f553a0.js",
+    "file": "assets/form-005121ba.js",
     "imports": [
-      "_shared-e2d4a056.js",
+      "_shared-640d5626.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -357,11 +357,11 @@
   },
   "resources/js/roles/index.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/index-81b2279c.js",
+    "file": "assets/index-a3faf0c0.js",
     "imports": [
-      "_shared-e2d4a056.js",
+      "_shared-640d5626.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -377,11 +377,11 @@
   },
   "resources/js/taxonomies/form.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/form-cdbfe6ed.js",
+    "file": "assets/form-291df2a2.js",
     "imports": [
-      "_shared-1841992c.js",
+      "_shared-a3fd5a92.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -392,11 +392,11 @@
   },
   "resources/js/taxonomies/index.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/index-5008ca89.js",
+    "file": "assets/index-f8f9ce83.js",
     "imports": [
-      "_shared-1841992c.js",
+      "_shared-a3fd5a92.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -407,11 +407,11 @@
   },
   "resources/js/users/form.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/form-f31f8be9.js",
+    "file": "assets/form-22bf1479.js",
     "imports": [
-      "_shared-7a52acfe.js",
+      "_shared-3fe96ca5.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",
@@ -422,11 +422,11 @@
   },
   "resources/js/users/index.js": {
     "css": [
-      "assets/crud-fields-1c3e2dd5.css"
+      "assets/crud-fields-113462c1.css"
     ],
-    "file": "assets/index-ba3abfb2.js",
+    "file": "assets/index-a8f36c82.js",
     "imports": [
-      "_shared-7a52acfe.js",
+      "_shared-3fe96ca5.js",
       "_page-315b051b.js",
       "_settings-ad6cde3b.js",
       "_toast-18d1caa1.js",

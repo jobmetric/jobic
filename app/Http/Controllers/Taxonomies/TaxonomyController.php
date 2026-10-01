@@ -137,7 +137,7 @@ class TaxonomyController extends Controller
             'index' => route('admin.taxonomies.index', $type), 'data' => route('admin.taxonomies.data', $type),
             'bulk' => route('admin.taxonomies.bulk', $type), 'type' => $type, 'label' => $builder->getLabel(),
             'columns' => Hooks::filter('jobic.taxonomies.list.columns', $columns, $context),
-            'languages' => LocaleCatalog::all(),
+            'languages' => collect(LocaleCatalog::all())->map(fn (array $language): array => $language + ['flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null)])->all(),
             'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
             'translationFields' => $translationFields,
             'translationUrl' => route('admin.taxonomies.translation', [$type, '__ID__', '__LOCALE__']),
@@ -154,7 +154,7 @@ class TaxonomyController extends Controller
 
         return ['type' => $type, 'record' => $record, 'builder' => $builder,
             'parents' => $builder->hasHierarchical() ? $this->taxonomies->records($type) : collect(),
-            'languages' => LocaleCatalog::all(), 'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
+            'languages' => collect(LocaleCatalog::all())->map(fn (array $language): array => $language + ['flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null)])->all(), 'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
             'translations' => $record?->getTranslations() ?? [],
             'mediaPreview' => $record && ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) ? $this->taxonomies->mediaPreview($record) : null];
     }

@@ -34,3 +34,23 @@
 .crud-translation-editor textarea { min-height:120px; resize:vertical; }
 .crud-translation-editor small { color:#e34d65; }
 .crud-media-preview { width:120px; height:120px; margin-bottom:10px; border-radius:12px; object-fit:cover; border:1px solid var(--border); }
+.crud-taxonomy-layout { display:grid; grid-template-columns:1fr; gap:24px; align-items:start; }
+.crud-taxonomy-layout.has-sidebar { grid-template-columns:minmax(0,2fr) minmax(280px,1fr); }
+.crud-taxonomy-layout > main,.crud-taxonomy-layout > aside { min-width:0; }
+.crud-taxonomy-layout > aside .crud-capability-card:first-child { margin-top:0; }
+.crud-translation-group { padding:0; border:0; border-radius:0; background:transparent; }
+.crud-translation-group > header { min-height:42px; padding:0 4px; border-bottom:1px solid var(--border); }
+.crud-translation-group > header img { width:24px; height:18px; border-radius:3px; object-fit:cover; }
+.crud-translation-group > header h2 { margin:0; font-size:14px; font-weight:600; }
+.crud-locale-dropdown > summary { width:auto; min-width:58px; gap:7px; }
+.crud-locale-dropdown > summary img,.crud-locale-dropdown .crud-dropdown__menu img { width:22px; height:16px; border-radius:3px; object-fit:cover; }
+.crud-locale-dropdown .crud-dropdown__menu button { justify-content:flex-start; color:var(--text); }
+.crud-locale-dropdown .crud-dropdown__menu button > svg { margin-inline-start:auto; color:var(--muted); }
+.crud-locale-dropdown .crud-dropdown__menu button.is-complete > svg { color:var(--primary); }
+.crud-locale-code { display:grid; width:22px; height:18px; place-items:center; border-radius:4px; background:var(--surface-soft); font-size:9px; font-weight:700; }
+.crud-row-translation-dialog > header > div > span { display:block; margin-bottom:3px; color:var(--muted); font-size:12px; }
+.crud-row-translation-dialog .crud-translation-editor { padding:0; }
+.crud-row-translation-dialog .crud-filter-fields { display:grid; gap:18px; }
+.crud-row-translation-dialog .crud-filter-fields label { display:grid; gap:8px; }
+@media(max-width:991px){.crud-taxonomy-layout.has-sidebar{grid-template-columns:1fr}.crud-taxonomy-layout > aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.crud-taxonomy-layout > aside .crud-capability-card{margin:0}}
+@media(max-width:640px){.crud-taxonomy-layout > aside{grid-template-columns:1fr}}

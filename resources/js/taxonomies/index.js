@@ -47,7 +47,13 @@ page.columns.forEach((key) =>
                         data: "translations",
                         orderable: false,
                         render: (value, mode, row) => {
-                            return `<div class="crud-locale-actions">${Object.entries(
+                            const current =
+                                page.languages[page.activeLocale] ||
+                                Object.values(page.languages)[0];
+                            const flag = current?.flag_url
+                                ? `<img src="${escape(current.flag_url)}" alt="">`
+                                : icon("languages");
+                            return `<details class="crud-dropdown crud-locale-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().translations)}">${flag}${icon("chevron-down")}</summary><div class="crud-dropdown__menu">${Object.entries(
                                 page.languages,
                             )
                                 .map(([locale, language]) => {
@@ -55,9 +61,12 @@ page.columns.forEach((key) =>
                                         String(
                                             value?.[locale]?.name || "",
                                         ).trim() !== "";
-                                    return `<button type="button" class="crud-locale-button ${complete ? "is-complete" : ""}" data-translation-id="${Number(row.id)}" data-translation-locale="${escape(locale)}" title="${escape(language.name)}"><span>${escape(locale.toUpperCase())}</span>${complete ? icon("check") : icon("plus")}</button>`;
+                                    const languageFlag = language.flag_url
+                                        ? `<img src="${escape(language.flag_url)}" alt="">`
+                                        : `<span class="crud-locale-code">${escape(locale.toUpperCase())}</span>`;
+                                    return `<button type="button" class="${complete ? "is-complete" : ""}" data-translation-id="${Number(row.id)}" data-translation-locale="${escape(locale)}">${languageFlag}<span>${escape(language.name)}</span>${complete ? icon("check") : icon("plus")}</button>`;
                                 })
-                                .join("")}</div>`;
+                                .join("")}</div></details>`;
                         },
                     }
                   : { data: key, render: $.fn.dataTable.render.text() },
@@ -66,21 +75,22 @@ page.columns.forEach((key) =>
 columns.push({
     data: "id",
     orderable: false,
-    render: (id) =>
-        `<div class="crud-row-actions">${page.rowActions
-            .map((action) => {
-                const item =
-                    typeof action === "string" ? { key: action } : action;
-                if (item.key === "edit")
-                    return `<a class="crud-icon-button" href="${page.index}/${Number(id)}/edit">${icon("edit")}</a>`;
-                if (item.key === "delete")
-                    return `<button class="crud-icon-button" data-delete="${Number(id)}">${icon("trash")}</button>`;
+    render: (id) => {
+        const actions = page.rowActions.map((action) =>
+            typeof action === "string" ? { key: action } : action,
+        );
+        const external = actions.filter(
+            (item) => !["edit", "delete"].includes(item.key),
+        );
+        return `<div class="crud-row-actions"><a class="crud-icon-button" href="${page.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a>${external
+            .map((item) => {
                 const url = String(item.url || "#").replace(":id", Number(id));
-                return `<a class="crud-icon-button" href="${escape(url)}" title="${escape(item.label || item.key)}" data-taxonomy-action="${escape(item.key)}" data-id="${Number(id)}">${icon(item.icon || "apps")}</a>`;
+                return `<a class="crud-icon-button" href="${escape(url)}" aria-label="${escape(item.label || item.key)}" data-tooltip="${escape(item.label || item.key)}" data-taxonomy-action="${escape(item.key)}" data-id="${Number(id)}">${icon(item.icon || "apps")}</a>`;
             })
             .join(
                 "",
-            )}<span data-taxonomy-row-actions="${Number(id)}"></span></div>`,
+            )}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more || copy().actions)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-delete="${Number(id)}">${icon("trash")}${escape(copy().delete)}</button></div></details><span data-taxonomy-row-actions="${Number(id)}"></span></div>`;
+    },
 });
 const table = $("#taxonomy-table").DataTable({
     serverSide: true,
@@ -240,8 +250,6 @@ function openTranslation(id, locale) {
         language.name;
     translationDialog.querySelector("[data-translation-subtitle]").textContent =
         copy().translation_for.replace(":item", row.name);
-    translationDialog.querySelector("[data-translation-flag]").textContent =
-        locale.toUpperCase();
     translationFields.replaceChildren(
         ...page.translationFields.map((field) => {
             const label = document.createElement("label");
