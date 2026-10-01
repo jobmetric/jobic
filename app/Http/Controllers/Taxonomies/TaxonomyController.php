@@ -13,6 +13,8 @@ use App\Services\Taxonomies\Taxonomies;
 use App\Support\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
+use JobMetric\Domi\Facades\Domi;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 
 /** Render the native, registry-driven taxonomy administration pages. */
@@ -20,9 +22,11 @@ class TaxonomyController extends Controller
 {
     public function __construct(private readonly Taxonomies $taxonomies) {}
 
+    /** @throws SetPluginNotFoundException */
     public function index(string $type): View
     {
         $this->prepare($type);
+        Domi::setPlugins(['jquery', 'datatable']);
 
         return view('taxonomies.index', ['type' => $type]);
     }
@@ -84,11 +88,20 @@ class TaxonomyController extends Controller
         $context = ['type' => $type];
         Page::addLocalize('taxonomies', trans('taxonomies'));
         Page::addLocalize('crudHelp', trans('crud.help_sections'));
+        $rowActions = Hooks::filter('jobic.taxonomies.list.actions', ['edit', 'delete'], $context);
+        if ($type === 'menu') {
+            $rowActions[] = [
+                'key' => 'items',
+                'label' => __('menus.configure'),
+                'icon' => 'list-tree',
+                'url' => url('/admin/taxonomies/menu_:id'),
+            ];
+        }
         Page::addLocalize('taxonomyPage', [
             'index' => route('admin.taxonomies.index', $type), 'data' => route('admin.taxonomies.data', $type),
             'bulk' => route('admin.taxonomies.bulk', $type), 'type' => $type, 'label' => $builder->getLabel(),
             'columns' => Hooks::filter('jobic.taxonomies.list.columns', ['name', 'ordering', 'status', 'created_at'], $context),
-            'rowActions' => Hooks::filter('jobic.taxonomies.list.actions', ['edit', 'delete'], $context),
+            'rowActions' => $rowActions,
             'toolbar' => Hooks::filter('jobic.taxonomies.list.toolbar', ['activate', 'deactivate', 'delete', 'help'], $context),
             'formToolbar' => Hooks::filter('jobic.taxonomies.form.toolbar', ['new', 'close'], $context),
             'help' => Hooks::filter('jobic.taxonomies.help.items', trans('taxonomies.help_items'), $context),

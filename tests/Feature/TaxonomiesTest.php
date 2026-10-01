@@ -45,6 +45,8 @@ class TaxonomiesTest extends TestCase
 
         $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['id' => $id, 'type' => 'menu']);
         $this->assertTrue(TaxonomyTypeRegistry::has('menu_'.$id));
+        $this->getJson(route('admin.taxonomies.data', ['menu', 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'Header'], 'order' => [['column' => 1, 'dir' => 'asc']]]))
+            ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'Header');
         $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), ['name' => 'Home', 'ordering' => 1, 'status' => 1])->assertCreated();
         $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['type' => 'menu_'.$id]);
     }
