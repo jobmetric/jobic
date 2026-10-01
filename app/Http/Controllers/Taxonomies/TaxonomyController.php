@@ -7,11 +7,12 @@ namespace App\Http\Controllers\Taxonomies;
 use App\Facades\Hooks;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Taxonomies\BulkRequest;
+use App\Http\Requests\Taxonomies\HistoryRequest;
 use App\Http\Requests\Taxonomies\TableRequest;
 use App\Http\Requests\Taxonomies\TaxonomyRequest;
 use App\Services\Taxonomies\Taxonomies;
-use App\Support\Page;
 use App\Support\LocaleCatalog;
+use App\Support\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -83,10 +84,9 @@ class TaxonomyController extends Controller
             }
         }
         $values = Validator::make((array) $request->input('fields'), $rules)->validate();
-        $record->translation = [$locale => $values];
-        $record->save();
+        $result = $this->taxonomies->saveTranslation($type, $record, $locale, $values);
 
-        return response()->json(['ok' => true, 'message' => __('taxonomies.translation_saved'), 'data' => ['locale' => $locale, 'fields' => $values], 'status' => 200, 'errors' => []]);
+        return response()->json($result, $result->status);
     }
 
     public function destroy(string $type, int $taxonomy): JsonResponse
@@ -101,6 +101,14 @@ class TaxonomyController extends Controller
         $result = $this->taxonomies->bulk($type, $request->validated());
 
         return response()->json($result, $result->status);
+    }
+
+    /**
+     * Return one bounded page of changes for a taxonomy record.
+     */
+    public function history(HistoryRequest $request, string $type, int $taxonomy): JsonResponse
+    {
+        return response()->json($this->taxonomies->history($type, $taxonomy, $request->validated()));
     }
 
     private function prepare(string $type): void
@@ -120,7 +128,7 @@ class TaxonomyController extends Controller
 
             return ['name' => $field, 'label' => $translated, 'type' => $field !== 'name' && in_array($item->customField->type, ['textarea', 'editor'], true) ? 'textarea' : 'text'];
         })->filter(fn (array $field): bool => $field['name'] !== '')->values()->all();
-        $columns = ['name', 'ordering', 'status', 'created_at', 'translations'];
+        $columns = ['name', 'ordering', 'status', 'translations'];
         if ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) {
             array_unshift($columns, 'media');
         }
@@ -140,6 +148,7 @@ class TaxonomyController extends Controller
             'languages' => collect(LocaleCatalog::all())->map(fn (array $language): array => $language + ['flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null)])->all(),
             'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
             'hierarchical' => $builder->hasHierarchical(),
+            'backUrl' => TaxonomyTypeRegistry::getOption($type, 'back-url'),
             'translationFields' => $translationFields,
             'translationUrl' => route('admin.taxonomies.translation', [$type, '__ID__', '__LOCALE__']),
             'rowActions' => $rowActions,

@@ -24,14 +24,14 @@ class RecordHistory
             'first_day_of_week',
             'status',
         ],
-        'users'     => [
+        'users' => [
             'name',
             'email',
             'status',
             'email_verified_at',
             'role_ids',
         ],
-        'roles'     => [
+        'roles' => [
             'name',
             'description',
             'parent_id',
@@ -42,19 +42,22 @@ class RecordHistory
             'ordering',
             'rules',
         ],
+        'taxonomies' => [
+            'translation',
+            'parent_id',
+            'ordering',
+            'status',
+            'slug',
+            'media',
+        ],
     ];
 
     /**
      * Record changed public fields inside the caller's persistence transaction.
      *
-     * @param string $resource
-     * @param int $recordId
-     * @param int $userId
-     * @param string $operation
-     * @param array<string, mixed> $before
-     * @param array<string, mixed> $after
+     * @param  array<string, mixed>  $before
+     * @param  array<string, mixed>  $after
      *
-     * @return void
      * @throws Throwable
      */
     public function record(
@@ -66,13 +69,16 @@ class RecordHistory
         array $after
     ): void {
         $changes = [];
-        foreach (self::FIELDS[$resource] ?? [] as $field) {
+        $fields = str_starts_with($resource, 'taxonomies:')
+            ? self::FIELDS['taxonomies']
+            : (self::FIELDS[$resource] ?? []);
+        foreach ($fields as $field) {
             $old = $before[$field] ?? null;
             $new = $after[$field] ?? null;
             if ($old !== $new) {
                 $changes[$field] = [
                     'before' => $old,
-                    'after'  => $new,
+                    'after' => $new,
                 ];
             }
         }
@@ -82,11 +88,11 @@ class RecordHistory
         }
 
         DB::table('record_changes')->insert([
-            'resource'   => $resource,
-            'record_id'  => $recordId,
-            'user_id'    => $userId,
-            'operation'  => $operation,
-            'changes'    => json_encode($changes, JSON_THROW_ON_ERROR),
+            'resource' => $resource,
+            'record_id' => $recordId,
+            'user_id' => $userId,
+            'operation' => $operation,
+            'changes' => json_encode($changes, JSON_THROW_ON_ERROR),
             'created_at' => now(),
         ]);
     }
@@ -94,11 +100,7 @@ class RecordHistory
     /**
      * Read a bounded history page without exposing account credentials or email addresses.
      *
-     * @param string $resource
-     * @param int $recordId
-     * @param int $page
      *
-     * @return Response
      * @throws Throwable
      */
     public function page(string $resource, int $recordId, int $page): Response
@@ -125,8 +127,8 @@ class RecordHistory
 
         return Response::make(true, '', [
             'entries' => $entries->items(),
-            'page'    => $entries->currentPage(),
-            'pages'   => $entries->lastPage(),
+            'page' => $entries->currentPage(),
+            'pages' => $entries->lastPage(),
         ]);
     }
 }

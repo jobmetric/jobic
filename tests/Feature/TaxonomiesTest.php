@@ -29,7 +29,9 @@ class TaxonomiesTest extends TestCase
 
         $id = $response->json('data.id');
         $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['id' => $id, 'type' => 'categories']);
-        $this->get(route('admin.taxonomies.edit', ['categories', $id]))->assertOk()->assertSee('News');
+        $this->get(route('admin.taxonomies.edit', ['categories', $id]))->assertOk()->assertSee('News')->assertSee(__('taxonomies.history'));
+        $this->getJson(route('admin.taxonomies.history', ['categories', $id]))
+            ->assertOk()->assertJsonPath('data.entries.0.operation', 'create');
     }
 
     public function test_unknown_type_is_rejected(): void
@@ -76,6 +78,8 @@ class TaxonomiesTest extends TestCase
         $taxonomy = Taxonomy::query()->findOrFail($created->json('data.id'));
         $this->assertSame('News', $taxonomy->getTranslation('name', 'en'));
         $this->assertSame('اخبار', $taxonomy->getTranslation('name', 'fa'));
+        $this->getJson(route('admin.taxonomies.history', ['topics', $taxonomy->id]))
+            ->assertOk()->assertJsonPath('data.entries.0.operation', 'update');
     }
 
     public function test_menu_is_a_general_taxonomy_and_registers_its_item_type(): void
@@ -86,6 +90,7 @@ class TaxonomiesTest extends TestCase
 
         $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['id' => $id, 'type' => 'menu']);
         $this->assertTrue(TaxonomyTypeRegistry::has('menu_'.$id));
+        $this->assertSame(route('admin.taxonomies.index', 'menu'), TaxonomyTypeRegistry::getOption('menu_'.$id, 'back-url'));
         $this->assertTrue(TaxonomyTypeRegistry::for('menu_'.$id)->hasBaseMedia());
         $this->getJson(route('admin.taxonomies.data', ['menu', 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'Header'], 'order' => [['column' => 1, 'dir' => 'asc']]]))
             ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'Header');
@@ -102,5 +107,10 @@ class TaxonomiesTest extends TestCase
             ->assertJsonPath('data.data.0.path_names', ['Home', 'About']);
         $this->getJson(route('admin.taxonomies.data', ['menu_'.$id, 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'Home'], 'order' => [['column' => 2, 'dir' => 'asc']]]))
             ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'Home');
+        $this->getJson(route('admin.taxonomies.data', ['menu_'.$id, 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => ''], 'order' => [['column' => 2, 'dir' => 'asc']]]))
+            ->assertOk()->assertJsonPath('data.data.0.name', 'About')->assertJsonPath('data.data.1.name', 'Home');
+        $this->get(route('admin.taxonomies.index', 'menu_'.$id))->assertOk()
+            ->assertSee(route('admin.taxonomies.index', 'menu'), false)
+            ->assertDontSee(__('taxonomies.created_at').'</th>', false);
     }
 }

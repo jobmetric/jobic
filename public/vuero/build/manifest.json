@@ -95,8 +95,8 @@
       "_jquery-83fec99f.js"
     ]
   },
-  "_page-315b051b.js": {
-    "file": "assets/page-315b051b.js"
+  "_page-1cca34fb.js": {
+    "file": "assets/page-1cca34fb.js"
   },
   "_placeload-runtime-e394db54.js": {
     "file": "assets/placeload-runtime-e394db54.js",
@@ -117,62 +117,62 @@
       "_form-layout-runtime-df83fa2c.js"
     ]
   },
-  "_selects-9f57de85.js": {
-    "file": "assets/selects-9f57de85.js",
+  "_selects-a504806e.js": {
+    "file": "assets/selects-a504806e.js",
     "imports": [
-      "_page-315b051b.js"
+      "_page-1cca34fb.js"
     ]
   },
-  "_settings-ad6cde3b.js": {
-    "file": "assets/settings-ad6cde3b.js",
+  "_settings-e225b361.js": {
+    "file": "assets/settings-e225b361.js",
     "imports": [
-      "_page-315b051b.js"
+      "_page-1cca34fb.js"
     ]
   },
-  "_shared-1bc7dc11.js": {
+  "_shared-03b756a4.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/shared-1bc7dc11.js",
+    "file": "assets/shared-03b756a4.js",
     "imports": [
-      "_page-315b051b.js"
+      "_page-1cca34fb.js"
     ]
   },
-  "_shared-30de277e.js": {
+  "_shared-564b81ac.js": {
+    "css": [
+      "assets/crud-fields-36bb086c.css"
+    ],
+    "file": "assets/shared-564b81ac.js",
+    "imports": [
+      "_page-1cca34fb.js"
+    ]
+  },
+  "_shared-781edd3f.js": {
+    "css": [
+      "assets/crud-fields-36bb086c.css"
+    ],
+    "file": "assets/shared-781edd3f.js",
+    "imports": [
+      "_page-1cca34fb.js"
+    ]
+  },
+  "_shared-8b427f18.js": {
     "css": [
       "assets/shared-c7ea7a6b.css",
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/shared-30de277e.js",
+    "file": "assets/shared-8b427f18.js",
     "imports": [
-      "_page-315b051b.js"
+      "_page-1cca34fb.js"
     ]
   },
-  "_shared-391b1404.js": {
+  "_shared-ef2ba8ae.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/shared-391b1404.js",
+    "file": "assets/shared-ef2ba8ae.js",
     "imports": [
-      "_page-315b051b.js"
-    ]
-  },
-  "_shared-55521e2d.js": {
-    "css": [
-      "assets/crud-fields-8d00dd74.css"
-    ],
-    "file": "assets/shared-55521e2d.js",
-    "imports": [
-      "_page-315b051b.js"
-    ]
-  },
-  "_shared-cc1a2c4a.js": {
-    "css": [
-      "assets/crud-fields-8d00dd74.css"
-    ],
-    "file": "assets/shared-cc1a2c4a.js",
-    "imports": [
-      "_page-315b051b.js"
+      "_page-1cca34fb.js"
     ]
   },
   "_toast-18d1caa1.js": {
@@ -217,7 +217,7 @@
     "src": "auth-login.css"
   },
   "crud-fields.css": {
-    "file": "assets/crud-fields-8d00dd74.css",
+    "file": "assets/crud-fields-36bb086c.css",
     "src": "crud-fields.css"
   },
   "dashboard-runtime.css": {
@@ -254,11 +254,11 @@
     "css": [
       "assets/admin-shell-8567f706.css"
     ],
-    "file": "assets/shell-407680db.js",
+    "file": "assets/shell-5f9616c0.js",
     "imports": [
       "_toast-18d1caa1.js",
-      "_settings-ad6cde3b.js",
-      "_page-315b051b.js"
+      "_settings-e225b361.js",
+      "_page-1cca34fb.js"
     ],
     "isEntry": true,
     "src": "resources/js/admin/shell.js"
@@ -271,23 +271,23 @@
     "css": [
       "assets/wizard-af53e2d6.css"
     ],
-    "file": "assets/wizard-7376b072.js",
+    "file": "assets/wizard-c2557a2b.js",
     "imports": [
       "_toast-18d1caa1.js",
-      "_page-315b051b.js"
+      "_page-1cca34fb.js"
     ],
     "isEntry": true,
     "src": "resources/js/installation/wizard.js"
   },
   "resources/js/languages/form.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/form-7badfcc3.js",
+    "file": "assets/form-6c550c28.js",
     "imports": [
-      "_shared-cc1a2c4a.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-564b81ac.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -296,28 +296,28 @@
   },
   "resources/js/languages/index.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/index-0a6b4d1d.js",
+    "file": "assets/index-9c3f78aa.js",
     "imports": [
-      "_shared-cc1a2c4a.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-564b81ac.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_selects-9f57de85.js"
+      "_selects-a504806e.js"
     ],
     "isEntry": true,
     "src": "resources/js/languages/index.js"
   },
   "resources/js/menus/form.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/form-47d91f1e.js",
+    "file": "assets/form-0af737c9.js",
     "imports": [
-      "_shared-1bc7dc11.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-03b756a4.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -326,46 +326,46 @@
   },
   "resources/js/menus/index.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/index-c82e0e8d.js",
+    "file": "assets/index-ab388ae4.js",
     "imports": [
-      "_shared-1bc7dc11.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-03b756a4.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_selects-9f57de85.js"
+      "_selects-a504806e.js"
     ],
     "isEntry": true,
     "src": "resources/js/menus/index.js"
   },
   "resources/js/roles/form.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/form-8424b415.js",
+    "file": "assets/form-0176941b.js",
     "imports": [
-      "_shared-30de277e.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-8b427f18.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js",
-      "_selects-9f57de85.js"
+      "_selects-a504806e.js"
     ],
     "isEntry": true,
     "src": "resources/js/roles/form.js"
   },
   "resources/js/roles/index.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/index-31e44390.js",
+    "file": "assets/index-fdadb36c.js",
     "imports": [
-      "_shared-30de277e.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-8b427f18.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_selects-9f57de85.js"
+      "_selects-a504806e.js"
     ],
     "isEntry": true,
     "src": "resources/js/roles/index.js"
@@ -377,13 +377,13 @@
   },
   "resources/js/taxonomies/form.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/form-16a63a04.js",
+    "file": "assets/form-aff7830e.js",
     "imports": [
-      "_shared-55521e2d.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-781edd3f.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -392,28 +392,28 @@
   },
   "resources/js/taxonomies/index.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/index-fde23e0f.js",
+    "file": "assets/index-5ffd3bf5.js",
     "imports": [
-      "_shared-55521e2d.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-781edd3f.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_selects-9f57de85.js"
+      "_selects-a504806e.js"
     ],
     "isEntry": true,
     "src": "resources/js/taxonomies/index.js"
   },
   "resources/js/users/form.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/form-c6fa4e7d.js",
+    "file": "assets/form-63d04ae1.js",
     "imports": [
-      "_shared-391b1404.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-ef2ba8ae.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
       "_unsaved-d11e9639.js"
     ],
@@ -422,25 +422,25 @@
   },
   "resources/js/users/index.js": {
     "css": [
-      "assets/crud-fields-8d00dd74.css"
+      "assets/crud-fields-36bb086c.css"
     ],
-    "file": "assets/index-5b02a03a.js",
+    "file": "assets/index-6faa29e0.js",
     "imports": [
-      "_shared-391b1404.js",
-      "_page-315b051b.js",
-      "_settings-ad6cde3b.js",
+      "_shared-ef2ba8ae.js",
+      "_page-1cca34fb.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_selects-9f57de85.js"
+      "_selects-a504806e.js"
     ],
     "isEntry": true,
     "src": "resources/js/users/index.js"
   },
   "resources/js/vuero/app.js": {
-    "file": "assets/app-360da1b1.js",
+    "file": "assets/app-45621fce.js",
     "imports": [
       "_jquery-83fec99f.js",
-      "_selects-9f57de85.js",
-      "_page-315b051b.js"
+      "_selects-a504806e.js",
+      "_page-1cca34fb.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/app.js"
@@ -1268,11 +1268,11 @@
       "assets/admin-shell-8567f706.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/login-0c5e80d2.js",
+    "file": "assets/login-7c98bb84.js",
     "imports": [
-      "_settings-ad6cde3b.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_page-315b051b.js",
+      "_page-1cca34fb.js",
       "_jquery-83fec99f.js"
     ],
     "isEntry": true,
@@ -1283,11 +1283,11 @@
       "assets/admin-shell-8567f706.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/recovery-0c5e80d2.js",
+    "file": "assets/recovery-7c98bb84.js",
     "imports": [
-      "_settings-ad6cde3b.js",
+      "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_page-315b051b.js",
+      "_page-1cca34fb.js",
       "_jquery-83fec99f.js"
     ],
     "isEntry": true,

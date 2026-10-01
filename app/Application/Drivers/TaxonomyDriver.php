@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Application\Drivers;
 
 use App\Contracts\ApplicationDriver;
+use App\Support\TaxonomyPresentation;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
-use App\Support\TaxonomyPresentation;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 use JobMetric\Taxonomy\Models\Taxonomy;
 
@@ -39,6 +39,7 @@ class TaxonomyDriver implements ApplicationDriver
 
             Taxonomy::query()->where('type', 'menu')->get()->each(function (Taxonomy $menu): void {
                 TaxonomyTypeRegistry::register('menu_'.$menu->id)
+                    ->apply(['back-url' => url('/admin/taxonomies/menu')])
                     ->label(TaxonomyPresentation::name($menu))
                     ->hierarchical()
                     ->baseMedia()

@@ -13,3 +13,10 @@ export function loadingButton(button) {
         button.removeAttribute('aria-busy');
     };
 }
+
+if (window.jQuery && !document.documentElement.dataset.tableSearchFocusBound) {
+    document.documentElement.dataset.tableSearchFocusBound = 'true';
+    window.jQuery(document).on('xhr.dt', () => requestAnimationFrame(() => {
+        document.querySelector('[data-search]')?.focus({preventScroll: true});
+    }));
+}

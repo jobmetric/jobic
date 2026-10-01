@@ -147,6 +147,7 @@ class Menus
 
             $record = $this->record((int) $result['data']->id);
             TaxonomyTypeRegistry::register('menu_'.$record->id)
+                ->apply(['back-url' => url('/admin/taxonomies/menu')])
                 ->label($record->getTranslation('name') ?? __('menus.unnamed'))
                 ->hierarchical()
                 ->changeStatusInList();

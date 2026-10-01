@@ -3,6 +3,7 @@ import { loadingButton, pageData } from "../common/page";
 import { sendSettings } from "../admin/settings";
 import { announce } from "../common/toast";
 import { guardUnsaved } from "../common/unsaved";
+import { bindHistory } from "./history";
 toolbar("form");
 const form = document.querySelector("[data-taxonomy-form]");
 form.noValidate = true;
@@ -13,6 +14,7 @@ const guard = guardUnsaved(form, () =>
         confirm: copy().leave,
     }),
 );
+const historyPanel = bindHistory(form);
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (form.dataset.saving) return;
@@ -42,7 +44,9 @@ form.addEventListener("submit", async (event) => {
         if (intent === "close") location.assign(pageData().taxonomyPage.index);
         else if (intent === "new")
             location.assign(`${pageData().taxonomyPage.index}/create`);
-        else location.assign(result.data.edit_url);
+        else if (form.action === result.data.edit_url) {
+            historyPanel.refresh();
+        } else location.assign(result.data.edit_url);
     } catch (error) {
         Object.entries(error.errors || {}).forEach(([name, messages]) => {
             const field = form.elements.namedItem(name);

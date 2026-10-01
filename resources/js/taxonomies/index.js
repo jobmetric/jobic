@@ -5,9 +5,24 @@ import { announce } from "../common/toast";
 import { enhanceSelects } from "../common/selects";
 const $ = window.jQuery;
 const page = pageData().taxonomyPage;
-const selected = new Set();
+const selected = new Map();
 let rows = [];
 toolbar("list");
+const selectionButton = document.querySelector("[data-show-selected]");
+const selectAll = document.querySelector("[data-select-all]");
+function selection() {
+    selectionButton.hidden = selected.size === 0;
+    selectionButton.innerHTML = `${icon("check")}${escape(copy().selected.replace(":count", selected.size))}`;
+    const checks = [...document.querySelectorAll("[data-row-id]")];
+    checks.forEach((node) => { node.checked = selected.has(Number(node.dataset.rowId)); });
+    selectAll.checked = checks.length > 0 && checks.every((node) => node.checked);
+    selectAll.indeterminate = checks.some((node) => node.checked) && !selectAll.checked;
+}
+function select(id) {
+    if (selected.size >= 100 && !selected.has(id)) return announce(copy().selection_limit, true);
+    const row = rows.find((item) => Number(item.id) === id);
+    if (row) selected.set(id, {id, name: row.name});
+}
 function taxonomyPath(names, fallback) {
     const parts = names?.length ? names : [fallback];
     return parts.map((part) => `<span>${escape(part)}</span>`).join(`<i class="role-path-separator">${icon("chevron-right")}</i>`);
@@ -27,17 +42,7 @@ page.columns.forEach((key) =>
                   render: (value) =>
                       `<span class="crud-status ${value ? "is-active" : ""}">${escape(copy()[value ? "active" : "inactive"])}</span>`,
               }
-            : key === "created_at"
-              ? {
-                    data: key,
-                    render: (value) =>
-                        value
-                            ? new Intl.DateTimeFormat(
-                                  document.documentElement.lang,
-                              ).format(new Date(value))
-                            : "—",
-                }
-              : key === "media"
+            : key === "media"
                 ? {
                       data: key,
                       orderable: false,
@@ -99,13 +104,13 @@ columns.push({
             })
             .join(
                 "",
-            )}<a class="crud-icon-button" href="${page.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more || copy().actions)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-delete="${Number(id)}">${icon("trash")}${escape(copy().delete)}</button></div></details><span data-taxonomy-row-actions="${Number(id)}"></span></div>`;
+            )}<a class="crud-icon-button" href="${page.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more || copy().actions)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-delete="${Number(id)}">${icon("trash")}${escape(copy().delete)}</button></div></details></div>`;
     },
 });
 const table = $("#taxonomy-table").DataTable({
     serverSide: true,
     searching: false,
-    order: [[page.columns.indexOf("ordering") + 1, "asc"]],
+    order: [[page.columns.indexOf("name") + 1, "asc"]],
     pageLength: 10,
     lengthMenu: [10, 25, 50, 100],
     dom: 'rt<"crud-table-footer"lip>',
@@ -140,6 +145,7 @@ const table = $("#taxonomy-table").DataTable({
             const result = await response.json();
             if (!result.ok) throw new Error();
             rows = result.data.data;
+            rows.forEach((row) => { if (selected.has(Number(row.id))) selected.set(Number(row.id), {id: Number(row.id), name: row.name}); });
             callback(result.data);
             document.querySelector("[data-table-empty]").hidden =
                 result.data.recordsFiltered !== 0;
@@ -166,6 +172,7 @@ const table = $("#taxonomy-table").DataTable({
                 .page.replace(":page", info.pages ? info.page + 1 : 0)
                 .replace(":pages", info.pages);
         enhanceSelects(document.querySelector("[data-table-footer]"));
+        selection();
         window.dispatchEvent(
             new CustomEvent("jobic:taxonomies:draw", {
                 detail: { type: page.type, rows },
@@ -194,16 +201,22 @@ document.querySelector("[data-filter-form]").onreset = () =>
 document.querySelector("[data-retry]").onclick = () => table.ajax.reload();
 document.querySelector("#taxonomy-table").onchange = (e) => {
     if (e.target.matches("[data-row-id]")) {
-        e.target.checked
-            ? selected.add(Number(e.target.dataset.rowId))
-            : selected.delete(Number(e.target.dataset.rowId));
+        e.target.checked ? select(Number(e.target.dataset.rowId)) : selected.delete(Number(e.target.dataset.rowId));
+        selection();
     }
 };
-document.querySelector("[data-select-all]").onchange = (e) =>
+selectAll.onchange = (e) =>
     document.querySelectorAll("[data-row-id]").forEach((node) => {
-        node.checked = e.target.checked;
-        node.dispatchEvent(new Event("change", { bubbles: true }));
+        const id = Number(node.dataset.rowId);
+        e.target.checked ? select(id) : selected.delete(id);
     });
+selectAll.addEventListener("change", selection);
+selectionButton.onclick = () => showDialog({
+    title: copy().selected.replace(":count", selected.size),
+    description: copy().selection_hint,
+    items: [...selected.values()],
+    remove: (id) => { selected.delete(id); selection(); },
+});
 async function mutate(ids, operation) {
     if (!ids.length) {
         announce(copy().selection_required, true);
@@ -223,6 +236,7 @@ async function mutate(ids, operation) {
     try {
         const result = await sendSettings(page.bulk, data);
         selected.clear();
+        selection();
         announce(result.message);
         table.ajax.reload();
     } catch (error) {
@@ -232,7 +246,7 @@ async function mutate(ids, operation) {
 document.querySelector("[data-crud-toolbar]").onclick = (e) => {
     const action = e.target.closest("[data-crud-action]")?.dataset.crudAction;
     if (["activate", "deactivate", "delete"].includes(action))
-        mutate([...selected], action);
+        mutate([...selected.keys()], action);
     else if (action === "help")
         showDialog({
             title: page.label,
@@ -243,7 +257,7 @@ document.querySelector("[data-crud-toolbar]").onclick = (e) => {
     else if (action)
         window.dispatchEvent(
             new CustomEvent("jobic:taxonomies:toolbar-action", {
-                detail: { type: page.type, action, ids: [...selected] },
+                detail: { type: page.type, action, ids: [...selected.keys()] },
             }),
         );
 };

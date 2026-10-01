@@ -89,6 +89,8 @@ The native taxonomy screen is shared by every `TaxonomyTypeRegistry` type, inclu
 
 Blade slots surround the page, toolbar, filters, filter fields, table, and form fields: `jobic.admin.taxonomies.list.page.before|after`, `list.toolbar.after`, `list.filters.before|after`, `list.filters.actions.before|after`, `list.filter_fields.before|after`, `list.table.before|after`, and `jobic.admin.taxonomies.form.page.before|after`, `form.fields.before|after`. Every slot receives `type`; form slots also receive `id`.
 
+`jobic.admin.taxonomies.history.before|after` surround the bounded history panel and receive `type` and nullable `id`. They use normal trusted Blade-slot error semantics. Taxonomy history records only public translated fields, hierarchy, ordering, status, URL slug, and media references; raw requests and uploaded content never enter the audit payload.
+
 Mutation actions are `jobic.taxonomies.saving`, `saved`, `deleting`, and `deleted`. Context is limited to `type`, `id`, `operation`, and `user_id`; raw fields, translations, slugs, metadata, media, and request input are excluded. Pre-actions may veto. Post-actions use isolated notifications after successful persistence.
 
 ## User registry
