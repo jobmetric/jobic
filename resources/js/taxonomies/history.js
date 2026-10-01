@@ -1,4 +1,5 @@
 import { copy } from './shared';
+import { appendHistoryChange } from '../common/history';
 
 export function bindHistory(form) {
     const panel = document.querySelector('[data-record-history]');
@@ -29,9 +30,7 @@ export function bindHistory(form) {
                 summary.textContent = `${copy()['history_' + entry.operation]} · ${entry.actor || copy().history_actor_unknown} · ${new Intl.DateTimeFormat(document.documentElement.lang, {dateStyle:'medium', timeStyle:'short'}).format(new Date(entry.created_at))}`;
                 section.append(summary);
                 Object.entries(entry.changes).forEach(([field, change]) => {
-                    const line = document.createElement('p');
-                    line.textContent = `${copy()[field] || field}: ${copy().history_before}: ${value(change.before)} — ${copy().history_after}: ${value(change.after)}`;
-                    section.append(line);
+                    appendHistoryChange(section, {label: copy()[field] || field, beforeLabel: copy().history_before, afterLabel: copy().history_after, before: value(change.before), after: value(change.after)});
                 });
                 body.append(section);
             });

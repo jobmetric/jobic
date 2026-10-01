@@ -47,6 +47,8 @@
 .crud-locale-dropdown .crud-dropdown__menu button { justify-content:flex-start; color:var(--text); }
 .crud-locale-dropdown .crud-dropdown__menu button > svg { margin-inline-start:auto; color:var(--muted); }
 .crud-locale-dropdown .crud-dropdown__menu button.is-complete > svg { color:var(--primary); }
+.crud-locale-dropdown .crud-dropdown__menu button.is-complete { color:var(--text)!important; background:transparent!important; border-color:transparent!important; }
+.crud-locale-dropdown .crud-dropdown__menu button.is-complete:hover { background:rgb(var(--primary-rgb) / 8%)!important; }
 .crud-locale-code { display:grid; width:22px; height:18px; place-items:center; border-radius:4px; background:var(--surface-soft); font-size:9px; font-weight:700; }
 .crud-row-translation-dialog > header > div > span { display:block; margin-bottom:3px; color:var(--muted); font-size:12px; }
 .crud-row-translation-dialog .crud-translation-editor { padding:0 22px; }
@@ -68,6 +70,11 @@
 html[dir=rtl] .crud-title-back .ui-icon { transform:rotate(180deg); }
 html[dir=rtl] .crud-title-back:hover { transform:translateX(2px); }
 .crud-taxonomy-dates { display:grid; gap:1px; overflow:hidden; margin-block:18px; border:1px solid var(--border); border-radius:14px; background:var(--border); }
+.crud-taxonomy-layout > aside > .crud-taxonomy-dates:first-child { margin-block-start:0; }
+.crud-menu-link { position:relative; margin-block-start:22px; }
+.crud-menu-link > .form-field { max-width:520px; }
+.crud-menu-link-fields .crud-form-fields { grid-template-columns:1fr; padding:0; border:0; }
+.crud-menu-link-empty { margin-block:18px 0; }
 .crud-taxonomy-dates > div { display:grid; grid-template-columns:24px 1fr; gap:3px 10px; align-items:center; padding:15px 16px; background:var(--surface); }
 .crud-taxonomy-dates .ui-icon { grid-row:1 / 3; color:var(--primary); }
 .crud-taxonomy-dates span { color:var(--muted); font-size:12px; }

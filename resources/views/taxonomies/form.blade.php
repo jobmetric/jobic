@@ -4,7 +4,7 @@
 <form class="crud-page crud-language-form crud-taxonomy-form" data-taxonomy-form method="POST" enctype="multipart/form-data" action="{{ $record ? route('admin.taxonomies.update', [$type, $record->id]) : route('admin.taxonomies.store', $type) }}">
     @csrf @if($record) @method('PUT') @endif
     @cmsHook('jobic.admin.taxonomies.form.page.before', ['type'=>$type, 'id'=>$record?->id])
-    <header class="crud-toolbar is-sticky"><div class="crud-taxonomy-title">@if($backUrl = \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::getOption($type, 'back-url'))<a class="crud-title-back" href="{{ $backUrl }}" aria-label="{{ __('taxonomies.back') }}"><x-vuero.icon name="arrow-left" size="24" /></a>@endif<h1>{{ $builder->getLabel() }} — {{ $record ? __('taxonomies.edit') : __('taxonomies.create') }}</h1></div><div data-crud-toolbar></div></header>
+    <header class="crud-toolbar is-sticky"><div class="crud-taxonomy-title"><h1>{{ $builder->getLabel() }} — {{ $record ? __('taxonomies.edit') : __('taxonomies.create') }}</h1></div><div data-crud-toolbar></div></header>
     <p class="crud-hint">{{ $builder->getDescription() }}</p>
     @cmsHook('jobic.admin.taxonomies.form.fields.before', ['type'=>$type, 'id'=>$record?->id])
     <div class="crud-taxonomy-layout @if($record || $builder->hasUrl() || $builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) has-sidebar @endif"><main>
@@ -12,7 +12,7 @@
             @include('taxonomies.partials.translation-fields', ['locale' => $activeLocale])
         </fieldset></section>
         <fieldset class="crud-form-fields crud-taxonomy-main-fields">
-            @if($builder->hasHierarchical())<x-form.field variant="crud" :label="__('taxonomies.parent')" for="taxonomy-parent" error="parent_id"><x-form.select id="taxonomy-parent" name="parent_id"><option value="">{{ __('taxonomies.no_parent') }}</option>@foreach($parents as $parent)@if($parent->id !== $record?->id)<option value="{{ $parent->id }}" @selected((string) old('parent_id', $record?->parent_id) === (string) $parent->id)>{{ \App\Support\TaxonomyPresentation::name($parent) }}</option>@endif @endforeach</x-form.select></x-form.field>@endif
+            @if($builder->hasHierarchical())<x-form.field variant="crud" :label="__('taxonomies.parent')" for="taxonomy-parent" error="parent_id"><x-form.select id="taxonomy-parent" name="parent_id"><option value="">{{ __('taxonomies.no_parent') }}</option>@foreach($parents as $parent)<option value="{{ $parent['id'] }}" @selected((string) old('parent_id', $record?->parent_id) === (string) $parent['id'])>{{ str_repeat('— ', $parent['depth']) }}{{ $parent['name'] }}</option>@endforeach</x-form.select></x-form.field>@endif
             <x-form.field variant="crud" :label="__('taxonomies.ordering')" for="taxonomy-ordering" error="ordering"><x-form.input id="taxonomy-ordering" name="ordering" type="number" :value="old('ordering', $record?->ordering ?? 0)" min="0" required /></x-form.field>
             <x-form.field variant="crud" :label="__('taxonomies.status')" for="taxonomy-status" error="status"><x-form.select id="taxonomy-status" name="status"><option value="1" @selected(old('status', $record?->status ?? 1))>{{ __('taxonomies.active') }}</option><option value="0" @selected(!old('status', $record?->status ?? 1))>{{ __('taxonomies.inactive') }}</option></x-form.select></x-form.field>
         </fieldset>

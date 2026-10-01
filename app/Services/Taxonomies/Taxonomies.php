@@ -8,6 +8,7 @@ use App\Facades\Hooks;
 use App\Http\Requests\Taxonomies\HistoryRequest;
 use App\Services\History\RecordHistory;
 use App\Support\LocaleCatalog;
+use App\Support\MenuLinks\MenuLinkRegistry;
 use App\Support\TaxonomyPresentation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -86,6 +87,30 @@ class Taxonomies
         return TaxonomyModel::query()->with('translations')->where('type', $type)->orderBy('ordering')->orderBy('id')->get();
     }
 
+    /**
+     * Return hierarchical parent choices, excluding the edited node and its descendants.
+     *
+     * @return array<int, array{id:int, name:string, depth:int}>
+     */
+    public function parentOptions(string $type, ?int $exceptId = null): array
+    {
+        $records = $this->records($type);
+        $children = $records->groupBy(fn (TaxonomyModel $record): int => (int) ($record->parent_id ?? 0));
+        $options = [];
+        $walk = function (int $parentId, int $depth) use (&$walk, &$options, $children, $exceptId): void {
+            foreach ($children->get($parentId, collect()) as $record) {
+                if ((int) $record->id === $exceptId) {
+                    continue;
+                }
+                $options[] = ['id' => (int) $record->id, 'name' => TaxonomyPresentation::name($record), 'depth' => $depth];
+                $walk((int) $record->id, $depth + 1);
+            }
+        };
+        $walk(0, 0);
+
+        return $options;
+    }
+
     public function record(string $type, int $id): TaxonomyModel
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
@@ -130,7 +155,7 @@ class Taxonomies
         }
 
         $context = ['type' => $type, 'id' => $id, 'operation' => $id ? 'update' : 'create', 'user_id' => (int) auth()->id()];
-        $savedId = DB::transaction(function () use ($type, $id, $payload, $mediaPayload, $context): int {
+        $savedId = DB::transaction(function () use ($type, $id, $payload, $mediaPayload, $context, $data): int {
             $before = $id ? $this->historySnapshot($this->record($type, $id)) : [];
             Hooks::action('jobic.taxonomies.saving', $context);
             $result = $id ? Taxonomy::update($id, $payload) : Taxonomy::store($payload);
@@ -151,6 +176,13 @@ class Taxonomies
                 }
             }
             $saved = $this->record($type, $savedId);
+            if (preg_match('/^menu_\d+$/', $type) === 1 && array_key_exists('menu_link_driver', $data)) {
+                $driverKey = (string) $data['menu_link_driver'];
+                $driver = app(MenuLinkRegistry::class)->get($driverKey);
+                $linkData = collect(array_keys($driver->rules()))->mapWithKeys(fn (string $key): array => [$key => $data[$key] ?? null])->all();
+                $saved->metas()->updateOrCreate(['key' => 'menu_link_driver'], ['value' => $driverKey, 'is_json' => false]);
+                $saved->metas()->updateOrCreate(['key' => 'menu_link_data'], ['value' => json_encode($linkData, JSON_UNESCAPED_UNICODE), 'is_json' => true]);
+            }
             app(RecordHistory::class)->record('taxonomies:'.$type, $savedId, $context['user_id'], $context['operation'], $before, $this->historySnapshot($saved));
 
             return $savedId;
@@ -261,6 +293,9 @@ class Taxonomies
      */
     private function historySnapshot(TaxonomyModel $record): array
     {
+        $driver = $record->metas()->where('key', 'menu_link_driver')->value('value');
+        $linkData = $record->metas()->where('key', 'menu_link_data')->first();
+
         return [
             'translation' => $record->getTranslations(),
             'parent_id' => $record->parent_id,
@@ -268,6 +303,7 @@ class Taxonomies
             'status' => (bool) $record->status,
             'slug' => $record->slugByCollection($record->type, true),
             'media' => $this->mediaPreview($record),
+            'link' => $driver ? ['driver' => $driver, 'data' => $linkData?->is_json ? json_decode((string) $linkData->value, true) : []] : null,
         ];
     }
 }

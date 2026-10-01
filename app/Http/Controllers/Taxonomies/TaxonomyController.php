@@ -12,7 +12,9 @@ use App\Http\Requests\Taxonomies\TableRequest;
 use App\Http\Requests\Taxonomies\TaxonomyRequest;
 use App\Services\Taxonomies\Taxonomies;
 use App\Support\LocaleCatalog;
+use App\Support\MenuLinks\MenuLinkRegistry;
 use App\Support\Page;
+use App\Support\TaxonomyPresentation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -46,6 +48,14 @@ class TaxonomyController extends Controller
         $this->prepare($type);
 
         return view('taxonomies.form', $this->formData($type));
+    }
+
+    /** Return fields owned by one menu-link driver without rebuilding the general form. */
+    public function linkFields(string $type, string $driver, MenuLinkRegistry $registry): View
+    {
+        abort_unless(preg_match('/^menu_\d+$/', $type) === 1 && $registry->has($driver), 404);
+
+        return view('taxonomies.partials.menu-link-fields', ['registry' => $registry, 'driver' => $driver, 'values' => []]);
     }
 
     public function edit(string $type, int $taxonomy): View
@@ -114,6 +124,10 @@ class TaxonomyController extends Controller
     private function prepare(string $type): void
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
+        if (preg_match('/^menu_(\d+)$/', $type, $matches) === 1) {
+            $menu = $this->taxonomies->record('menu', (int) $matches[1]);
+            TaxonomyTypeRegistry::register($type)->label(TaxonomyPresentation::name($menu));
+        }
         $builder = TaxonomyTypeRegistry::for($type);
         Page::prepare('taxonomies');
         $context = ['type' => $type];
@@ -164,7 +178,7 @@ class TaxonomyController extends Controller
         $builder = TaxonomyTypeRegistry::for($type);
 
         return ['type' => $type, 'record' => $record, 'builder' => $builder,
-            'parents' => $builder->hasHierarchical() ? $this->taxonomies->records($type) : collect(),
+            'parents' => $builder->hasHierarchical() ? $this->taxonomies->parentOptions($type, $record?->id) : [],
             'languages' => collect(LocaleCatalog::all())->map(fn (array $language): array => $language + ['flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null)])->all(), 'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
             'translations' => $record?->getTranslations() ?? [],
             'mediaPreview' => $record && ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) ? $this->taxonomies->mediaPreview($record) : null];

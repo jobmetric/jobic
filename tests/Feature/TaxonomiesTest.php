@@ -113,4 +113,52 @@ class TaxonomiesTest extends TestCase
             ->assertSee(route('admin.taxonomies.index', 'menu'), false)
             ->assertDontSee(__('taxonomies.created_at').'</th>', false);
     }
+
+    public function test_menu_item_link_driver_is_hooked_validated_and_stored_as_metadata(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $menu = $this->postJson(route('admin.taxonomies.store', 'menu'), [
+            'translation' => ['en' => ['name' => 'Footer']], 'ordering' => 0, 'status' => 1,
+        ])->assertCreated();
+        $type = 'menu_'.$menu->json('data.id');
+
+        $this->get(route('admin.taxonomies.create', $type))->assertOk()
+            ->assertSee(__('taxonomies.link_title'))->assertSee(__('taxonomies.link_driver_external'));
+        $this->get(route('admin.taxonomies.link-fields', [$type, 'external']))->assertOk()->assertSee('menu_link_url', false);
+        $this->postJson(route('admin.taxonomies.store', $type), [
+            'translation' => ['en' => ['name' => 'Docs']], 'ordering' => 0, 'status' => 1,
+            'menu_link_driver' => 'external', 'menu_link_url' => 'not-a-url',
+        ])->assertUnprocessable()->assertJsonValidationErrors('menu_link_url');
+
+        $created = $this->postJson(route('admin.taxonomies.store', $type), [
+            'translation' => ['en' => ['name' => 'Docs']], 'ordering' => 0, 'status' => 1,
+            'menu_link_driver' => 'external', 'menu_link_url' => 'https://example.com/docs',
+        ])->assertCreated();
+        $record = Taxonomy::query()->findOrFail($created->json('data.id'));
+        $this->assertSame('external', $record->metas()->where('key', 'menu_link_driver')->value('value'));
+        $this->assertSame(['menu_link_url' => 'https://example.com/docs'], json_decode((string) $record->metas()->where('key', 'menu_link_data')->value('value'), true));
+    }
+
+    public function test_menu_item_page_uses_request_locale_and_hierarchical_parent_options(): void
+    {
+        config()->set('installation.completed', false);
+        config()->set('localization.bootstrap', [
+            'en' => ['name' => 'English', 'locale' => 'en', 'direction' => 'ltr', 'flag' => null],
+            'fa' => ['name' => 'فارسی', 'locale' => 'fa', 'direction' => 'rtl', 'flag' => null],
+        ]);
+        $this->actingAs(User::factory()->create(['ui_preferences' => ['locale' => 'fa']]));
+        $menu = $this->postJson(route('admin.taxonomies.store', 'menu'), [
+            'translation' => ['en' => ['name' => 'Header'], 'fa' => ['name' => 'سربرگ']], 'ordering' => 0, 'status' => 1,
+        ])->assertCreated();
+        $type = 'menu_'.$menu->json('data.id');
+        $parent = $this->postJson(route('admin.taxonomies.store', $type), [
+            'translation' => ['en' => ['name' => 'Products'], 'fa' => ['name' => 'محصولات']], 'ordering' => 0, 'status' => 1,
+        ])->assertCreated();
+        $this->postJson(route('admin.taxonomies.store', $type), [
+            'translation' => ['en' => ['name' => 'Phones'], 'fa' => ['name' => 'گوشی‌ها']], 'parent_id' => $parent->json('data.id'), 'ordering' => 0, 'status' => 1,
+        ])->assertCreated();
+
+        $this->get(route('admin.taxonomies.index', $type))->assertOk()->assertSee('سربرگ');
+        $this->get(route('admin.taxonomies.create', $type))->assertOk()->assertSee('— گوشی‌ها');
+    }
 }

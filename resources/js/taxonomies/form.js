@@ -15,6 +15,26 @@ const guard = guardUnsaved(form, () =>
     }),
 );
 const historyPanel = bindHistory(form);
+const linkBox = form.querySelector('[data-menu-link]');
+if (linkBox) {
+    linkBox.querySelector('[data-menu-link-driver]').addEventListener('change', async (event) => {
+        const fields = linkBox.querySelector('[data-menu-link-fields]');
+        const loading = linkBox.querySelector('[data-menu-link-loading]');
+        loading.hidden = false;
+        fields.setAttribute('inert', '');
+        try {
+            const url = linkBox.dataset.fieldsUrl.replace('__DRIVER__', encodeURIComponent(event.target.value));
+            const response = await fetch(url, {headers: {Accept: 'text/html'}});
+            if (!response.ok) throw new Error();
+            fields.innerHTML = await response.text();
+        } catch {
+            announce(copy().failed, true);
+        } finally {
+            loading.hidden = true;
+            fields.removeAttribute('inert');
+        }
+    });
+}
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (form.dataset.saving) return;

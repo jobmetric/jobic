@@ -58,6 +58,7 @@ Route::middleware([
 
     Route::prefix('taxonomies/{type}')->name('taxonomies.')->controller(TaxonomyController::class)->group(function (): void {
         Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.content')->name('index');
+        Route::get('link-fields/{driver}', 'linkFields')->middleware(EnsurePermission::class.':admin.content')->name('link-fields');
         Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.content')->name('data');
         Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.content')->name('create');
         Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('store');

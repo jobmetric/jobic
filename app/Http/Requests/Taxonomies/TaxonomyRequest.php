@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Taxonomies;
 
 use App\Support\LocaleCatalog;
+use App\Support\MenuLinks\MenuLinkRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
@@ -65,6 +66,14 @@ class TaxonomyRequest extends FormRequest
                 ? ['nullable', 'array'] : ['nullable', 'file'];
             if ($media->getMultiple()) {
                 $rules["media_upload.$collection.*"] = ['file'];
+            }
+        }
+        if (preg_match('/^menu_\d+$/', $type) === 1) {
+            $registry = app(MenuLinkRegistry::class);
+            $driver = (string) $this->input('menu_link_driver', 'none');
+            $rules['menu_link_driver'] = ['sometimes', 'string', Rule::in(array_keys($registry->all()))];
+            if ($registry->has($driver)) {
+                $rules = array_replace($rules, $registry->get($driver)->rules());
             }
         }
 
