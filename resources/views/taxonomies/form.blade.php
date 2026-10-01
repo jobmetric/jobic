@@ -16,6 +16,7 @@
             <x-form.field variant="crud" :label="__('taxonomies.ordering')" for="taxonomy-ordering" error="ordering"><x-form.input id="taxonomy-ordering" name="ordering" type="number" :value="old('ordering', $record?->ordering ?? 0)" min="0" required /></x-form.field>
             <x-form.field variant="crud" :label="__('taxonomies.status')" for="taxonomy-status" error="status"><x-form.select id="taxonomy-status" name="status"><option value="1" @selected(old('status', $record?->status ?? 1))>{{ __('taxonomies.active') }}</option><option value="0" @selected(!old('status', $record?->status ?? 1))>{{ __('taxonomies.inactive') }}</option></x-form.select></x-form.field>
         </fieldset>
+        @cmsHook('jobic.admin.taxonomies.form.main.after', ['type'=>$type, 'id'=>$record?->id])
     </main><aside>
     @if($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty())
     <section class="crud-capability-card"><header><h2>{{ __('taxonomies.media_title') }}</h2><x-vuero.icon name="image" size="22" /></header><fieldset class="crud-form-fields">

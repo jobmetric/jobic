@@ -26,7 +26,7 @@ final class MenuLinksDriver implements ApplicationDriver
         $registry = $app->make(MenuLinkRegistry::class);
         $registry->register(new NoneLinkDriver)->register(new ExternalUrlLinkDriver)->register(new SeparatorLinkDriver);
 
-        Hooks::addAction('jobic.admin.taxonomies.form.fields.after', function (array $context) use ($registry): string {
+        Hooks::addAction('jobic.admin.taxonomies.form.main.after', function (array $context) use ($registry): string {
             if (preg_match('/^menu_\d+$/', (string) ($context['type'] ?? '')) !== 1) {
                 return '';
             }

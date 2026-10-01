@@ -159,6 +159,8 @@ class TaxonomiesTest extends TestCase
         ])->assertCreated();
 
         $this->get(route('admin.taxonomies.index', $type))->assertOk()->assertSee('سربرگ');
-        $this->get(route('admin.taxonomies.create', $type))->assertOk()->assertSee('— گوشی‌ها');
+        $this->get(route('admin.taxonomies.create', $type))->assertOk()->assertSee('— گوشی‌ها')
+            ->assertSee(__('taxonomies.link_title'));
+        $this->get(route('admin.users.index'))->assertOk()->assertSee('سربرگ')->assertDontSee('Header');
     }
 }

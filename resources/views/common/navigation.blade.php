@@ -7,7 +7,7 @@
     $canMenus = $adminAccess->allowsAny($adminUser, ['admin.menus.view', 'admin.menus.manage']);
     $taxonomyMenuItems = collect(\JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::values())
         ->reject(fn ($type) => $type === 'menu')
-        ->map(fn ($type) => ['label' => \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($type)->getLabel(), 'icon' => 'list-tree', 'url' => route('admin.taxonomies.index', $type), 'active' => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type])
+        ->map(fn ($type) => ['label' => \App\Support\TaxonomyPresentation::typeLabel($type, \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($type)->getLabel()), 'icon' => 'list-tree', 'url' => route('admin.taxonomies.index', $type), 'active' => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type])
         ->values()->all();
     $canSettings = !empty($settingsSections);
     $userMenuItems = array_values(array_filter([

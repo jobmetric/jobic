@@ -72,8 +72,11 @@ html[dir=rtl] .crud-title-back:hover { transform:translateX(2px); }
 .crud-taxonomy-dates { display:grid; gap:1px; overflow:hidden; margin-block:18px; border:1px solid var(--border); border-radius:14px; background:var(--border); }
 .crud-taxonomy-layout > aside > .crud-taxonomy-dates:first-child { margin-block-start:0; }
 .crud-menu-link { position:relative; margin-block-start:22px; }
-.crud-menu-link > .form-field { max-width:520px; }
-.crud-menu-link-fields .crud-form-fields { grid-template-columns:1fr; padding:0; border:0; }
+.crud-menu-link > .form-field { width:100%; }
+.crud-menu-link-fields .crud-form-fields { grid-template-columns:1fr; padding:0; border:0; margin-block-start:18px; }
+.crud-menu-link-field { display:flex; flex-direction:column; gap:9px; color:var(--text); font-size:14px; }
+.crud-menu-link-field label { margin:0; color:var(--text); font-size:14px; }
+.crud-menu-link-field .input,.crud-menu-link-field input,.crud-menu-link-field select,.crud-menu-link-field textarea { width:100%; }
 .crud-menu-link-empty { margin-block:18px 0; }
 .crud-taxonomy-dates > div { display:grid; grid-template-columns:24px 1fr; gap:3px 10px; align-items:center; padding:15px 16px; background:var(--surface); }
 .crud-taxonomy-dates .ui-icon { grid-row:1 / 3; color:var(--primary); }

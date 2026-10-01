@@ -8,6 +8,18 @@ use JobMetric\Taxonomy\Models\Taxonomy;
 
 final class TaxonomyPresentation
 {
+    /** Resolve a registry type label in the current request locale. */
+    public static function typeLabel(string $type, string $fallback): string
+    {
+        if (preg_match('/^menu_(\d+)$/', $type, $matches) !== 1) {
+            return $fallback;
+        }
+
+        $menu = Taxonomy::query()->with('translations')->where('type', 'menu')->find((int) $matches[1]);
+
+        return $menu ? self::name($menu) : $fallback;
+    }
+
     public static function name(Taxonomy $taxonomy): string
     {
         $translations = $taxonomy->getTranslations();
