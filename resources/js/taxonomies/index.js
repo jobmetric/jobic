@@ -224,8 +224,9 @@ async function mutate(ids, operation) {
     }
     if (
         !(await showDialog({
-            title: copy().confirm_title,
-            description: copy().confirm.replace(":count", ids.length),
+            title: copy().batch_title.replace(":operation", copy()[operation]),
+            description: copy().batch_description.replace(":operation", copy()[operation]).replace(":count", ids.length),
+            items: ids.map((id) => selected.get(id) || rows.find((row) => Number(row.id) === Number(id))).filter(Boolean),
             confirm: copy().confirm_operation,
         }))
     )
