@@ -128,7 +128,7 @@ class Taxonomies
         }
         if ($type === 'menu') {
             $saved = $this->record($type, $savedId);
-            TaxonomyTypeRegistry::register('menu_'.$savedId)->label(TaxonomyPresentation::name($saved))->hierarchical()->changeStatusInList();
+            TaxonomyTypeRegistry::register('menu_'.$savedId)->label(TaxonomyPresentation::name($saved))->hierarchical()->baseMedia()->changeStatusInList();
         }
         Hooks::notify('jobic.taxonomies.saved', array_replace($context, ['id' => $savedId]));
 
@@ -167,7 +167,7 @@ class Taxonomies
         return Response::make(true, __('taxonomies.saved'));
     }
 
-    private function mediaPreview(TaxonomyModel $record): ?string
+    public function mediaPreview(TaxonomyModel $record): ?string
     {
         $media = DB::table(config('media.tables.media').' as media')
             ->join(config('media.tables.media_relation').' as relation', 'relation.media_id', '=', 'media.id')

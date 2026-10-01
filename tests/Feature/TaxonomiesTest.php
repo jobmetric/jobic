@@ -61,6 +61,23 @@ class TaxonomiesTest extends TestCase
         $this->assertSame('News', $taxonomy->getTranslation('name', 'en'));
     }
 
+    public function test_translation_can_be_edited_from_the_list_for_one_language(): void
+    {
+        TaxonomyTypeRegistry::register('topics')->label('Topics');
+        $this->actingAs(User::factory()->create());
+        $created = $this->postJson(route('admin.taxonomies.store', 'topics'), [
+            'translation' => ['en' => ['name' => 'News']], 'ordering' => 0, 'status' => 1,
+        ])->assertCreated();
+
+        $this->putJson(route('admin.taxonomies.translation', ['topics', $created->json('data.id'), 'fa']), [
+            'fields' => ['name' => 'اخبار'],
+        ])->assertOk()->assertJsonPath('data.locale', 'fa');
+
+        $taxonomy = Taxonomy::query()->findOrFail($created->json('data.id'));
+        $this->assertSame('News', $taxonomy->getTranslation('name', 'en'));
+        $this->assertSame('اخبار', $taxonomy->getTranslation('name', 'fa'));
+    }
+
     public function test_menu_is_a_general_taxonomy_and_registers_its_item_type(): void
     {
         $this->actingAs(User::factory()->create());
@@ -69,6 +86,7 @@ class TaxonomiesTest extends TestCase
 
         $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['id' => $id, 'type' => 'menu']);
         $this->assertTrue(TaxonomyTypeRegistry::has('menu_'.$id));
+        $this->assertTrue(TaxonomyTypeRegistry::for('menu_'.$id)->hasBaseMedia());
         $this->getJson(route('admin.taxonomies.data', ['menu', 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'Header'], 'order' => [['column' => 1, 'dir' => 'asc']]]))
             ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'Header');
         $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), ['translation' => ['en' => ['name' => 'Home']], 'ordering' => 1, 'status' => 1])->assertCreated();

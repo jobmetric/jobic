@@ -47,10 +47,17 @@ page.columns.forEach((key) =>
                         data: "translations",
                         orderable: false,
                         render: (value, mode, row) => {
-                            const count = Object.values(value || {}).filter(
-                                (fields) => String(fields.name || "").trim(),
-                            ).length;
-                            return `<button type="button" class="vuero-button" data-translations="${Number(row.id)}">${icon("languages")}${count}/${Object.keys(page.languages).length}</button>`;
+                            return `<div class="crud-locale-actions">${Object.entries(
+                                page.languages,
+                            )
+                                .map(([locale, language]) => {
+                                    const complete =
+                                        String(
+                                            value?.[locale]?.name || "",
+                                        ).trim() !== "";
+                                    return `<button type="button" class="crud-locale-button ${complete ? "is-complete" : ""}" data-translation-id="${Number(row.id)}" data-translation-locale="${escape(locale)}" title="${escape(language.name)}"><span>${escape(locale.toUpperCase())}</span>${complete ? icon("check") : icon("plus")}</button>`;
+                                })
+                                .join("")}</div>`;
                         },
                     }
                   : { data: key, render: $.fn.dataTable.render.text() },
@@ -204,30 +211,99 @@ document.querySelector("[data-crud-toolbar]").onclick = (e) => {
             }),
         );
 };
-document.querySelector("#taxonomy-table").onclick = (e) => {
-    const translation = e.target.closest("[data-translations]");
-    if (translation) {
-        const row = rows.find(
-            (item) =>
-                Number(item.id) === Number(translation.dataset.translations),
-        );
-        const items = Object.entries(page.languages).map(
-            ([locale, language]) => ({
-                name: `${language.name}: ${row?.translations?.[locale]?.name || "—"}`,
-            }),
-        );
-        showDialog({
-            title: copy().translations,
-            description: copy().translations_hint,
-            items,
-            confirm: copy().edit_translations,
-        }).then((edit) => {
-            if (edit)
-                location.assign(
-                    `${page.index}/${translation.dataset.translations}/edit?translations=1`,
-                );
+const translationDialog = document.querySelector(
+    "[data-row-translation-dialog]",
+);
+const translationForm = translationDialog.querySelector(
+    "[data-row-translation-form]",
+);
+const translationFields = translationDialog.querySelector(
+    "[data-translation-fields]",
+);
+let translationRecord = null;
+let translationLocale = null;
+function closeTranslation() {
+    translationDialog.close();
+    translationForm.reset();
+    translationFields.replaceChildren();
+}
+translationDialog
+    .querySelectorAll("[data-close-row-translation]")
+    .forEach((button) => button.addEventListener("click", closeTranslation));
+function openTranslation(id, locale) {
+    const row = rows.find((item) => Number(item.id) === Number(id));
+    const language = page.languages[locale];
+    if (!row || !language) return;
+    translationRecord = row;
+    translationLocale = locale;
+    translationDialog.querySelector("[data-translation-title]").textContent =
+        language.name;
+    translationDialog.querySelector("[data-translation-subtitle]").textContent =
+        copy().translation_for.replace(":item", row.name);
+    translationDialog.querySelector("[data-translation-flag]").textContent =
+        locale.toUpperCase();
+    translationFields.replaceChildren(
+        ...page.translationFields.map((field) => {
+            const label = document.createElement("label");
+            label.className = "crud-field";
+            label.textContent = field.label;
+            const input = document.createElement(
+                field.type === "textarea" ? "textarea" : "input",
+            );
+            input.className = "input";
+            input.name = `fields[${field.name}]`;
+            input.value = row.translations?.[locale]?.[field.name] || "";
+            if (field.name === "name") input.required = true;
+            const error = document.createElement("small");
+            error.dataset.translationError = field.name;
+            label.append(input, error);
+            return label;
+        }),
+    );
+    translationDialog.showModal();
+    translationFields.querySelector("input,textarea")?.focus();
+}
+translationForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const submit = translationForm.querySelector("button[type=submit]");
+    const restore = submit.innerHTML;
+    submit.disabled = true;
+    translationFields
+        .querySelectorAll("[data-translation-error]")
+        .forEach((node) => {
+            node.textContent = "";
         });
+    const data = new FormData(translationForm);
+    const url = page.translationUrl
+        .replace("__ID__", translationRecord.id)
+        .replace("__LOCALE__", translationLocale);
+    try {
+        const result = await sendSettings(url, data);
+        translationRecord.translations[translationLocale] = result.data.fields;
+        announce(result.message);
+        closeTranslation();
+        table.ajax.reload(null, false);
+    } catch (error) {
+        Object.entries(error.errors || {}).forEach(([key, messages]) => {
+            const field = key.replace(/^fields\./, "");
+            const node = translationFields.querySelector(
+                `[data-translation-error="${CSS.escape(field)}"]`,
+            );
+            if (node) node.textContent = [].concat(messages).join(" ");
+        });
+        announce(error.message || copy().failed, true);
+    } finally {
+        submit.disabled = false;
+        submit.innerHTML = restore;
     }
+});
+document.querySelector("#taxonomy-table").onclick = (e) => {
+    const translation = e.target.closest("[data-translation-id]");
+    if (translation)
+        openTranslation(
+            translation.dataset.translationId,
+            translation.dataset.translationLocale,
+        );
     const button = e.target.closest("[data-delete]");
     if (button) mutate([Number(button.dataset.delete)], "delete");
     const custom = e.target.closest("[data-taxonomy-action]");

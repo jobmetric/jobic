@@ -7,6 +7,7 @@
         $value = old("translation.$locale.$key", data_get($translations, "$locale.$key"));
         $required = $locale === $activeLocale && $key === 'name';
         $label = trans($field->label ?: $key);
+        if ($label === $field->label) $label = trans('taxonomies.'.$key);
     @endphp
     @if($key !== '')
         <x-form.field variant="crud" :label="$label" :for="$id" :error="'translation.'.$locale.'.'.$key">

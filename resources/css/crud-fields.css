@@ -15,3 +15,22 @@
 .crud-translation-locales h3 { margin:0 0 14px; }
 .crud-translation-locales h3 small { color:var(--muted-grey, #6b7280); }
 .crud-taxonomy-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; }
+.crud-translation-group { padding:18px; border:1px solid rgb(var(--primary-rgb) / 20%); border-radius:12px; background:rgb(var(--primary-rgb) / 4%); }
+.crud-translation-group > header { display:flex; align-items:center; gap:10px; }
+.crud-translation-group h3,.crud-translation-group p { margin:0; }
+.crud-translation-group p { margin-top:3px; color:var(--muted-grey, #6b7280); font-size:12px; }
+.crud-translation-group .crud-form-fields { border:0; padding:0; background:transparent; }
+.crud-locale-actions { display:flex; gap:6px; }
+.crud-locale-button { display:inline-flex; align-items:center; gap:4px; min-width:48px; height:34px; padding:0 8px; border:1px solid var(--border); border-radius:9px; background:var(--surface); color:var(--muted); cursor:pointer; }
+.crud-locale-button.is-complete { border-color:rgb(var(--primary-rgb) / 35%); color:var(--primary); background:rgb(var(--primary-rgb) / 7%); }
+.crud-locale-button svg { width:14px; height:14px; }
+.crud-row-translation-dialog { width:min(620px, calc(100vw - 32px)); }
+.crud-translation-heading { display:flex; align-items:center; gap:12px; }
+.crud-translation-heading > span { display:grid; place-items:center; width:42px; height:42px; border-radius:11px; background:rgb(var(--primary-rgb) / 10%); color:var(--primary); font-weight:700; }
+.crud-translation-heading h2,.crud-translation-heading p { margin:0; }
+.crud-translation-heading p { margin-top:3px; color:var(--muted-grey, #6b7280); font-size:12px; }
+.crud-translation-editor { display:grid; gap:18px; padding:22px; }
+.crud-translation-editor .crud-field { display:grid; gap:8px; }
+.crud-translation-editor textarea { min-height:120px; resize:vertical; }
+.crud-translation-editor small { color:#e34d65; }
+.crud-media-preview { width:120px; height:120px; margin-bottom:10px; border-radius:12px; object-fit:cover; border:1px solid var(--border); }

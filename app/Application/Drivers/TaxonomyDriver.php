@@ -41,6 +41,7 @@ class TaxonomyDriver implements ApplicationDriver
                 TaxonomyTypeRegistry::register('menu_'.$menu->id)
                     ->label(TaxonomyPresentation::name($menu))
                     ->hierarchical()
+                    ->baseMedia()
                     ->changeStatusInList();
             });
         });

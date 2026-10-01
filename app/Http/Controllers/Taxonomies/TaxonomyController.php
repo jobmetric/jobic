@@ -13,6 +13,9 @@ use App\Services\Taxonomies\Taxonomies;
 use App\Support\Page;
 use App\Support\LocaleCatalog;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
 use JobMetric\Domi\Facades\Domi;
@@ -67,6 +70,25 @@ class TaxonomyController extends Controller
         return response()->json($result, $result->status);
     }
 
+    public function translation(Request $request, string $type, int $taxonomy, string $locale): JsonResponse
+    {
+        abort_unless(array_key_exists($locale, LocaleCatalog::all()), 404);
+        $record = $this->taxonomies->record($type, $taxonomy);
+        $builder = TaxonomyTypeRegistry::for($type);
+        $rules = [];
+        foreach ($builder->getTranslation() as $item) {
+            $field = (string) Arr::get($item->customField->params, 'uniqName');
+            if ($field !== '') {
+                $rules[$field] = $field === 'name' ? ['required', 'string', 'max:255'] : ['nullable', 'string'];
+            }
+        }
+        $values = Validator::make((array) $request->input('fields'), $rules)->validate();
+        $record->translation = [$locale => $values];
+        $record->save();
+
+        return response()->json(['ok' => true, 'message' => __('taxonomies.translation_saved'), 'data' => ['locale' => $locale, 'fields' => $values], 'status' => 200, 'errors' => []]);
+    }
+
     public function destroy(string $type, int $taxonomy): JsonResponse
     {
         $result = $this->taxonomies->delete($type, $taxonomy);
@@ -89,6 +111,15 @@ class TaxonomyController extends Controller
         $context = ['type' => $type];
         Page::addLocalize('taxonomies', trans('taxonomies'));
         Page::addLocalize('crudHelp', trans('crud.help_sections'));
+        $translationFields = $builder->getTranslation()->map(function ($item): array {
+            $field = (string) Arr::get($item->customField->params, 'uniqName');
+            $translated = trans((string) ($item->customField->label ?: $field));
+            if ($translated === $item->customField->label) {
+                $translated = trans('taxonomies.'.$field);
+            }
+
+            return ['name' => $field, 'label' => $translated, 'type' => in_array($item->customField->type, ['textarea', 'editor'], true) ? 'textarea' : 'text'];
+        })->filter(fn (array $field): bool => $field['name'] !== '')->values()->all();
         $columns = ['name', 'ordering', 'status', 'created_at', 'translations'];
         if ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) {
             array_unshift($columns, 'media');
@@ -108,6 +139,8 @@ class TaxonomyController extends Controller
             'columns' => Hooks::filter('jobic.taxonomies.list.columns', $columns, $context),
             'languages' => LocaleCatalog::all(),
             'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
+            'translationFields' => $translationFields,
+            'translationUrl' => route('admin.taxonomies.translation', [$type, '__ID__', '__LOCALE__']),
             'rowActions' => $rowActions,
             'toolbar' => Hooks::filter('jobic.taxonomies.list.toolbar', ['activate', 'deactivate', 'delete', 'help'], $context),
             'formToolbar' => Hooks::filter('jobic.taxonomies.form.toolbar', ['new', 'close'], $context),
@@ -122,6 +155,7 @@ class TaxonomyController extends Controller
         return ['type' => $type, 'record' => $record, 'builder' => $builder,
             'parents' => $builder->hasHierarchical() ? $this->taxonomies->records($type) : collect(),
             'languages' => LocaleCatalog::all(), 'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
-            'translations' => $record?->getTranslations() ?? []];
+            'translations' => $record?->getTranslations() ?? [],
+            'mediaPreview' => $record && ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) ? $this->taxonomies->mediaPreview($record) : null];
     }
 }
