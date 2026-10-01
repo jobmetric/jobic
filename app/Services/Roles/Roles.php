@@ -62,7 +62,7 @@ class Roles extends AbstractCrudService
 
         if ($term = mb_strtolower((string) ($data['search']['value'] ?? ''))) {
             $records = $records->filter(static fn (Role $role
-            ) => str_contains(mb_strtolower((string) $role->getAttribute('path_label')), $term) || str_contains(mb_strtolower((string) $role->description), $term));
+            ) => str_contains(mb_strtolower((string) $role->name), $term) || str_contains(mb_strtolower((string) $role->description), $term));
         }
 
         $filtered = $records->count();
@@ -86,7 +86,7 @@ class Roles extends AbstractCrudService
             'is_default' => (bool) $role->is_default,
             'is_super'   => (bool) $role->is_super,
             'ordering'   => $role->ordering,
-        ])->all();
+        ])->values()->all();
 
         return Response::make(true, '', [
             'draw'            => (int) $data['draw'],

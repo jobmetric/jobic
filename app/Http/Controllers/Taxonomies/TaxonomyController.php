@@ -139,6 +139,7 @@ class TaxonomyController extends Controller
             'columns' => Hooks::filter('jobic.taxonomies.list.columns', $columns, $context),
             'languages' => collect(LocaleCatalog::all())->map(fn (array $language): array => $language + ['flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null)])->all(),
             'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
+            'hierarchical' => $builder->hasHierarchical(),
             'translationFields' => $translationFields,
             'translationUrl' => route('admin.taxonomies.translation', [$type, '__ID__', '__LOCALE__']),
             'rowActions' => $rowActions,

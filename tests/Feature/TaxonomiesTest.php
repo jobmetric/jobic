@@ -89,9 +89,18 @@ class TaxonomiesTest extends TestCase
         $this->assertTrue(TaxonomyTypeRegistry::for('menu_'.$id)->hasBaseMedia());
         $this->getJson(route('admin.taxonomies.data', ['menu', 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'Header'], 'order' => [['column' => 1, 'dir' => 'asc']]]))
             ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'Header');
-        $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), ['translation' => ['en' => ['name' => 'Home']], 'ordering' => 1, 'status' => 1])->assertCreated();
+        $item = $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), ['translation' => ['en' => ['name' => 'Home']], 'ordering' => 1, 'status' => 1])->assertCreated();
+        $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), [
+            'translation' => ['en' => ['name' => 'About']],
+            'parent_id' => (int) $item->json('data.id'),
+            'ordering' => 2,
+            'status' => 1,
+        ])->assertCreated();
         $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['type' => 'menu_'.$id]);
-        $this->getJson(route('admin.taxonomies.data', ['menu_'.$id, 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => ''], 'order' => [['column' => 2, 'dir' => 'asc']]]))
+        $this->getJson(route('admin.taxonomies.data', ['menu_'.$id, 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'About'], 'order' => [['column' => 2, 'dir' => 'asc']]]))
+            ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'About')
+            ->assertJsonPath('data.data.0.path_names', ['Home', 'About']);
+        $this->getJson(route('admin.taxonomies.data', ['menu_'.$id, 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'Home'], 'order' => [['column' => 2, 'dir' => 'asc']]]))
             ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'Home');
     }
 }

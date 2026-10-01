@@ -99,6 +99,28 @@ class RolesTest extends TestCase
     }
 
     /**
+     * Display the full hierarchy while searching only the current role name.
+     */
+    public function test_hierarchical_role_search_does_not_match_ancestor_names(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $parent = $this->postJson(route('admin.roles.store'), $this->values(['name' => 'Parent']))->assertCreated();
+        $this->postJson(route('admin.roles.store'), $this->values([
+            'name' => 'Child',
+            'parent_id' => (int) $parent->json('data.id'),
+        ]))->assertCreated();
+        $query = ['draw' => 1, 'start' => 0, 'length' => 10, 'order' => [['column' => 1, 'dir' => 'asc']]];
+
+        $parentRows = $this->getJson(route('admin.roles.data', $query + ['search' => ['value' => 'Parent']]))
+            ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->json('data.data');
+        $this->assertSame('Parent', array_values($parentRows)[0]['path_label']);
+
+        $childRows = $this->getJson(route('admin.roles.data', $query + ['search' => ['value' => 'Child']]))
+            ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->json('data.data');
+        $this->assertSame('Parent > Child', array_values($childRows)[0]['path_label']);
+    }
+
+    /**
      * Assign system roles to users and reject stale role edits before hooks.
      */
     public function test_user_memberships_and_optimistic_conflicts_are_enforced(): void

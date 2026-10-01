@@ -39,10 +39,15 @@ class Taxonomies
         }
         $requestedColumn = $columns[max(0, (int) ($input['order'][0]['column'] ?? 1) - 1)] ?? 'ordering';
         $orderColumn = in_array($requestedColumn, ['ordering', 'status', 'created_at'], true) ? $requestedColumn : 'id';
-        $rows = $query->with('translations')->offset((int) $input['start'])->limit((int) $input['length'])
+        $with = ['translations'];
+        if ($builder->hasHierarchical()) {
+            $with[] = 'paths.path.translations';
+        }
+        $rows = $query->with($with)->offset((int) $input['start'])->limit((int) $input['length'])
             ->orderBy($orderColumn, $input['order'][0]['dir'] ?? 'asc')->orderBy('id')->get()
             ->map(fn (TaxonomyModel $record): array => Hooks::filter('jobic.taxonomies.list.row', [
                 'id' => $record->id, 'name' => TaxonomyPresentation::name($record),
+                'path_names' => $builder->hasHierarchical() ? $record->paths->sortBy('level')->map(fn ($path): string => TaxonomyPresentation::name($path->path))->values()->all() : [],
                 'translations' => $record->getTranslations(),
                 'media' => ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) ? $this->mediaPreview($record) : null,
                 'ordering' => $record->ordering,

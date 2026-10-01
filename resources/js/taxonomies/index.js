@@ -8,6 +8,10 @@ const page = pageData().taxonomyPage;
 const selected = new Set();
 let rows = [];
 toolbar("list");
+function taxonomyPath(names, fallback) {
+    const parts = names?.length ? names : [fallback];
+    return parts.map((part) => `<span>${escape(part)}</span>`).join(`<i class="role-path-separator">${icon("chevron-right")}</i>`);
+}
 const columns = [
     {
         data: "id",
@@ -69,7 +73,9 @@ page.columns.forEach((key) =>
                                 .join("")}</div></details>`;
                         },
                     }
-                  : { data: key, render: $.fn.dataTable.render.text() },
+                  : key === "name" && page.hierarchical
+                    ? { data: key, render: (value, mode, row) => `<span class="role-path">${taxonomyPath(row.path_names, value)}</span>` }
+                    : { data: key, render: $.fn.dataTable.render.text() },
     ),
 );
 page.columns.forEach((key, index) => {
