@@ -8,6 +8,7 @@ use App\Facades\Hooks;
 use App\Support\TaxonomyPresentation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use JobMetric\PackageCore\Output\Response;
 use JobMetric\Taxonomy\Facades\Taxonomy;
@@ -169,6 +170,10 @@ class Taxonomies
 
     public function mediaPreview(TaxonomyModel $record): ?string
     {
+        if (! Schema::hasTable(config('media.tables.media', 'media')) || ! Schema::hasTable(config('media.tables.media_relation', 'media_relations'))) {
+            return null;
+        }
+
         $media = DB::table(config('media.tables.media').' as media')
             ->join(config('media.tables.media_relation').' as relation', 'relation.media_id', '=', 'media.id')
             ->where('relation.mediaable_type', TaxonomyModel::class)->where('relation.mediaable_id', $record->id)

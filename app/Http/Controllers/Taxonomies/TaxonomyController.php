@@ -118,7 +118,7 @@ class TaxonomyController extends Controller
                 $translated = trans('taxonomies.'.$field);
             }
 
-            return ['name' => $field, 'label' => $translated, 'type' => in_array($item->customField->type, ['textarea', 'editor'], true) ? 'textarea' : 'text'];
+            return ['name' => $field, 'label' => $translated, 'type' => $field !== 'name' && in_array($item->customField->type, ['textarea', 'editor'], true) ? 'textarea' : 'text'];
         })->filter(fn (array $field): bool => $field['name'] !== '')->values()->all();
         $columns = ['name', 'ordering', 'status', 'created_at', 'translations'];
         if ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) {

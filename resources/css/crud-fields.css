@@ -50,10 +50,10 @@
 .crud-locale-code { display:grid; width:22px; height:18px; place-items:center; border-radius:4px; background:var(--surface-soft); font-size:9px; font-weight:700; }
 .crud-row-translation-dialog > header > div > span { display:block; margin-bottom:3px; color:var(--muted); font-size:12px; }
 .crud-row-translation-dialog .crud-translation-editor { padding:0; }
-.crud-row-translation-dialog .crud-filter-fields { display:grid; gap:18px; }
+.crud-row-translation-dialog .crud-filter-fields { display:grid; align-content:start; grid-auto-rows:max-content; gap:18px; }
 .crud-row-translation-dialog .crud-filter-fields label { display:grid; gap:8px; }
 .crud-row-translation-dialog .crud-filter-fields input,.crud-row-translation-dialog .crud-filter-fields textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:9px; background:var(--surface); color:var(--text); padding:10px 12px; }
-.crud-row-translation-dialog .crud-filter-fields input { min-height:42px; }
+.crud-row-translation-dialog .crud-filter-fields input { height:42px; min-height:42px; max-height:42px; }
 .crud-row-translation-dialog .crud-filter-fields textarea { min-height:130px; resize:vertical; }
 .taxonomy-column-name { width:100%; min-width:220px; }
 .taxonomy-column-media { width:1%; min-width:70px; }
