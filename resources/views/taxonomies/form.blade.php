@@ -18,7 +18,7 @@
         </fieldset>
     </main><aside>
     @if($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty())
-    <section class="crud-capability-card"><header><div><h2>{{ __('taxonomies.media_title') }}</h2><p>{{ __('taxonomies.media_hint') }}</p></div><x-vuero.icon name="image" size="22" /></header><fieldset class="crud-form-fields">
+    <section class="crud-capability-card"><header><h2>{{ __('taxonomies.media_title') }}</h2><x-vuero.icon name="image" size="22" /></header><fieldset class="crud-form-fields">
         @php($mediaFields = collect($builder->hasBaseMedia() ? [['collection'=>'base','multiple'=>false,'mime'=>['image']]] : [])->concat($builder->getMedia()->map(fn($item)=>['collection'=>$item->getCollection(),'multiple'=>$item->getMultiple(),'mime'=>$item->getMimeTypes()])))
         @foreach($mediaFields as $mediaField)<x-form.field variant="crud" :label="ucfirst($mediaField['collection'])" :for="'media-'.$mediaField['collection']" :error="'media_upload.'.$mediaField['collection']">@if($loop->first && $mediaPreview)<img class="crud-media-preview" src="{{ $mediaPreview }}" alt="">@endif<input class="input" id="media-{{ $mediaField['collection'] }}" type="file" name="media_upload[{{ $mediaField['collection'] }}]{{ $mediaField['multiple'] ? '[]' : '' }}" accept="image/*" @if($mediaField['multiple']) multiple @endif></x-form.field>@endforeach
     </fieldset></section>

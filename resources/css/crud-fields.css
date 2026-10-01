@@ -38,8 +38,8 @@
 .crud-taxonomy-layout.has-sidebar { grid-template-columns:minmax(0,2fr) minmax(280px,1fr); }
 .crud-taxonomy-layout > main,.crud-taxonomy-layout > aside { min-width:0; }
 .crud-taxonomy-layout > aside .crud-capability-card:first-child { margin-top:0; }
-.crud-translation-group { padding:0; border:0; border-radius:0; background:transparent; }
-.crud-translation-group > header { min-height:42px; padding:0 4px; border-bottom:1px solid var(--border); }
+.crud-translation-group { padding:22px; border:1px solid var(--border); border-radius:16px; background:var(--surface); }
+.crud-translation-group > header { min-height:32px; padding:0; border:0; }
 .crud-translation-group > header img { width:24px; height:18px; border-radius:3px; object-fit:cover; }
 .crud-translation-group > header h2 { margin:0; font-size:14px; font-weight:600; }
 .crud-locale-dropdown > summary { width:auto; min-width:58px; gap:7px; }
@@ -52,5 +52,14 @@
 .crud-row-translation-dialog .crud-translation-editor { padding:0; }
 .crud-row-translation-dialog .crud-filter-fields { display:grid; gap:18px; }
 .crud-row-translation-dialog .crud-filter-fields label { display:grid; gap:8px; }
+.crud-row-translation-dialog .crud-filter-fields input,.crud-row-translation-dialog .crud-filter-fields textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:9px; background:var(--surface); color:var(--text); padding:10px 12px; }
+.crud-row-translation-dialog .crud-filter-fields input { min-height:42px; }
+.crud-row-translation-dialog .crud-filter-fields textarea { min-height:130px; resize:vertical; }
+.taxonomy-column-name { width:100%; min-width:220px; }
+.taxonomy-column-media { width:1%; min-width:70px; }
+.taxonomy-column-ordering,.taxonomy-column-status { width:1%; min-width:90px; text-align:center!important; }
+.taxonomy-column-created_at { width:1%; min-width:120px; }
+.taxonomy-column-translations { width:1%; min-width:82px; text-align:center!important; }
+.taxonomy-column-actions { width:1%; min-width:150px; }
 @media(max-width:991px){.crud-taxonomy-layout.has-sidebar{grid-template-columns:1fr}.crud-taxonomy-layout > aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.crud-taxonomy-layout > aside .crud-capability-card{margin:0}}
 @media(max-width:640px){.crud-taxonomy-layout > aside{grid-template-columns:1fr}}

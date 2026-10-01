@@ -144,7 +144,8 @@ class TaxonomyController extends Controller
             'rowActions' => $rowActions,
             'toolbar' => Hooks::filter('jobic.taxonomies.list.toolbar', ['activate', 'deactivate', 'delete', 'help'], $context),
             'formToolbar' => Hooks::filter('jobic.taxonomies.form.toolbar', ['new', 'close'], $context),
-            'help' => Hooks::filter('jobic.taxonomies.help.items', trans('taxonomies.help_items'), $context),
+            'help' => Hooks::filter('jobic.taxonomies.help.items', trans($type === 'menu' ? 'menus.help_items' : 'taxonomies.help_items'), $context),
+            'helpIntro' => trans($type === 'menu' ? 'menus.help_intro' : 'taxonomies.help_intro'),
         ]);
     }
 

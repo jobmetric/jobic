@@ -72,9 +72,13 @@ page.columns.forEach((key) =>
                   : { data: key, render: $.fn.dataTable.render.text() },
     ),
 );
+page.columns.forEach((key, index) => {
+    columns[index + 1].className = `taxonomy-column-${key}`;
+});
 columns.push({
     data: "id",
     orderable: false,
+    className: "taxonomy-column-actions",
     render: (id) => {
         const actions = page.rowActions.map((action) =>
             typeof action === "string" ? { key: action } : action,
@@ -82,14 +86,14 @@ columns.push({
         const external = actions.filter(
             (item) => !["edit", "delete"].includes(item.key),
         );
-        return `<div class="crud-row-actions"><a class="crud-icon-button" href="${page.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a>${external
+        return `<div class="crud-row-actions">${external
             .map((item) => {
                 const url = String(item.url || "#").replace(":id", Number(id));
                 return `<a class="crud-icon-button" href="${escape(url)}" aria-label="${escape(item.label || item.key)}" data-tooltip="${escape(item.label || item.key)}" data-taxonomy-action="${escape(item.key)}" data-id="${Number(id)}">${icon(item.icon || "apps")}</a>`;
             })
             .join(
                 "",
-            )}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more || copy().actions)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-delete="${Number(id)}">${icon("trash")}${escape(copy().delete)}</button></div></details><span data-taxonomy-row-actions="${Number(id)}"></span></div>`;
+            )}<a class="crud-icon-button" href="${page.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more || copy().actions)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-delete="${Number(id)}">${icon("trash")}${escape(copy().delete)}</button></div></details><span data-taxonomy-row-actions="${Number(id)}"></span></div>`;
     },
 });
 const table = $("#taxonomy-table").DataTable({
@@ -99,6 +103,15 @@ const table = $("#taxonomy-table").DataTable({
     pageLength: 10,
     lengthMenu: [10, 25, 50, 100],
     dom: 'rt<"crud-table-footer"lip>',
+    language: {
+        ...pageData().language?.datatable,
+        emptyTable: "",
+        zeroRecords: "",
+        info: "",
+        infoEmpty: "",
+        lengthMenu: `${copy().length} _MENU_`,
+        paginate: { previous: copy().previous, next: copy().next },
+    },
     columns,
     ajax: async (request, callback) => {
         const params = new URLSearchParams({
@@ -135,11 +148,18 @@ const table = $("#taxonomy-table").DataTable({
         }
     },
     drawCallback() {
+        const info = this.api().page.info();
         const footer = document.querySelector(
             "#taxonomy-table_wrapper .crud-table-footer",
         );
         if (footer)
             document.querySelector("[data-table-footer]").append(footer);
+        const infoNode = document.querySelector("#taxonomy-table_info");
+        if (infoNode)
+            infoNode.textContent = copy()
+                .page.replace(":page", info.pages ? info.page + 1 : 0)
+                .replace(":pages", info.pages);
+        enhanceSelects(document.querySelector("[data-table-footer]"));
         window.dispatchEvent(
             new CustomEvent("jobic:taxonomies:draw", {
                 detail: { type: page.type, rows },
@@ -210,7 +230,7 @@ document.querySelector("[data-crud-toolbar]").onclick = (e) => {
     else if (action === "help")
         showDialog({
             title: page.label,
-            description: "",
+            description: page.helpIntro,
             items: page.help,
             accordion: true,
         });
