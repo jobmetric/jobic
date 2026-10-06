@@ -10,6 +10,7 @@ use App\Http\Requests\Languages\HistoryRequest;
 use App\Http\Requests\Languages\LanguageRequest;
 use App\Http\Requests\Languages\TableRequest;
 use App\Services\History\RecordHistory;
+use App\Support\LocalizedDate;
 use App\Support\RecordVersion;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -36,7 +37,6 @@ class Languages extends AbstractCrudService
      *
      * @param array<string, mixed> $input
      *
-     * @return Response
      * @throws ValidationException
      * @throws Throwable
      */
@@ -48,9 +48,12 @@ class Languages extends AbstractCrudService
         $total = (clone $query)->count();
         $stats = [
             $total,
-            (clone $query)->where('status', true)->count(),
-            (clone $query)->where('direction', 'rtl')->count(),
-            (clone $query)->where('created_at', '>=', now()->subDays(30))->count(),
+            (clone $query)->where('status', true)
+                ->count(),
+            (clone $query)->where('direction', 'rtl')
+                ->count(),
+            (clone $query)->where('created_at', '>=', now()->subDays(30))
+                ->count(),
         ];
 
         foreach (['status', 'direction'] as $filter) {
@@ -72,13 +75,22 @@ class Languages extends AbstractCrudService
             4 => 'status',
             5 => 'created_at',
         ];
-        $query->orderBy($columns[$data['order'][0]['column'] ?? 1], $data['order'][0]['dir'] ?? 'asc')->orderBy('id');
+        $query->orderBy($columns[$data['order'][0]['column'] ?? 1], $data['order'][0]['dir'] ?? 'asc')
+            ->orderBy('id');
 
         return Response::make(true, '', [
             'draw'            => (int) $data['draw'],
             'recordsTotal'    => $total,
             'recordsFiltered' => $filtered,
-            'data'            => $query->offset((int) $data['start'])->limit((int) $data['length'])->get(),
+            'data'            => $query->offset((int) $data['start'])
+                ->limit((int) $data['length'])
+                ->get()
+                ->map(function (Language $language): array {
+                    $item = (new LanguageResource($language))->resolve();
+                    $item['created_at_display'] = LocalizedDate::format($language->created_at, false);
+
+                    return $item;
+                }),
             'stats'           => $stats,
         ]);
     }
@@ -86,24 +98,20 @@ class Languages extends AbstractCrudService
     /**
      * Find a registry record for editing or read-only presentation.
      *
-     * @param int $id
      *
-     * @return Language
      * @throws ModelNotFoundException
      */
     public function record(int $id): Language
     {
-        return Language::query()->findOrFail($id);
+        return Language::query()
+            ->findOrFail($id);
     }
 
     /**
      * Validate and persist one language, notifying extensions after commit.
      *
      * @param array<string, mixed> $input
-     * @param int|null $id
-     * @param int $userId
      *
-     * @return Response
      * @throws Throwable
      */
     public function saveRecord(array $input, ?int $id, int $userId): Response
@@ -117,7 +125,10 @@ class Languages extends AbstractCrudService
 
         $version = null;
         $record = DB::transaction(function () use ($data, $id, $context, &$version) {
-            $all = Language::query()->orderBy('id')->lockForUpdate()->get();
+            $all = Language::query()
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
             $record = $id ? $all->firstWhere('id', $id) : new Language;
 
             if (! $record) {
@@ -129,7 +140,9 @@ class Languages extends AbstractCrudService
             }
             unset($data['_version']);
 
-            if (! $data['status'] && $all->where('status', true)->where('id', '!=', $id)->isEmpty()) {
+            if (! $data['status'] && $all->where('status', true)
+                    ->where('id', '!=', $id)
+                    ->isEmpty()) {
                 throw ValidationException::withMessages(['status' => __('languages.last_active')]);
             }
 
@@ -143,6 +156,7 @@ class Languages extends AbstractCrudService
             }
 
             $before = $record->exists ? $record->toArray() : [];
+
             Hooks::action('jobic.settings.languages.saving', $context);
 
             try {
@@ -179,9 +193,7 @@ class Languages extends AbstractCrudService
      * Apply an all-or-nothing bulk mutation to explicitly selected records.
      *
      * @param array<string, mixed> $input
-     * @param int $userId
      *
-     * @return Response
      * @throws Throwable
      */
     public function bulk(array $input, int $userId): Response
@@ -189,7 +201,10 @@ class Languages extends AbstractCrudService
         $data = dto($input, BulkRequest::class);
 
         $contexts = DB::transaction(function () use ($data, $userId) {
-            $all = Language::query()->orderBy('id')->lockForUpdate()->get();
+            $all = Language::query()
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
             $records = $all->whereIn('id', $data['ids']);
 
             if ($data['operation'] !== 'activate' && $all->where('status', true)
@@ -215,14 +230,15 @@ class Languages extends AbstractCrudService
                 $before = $record->toArray();
                 if ($data['operation'] === 'delete') {
                     LanguageService::delete($record->id);
-                }
-                else {
+                } else {
                     LanguageService::update($record->id, [
                         'status' => $data['operation'] === 'activate',
                     ]);
                 }
 
-                $after = $data['operation'] === 'delete' ? [] : $record->fresh()->toArray();
+                $after = $data['operation'] === 'delete' ? [] : $record->fresh()
+                    ->toArray();
+
                 app(RecordHistory::class)->record('languages', $record->id, $userId, $data['operation'], $before, $after);
                 $contexts[] = $context;
             }
@@ -236,13 +252,12 @@ class Languages extends AbstractCrudService
 
         return Response::make(true, __('languages.saved'));
     }
+
     /**
      * Validate and return the history of an existing language.
      *
-     * @param int $id
      * @param array<string, mixed> $input
      *
-     * @return Response
      * @throws Throwable
      */
     public function history(int $id, array $input): Response
@@ -252,5 +267,4 @@ class Languages extends AbstractCrudService
 
         return app(RecordHistory::class)->page('languages', $id, (int) ($data['page'] ?? 1));
     }
-
 }

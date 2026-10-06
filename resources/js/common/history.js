@@ -37,3 +37,18 @@ export function formatHistoryValue(value) {
         return value;
     }
 }
+
+/** Render a localized audit heading with the actor and date on opposite sides. */
+export function appendHistoryHeading(section, entry, wording) {
+    const summary = document.createElement('summary');
+    summary.className = 'crud-history-summary';
+    const actor = document.createElement('span');
+    actor.textContent = wording.history_by
+        .replace(':operation', wording[`history_${entry.operation}`])
+        .replace(':actor', entry.actor || wording.history_actor_unknown);
+    const date = document.createElement('time');
+    date.dateTime = entry.created_at;
+    date.textContent = entry.created_at_display;
+    summary.append(actor, date);
+    section.append(summary);
+}

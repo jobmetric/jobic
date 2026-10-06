@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Support\LocalizedDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,12 +23,13 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'                => $this->resource->id,
-            'name'              => $this->resource->name,
-            'email'             => $this->resource->email,
-            'status'            => (bool) $this->resource->status,
-            'email_verified_at' => $this->resource->email_verified_at,
-            'created_at'        => $this->resource->created_at,
+            'id'                 => $this->resource->id,
+            'name'               => $this->resource->name,
+            'email'              => $this->resource->email,
+            'status'             => (bool) $this->resource->status,
+            'email_verified_at'  => $this->resource->email_verified_at,
+            'created_at'         => $this->resource->created_at,
+            'created_at_display' => LocalizedDate::format($this->resource->created_at, false),
         ];
     }
 }

@@ -69,6 +69,8 @@
 .crud-history h2 { font-size:20px; font-weight:700; }
 .crud-history footer { margin-block-start:20px; }
 .crud-history .crud-help-section p { overflow-wrap:anywhere; }
+.crud-history-summary { display:flex; align-items:center; justify-content:space-between; gap:18px; }
+.crud-history-summary time { color:var(--muted); font-size:12px; font-weight:500; white-space:nowrap; }
 .crud-history-change { padding:16px; border-block-start:1px solid var(--border); }
 .crud-history-change h3 { margin:0 0 10px; color:var(--text); font-size:13px; font-weight:750; }
 .crud-history-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; direction:ltr; }

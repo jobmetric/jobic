@@ -1,7 +1,7 @@
 import { copy } from './shared';
 import { loadingButton } from '../common/page';
 import { announce } from '../common/toast';
-import { appendHistoryChange } from '../common/history';
+import { appendHistoryChange, appendHistoryHeading } from '../common/history';
 
 export function bindHistory(form) {
     const panel = document.querySelector('[data-record-history]');
@@ -29,9 +29,7 @@ export function bindHistory(form) {
             page = result.data.page; pages = result.data.pages; body.replaceChildren();
             for (const entry of result.data.entries) {
                 const section = document.createElement('details'); section.className = 'crud-help-section';
-                const title = document.createElement('summary');
-                title.textContent = `${copy()['history_' + entry.operation]} · ${entry.actor || copy().history_actor_unknown} · ${new Intl.DateTimeFormat(document.documentElement.lang, {dateStyle: 'medium', timeStyle: 'short'}).format(new Date(entry.created_at))}`;
-                section.append(title);
+                appendHistoryHeading(section, entry, copy());
                 for (const [field, change] of Object.entries(entry.changes)) {
                     appendHistoryChange(section, {label: copy()[field] || field, beforeLabel: copy().history_before, afterLabel: copy().history_after, before: value(field, change.before), after: value(field, change.after)});
                 }

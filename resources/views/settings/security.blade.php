@@ -23,7 +23,7 @@
                 <header><span>{{ __('system.date') }}</span><span>{{ __('system.ip_address') }}</span><span>{{ __('system.status') }}</span><span>{{ __('system.result') }}</span></header>
                 @foreach($loginEvents as $event)
                     <article class="cms-health-table__row">
-                        <div class="cms-health-table__name"><span><x-vuero.icon name="clock" size="18" /></span><strong dir="ltr">{{ $event->created_at->format('Y-m-d H:i') }}</strong></div>
+                        <div class="cms-health-table__name"><span><x-vuero.icon name="clock" size="18" /></span><strong>{{ \App\Support\LocalizedDate::format($event->created_at) }}</strong></div>
                         <p dir="ltr">{{ $event->ip_address ?: '—' }}</p>
                         <div><span class="cms-health-status {{ $event->successful ? 'is-ready' : 'is-unavailable' }}">{{ __('admin.'.($event->successful ? 'successful' : 'failed')) }}</span></div>
                         <p>{{ $event->successful ? __('system.login_allowed') : __('system.login_denied') }}</p>

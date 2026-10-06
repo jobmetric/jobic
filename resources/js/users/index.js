@@ -102,7 +102,7 @@ function initialize() {
             {data: 'email', render: $.fn.dataTable.render.text()},
             {data: 'status', render: value => `<span class="crud-status ${value ? 'is-active' : ''}">${escape(copy()[value ? 'active' : 'inactive'])}</span>`},
             {data: 'email_verified_at', render: value => `<span class="crud-status ${value ? 'is-active' : ''}">${escape(copy()[value ? 'verified_yes' : 'verified_no'])}</span>`},
-            {data: 'created_at', render: value => value ? new Intl.DateTimeFormat(document.documentElement.lang).format(new Date(value)) : '—'},
+            {data: 'created_at_display', orderData: 5, render: value => value || '—'},
             {data: 'id', orderable: false, render: id => canManage ? `<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><a href="${routes.index}/${Number(id)}">${icon('eye')}${escape(copy().view)}</a><button type="button" data-delete="${Number(id)}">${icon('trash')}${escape(copy().delete)}</button></div></details></div>` : `<div class="crud-row-actions"><a class="crud-icon-button" href="${routes.index}/${Number(id)}" aria-label="${escape(copy().view)}" data-tooltip="${escape(copy().view)}">${icon('eye')}</a></div>`},
         ],
         drawCallback() {

@@ -1,0 +1,10 @@
+---
+description: Calendar-aware date input and output
+alwaysApply: true
+---
+
+# Calendar-aware dates
+
+Every human-facing date follows the active `jobmetric/laravel-language` record. Use `App\Support\LocalizedDate` for output and the package calendar-aware cast/rules for input. The language's `calendar` value is authoritative; Persian normally uses Jalali. Storage remains Gregorian.
+
+Do not use hard-coded locales, `translatedFormat()` alone, or browser `Intl.DateTimeFormat` for CMS domain dates. AJAX responses should return a server-formatted display value and retain an ISO value only when machine-readable time is also needed. Dynamic widgets must rerender on `cms:presentation-refreshed` without clearing form drafts.

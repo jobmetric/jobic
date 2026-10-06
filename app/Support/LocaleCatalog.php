@@ -6,6 +6,7 @@ namespace App\Support;
 
 use Illuminate\Support\Facades\Schema;
 use JobMetric\Language\Models\Language;
+use RuntimeException;
 
 /**
  * Resolve interface language identity and direction from the active registry.
@@ -23,12 +24,18 @@ class LocaleCatalog
             return config('localization.bootstrap');
         }
 
-        return Language::query()->where('status', true)->orderBy('name')->get([
+        return Language::query()
+            ->where('status', true)
+            ->orderBy('name')
+            ->get([
                 'name',
                 'locale',
                 'direction',
                 'flag',
-            ])->keyBy('locale')->toArray();
+                'calendar',
+            ])
+            ->keyBy('locale')
+            ->toArray();
     }
 
     /**
@@ -43,10 +50,6 @@ class LocaleCatalog
 
     /**
      * Resolve stale preferences to an active locale with a deterministic fallback.
-     *
-     * @param string|null $preferred
-     *
-     * @return string
      */
     public static function resolve(?string $preferred = null): string
     {
@@ -62,10 +65,6 @@ class LocaleCatalog
 
     /**
      * Read layout direction independently of whether translation files are installed.
-     *
-     * @param string|null $locale
-     *
-     * @return string
      */
     public static function direction(?string $locale = null): string
     {
@@ -73,12 +72,18 @@ class LocaleCatalog
     }
 
     /**
+     * Resolve the calendar configured for an active interface language.
+     */
+    public static function calendar(?string $locale = null): string
+    {
+        return self::all()[$locale ?? app()->getLocale()]['calendar'] ?? 'gregorian';
+    }
+
+    /**
      * Resolve a published package flag, preserving legacy country-code values.
      *
-     * @param string|null $flag
      *
-     * @return string|null
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public static function flagUrl(?string $flag): ?string
     {
@@ -86,6 +91,7 @@ class LocaleCatalog
                     'us' => 'united-states.svg',
                     'ir' => 'iran.svg',
                 ][$flag ?? ''] ?? $flag;
+
         foreach (\JobMetric\Language\Facades\Language::getFlags() as $item) {
             if ($item['value'] === $flag) {
                 return $item['url'];

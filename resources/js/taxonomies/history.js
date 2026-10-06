@@ -1,5 +1,5 @@
 import { copy } from './shared';
-import { appendHistoryChange } from '../common/history';
+import { appendHistoryChange, appendHistoryHeading } from '../common/history';
 
 export function bindHistory(form) {
     const panel = document.querySelector('[data-record-history]');
@@ -26,9 +26,7 @@ export function bindHistory(form) {
             result.data.entries.forEach((entry) => {
                 const section = document.createElement('details');
                 section.className = 'crud-help-section';
-                const summary = document.createElement('summary');
-                summary.textContent = `${copy()['history_' + entry.operation]} · ${entry.actor || copy().history_actor_unknown} · ${new Intl.DateTimeFormat(document.documentElement.lang, {dateStyle:'medium', timeStyle:'short'}).format(new Date(entry.created_at))}`;
-                section.append(summary);
+                appendHistoryHeading(section, entry, copy());
                 Object.entries(entry.changes).forEach(([field, change]) => {
                     appendHistoryChange(section, {label: copy()[field] || field, beforeLabel: copy().history_before, afterLabel: copy().history_after, before: value(change.before), after: value(change.after)});
                 });
@@ -48,6 +46,7 @@ export function bindHistory(form) {
     previous.onclick = () => load(page - 1);
     next.onclick = () => load(page + 1);
     refresh.onclick = () => load(1);
+    window.addEventListener('cms:presentation-refreshed', () => load(page));
     load();
     return {refresh: () => load(1)};
 }
