@@ -58,7 +58,9 @@ html[dir='rtl'] [data-cms-shell][data-selected-layout*='sideblock'][data-selecte
 /* Shared Select2 surface; all product selects use the same theme. */
 .cms-page .select2-container .select2-selection--single { height:43px; background:var(--surface); border:1px solid var(--border); border-radius:9px; }
 .cms-page .select2-container--default .select2-selection--single .select2-selection__rendered { color:var(--text); line-height:41px; padding-inline:12px 30px; }
-.cms-page .select2-container--default .select2-selection--single .select2-selection__arrow { height:41px; }
+.cms-page .select2-container--default .select2-selection--single .select2-selection__arrow { top:50%; height:20px; width:20px; margin-top:0; transform:translateY(-50%); inset-inline-end:10px; inset-inline-start:auto; display:grid; place-items:center; }
+.cms-page .select2-container--default .select2-selection--single .select2-selection__arrow b { position:static; width:7px; height:7px; margin:-4px 0 0; border:0; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg); color:var(--muted); }
+.cms-page .select2-container--open .select2-selection--single .select2-selection__arrow b { transform:rotate(225deg); margin-top:3px; }
 .cms-page .select2-dropdown { background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:10px; box-shadow:0 10px 30px #17283b20; overflow:hidden; }
 .cms-page .select2-container--default .select2-results__option--highlighted[aria-selected] { background:var(--primary); color:white; }
 .cms-page .select2-container--default .select2-results__option[aria-selected=true] { background:rgb(var(--primary-rgb) / 12%); color:var(--text); }

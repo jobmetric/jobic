@@ -5,7 +5,7 @@ export function enhanceSelects(root = document) {
     if (!$?.fn.select2) return;
     root.querySelectorAll('select').forEach(select => {
         // The installation studio already owns its Select2 lifecycle and layout.
-        if (select.closest('[data-installation]') || $(select).hasClass('select2-hidden-accessible')) return;
+        if (select.closest('[data-installation]') || select.matches('[aria-hidden="true"], [data-native-select]') || $(select).hasClass('select2-hidden-accessible')) return;
         const dialog = select.closest('dialog');
         const renderOption = item => {
             const flag = item.element?.dataset.flagUrl;
