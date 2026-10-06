@@ -4,6 +4,7 @@ import { sendSettings } from "../admin/settings";
 import { announce } from "../common/toast";
 import { guardUnsaved } from "../common/unsaved";
 import { bindHistory } from "./history";
+import { bindMediaManager } from "./media-manager";
 toolbar("form");
 const form = document.querySelector("[data-taxonomy-form]");
 form.noValidate = true;
@@ -15,6 +16,7 @@ const guard = guardUnsaved(form, () =>
     }),
 );
 const historyPanel = bindHistory(form);
+bindMediaManager(form);
 const linkBox = form.querySelector('[data-menu-link]');
 if (linkBox) {
     linkBox.querySelector('[data-menu-link-driver]').addEventListener('change', async (event) => {
@@ -64,23 +66,35 @@ form.addEventListener("submit", async (event) => {
         if (intent === "close") location.assign(pageData().taxonomyPage.index);
         else if (intent === "new")
             location.assign(`${pageData().taxonomyPage.index}/create`);
-        else if (form.action === result.data.edit_url) {
+        else if (new URL(location.href).pathname === new URL(result.data.edit_url, location.href).pathname) {
             historyPanel.refresh();
-        } else location.assign(result.data.edit_url);
+        } else {
+            guard.leave();
+            location.assign(result.data.edit_url);
+        }
     } catch (error) {
+        let displayedErrors = 0;
         Object.entries(error.errors || {}).forEach(([name, messages]) => {
-            const field = form.elements.namedItem(name);
+            const parts = name.split('.');
+            const inputName = parts.shift() + parts.map(part => `[${part}]`).join('');
+            const field = form.elements.namedItem(name) || form.elements.namedItem(inputName);
             const message = form.querySelector(
                 `[data-error-for="${CSS.escape(name)}"]`,
             );
-            if (field && message) {
+            if (message) {
                 message.textContent = [].concat(messages).join(" ");
+                message.id ||= `taxonomy-error-${name.replaceAll('.', '-')}`;
+                displayedErrors++;
+            }
+            if (field && message) {
                 field.setAttribute("aria-invalid", "true");
                 field.setAttribute("aria-describedby", message.id);
             }
         });
         form.querySelector("[aria-invalid=true]")?.focus();
-        announce(error.status ? error.message : copy().failed, true);
+        if (error.status !== 422 || displayedErrors === 0) {
+            announce(error.status ? error.message : copy().failed, true);
+        }
     } finally {
         restores.forEach((restore) => restore());
         form.querySelector(".crud-split-save")?.removeAttribute("inert");

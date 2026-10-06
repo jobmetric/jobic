@@ -13,6 +13,8 @@ JobMetric packages are developed in sibling repositories under `../maral/package
 
 ## Compatibility releases used by Jobic
 
+Taxonomy presentation must work against the stable version in `composer.lock`, not only the sibling development checkout. Optional `custom-fields` and `seo` settings are read through the published builder `get()` options API, defaulting to an empty field map and disabled SEO. Do not call unreleased convenience methods from views, request validation or persistence. `TaxonomiesTest` covers menu-item create/edit/update/history/list/delete in both interface locales and optional field/SEO rendering against the installed package without a source override.
+
 | Package | Source | Minimum version | Fix |
 | --- | --- | --- | --- |
 | `jobmetric/domi` | `../maral/packages/domi` | `1.14.2` | EnumMacros/nullable compatibility and standalone DataTable initialization without KTUtil |

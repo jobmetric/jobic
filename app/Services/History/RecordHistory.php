@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\History;
 
+use App\Support\LocalizedDate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use JobMetric\PackageCore\Output\Response;
@@ -15,7 +16,7 @@ use Throwable;
 class RecordHistory
 {
     private const array FIELDS = [
-        'languages' => [
+        'languages'  => [
             'name',
             'locale',
             'flag',
@@ -24,14 +25,14 @@ class RecordHistory
             'first_day_of_week',
             'status',
         ],
-        'users' => [
+        'users'      => [
             'name',
             'email',
             'status',
             'email_verified_at',
             'role_ids',
         ],
-        'roles' => [
+        'roles'      => [
             'name',
             'description',
             'parent_id',
@@ -43,6 +44,8 @@ class RecordHistory
             'rules',
         ],
         'taxonomies' => [
+            'custom_fields',
+            'seo',
             'translation',
             'parent_id',
             'ordering',
@@ -55,8 +58,8 @@ class RecordHistory
     /**
      * Record changed public fields inside the caller's persistence transaction.
      *
-     * @param  array<string, mixed>  $before
-     * @param  array<string, mixed>  $after
+     * @param array<string, mixed> $before
+     * @param array<string, mixed> $after
      *
      * @throws Throwable
      */
@@ -69,16 +72,15 @@ class RecordHistory
         array $after
     ): void {
         $changes = [];
-        $fields = str_starts_with($resource, 'taxonomies:')
-            ? self::FIELDS['taxonomies']
-            : (self::FIELDS[$resource] ?? []);
+        $fields = str_starts_with($resource, 'taxonomies:') ? self::FIELDS['taxonomies'] : (self::FIELDS[$resource] ?? []);
+
         foreach ($fields as $field) {
             $old = $before[$field] ?? null;
             $new = $after[$field] ?? null;
             if ($old !== $new) {
                 $changes[$field] = [
                     'before' => $old,
-                    'after' => $new,
+                    'after'  => $new,
                 ];
             }
         }
@@ -87,14 +89,15 @@ class RecordHistory
             return;
         }
 
-        DB::table('record_changes')->insert([
-            'resource' => $resource,
-            'record_id' => $recordId,
-            'user_id' => $userId,
-            'operation' => $operation,
-            'changes' => json_encode($changes, JSON_THROW_ON_ERROR),
-            'created_at' => now(),
-        ]);
+        DB::table('record_changes')
+            ->insert([
+                'resource'   => $resource,
+                'record_id'  => $recordId,
+                'user_id'    => $userId,
+                'operation'  => $operation,
+                'changes'    => json_encode($changes, JSON_THROW_ON_ERROR),
+                'created_at' => now(),
+            ]);
     }
 
     /**
@@ -118,17 +121,20 @@ class RecordHistory
                 'users.name as actor',
             ], 'page', $page);
 
-        $entries->getCollection()->transform(function ($entry) {
-            $entry->created_at = Carbon::parse($entry->created_at)->toIso8601String();
-            $entry->changes = json_decode($entry->changes, true, 512, JSON_THROW_ON_ERROR);
+        $entries->getCollection()
+            ->transform(function ($entry) {
+                $entry->created_at = Carbon::parse($entry->created_at)
+                    ->toIso8601String();
+                $entry->created_at_display = LocalizedDate::format($entry->created_at);
+                $entry->changes = json_decode($entry->changes, true, 512, JSON_THROW_ON_ERROR);
 
-            return $entry;
-        });
+                return $entry;
+            });
 
         return Response::make(true, '', [
             'entries' => $entries->items(),
-            'page' => $entries->currentPage(),
-            'pages' => $entries->lastPage(),
+            'page'    => $entries->currentPage(),
+            'pages'   => $entries->lastPage(),
         ]);
     }
 }

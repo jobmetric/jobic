@@ -23,11 +23,14 @@ use Illuminate\View\View;
 use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
 use JobMetric\Domi\Facades\Domi;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
+use Throwable;
 
 /** Render the native, registry-driven taxonomy administration pages. */
 class TaxonomyController extends Controller
 {
-    public function __construct(private readonly Taxonomies $taxonomies) {}
+    public function __construct(private readonly Taxonomies $taxonomies)
+    {
+    }
 
     /** @throws SetPluginNotFoundException */
     public function index(string $type): View
@@ -35,7 +38,9 @@ class TaxonomyController extends Controller
         $this->prepare($type);
         Domi::setPlugins(['jquery', 'datatable']);
 
-        return view('taxonomies.index', ['type' => $type]);
+        return view('taxonomies.index', [
+            'type' => $type,
+        ]);
     }
 
     public function data(TableRequest $request, string $type): JsonResponse
@@ -55,7 +60,11 @@ class TaxonomyController extends Controller
     {
         abort_unless(preg_match('/^menu_\d+$/', $type) === 1 && $registry->has($driver), 404);
 
-        return view('taxonomies.partials.menu-link-fields', ['registry' => $registry, 'driver' => $driver, 'values' => []]);
+        return view('taxonomies.partials.menu-link-fields', [
+            'registry' => $registry,
+            'driver'   => $driver,
+            'values'   => [],
+        ]);
     }
 
     public function edit(string $type, int $taxonomy): View
@@ -81,19 +90,32 @@ class TaxonomyController extends Controller
         return response()->json($result, $result->status);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function translation(Request $request, string $type, int $taxonomy, string $locale): JsonResponse
     {
         abort_unless(array_key_exists($locale, LocaleCatalog::all()), 404);
+
         $record = $this->taxonomies->record($type, $taxonomy);
         $builder = TaxonomyTypeRegistry::for($type);
+
         $rules = [];
         foreach ($builder->getTranslation() as $item) {
             $field = (string) Arr::get($item->customField->params, 'uniqName');
             if ($field !== '') {
-                $rules[$field] = $field === 'name' ? ['required', 'string', 'max:255'] : ['nullable', 'string'];
+                $rules[$field] = $field === 'name' ? [
+                    'required',
+                    'string',
+                    'max:255',
+                ] : [
+                    'nullable',
+                    'string',
+                ];
             }
         }
-        $values = Validator::make((array) $request->input('fields'), $rules)->validate();
+        $values = Validator::make((array) $request->input('fields'), $rules)
+            ->validate();
         $result = $this->taxonomies->saveTranslation($type, $record, $locale, $values);
 
         return response()->json($result, $result->status);
@@ -115,61 +137,112 @@ class TaxonomyController extends Controller
 
     /**
      * Return one bounded page of changes for a taxonomy record.
+     *
+     * @throws Throwable
      */
     public function history(HistoryRequest $request, string $type, int $taxonomy): JsonResponse
     {
         return response()->json($this->taxonomies->history($type, $taxonomy, $request->validated()));
     }
 
+    /**
+     * @throws SetPluginNotFoundException
+     */
     private function prepare(string $type): void
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
+
         if (preg_match('/^menu_(\d+)$/', $type, $matches) === 1) {
             $menu = $this->taxonomies->record('menu', (int) $matches[1]);
-            TaxonomyTypeRegistry::register($type)->label(TaxonomyPresentation::name($menu));
+            TaxonomyTypeRegistry::register($type)
+                ->label(TaxonomyPresentation::name($menu));
         }
+
         $builder = TaxonomyTypeRegistry::for($type);
         Page::prepare('taxonomies');
         $context = ['type' => $type];
         Page::addLocalize('taxonomies', trans('taxonomies'));
+        Page::addLocalize('fileManager', trans('file-manager'));
         Page::addLocalize('crudHelp', trans('crud.help_sections'));
-        $translationFields = $builder->getTranslation()->map(function ($item): array {
-            $field = (string) Arr::get($item->customField->params, 'uniqName');
-            $translated = trans((string) ($item->customField->label ?: $field));
-            if ($translated === $item->customField->label) {
-                $translated = trans('taxonomies.'.$field);
-            }
+        $translationFields = $builder->getTranslation()
+            ->map(function ($item): array {
+                $field = (string) Arr::get($item->customField->params, 'uniqName');
+                $translated = trans((string) ($item->customField->label ?: $field));
+                if ($translated === $item->customField->label) {
+                    $translated = trans('taxonomies.' . $field);
+                }
 
-            return ['name' => $field, 'label' => $translated, 'type' => $field !== 'name' && in_array($item->customField->type, ['textarea', 'editor'], true) ? 'textarea' : 'text'];
-        })->filter(fn (array $field): bool => $field['name'] !== '')->values()->all();
-        $columns = ['name', 'ordering', 'status', 'translations'];
-        if ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) {
+                return [
+                    'name'  => $field,
+                    'label' => $translated,
+                    'type'  => $field !== 'name' && in_array($item->customField->type, [
+                        'textarea',
+                        'editor',
+                    ], true) ? 'textarea' : 'text',
+                ];
+            })
+            ->filter(fn (array $field): bool => $field['name'] !== '')
+            ->values()
+            ->all();
+
+        $columns = [
+            'name',
+            'ordering',
+            'status',
+            'translations',
+        ];
+
+        if ($builder->hasBaseMedia() || $builder->getMedia()
+                ->isNotEmpty()) {
             array_unshift($columns, 'media');
         }
-        $rowActions = Hooks::filter('jobic.taxonomies.list.actions', ['edit', 'delete'], $context);
+
+        $rowActions = Hooks::filter('jobic.taxonomies.list.actions', [
+            'edit',
+            'delete',
+        ], $context);
         if ($type === 'menu') {
             $rowActions[] = [
-                'key' => 'items',
+                'key'   => 'items',
                 'label' => __('menus.configure'),
-                'icon' => 'list-tree',
-                'url' => url('/admin/taxonomies/menu_:id'),
+                'icon'  => 'list-tree',
+                'url'   => url('/admin/taxonomies/menu_:id'),
             ];
         }
         Page::addLocalize('taxonomyPage', [
-            'index' => route('admin.taxonomies.index', $type), 'data' => route('admin.taxonomies.data', $type),
-            'bulk' => route('admin.taxonomies.bulk', $type), 'type' => $type, 'label' => $builder->getLabel(),
-            'columns' => Hooks::filter('jobic.taxonomies.list.columns', $columns, $context),
-            'languages' => collect(LocaleCatalog::all())->map(fn (array $language): array => $language + ['flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null)])->all(),
-            'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
-            'hierarchical' => $builder->hasHierarchical(),
-            'backUrl' => TaxonomyTypeRegistry::getOption($type, 'back-url'),
+            'index'             => route('admin.taxonomies.index', $type),
+            'data'              => route('admin.taxonomies.data', $type),
+            'bulk'              => route('admin.taxonomies.bulk', $type),
+            'type'              => $type,
+            'label'             => $builder->getLabel(),
+            'columns'           => Hooks::filter('jobic.taxonomies.list.columns', $columns, $context),
+            'languages'         => collect(LocaleCatalog::all())
+                ->map(fn (array $language): array => $language + [
+                        'flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null),
+                    ])
+                ->all(),
+            'activeLocale'      => LocaleCatalog::resolve(app()->getLocale()),
+            'hierarchical'      => $builder->hasHierarchical(),
+            'backUrl'           => TaxonomyTypeRegistry::getOption($type, 'back-url'),
             'translationFields' => $translationFields,
-            'translationUrl' => route('admin.taxonomies.translation', [$type, '__ID__', '__LOCALE__']),
-            'rowActions' => $rowActions,
-            'toolbar' => Hooks::filter('jobic.taxonomies.list.toolbar', ['activate', 'deactivate', 'delete', 'help'], $context),
-            'formToolbar' => Hooks::filter('jobic.taxonomies.form.toolbar', ['new', 'close'], $context),
-            'help' => Hooks::filter('jobic.taxonomies.help.items', trans($type === 'menu' ? 'menus.help_items' : 'taxonomies.help_items'), $context),
-            'helpIntro' => trans($type === 'menu' ? 'menus.help_intro' : 'taxonomies.help_intro'),
+            'translationUrl'    => route('admin.taxonomies.translation', [
+                $type,
+                '__ID__',
+                '__LOCALE__',
+            ]),
+            'rowActions'        => $rowActions,
+            'toolbar'           => Hooks::filter('jobic.taxonomies.list.toolbar', [
+                'activate',
+                'deactivate',
+                'delete',
+                'help',
+            ], $context),
+            'formToolbar'       => Hooks::filter('jobic.taxonomies.form.toolbar', [
+                'new',
+                'close',
+            ], $context),
+            'help'              => Hooks::filter('jobic.taxonomies.help.items', trans($type === 'menu' ? 'menus.help_items' : 'taxonomies.help_items'), $context),
+            'helpIntro'         => trans($type === 'menu' ? 'menus.help_intro' : 'taxonomies.help_intro'),
         ]);
     }
 
@@ -177,10 +250,29 @@ class TaxonomyController extends Controller
     {
         $builder = TaxonomyTypeRegistry::for($type);
 
-        return ['type' => $type, 'record' => $record, 'builder' => $builder,
-            'parents' => $builder->hasHierarchical() ? $this->taxonomies->parentOptions($type, $record?->id) : [],
-            'languages' => collect(LocaleCatalog::all())->map(fn (array $language): array => $language + ['flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null)])->all(), 'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
-            'translations' => $record?->getTranslations() ?? [],
-            'mediaPreview' => $record && ($builder->hasBaseMedia() || $builder->getMedia()->isNotEmpty()) ? $this->taxonomies->mediaPreview($record) : null];
+        return [
+            'type'             => $type,
+            'record'           => $record,
+            'builder'          => $builder,
+            'capabilityValues' => $this->taxonomies->capabilityValues($record),
+            'parents'          => $builder->hasHierarchical() ? $this->taxonomies->parentOptions($type, $record?->id) : [],
+            'languages'        => collect(LocaleCatalog::all())
+                ->map(fn (array $language): array => $language + [
+                        'flag_url' => LocaleCatalog::flagUrl($language['flag'] ?? null),
+                    ])
+                ->all(),
+            'activeLocale'     => LocaleCatalog::resolve(app()->getLocale()),
+            'translations'     => $record?->getTranslations() ?? [],
+            'mediaSelections'  => $record && ($builder->hasBaseMedia() || $builder->getMedia()
+                    ->isNotEmpty() || ($builder->get()['seo'] ?? false)) ? $this->taxonomies->mediaSelections($record) : [],
+            'mediaManager'     => [
+                'browse'  => route('admin.media-manager.browse'),
+                'upload'  => route('admin.media-manager.upload'),
+                'folder'  => route('admin.media-manager.folders.store'),
+                'details' => route('admin.media-manager.details', '__ID__'),
+                'rename'  => route('admin.media-manager.rename', '__ID__'),
+                'destroy' => route('admin.media-manager.destroy'),
+            ],
+        ];
     }
 }

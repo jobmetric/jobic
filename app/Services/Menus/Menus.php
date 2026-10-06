@@ -9,6 +9,7 @@ use App\Http\Requests\Menus\BulkRequest;
 use App\Http\Requests\Menus\MenuRequest;
 use App\Http\Requests\Menus\TableRequest;
 use App\Services\History\RecordHistory;
+use App\Support\LocalizedDate;
 use App\Support\RecordVersion;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -29,20 +30,27 @@ class Menus
     /**
      * Return a bounded, filtered menu table page and registry statistics.
      *
-     * @param  array<string, mixed>  $input
+     * @param array<string, mixed> $input
      *
      * @throws Throwable
      */
     public function table(array $input): Response
     {
         $data = dto($input, TableRequest::class);
-        $query = Taxonomy::query()->where('type', 'menu');
+
+        $query = Taxonomy::query()
+            ->where('type', 'menu');
+
         $total = (clone $query)->count();
+
         $stats = [
             $total,
-            (clone $query)->where('status', true)->count(),
-            (clone $query)->where('status', false)->count(),
-            (clone $query)->where('created_at', '>=', now()->subDays(30))->count(),
+            (clone $query)->where('status', true)
+                ->count(),
+            (clone $query)->where('status', false)
+                ->count(),
+            (clone $query)->where('created_at', '>=', now()->subDays(30))
+                ->count(),
         ];
 
         if (isset($data['status']) && $data['status'] !== '') {
@@ -50,9 +58,8 @@ class Menus
         }
 
         if ($term = ($data['search']['value'] ?? null)) {
-            $query->whereHas('translations', fn ($translation) => $translation
-                ->where('field', 'name')
-                ->where('value', 'like', '%'.$term.'%'));
+            $query->whereHas('translations', fn ($translation) => $translation->where('field', 'name')
+                ->where('value', 'like', '%' . $term . '%'));
         }
 
         $filtered = (clone $query)->count();
@@ -66,21 +73,24 @@ class Menus
             ->orderBy($columns[$data['order'][0]['column'] ?? 2], $data['order'][0]['dir'] ?? 'asc')
             ->orderBy('id');
 
-        $records = $query->offset((int) $data['start'])->limit((int) $data['length'])->get()
+        $records = $query->offset((int) $data['start'])
+            ->limit((int) $data['length'])
+            ->get()
             ->map(fn (Taxonomy $menu): array => [
-                'id' => $menu->id,
-                'name' => $menu->getTranslation('name') ?? __('menus.unnamed'),
-                'ordering' => $menu->ordering,
-                'status' => $menu->status,
-                'created_at' => $menu->created_at?->toISOString(),
+                'id'                 => $menu->id,
+                'name'               => $menu->getTranslation('name') ?? __('menus.unnamed'),
+                'ordering'           => $menu->ordering,
+                'status'             => $menu->status,
+                'created_at'         => $menu->created_at?->toISOString(),
+                'created_at_display' => LocalizedDate::format($menu->created_at, false),
             ]);
 
         return Response::make(true, '', [
-            'draw' => (int) $data['draw'],
-            'recordsTotal' => $total,
+            'draw'            => (int) $data['draw'],
+            'recordsTotal'    => $total,
             'recordsFiltered' => $filtered,
-            'data' => $records,
-            'stats' => $stats,
+            'data'            => $records,
+            'stats'           => $stats,
         ]);
     }
 
@@ -107,13 +117,16 @@ class Menus
      */
     public function record(int $id): Taxonomy
     {
-        return Taxonomy::query()->with('translations')->where('type', 'menu')->findOrFail($id);
+        return Taxonomy::query()
+            ->with('translations')
+            ->where('type', 'menu')
+            ->findOrFail($id);
     }
 
     /**
      * Validate and persist a menu container through the taxonomy service.
      *
-     * @param  array<string, mixed>  $input
+     * @param array<string, mixed> $input
      *
      * @throws Throwable
      */
@@ -121,7 +134,11 @@ class Menus
     {
         $data = dto($input, MenuRequest::class);
         $locale = app()->getLocale();
-        $context = ['id' => $id, 'user_id' => $userId, 'operation' => $id ? 'update' : 'create'];
+        $context = [
+            'id'        => $id,
+            'user_id'   => $userId,
+            'operation' => $id ? 'update' : 'create',
+        ];
 
         $response = DB::transaction(function () use ($data, $id, $locale, $context): Response {
             $record = $id ? $this->record($id) : null;
@@ -132,21 +149,28 @@ class Menus
             unset($data['_version']);
             $before = $record?->toArray() ?? [];
             $payload = [
-                'type' => 'menu',
-                'ordering' => $data['ordering'],
-                'status' => $data['status'],
-                'slug' => Str::slug($data['name']),
-                'translation' => [$locale => ['name' => $data['name']]],
+                'type'        => 'menu',
+                'ordering'    => $data['ordering'],
+                'status'      => $data['status'],
+                'slug'        => Str::slug($data['name']),
+                'translation' => [
+                    $locale => [
+                        'name' => $data['name'],
+                    ],
+                ],
             ];
 
             Hooks::action('jobic.content.menus.saving', $context);
+
             $result = $id ? TaxonomyService::update($id, $payload) : TaxonomyService::store($payload);
             if (! ($result['ok'] ?? false)) {
-                throw ValidationException::withMessages(['name' => $result['errors'] ?? [$result['message'] ?? __('menus.failed')]]);
+                throw ValidationException::withMessages([
+                    'name' => $result['errors'] ?? [$result['message'] ?? __('menus.failed')],
+                ]);
             }
 
             $record = $this->record((int) $result['data']->id);
-            TaxonomyTypeRegistry::register('menu_'.$record->id)
+            TaxonomyTypeRegistry::register('menu_' . $record->id)
                 ->apply(['back-url' => url('/admin/taxonomies/menu')])
                 ->label($record->getTranslation('name') ?? __('menus.unnamed'))
                 ->hierarchical()
@@ -155,8 +179,8 @@ class Menus
             app(RecordHistory::class)->record('menus', $record->id, $context['user_id'], $context['operation'], $before, $record->toArray());
 
             return Response::make(true, __('menus.saved'), [
-                'version' => RecordVersion::token($record, 'menus'),
-                'id' => $record->id,
+                'version'  => RecordVersion::token($record, 'menus'),
+                'id'       => $record->id,
                 'edit_url' => route('admin.menus.edit', $record->id),
                 'save_url' => route('admin.menus.update', $record->id),
             ], $id ? 200 : 201);
@@ -178,18 +202,28 @@ class Menus
     public function delete(int $id, int $userId): Response
     {
         $record = $this->record($id);
-        $context = ['id' => $id, 'user_id' => $userId, 'operation' => 'delete'];
+        $context = [
+            'id'        => $id,
+            'user_id'   => $userId,
+            'operation' => 'delete',
+        ];
 
         DB::transaction(function () use ($record, $context): void {
             Hooks::action('jobic.content.menus.deleting', $context);
-            Taxonomy::query()->where('type', 'menu_'.$record->id)->get()->each(function (Taxonomy $item): void {
-                TaxonomyService::delete($item->id);
-            });
+
+            Taxonomy::query()
+                ->where('type', 'menu_' . $record->id)
+                ->get()
+                ->each(function (Taxonomy $item): void {
+                    TaxonomyService::delete($item->id);
+                });
+
             TaxonomyService::delete($record->id);
+
             app(RecordHistory::class)->record('menus', $record->id, $context['user_id'], 'delete', $record->toArray(), []);
         });
 
-        TaxonomyTypeRegistry::unregister('menu_'.$id);
+        TaxonomyTypeRegistry::unregister('menu_' . $id);
         Hooks::notify('jobic.content.menus.deleted', $context);
 
         return Response::make(true, __('menus.deleted'));
@@ -198,13 +232,14 @@ class Menus
     /**
      * Apply an all-or-nothing mutation to selected menus.
      *
-     * @param  array<string, mixed>  $input
+     * @param array<string, mixed> $input
      *
      * @throws Throwable
      */
     public function bulk(array $input, int $userId): Response
     {
         $data = dto($input, BulkRequest::class);
+
         $contexts = DB::transaction(function () use ($data, $userId): array {
             $records = Taxonomy::query()
                 ->where('type', 'menu')
@@ -219,16 +254,26 @@ class Menus
 
             $contexts = [];
             foreach ($records as $record) {
-                $context = ['id' => $record->id, 'user_id' => $userId, 'operation' => $data['operation']];
+                $context = [
+                    'id'        => $record->id,
+                    'user_id'   => $userId,
+                    'operation' => $data['operation'],
+                ];
 
                 if ($data['operation'] === 'delete') {
                     Hooks::action('jobic.content.menus.deleting', $context);
-                    Taxonomy::query()->where('type', 'menu_'.$record->id)->get()
+
+                    Taxonomy::query()
+                        ->where('type', 'menu_' . $record->id)
+                        ->get()
                         ->each(fn (Taxonomy $item) => TaxonomyService::delete($item->id));
+
                     TaxonomyService::delete($record->id);
-                    TaxonomyTypeRegistry::unregister('menu_'.$record->id);
+
+                    TaxonomyTypeRegistry::unregister('menu_' . $record->id);
                 } else {
                     Hooks::action('jobic.content.menus.saving', $context);
+
                     TaxonomyService::update($record->id, ['status' => $data['operation'] === 'activate']);
                 }
 
@@ -239,10 +284,7 @@ class Menus
         });
 
         foreach ($contexts as $context) {
-            Hooks::notify(
-                'jobic.content.menus.'.($context['operation'] === 'delete' ? 'deleted' : 'saved'),
-                $context,
-            );
+            Hooks::notify('jobic.content.menus.' . ($context['operation'] === 'delete' ? 'deleted' : 'saved'), $context);
         }
 
         return Response::make(true, __('menus.saved'));

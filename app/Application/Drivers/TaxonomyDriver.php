@@ -18,11 +18,21 @@ class TaxonomyDriver implements ApplicationDriver
 {
     /**
      * Taxonomy owns its registry binding, so this driver has no bindings to add.
+     *
+     * @param Application $app
+     *
+     * @return void
      */
-    public function register(Application $app): void {}
+    public function register(Application $app): void
+    {
+    }
 
     /**
      * Register menu containers and their hierarchical item types.
+     *
+     * @param Application $app
+     *
+     * @return void
      */
     public function boot(Application $app): void
     {
@@ -37,14 +47,19 @@ class TaxonomyDriver implements ApplicationDriver
                 return;
             }
 
-            Taxonomy::query()->where('type', 'menu')->get()->each(function (Taxonomy $menu): void {
-                TaxonomyTypeRegistry::register('menu_'.$menu->id)
-                    ->apply(['back-url' => url('/admin/taxonomies/menu')])
-                    ->label(TaxonomyPresentation::name($menu))
-                    ->hierarchical()
-                    ->baseMedia()
-                    ->changeStatusInList();
-            });
+            Taxonomy::query()
+                ->where('type', 'menu')
+                ->get()
+                ->each(function (Taxonomy $menu): void {
+                    TaxonomyTypeRegistry::register('menu_' . $menu->id)
+                        ->apply([
+                            'back-url' => url('/admin/taxonomies/menu'),
+                        ])
+                        ->label(TaxonomyPresentation::name($menu))
+                        ->hierarchical()
+                        ->baseMedia()
+                        ->changeStatusInList();
+                });
         });
     }
 }
