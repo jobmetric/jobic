@@ -1,5 +1,11 @@
 # CMS extension contract
 
+## File manager
+
+Trusted frontend extensions can listen for `jobic:media-preview-registry` and use `event.detail.registerPreviewDriver`; late-loaded extensions can use `window.JobicMediaPreviews.register`. This event exposes registration functions only, not file data or credentials. See `docs/file-manager.md` for lazy loading, generation checks and teardown. Server-side preview extensions use the package `FilePreviewRegistry`, after the existing authorization/storage/size checks.
+
+`jobic.media.saving` is an action after the command DTO and required-field validation, before package persistence. An exception vetoes the command. `jobic.media.saved` is an isolated notification after successful package persistence; it does not run on conflicts or validation failures. Both receive only `operation`, nullable `id`, and authenticated `user_id`. File bytes, paths, names, request objects and metadata are excluded. Supported operations are upload, folder, rename, paste, compress, extract and destroy. For example, an extension can observe `jobic.media.saved` to invalidate its media browser cache. All endpoints retain authentication, CSRF and the registered `admin.content` permission.
+
 Hooks are trusted PHP extensions registered in a package service provider's `boot()` method. They are not sandboxed plugins and never accept executable code or view paths from HTTP input. Use `App\Facades\Hooks`.
 
 Names use `jobic.<area>.<resource>.<phase>` in lowercase dotted English. Actions express lifecycle (`saving`, `saved`); filters name the value (`sections`); view slots end in `before`, `after`, or `end`. Package-owned names start with the package vendor and slug. Never rename a published hook without a documented deprecation.

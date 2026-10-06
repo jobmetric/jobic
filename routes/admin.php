@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
+use App\Http\Controllers\Media\MediaManagerController;
 use App\Http\Controllers\Menus\MenuController;
 use App\Http\Controllers\Roles\RoleController;
 use App\Http\Controllers\Settings\DynamicSettingController;
@@ -19,6 +20,22 @@ Route::middleware([
     Preferences::class,
 ])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', DashboardController::class)->middleware(EnsurePermission::class.':admin.dashboard')->name('dashboard');
+
+    Route::prefix('media-manager')->name('media-manager.')->controller(MediaManagerController::class)->middleware(EnsurePermission::class.':admin.content')->group(function (): void {
+        Route::get('browse', 'browse')->name('browse');
+        Route::post('upload', 'command')->defaults('operation', 'upload')->middleware('throttle:120,1')->name('upload');
+        Route::post('folders', 'command')->defaults('operation', 'folder')->middleware('throttle:30,1')->name('folders.store');
+        Route::post('paste', 'command')->defaults('operation', 'paste')->name('paste');
+        Route::post('compress', 'command')->defaults('operation', 'compress')->name('compress');
+        Route::post('{media}/extract', 'command')->defaults('operation', 'extract')->whereNumber('media')->name('extract');
+        Route::get('{media}/usages', 'usages')->whereNumber('media')->name('usages');
+        Route::get('{media}/preview', 'preview')->whereNumber('media')->name('preview');
+        Route::get('{media}/content', 'content')->whereNumber('media')->name('content');
+        Route::get('{media}/details', 'details')->whereNumber('media')->name('details');
+        Route::patch('{media}', 'command')->defaults('operation', 'rename')->whereNumber('media')->middleware('throttle:30,1')->name('rename');
+        Route::delete('{media}', 'command')->defaults('operation', 'destroy')->whereNumber('media')->name('delete');
+        Route::delete('/', 'command')->defaults('operation', 'destroy')->middleware('throttle:30,1')->name('destroy');
+    });
 
     Route::prefix('users')->name('users.')->controller(UserController::class)->group(function (): void {
         Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.users.view')->name('index');

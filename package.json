@@ -18,6 +18,7 @@
         "billboard.js": "3.8.1",
         "jquery": "^4.0.0",
         "leaflet": "^1.9.4",
+        "three": "^0.180.0",
         "tiny-slider": "^2.9.4"
     }
 }
