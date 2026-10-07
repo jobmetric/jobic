@@ -1,5 +1,6 @@
 <?php
 
+use App\Application\Drivers\AdminMenuDriver;
 use App\Application\Drivers\CoreServicesDriver;
 use App\Application\Drivers\MenuLinksDriver;
 use App\Application\Drivers\PermissionsDriver;
@@ -14,4 +15,5 @@ return [
     TaxonomyDriver::class,
     MenuLinksDriver::class,
     PermissionsDriver::class,
+    AdminMenuDriver::class,
 ];

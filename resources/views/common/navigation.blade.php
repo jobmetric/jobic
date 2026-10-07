@@ -1,41 +1,7 @@
 @php
-    $adminAccess = app(\App\Support\AdminAccess::class);
-    $adminUser = auth()->user();
-    $canDashboard = $adminAccess->allows($adminUser, 'admin.dashboard');
-    $canUsers = $adminAccess->allowsAny($adminUser, ['admin.users.view', 'admin.users.manage']);
-    $canRoles = $adminAccess->allowsAny($adminUser, ['admin.roles.view', 'admin.roles.manage']);
-    $canMenus = $adminAccess->allowsAny($adminUser, ['admin.menus.view', 'admin.menus.manage']);
-    $activeTaxonomyType = (string) request()->route('type', '');
-    $menuItemsActive = request()->routeIs('admin.taxonomies.*') && preg_match('/^menu_\d+$/', $activeTaxonomyType) === 1;
-    $menuTaxonomies = $canMenus && \Illuminate\Support\Facades\Schema::hasTable(config('taxonomy.tables.taxonomy', 'taxonomies'))
-        ? \JobMetric\Taxonomy\Models\Taxonomy::query()->with('translations')->where('type', 'menu')->orderBy('id')->get()
-        : collect();
-    $menuItemChildren = $menuTaxonomies->map(fn ($menu) => [
-        'label' => \App\Support\TaxonomyPresentation::name($menu),
-        'icon' => 'menu',
-        'url' => route('admin.taxonomies.index', 'menu_'.$menu->id),
-        'active' => $activeTaxonomyType === 'menu_'.$menu->id && request()->routeIs('admin.taxonomies.*'),
-    ])->all();
-    $taxonomyMenuItems = collect(\JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::values())
-        ->reject(fn ($type) => $type === 'menu' || str_starts_with($type, 'menu_'))
-        ->map(fn ($type) => ['label' => \App\Support\TaxonomyPresentation::typeLabel($type, \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($type)->getLabel()), 'icon' => 'list-tree', 'url' => route('admin.taxonomies.index', $type), 'active' => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type])
-        ->values()->all();
-    $canSettings = !empty($settingsSections);
-    $userMenuItems = array_values(array_filter([
-        $canUsers ? ['label' => __('users.title'), 'icon' => 'users', 'url' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')] : null,
-        $canRoles ? ['label' => __('roles.title'), 'icon' => 'shield', 'url' => route('admin.roles.index'), 'active' => request()->routeIs('admin.roles.*')] : null,
-    ]));
-    $contentMenuItems = array_values(array_filter([
-        $canMenus ? ['label' => __('menus.manage'), 'icon' => 'menu', 'url' => route('admin.taxonomies.index', 'menu'), 'active' => request()->routeIs('admin.taxonomies.*') && $activeTaxonomyType === 'menu'] : null,
-        $canMenus ? ['label' => __('menus.items'), 'open' => $menuItemsActive, 'children' => $menuItemChildren] : null,
-        ...$taxonomyMenuItems,
-    ]));
-    $sections = array_filter([
-        'dashboard' => $canDashboard ? ['label' => __('installation.dashboard'), 'icon' => 'activity', 'active' => request()->routeIs('admin.dashboard')] : null,
-        'users' => $userMenuItems ? ['label' => __('users.title'), 'icon' => 'users', 'active' => request()->routeIs('admin.users.*', 'admin.roles.*')] : null,
-        'content' => $contentMenuItems ? ['label' => __('roles.permissions.content'), 'icon' => 'content', 'active' => request()->routeIs('admin.taxonomies.*')] : null,
-        'settings' => $canSettings ? ['label' => __('installation.settings'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')] : null,
-    ]);
+    $adminMenu = app(\App\Support\AdminMenuRegistry::class);
+    $sections = $adminMenu->sections();
+    $canSettings = ! empty($settingsSections);
 @endphp
 <nav class="admin-mobile-navbar" aria-label="Mobile navigation">
     <div class="admin-mobile-navbar__inner">
@@ -46,13 +12,7 @@
 </nav>
 <aside class="admin-sidebar" id="admin-mobile-navigation" aria-label="{{ __('admin.control_main_navigation') }}" data-mobile-navigation>
     <a class="admin-sidebar__brand" href="{{ route('admin.dashboard') }}" aria-label="{{ config('app.name') }}"><x-brand compact /></a>
-    <nav class="admin-sidebar__nav">
-        @foreach ($sections as $id => $section)
-            <button class="admin-sidebar__link {{ $section['active'] ? 'is-active' : '' }}" type="button" aria-label="{{ $section['label'] }}" aria-controls="sidebar-panel-{{ $id }}" aria-expanded="false" data-sidebar-panel-target="{{ $id }}">
-                <x-vuero.icon :name="$section['icon']" size="21" /><span>{{ $section['label'] }}</span>
-            </button>
-        @endforeach
-    </nav>
+    <nav class="admin-sidebar__nav">{!! $adminMenu->render() !!}</nav>
     <div class="admin-sidebar__footer">
         <button class="admin-sidebar__link" type="button" data-panel-open="search" aria-label="{{ __('admin.search') }}"><x-vuero.icon name="search" size="20" /><span>{{ __('admin.search') }}</span></button>
         @if($canSettings)<a class="admin-sidebar__link" href="{{ route('admin.settings.index') }}" aria-label="{{ __('admin.settings') }}"><x-vuero.icon name="settings" size="20" /><span>{{ __('admin.settings') }}</span></a>@endif
@@ -62,46 +22,30 @@
 <aside class="admin-subsidebar" id="admin-subsidebar" aria-label="Secondary navigation" aria-hidden="true" data-subsidebar>
     <header class="admin-subsidebar__header"><h2 data-subsidebar-title>{{ config('app.name') }}</h2><button type="button" data-subsidebar-close aria-label="{{ __('admin.control_close_navigation') }}">&times;</button></header>
     <div class="admin-subsidebar__body">
-        @if($canDashboard)<section id="sidebar-panel-dashboard" data-sidebar-panel="dashboard" hidden>
-            <x-vuero.navigation.menu :items="[['label' => __('installation.dashboard'), 'url' => route('admin.dashboard'), 'active' => request()->routeIs('admin.dashboard')]]" />
-        </section>@endif
-        @if($userMenuItems)<section id="sidebar-panel-users" data-sidebar-panel="users" hidden>
-            <x-vuero.navigation.menu :items="$userMenuItems" />
-        </section>@endif
-        @if($contentMenuItems)<section id="sidebar-panel-content" data-sidebar-panel="content" hidden>
-            <x-vuero.navigation.menu :items="$contentMenuItems" />
-        </section>@endif
-        @if($canSettings)<section id="sidebar-panel-settings" data-sidebar-panel="settings" hidden>
-            @include('common.settings.menu')
-        </section>@endif
+        @foreach($sections as $section)
+            <section id="sidebar-panel-{{ $section['key'] }}" data-sidebar-panel="{{ $section['key'] }}" hidden>
+                {!! $adminMenu->render($section['key']) !!}
+            </section>
+        @endforeach
     </div>
 </aside>
 
 <aside class="admin-sideblock" id="admin-sideblock" aria-label="{{ __('admin.control_navigation') }}" aria-hidden="true" data-sideblock inert>
     <header class="admin-sideblock__header"><a href="{{ route('admin.dashboard') }}" aria-label="Jobic"><x-brand compact /></a><h2>{{ config('app.name') }}</h2></header>
     <nav class="admin-sideblock__nav">
-        @if($canDashboard)<a class="admin-sideblock__action" href="{{ route('admin.dashboard') }}"><x-vuero.icon name="activity" size="19" /><span>{{ __('admin.dashboard') }}</span></a>@endif
-        @if($userMenuItems)
-        <section class="admin-sideblock__group {{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'is-open' : '' }}" data-sideblock-group>
-            <button type="button" aria-expanded="{{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'true' : 'false' }}" aria-controls="sideblock-panel-users" data-sideblock-group-toggle>
-                <span class="admin-sideblock__group-icon"><x-vuero.icon name="users" size="20" /></span>
-                <span>{{ __('users.title') }}</span>
-                <x-vuero.icon name="chevron-right" size="17" />
-            </button>
-            <div class="admin-sideblock__children" id="sideblock-panel-users" @unless(request()->routeIs('admin.users.*', 'admin.roles.*')) hidden @endunless>
-                <x-vuero.navigation.menu :items="$userMenuItems" />
-            </div>
-        </section>
-        @endif
-        @if($contentMenuItems)
-        <section class="admin-sideblock__group {{ request()->routeIs('admin.taxonomies.*') ? 'is-open' : '' }}" data-sideblock-group>
-            <button type="button" aria-expanded="{{ request()->routeIs('admin.taxonomies.*') ? 'true' : 'false' }}" aria-controls="sideblock-panel-content" data-sideblock-group-toggle>
-                <span class="admin-sideblock__group-icon"><x-vuero.icon name="content" size="20" /></span><span>{{ __('roles.permissions.content') }}</span><x-vuero.icon name="chevron-right" size="17" />
-            </button>
-            <div class="admin-sideblock__children" id="sideblock-panel-content" @unless(request()->routeIs('admin.taxonomies.*')) hidden @endunless><x-vuero.navigation.menu :items="$contentMenuItems" /></div>
-        </section>
-        @endif
-        @if($canSettings)@include('common.settings.menu')@endif
+        @foreach($sections as $section)
+            @if($section['sideblock'] === 'link')
+                @php($item = $section['items'][0] ?? null)
+                @if($item)<a class="admin-sideblock__action {{ $item['active'] ? 'is-active' : '' }}" href="{{ $item['url'] ?? '#' }}"><x-vuero.icon :name="$section['icon']" size="19" /><span>{{ $section['label'] }}</span></a>@endif
+            @else
+                <section class="admin-sideblock__group {{ $section['active'] ? 'is-open' : '' }}" data-sideblock-group>
+                    <button type="button" aria-expanded="{{ $section['active'] ? 'true' : 'false' }}" aria-controls="sideblock-panel-{{ $section['key'] }}" data-sideblock-group-toggle>
+                        <span class="admin-sideblock__group-icon"><x-vuero.icon :name="$section['icon']" size="20" /></span><span>{{ $section['label'] }}</span><x-vuero.icon name="chevron-right" size="17" />
+                    </button>
+                    <div class="admin-sideblock__children" id="sideblock-panel-{{ $section['key'] }}" @unless($section['active']) hidden @endunless>{!! $adminMenu->render($section['key']) !!}</div>
+                </section>
+            @endif
+        @endforeach
     </nav>
     <footer class="admin-sideblock__footer">
         <button class="admin-sideblock__action" type="button" data-panel-open="search"><x-vuero.icon name="search" size="19" /><span>{{ __('admin.search') }}</span></button>
