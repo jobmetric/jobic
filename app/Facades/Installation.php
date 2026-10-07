@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Facades;
 
+use App\Services\Installation\Installation as InstallationService;
 use Illuminate\Support\Facades\Facade;
 
-/** @see \App\Services\Installation\Installation */
+/**
+ * Provide a concise API for the resumable installation workflow.
+ *
+ * @see InstallationService
+ */
 class Installation extends Facade
 {
     /**
-     * Get the container binding for the facade.
+     * Resolve the installation service from Laravel's service container.
      *
-     * @return string
+     * @return class-string<InstallationService>
      */
     protected static function getFacadeAccessor(): string
     {
-        return \App\Services\Installation\Installation::class;
+        return InstallationService::class;
     }
 }

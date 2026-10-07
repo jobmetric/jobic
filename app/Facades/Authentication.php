@@ -7,6 +7,8 @@ namespace App\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * Provide a concise API for authenticating users and managing password recovery.
+ *
  * @method static \JobMetric\PackageCore\Output\Response login(array $data, array $context = [])
  * @method static \JobMetric\PackageCore\Output\Response logout(array $context = [])
  * @method static \JobMetric\PackageCore\Output\Response sendResetLink(array $data, array $context = [])
@@ -18,7 +20,7 @@ use Illuminate\Support\Facades\Facade;
 class Authentication extends Facade
 {
     /**
-     * Get the container binding for the facade.
+     * Resolve the authentication service from Laravel's service container.
      *
      * @return string
      */

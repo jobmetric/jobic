@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Drivers;
 
 use App\Contracts\ApplicationDriver;
+use App\Facades\AdminMenu;
 use App\Support\AdminMenuRegistry;
 use App\Support\TaxonomyPresentation;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -38,9 +39,7 @@ final class AdminMenuDriver implements ApplicationDriver
      */
     public function boot(Application $app): void
     {
-        $menu = $app->make(AdminMenuRegistry::class);
-
-        $menu->register('dashboard')
+        AdminMenu::register('dashboard')
             ->label('installation.dashboard')
             ->icon('activity')
             ->permission('admin.dashboard')
@@ -52,7 +51,7 @@ final class AdminMenuDriver implements ApplicationDriver
             ->active('admin.dashboard')
             ->end();
 
-        $menu->register('users')
+        AdminMenu::register('users')
             ->label('users.title')
             ->icon('users')
             ->order(20)
@@ -72,7 +71,7 @@ final class AdminMenuDriver implements ApplicationDriver
             ->active('admin.roles.*')
             ->end();
 
-        $menu->register('content')
+        AdminMenu::register('content')
             ->label('roles.permissions.content')
             ->icon('content')
             ->order(30)
@@ -127,7 +126,7 @@ final class AdminMenuDriver implements ApplicationDriver
                     });
             });
 
-        $menu->register('settings')
+        AdminMenu::register('settings')
             ->label('installation.settings')
             ->icon('settings')
             ->order(40)

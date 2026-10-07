@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
+use App\Facades\AdminMenu;
 use App\Support\AdminMenuRegistry;
 use InvalidArgumentException;
 use Tests\TestCase;
@@ -54,5 +55,21 @@ class AdminMenuRegistryTest extends TestCase
         });
 
         $this->assertSame('Dynamic', $registry->items('extension')[0]['label']);
+    }
+
+    public function test_an_external_provider_can_register_a_section_through_the_facade(): void
+    {
+        AdminMenu::register('external-package')
+            ->label('External package')
+            ->icon('apps')
+            ->item('overview')
+            ->label('Package overview')
+            ->url('/admin/package')
+            ->end();
+
+        $registry = app(AdminMenuRegistry::class);
+
+        $this->assertSame('External package', $registry->sections()[0]['label']);
+        $this->assertSame('Package overview', $registry->items('external-package')[0]['label']);
     }
 }
