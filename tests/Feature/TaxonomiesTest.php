@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Support\RecordVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -106,9 +107,12 @@ class TaxonomiesTest extends TestCase
             $payload['menu_link_driver'] = 'external';
             $payload['menu_link_url'] = 'https://example.com/original';
             $id = $this->postJson(route('admin.taxonomies.store', $type), $payload)->assertCreated()->json('data.id');
-            $this->get(route('admin.taxonomies.edit', [$type, $id]))->assertOk()
+            $editPage = $this->get(route('admin.taxonomies.edit', [$type, $id]))->assertOk()
                 ->assertSee('https://example.com/original')->assertSee('data-media-picker', false);
+            preg_match('/name="_edit_lock" value="([^"]+)"/', $editPage->getContent(), $lockMatch);
+            $payload['_edit_lock'] = $lockMatch[1] ?? '';
             $payload['menu_link_url'] = 'https://example.com/updated';
+            $payload['_version'] = RecordVersion::token(Taxonomy::query()->findOrFail($id), 'taxonomies:' . $type);
             $this->putJson(route('admin.taxonomies.update', [$type, $id]), $payload)->assertOk();
             $this->get(route('admin.taxonomies.edit', [$type, $id]))->assertOk()->assertSee('https://example.com/updated');
             $this->getJson(route('admin.taxonomies.history', [$type, $id]))->assertOk();
@@ -155,6 +159,50 @@ class TaxonomiesTest extends TestCase
         $this->get(route('admin.taxonomies.edit', ['categories', $id]))->assertOk()->assertSee('News')->assertSee(__('taxonomies.history'));
         $this->getJson(route('admin.taxonomies.history', ['categories', $id]))
             ->assertOk()->assertJsonPath('data.entries.0.operation', 'create');
+    }
+
+    public function test_optimistic_edit_lock_blocks_other_users_and_can_be_overridden_with_permission(): void
+    {
+        TaxonomyTypeRegistry::register('locked_items')->label('Locked items')->optimisticLocking();
+        $first = User::factory()->create();
+        $second = User::factory()->create();
+
+        $this->actingAs($first);
+        $id = $this->postJson(route('admin.taxonomies.store', 'locked_items'), [
+            'translation' => ['en' => ['name' => 'Shared']], 'ordering' => 0, 'status' => 1,
+        ])->assertCreated()->json('data.id');
+        $page = $this->get(route('admin.taxonomies.edit', ['locked_items', $id]))->assertOk();
+        preg_match('/name="_edit_lock" value="([^"]+)"/', $page->getContent(), $lockMatch);
+        $this->assertNotEmpty($lockMatch[1] ?? null);
+        $secondId = $this->postJson(route('admin.taxonomies.store', 'locked_items'), [
+            'translation' => ['en' => ['name' => 'Also locked']], 'ordering' => 1, 'status' => 1,
+        ])->assertCreated()->json('data.id');
+        $this->get(route('admin.taxonomies.edit', ['locked_items', $secondId]))->assertOk();
+
+        $this->actingAs($second);
+        $this->get(route('admin.taxonomies.edit', ['locked_items', $id]))
+            ->assertRedirect(route('admin.taxonomies.index', 'locked_items'))
+            ->assertSessionHas('error');
+        $this->getJson(route('admin.taxonomies.data', ['locked_items', 'draw' => 1, 'start' => 0, 'length' => 10]))
+            ->assertOk()->assertJsonPath('data.data.0.edit_lock.owned', false)
+            ->assertJsonPath('data.data.0.edit_lock.user_name', $first->name);
+
+        $unauthorized = User::factory()->create();
+        $this->app['auth']->guard()->setUser($unauthorized);
+        $this->postJson(route('admin.taxonomies.edit-lock.unlock', ['locked_items', $id]))->assertForbidden();
+        $this->postJson(route('admin.taxonomies.edit-locks.unlock', 'locked_items'), ['ids' => [$id, $secondId]])->assertForbidden();
+
+        $this->actingAs($second);
+        $this->postJson(route('admin.taxonomies.edit-locks.unlock', 'locked_items'), ['ids' => [$id, $secondId]])
+            ->assertOk()->assertJsonPath('ok', true)->assertJsonPath('data.released', 2);
+        $this->get(route('admin.taxonomies.edit', ['locked_items', $id]))->assertOk();
+        $this->get(route('admin.taxonomies.edit', ['locked_items', $secondId]))->assertOk();
+
+        $this->putJson(route('admin.taxonomies.update', ['locked_items', $id]), [
+            'translation' => ['en' => ['name' => 'Stale edit']], 'ordering' => 0, 'status' => 1,
+            '_version' => RecordVersion::token(Taxonomy::query()->findOrFail($id), 'taxonomies:locked_items'),
+            '_edit_lock' => $lockMatch[1],
+        ])->assertStatus(423);
     }
 
     public function test_unknown_type_is_rejected(): void
@@ -211,6 +259,15 @@ class TaxonomiesTest extends TestCase
         $response = $this->postJson(route('admin.taxonomies.store', 'menu'), ['translation' => ['en' => ['name' => 'Header']], 'ordering' => 1, 'status' => 1])->assertCreated();
         $id = (int) $response->json('data.id');
 
+        $version = $response->json('data.version');
+        $editPage = $this->get(route('admin.taxonomies.edit', ['menu', $id]))->assertOk();
+        preg_match('/name="_edit_lock" value="([^"]+)"/', $editPage->getContent(), $lockMatch);
+        $menuPayload = ['translation' => ['en' => ['name' => 'Header']], 'ordering' => 1, 'status' => 1, '_version' => $version, '_edit_lock' => $lockMatch[1] ?? ''];
+        $menuPayload['status'] = 0;
+        $this->putJson(route('admin.taxonomies.update', ['menu', $id]), $menuPayload)->assertOk();
+        $menuPayload['status'] = 1;
+        $this->putJson(route('admin.taxonomies.update', ['menu', $id]), $menuPayload)->assertStatus(409);
+
         $this->assertDatabaseHas(config('taxonomy.tables.taxonomy'), ['id' => $id, 'type' => 'menu']);
         $this->assertTrue(TaxonomyTypeRegistry::has('menu_'.$id));
         $this->assertSame(route('admin.taxonomies.index', 'menu'), TaxonomyTypeRegistry::getOption('menu_'.$id, 'back-url'));
@@ -218,7 +275,7 @@ class TaxonomiesTest extends TestCase
         $this->getJson(route('admin.taxonomies.data', ['menu', 'draw' => 1, 'start' => 0, 'length' => 10, 'search' => ['value' => 'Header'], 'order' => [['column' => 1, 'dir' => 'asc']]]))
             ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.name', 'Header');
         $item = $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), ['translation' => ['en' => ['name' => 'Home']], 'ordering' => 1, 'status' => 1])->assertCreated();
-        $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), [
+        $child = $this->postJson(route('admin.taxonomies.store', 'menu_'.$id), [
             'translation' => ['en' => ['name' => 'About']],
             'parent_id' => (int) $item->json('data.id'),
             'ordering' => 2,
@@ -234,7 +291,17 @@ class TaxonomiesTest extends TestCase
             ->assertOk()->assertJsonPath('data.data.0.name', 'Home')->assertJsonPath('data.data.1.name', 'About');
         $this->get(route('admin.taxonomies.index', 'menu_'.$id))->assertOk()
             ->assertSee(route('admin.taxonomies.index', 'menu'), false)
+            ->assertSee(__('menus.manage'))
+            ->assertSee(__('menus.items'))
+            ->assertSee('Header')
+            ->assertSee(route('admin.taxonomies.index', 'menu_'.$id), false)
             ->assertDontSee(__('taxonomies.created_at').'</th>', false);
+
+        $this->deleteJson(route('admin.taxonomies.destroy', ['menu', $id]))->assertOk();
+        $this->assertDatabaseMissing(config('taxonomy.tables.taxonomy'), ['id' => $id]);
+        $this->assertDatabaseMissing(config('taxonomy.tables.taxonomy'), ['id' => $item->json('data.id')]);
+        $this->assertDatabaseMissing(config('taxonomy.tables.taxonomy'), ['id' => $child->json('data.id')]);
+        $this->assertFalse(TaxonomyTypeRegistry::has('menu_' . $id));
     }
 
     public function test_menu_item_link_driver_is_hooked_validated_and_stored_as_metadata(): void
@@ -247,7 +314,7 @@ class TaxonomiesTest extends TestCase
 
         $this->get(route('admin.taxonomies.create', $type))->assertOk()
             ->assertSee(__('taxonomies.link_title'))->assertSee(__('taxonomies.link_driver_external'));
-        $this->get(route('admin.taxonomies.link-fields', [$type, 'external']))->assertOk()->assertSee('menu_link_url', false);
+        $this->get(route('admin.taxonomies.driver-fields', [$type, 'external']))->assertOk()->assertSee('menu_link_url', false);
         $this->postJson(route('admin.taxonomies.store', $type), [
             'translation' => ['en' => ['name' => 'Docs']], 'ordering' => 0, 'status' => 1,
             'menu_link_driver' => 'external', 'menu_link_url' => 'not-a-url',

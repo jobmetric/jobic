@@ -1,8 +1,10 @@
 @extends('common.admin')
 @section('title', $record ? __('taxonomies.edit') : __('taxonomies.create'))
 @section('content')
-<form class="crud-page crud-language-form crud-taxonomy-form" data-taxonomy-form method="POST" enctype="multipart/form-data" action="{{ $record ? route('admin.taxonomies.update', [$type, $record->id]) : route('admin.taxonomies.store', $type) }}">
+<form class="crud-page crud-language-form crud-taxonomy-form" data-taxonomy-form method="POST" enctype="multipart/form-data" action="{{ $record ? route('admin.taxonomies.update', [$type, $record->id]) : route('admin.taxonomies.store', $type) }}" @if($editLock) data-edit-lock-renew-url="{{ $editLockRenewUrl }}" data-edit-lock-release-url="{{ $editLockReleaseUrl }}" @endif>
     @csrf @if($record) @method('PUT') @endif
+    @if($version)<input type="hidden" name="_version" value="{{ $version }}">@endif
+    @if($editLock)<input type="hidden" name="_edit_lock" value="{{ $editLock['token'] }}">@endif
     @cmsHook('jobic.admin.taxonomies.form.page.before', ['type'=>$type, 'id'=>$record?->id])
     <header class="crud-toolbar is-sticky"><div class="crud-taxonomy-title"><h1>{{ $builder->getLabel() }} — {{ $record ? __('taxonomies.edit') : __('taxonomies.create') }}</h1></div><div data-crud-toolbar></div></header>
     <p class="crud-hint">{{ $builder->getDescription() }}</p>

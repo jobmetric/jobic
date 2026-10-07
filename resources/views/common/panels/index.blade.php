@@ -26,4 +26,4 @@
         <button class="circular-menu__item" type="button" data-panel-open="activity" aria-label="{{ __('admin.activity') }}"><x-vuero.icon name="apps" size="20" /></button>
     </div>
 </nav>
-<div class="ui-toast cms-toast" data-flash-message="{{ session('status', '') }}" role="status" aria-live="polite" aria-atomic="true" data-ui-toast hidden><x-vuero.icon name="check" size="17" /><span data-ui-toast-message></span><button type="button" data-toast-dismiss aria-label="{{ __('admin.close') }}"><x-vuero.icon name="x" size="16" /></button></div>
+<div class="ui-toast cms-toast" data-flash-message="{{ session('error', session('status', '')) }}" data-flash-error="{{ session()->has('error') ? 'true' : 'false' }}" role="status" aria-live="polite" aria-atomic="true" data-ui-toast hidden><x-vuero.icon name="check" size="17" /><span data-ui-toast-message></span><button type="button" data-toast-dismiss aria-label="{{ __('admin.close') }}"><x-vuero.icon name="x" size="16" /></button></div>

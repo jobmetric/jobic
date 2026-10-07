@@ -8,7 +8,8 @@ use App\Facades\Hooks;
 use App\Http\Requests\Taxonomies\HistoryRequest;
 use App\Services\History\RecordHistory;
 use App\Support\LocaleCatalog;
-use App\Support\MenuLinks\MenuLinkRegistry;
+use App\Support\LocalizedDate;
+use App\Support\RecordVersion;
 use App\Support\TaxonomyPresentation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -129,6 +130,7 @@ class Taxonomies
                     ->values()
                     ->all() : [],
                 'translations' => $record->getTranslations(),
+                'edit_lock'    => $this->editLockDetails($type, (int) $record->id),
                 'media'        => ($builder->hasBaseMedia() || $builder->getMedia()
                         ->isNotEmpty()) ? $this->mediaPreview($record) : null,
                 'ordering'     => $record->ordering,
@@ -144,12 +146,25 @@ class Taxonomies
         ]);
     }
 
+    /**
+     * Return the registered type definition for one taxonomy type.
+     *
+     * @param string $type
+     *
+     * @return array
+     */
     public function type(string $type): array
     {
         return TaxonomyTypeRegistry::get($type);
     }
 
-    /** @return Collection<int, TaxonomyModel> */
+    /**
+     * Return all records of one taxonomy type, ordered by hierarchy and ordering.
+     *
+     * @param string $type
+     *
+     * @return Collection
+     */
     public function records(string $type): Collection
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
@@ -163,9 +178,12 @@ class Taxonomies
     }
 
     /**
-     * Return hierarchical parent choices, excluding the edited node and its descendants.
+     * Return a flat list of parent options for one taxonomy type, excluding a specific record if provided.
      *
-     * @return array<int, array{id:int, name:string, depth:int}>
+     * @param string $type
+     * @param int|null $exceptId
+     *
+     * @return array
      */
     public function parentOptions(string $type, ?int $exceptId = null): array
     {
@@ -194,6 +212,14 @@ class Taxonomies
         return $options;
     }
 
+    /**
+     * Return one taxonomy record by type and ID, or fail with 404.
+     *
+     * @param string $type
+     * @param int $id
+     *
+     * @return TaxonomyModel
+     */
     public function record(string $type, int $id): TaxonomyModel
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
@@ -226,8 +252,7 @@ class Taxonomies
             'type'        => $type,
             'ordering'    => $data['ordering'],
             'status'      => $data['status'],
-            'translation' => array_filter($data['translation'], fn (array $fields
-            ): bool => collect($fields)->contains(fn ($value) => filled($value))),
+            'translation' => array_filter($data['translation'], fn (array $fields): bool => collect($fields)->contains(fn ($value) => filled($value))),
         ];
 
         if ($builder->hasHierarchical()) {
@@ -307,7 +332,29 @@ class Taxonomies
             'operation' => $id ? 'update' : 'create',
             'user_id'   => (int) auth()->id(),
         ];
-        $savedId = DB::transaction(function () use ($type, $id, $payload, $mediaPayload, $context, $data): int {
+        $savedId = DB::transaction(function () use ($type, $id, $payload, $mediaPayload, $context, $data): int|Response {
+            $current = $id ? TaxonomyModel::query()
+                ->where('type', $type)
+                ->lockForUpdate()
+                ->findOrFail($id) : null;
+
+            if ($current && TaxonomyTypeRegistry::getOption($type, 'optimistic-locking', false)) {
+                $token = (string) ($data['_edit_lock'] ?? '');
+                if (! app(TaxonomyEditLocks::class)->canSave($type, (int) $current->id, (int) auth()->id(), $token)) {
+                    $lock = app(TaxonomyEditLocks::class)->inspect($type, (int) $current->id) ?? [];
+                    $message = $lock && (int) ($lock['user_id'] ?? 0) !== (int) auth()->id() ? __('taxonomies.edit_locked', [
+                        'user' => $lock['user_name'] ?? __('taxonomies.unknown_editor'),
+                        'time' => LocalizedDate::format($lock['locked_at'] ?? null),
+                    ]) : __('taxonomies.edit_lock_lost');
+
+                    return Response::make(false, $message, null, 423);
+                }
+            }
+
+            if ($current && TaxonomyTypeRegistry::getOption($type, 'optimistic-locking', false) && ! hash_equals(RecordVersion::token($current, 'taxonomies:' . $type), (string) ($data['_version'] ?? ''))) {
+                return Response::make(false, __('taxonomies.record_conflict'), null, 409);
+            }
+
             $packageRequest = $id ? (new UpdateTaxonomyRequest)->setType($type)
                 ->setTaxonomyId($id) : new StoreTaxonomyRequest;
 
@@ -317,7 +364,7 @@ class Taxonomies
                 ->rules())
                 ->validate();
 
-            $before = $id ? $this->historySnapshot($this->record($type, $id)) : [];
+            $before = $current ? $this->historySnapshot($current) : [];
 
             Hooks::action('jobic.taxonomies.saving', $context);
 
@@ -370,51 +417,36 @@ class Taxonomies
                     ]);
             }
 
-            if (preg_match('/^menu_\d+$/', $type) === 1 && array_key_exists('menu_link_driver', $data)) {
-                $driverKey = (string) $data['menu_link_driver'];
-
-                $driver = app(MenuLinkRegistry::class)->get($driverKey);
-
-                $linkData = collect(array_keys($driver->rules()))
-                    ->mapWithKeys(fn (string $key): array => [$key => $data[$key] ?? null])
-                    ->all();
-
-                $saved->metas()
-                    ->updateOrCreate([
-                        'key' => 'menu_link_driver',
-                    ], [
-                        'value'   => $driverKey,
-                        'is_json' => false,
-                    ]);
-
-                $saved->metas()
-                    ->updateOrCreate(['key' => 'menu_link_data'], [
-                        'value'   => json_encode($linkData, JSON_UNESCAPED_UNICODE),
-                        'is_json' => true,
-                    ]);
-            }
+            Hooks::action('jobic.taxonomies.persisted', [
+                ...$context,
+                'id'     => $savedId,
+                'record' => $saved,
+                'data'   => $data,
+            ]);
             app(RecordHistory::class)->record('taxonomies:' . $type, $savedId, $context['user_id'], $context['operation'], $before, $this->historySnapshot($saved));
 
             return $savedId;
         });
 
-        if ($type === 'menu') {
-            $saved = $this->record($type, $savedId);
-
-            TaxonomyTypeRegistry::register('menu_' . $savedId)
-                ->apply(['back-url' => url('/admin/taxonomies/menu')])
-                ->label(TaxonomyPresentation::name($saved))
-                ->hierarchical()
-                ->baseMedia()
-                ->changeStatusInList();
+        if ($savedId instanceof Response) {
+            return $savedId;
         }
+
+        $savedRecord = $this->record($type, $savedId);
+        $version = TaxonomyTypeRegistry::getOption($type, 'optimistic-locking', false) ? RecordVersion::token($savedRecord, 'taxonomies:' . $type) : null;
 
         Hooks::notify('jobic.taxonomies.saved', array_replace($context, ['id' => $savedId]));
 
-        return Response::make(true, __('taxonomies.saved'), ['id' => $savedId], $id ? 200 : 201);
+        return Response::make(true, __('taxonomies.saved'), ['id' => $savedId, 'version' => $version], $id ? 200 : 201);
     }
 
     /**
+     * Delete one taxonomy record and its media relations, with history recording.
+     *
+     * @param string $type
+     * @param int $id
+     *
+     * @return Response
      * @throws Throwable
      */
     public function delete(string $type, int $id): Response
@@ -432,21 +464,14 @@ class Taxonomies
         Hooks::action('jobic.taxonomies.deleting', $context);
 
         DB::transaction(function () use ($record, $type, $before, $context): void {
-            if ($type === 'menu') {
-                TaxonomyModel::query()
-                    ->where('type', 'menu_' . $record->id)
-                    ->get()
-                    ->each(fn (TaxonomyModel $item) => Taxonomy::delete($item->id));
-
-                TaxonomyTypeRegistry::unregister('menu_' . $record->id);
-            }
-
+            Hooks::action('jobic.taxonomies.deleting-record', [...$context, 'record' => $record]);
             Taxonomy::delete($record->id);
 
             app(RecordHistory::class)->record('taxonomies:' . $type, $record->id, $context['user_id'], 'delete', $before, []);
         });
 
         Hooks::notify('jobic.taxonomies.deleted', $context);
+        app(TaxonomyEditLocks::class)->forceRelease($type, $id);
 
         return Response::make(true, __('taxonomies.deleted'));
     }
@@ -467,18 +492,51 @@ class Taxonomies
                 $this->delete($type, (int) $id);
             } else {
                 $record = $this->record($type, (int) $id);
-                $this->save($type, [
+                $input = [
                     'translation' => $record->getTranslations(),
                     'ordering'    => $record->ordering,
                     'status'      => $data['operation'] === 'activate',
                     'parent_id'   => $record->parent_id,
-                ], $record->id);
+                    '_version'    => TaxonomyTypeRegistry::getOption($type, 'optimistic-locking', false) ? RecordVersion::token($record, 'taxonomies:' . $type) : null,
+                ];
+                $temporaryLock = false;
+                if (TaxonomyTypeRegistry::getOption($type, 'optimistic-locking', false)) {
+                    $editLocks = app(TaxonomyEditLocks::class);
+                    $hadLock = $editLocks->inspect($type, (int) $record->id) !== null;
+                    $lease = $editLocks->acquire($type, (int) $record->id, auth()->user());
+                    if (! $lease['acquired']) {
+                        return Response::make(false, __('taxonomies.edit_locked', [
+                            'user' => $lease['lock']['user_name'] ?? __('taxonomies.unknown_editor'),
+                            'time' => LocalizedDate::format($lease['lock']['locked_at'] ?? null),
+                        ]), null, 423);
+                    }
+                    $input['_edit_lock'] = $lease['lock']['token'];
+                    $temporaryLock = ! $hadLock;
+                }
+
+                try {
+                    $result = $this->save($type, $input, $record->id);
+                } finally {
+                    if ($temporaryLock) {
+                        app(TaxonomyEditLocks::class)->release($type, (int) $record->id, (int) auth()->id(), $input['_edit_lock']);
+                    }
+                }
+                if (! $result->ok) {
+                    return $result;
+                }
             }
         }
 
         return Response::make(true, __('taxonomies.saved'));
     }
 
+    /**
+     * Return a small preview image URL for one taxonomy record, if available.
+     *
+     * @param TaxonomyModel $record
+     *
+     * @return string|null
+     */
     public function mediaPreview(TaxonomyModel $record): ?string
     {
         if (! Schema::hasTable(config('media.tables.media', 'media')) || ! Schema::hasTable(config('media.tables.media_relation', 'media_relations'))) {
@@ -504,11 +562,38 @@ class Taxonomies
     }
 
     /**
-     * Return media grouped by collection for the taxonomy file-manager controls.
+     * Return the edit lock details for one taxonomy record, if applicable.
+     *
+     * @param string $type
+     * @param int $id
+     *
+     * @return array|null
+     */
+    private function editLockDetails(string $type, int $id): ?array
+    {
+        if (! TaxonomyTypeRegistry::getOption($type, 'optimistic-locking', false)) {
+            return null;
+        }
+
+        $lock = app(TaxonomyEditLocks::class)->inspect($type, $id);
+        if (! $lock) {
+            return null;
+        }
+
+        return [
+            'user_id'   => (int) ($lock['user_id'] ?? 0),
+            'user_name' => (string) ($lock['user_name'] ?? __('taxonomies.unknown_editor')),
+            'locked_at' => LocalizedDate::format($lock['locked_at'] ?? null),
+            'owned'     => (int) ($lock['user_id'] ?? 0) === (int) auth()->id(),
+        ];
+    }
+
+    /**
+     * Return the media selections for one taxonomy record, grouped by collection.
      *
      * @param TaxonomyModel $record
      *
-     * @return array<string, array<int, array<string, mixed>>>
+     * @return array
      */
     public function mediaSelections(TaxonomyModel $record): array
     {
@@ -531,10 +616,13 @@ class Taxonomies
     }
 
     /**
-     * Validate and return a bounded history page for one taxonomy record.
+     * Return the history of changes for one taxonomy record, paginated.
      *
-     * @param array<string, mixed> $input
+     * @param string $type
+     * @param int $id
+     * @param array $input
      *
+     * @return Response
      * @throws Throwable
      */
     public function history(string $type, int $id, array $input): Response
@@ -546,10 +634,14 @@ class Taxonomies
     }
 
     /**
-     * Persist one locale and record its public translation changes.
+     * Save a translation for one taxonomy record in a specific locale, with history recording.
      *
-     * @param array<string, mixed> $values
+     * @param string $type
+     * @param TaxonomyModel $record
+     * @param string $locale
+     * @param array $values
      *
+     * @return Response
      * @throws Throwable
      */
     public function saveTranslation(string $type, TaxonomyModel $record, string $locale, array $values): Response
@@ -576,21 +668,15 @@ class Taxonomies
     }
 
     /**
-     * Build the safe public taxonomy state stored in change history.
+     * Return a snapshot of the record's public state for history comparison.
      *
+     * @param TaxonomyModel $record
      *
-     * @return array<string, mixed>
+     * @return array
      */
     private function historySnapshot(TaxonomyModel $record): array
     {
-        $driver = $record->metas()
-            ->where('key', 'menu_link_driver')
-            ->value('value');
-        $linkData = $record->metas()
-            ->where('key', 'menu_link_data')
-            ->first();
-
-        return [
+        $state = [
             'translation'   => $record->getTranslations(),
             'parent_id'     => $record->parent_id,
             'ordering'      => $record->ordering,
@@ -599,19 +685,20 @@ class Taxonomies
             'media'         => $this->mediaPreview($record),
             'custom_fields' => $this->capabilityValues($record)['custom_fields'],
             'seo'           => $this->capabilityValues($record)['seo'],
-            'link'          => $driver ? [
-                'driver' => $driver,
-                'data'   => $linkData?->is_json ? json_decode((string) $linkData->value, true) : [],
-            ] : null,
         ];
+
+        return Hooks::filter('jobic.taxonomies.history.snapshot', $state, [
+            'type'   => $record->type,
+            'record' => $record,
+        ]);
     }
 
     /**
-     * Read optional public metadata for the generic form.
+     * Return the custom fields and SEO values for one taxonomy record, if applicable.
      *
      * @param TaxonomyModel|null $record
      *
-     * @return array{custom_fields: array, seo: array}
+     * @return array[]
      */
     public function capabilityValues(?TaxonomyModel $record): array
     {

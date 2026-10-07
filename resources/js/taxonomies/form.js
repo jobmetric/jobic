@@ -15,6 +15,37 @@ const guard = guardUnsaved(form, () =>
         confirm: copy().leave,
     }),
 );
+const editLockToken = form.elements.namedItem("_edit_lock");
+if (editLockToken) {
+    let lost = false;
+    const lockPayload = () => {
+        const data = new FormData();
+        data.set("_edit_lock", editLockToken.value);
+        return data;
+    };
+    const renew = async () => {
+        try {
+            await sendSettings(form.dataset.editLockRenewUrl, lockPayload());
+            lost = false;
+        } catch (error) {
+            if (error.status !== 423) return;
+            if (!lost) announce(copy().edit_lock_lost, true);
+            lost = true;
+            form.querySelectorAll('button[type="submit"]').forEach((button) => { button.disabled = true; });
+        }
+    };
+    const timer = window.setInterval(renew, 60_000);
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) renew();
+    });
+    window.addEventListener("pagehide", () => {
+        window.clearInterval(timer);
+        const data = new URLSearchParams();
+        data.set("_token", document.querySelector('meta[name="csrf-token"]')?.content || "");
+        data.set("_edit_lock", editLockToken.value);
+        navigator.sendBeacon(form.dataset.editLockReleaseUrl, data);
+    }, { once: true });
+}
 const historyPanel = bindHistory(form);
 bindMediaManager(form);
 const linkBox = form.querySelector('[data-menu-link]');
@@ -60,6 +91,8 @@ form.addEventListener("submit", async (event) => {
     form.setAttribute("aria-busy", "true");
     try {
         const result = await sendSettings(form.action, new FormData(form));
+        const version = form.elements.namedItem("_version");
+        if (version && result.data.version) version.value = result.data.version;
         guard.saved(snapshot);
         announce(result.message);
         if (intent !== "save") guard.leave();

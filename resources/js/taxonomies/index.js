@@ -21,11 +21,22 @@ function selection() {
 function select(id) {
     if (selected.size >= 100 && !selected.has(id)) return announce(copy().selection_limit, true);
     const row = rows.find((item) => Number(item.id) === id);
-    if (row) selected.set(id, {id, name: row.name});
+    if (row) selected.set(id, {id, name: row.name, editLocked: Boolean(row.edit_lock)});
 }
 function taxonomyPath(names, fallback) {
     const parts = names?.length ? names : [fallback];
     return parts.map((part) => `<span>${escape(part)}</span>`).join(`<i class="role-path-separator">${icon("chevron-right")}</i>`);
+}
+function editLock(row) {
+    const lock = row.edit_lock;
+    if (!lock) return "";
+
+    const tooltip = copy().edit_lock_owner
+        .replace(":user", lock.user_name)
+        .replace(":time", lock.locked_at);
+    const canUnlock = page.canUnlockEditLocks && !lock.owned;
+
+    return `<button type="button" class="crud-icon-button taxonomy-edit-lock" aria-label="${escape(tooltip)}" data-tooltip="${escape(tooltip)}" ${canUnlock ? `data-unlock-taxonomy-lock="${Number(row.id)}"` : 'aria-disabled="true"'}>${icon("lock")}</button>`;
 }
 const columns = [
     {
@@ -78,8 +89,11 @@ page.columns.forEach((key) =>
                                 .join("")}</div></details>`;
                         },
                     }
-                  : key === "name" && page.hierarchical
-                    ? { data: key, render: (value, mode, row) => `<span class="role-path">${taxonomyPath(row.path_names, value)}</span>` }
+                  : key === "name"
+                    ? {
+                          data: key,
+                          render: (value, mode, row) => `<span class="taxonomy-name-cell">${page.hierarchical ? `<span class="role-path">${taxonomyPath(row.path_names, value)}</span>` : `<span>${escape(value ?? "")}</span>`}${editLock(row)}</span>`,
+                      }
                     : { data: key, render: $.fn.dataTable.render.text() },
     ),
 );
@@ -90,13 +104,17 @@ columns.push({
     data: "id",
     orderable: false,
     className: "taxonomy-column-actions",
-    render: (id) => {
+    render: (id, mode, row) => {
         const actions = page.rowActions.map((action) =>
             typeof action === "string" ? { key: action } : action,
         );
         const external = actions.filter(
             (item) => !["edit", "delete"].includes(item.key),
         );
+        const otherEditor = row.edit_lock && !row.edit_lock.owned;
+        const editAction = otherEditor
+            ? ""
+            : `<a class="crud-icon-button" href="${page.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a>`;
         return `<div class="crud-row-actions">${external
             .map((item) => {
                 const url = String(item.url || "#").replace(":id", Number(id));
@@ -104,7 +122,7 @@ columns.push({
             })
             .join(
                 "",
-            )}<a class="crud-icon-button" href="${page.index}/${Number(id)}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more || copy().actions)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-delete="${Number(id)}">${icon("trash")}${escape(copy().delete)}</button></div></details></div>`;
+            )}${editAction}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more || copy().actions)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-delete="${Number(id)}">${icon("trash")}${escape(copy().delete)}</button></div></details></div>`;
     },
 });
 const table = $("#taxonomy-table").DataTable({
@@ -145,7 +163,7 @@ const table = $("#taxonomy-table").DataTable({
             const result = await response.json();
             if (!result.ok) throw new Error();
             rows = result.data.data;
-            rows.forEach((row) => { if (selected.has(Number(row.id))) selected.set(Number(row.id), {id: Number(row.id), name: row.name}); });
+            rows.forEach((row) => { if (selected.has(Number(row.id))) selected.set(Number(row.id), {id: Number(row.id), name: row.name, editLocked: Boolean(row.edit_lock)}); });
             callback(result.data);
             document.querySelector("[data-table-empty]").hidden =
                 result.data.recordsFiltered !== 0;
@@ -205,6 +223,28 @@ document.querySelector("#taxonomy-table").onchange = (e) => {
         selection();
     }
 };
+document.querySelector("#taxonomy-table").addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-unlock-taxonomy-lock]");
+    if (!button) return;
+    const id = Number(button.dataset.unlockTaxonomyLock);
+    const row = rows.find((item) => Number(item.id) === id);
+    if (!row?.edit_lock) return;
+    const confirmed = await showDialog({
+        title: copy().unlock_title,
+        description: copy().unlock_description
+            .replace(":user", row.edit_lock.user_name)
+            .replace(":time", row.edit_lock.locked_at),
+        confirm: copy().unlock_confirm,
+    });
+    if (!confirmed) return;
+    try {
+        const result = await sendSettings(page.editLockUnlockUrl.replace("__ID__", id), new FormData());
+        announce(result.message);
+        table.ajax.reload(null, false);
+    } catch (error) {
+        announce(error.message || copy().failed, true);
+    }
+});
 selectAll.onchange = (e) =>
     document.querySelectorAll("[data-row-id]").forEach((node) => {
         const id = Number(node.dataset.rowId);
@@ -233,9 +273,10 @@ async function mutate(ids, operation) {
         return;
     const data = new FormData();
     ids.forEach((id) => data.append("ids[]", id));
-    data.set("operation", operation);
     try {
-        const result = await sendSettings(page.bulk, data);
+        const url = operation === "unlock" ? page.editLocksUnlockUrl : page.bulk;
+        if (operation !== "unlock") data.set("operation", operation);
+        const result = await sendSettings(url, data);
         selected.clear();
         selection();
         announce(result.message);
@@ -248,6 +289,11 @@ document.querySelector("[data-crud-toolbar]").onclick = (e) => {
     const action = e.target.closest("[data-crud-action]")?.dataset.crudAction;
     if (["activate", "deactivate", "delete"].includes(action))
         mutate([...selected.keys()], action);
+    else if (action === "unlock") {
+        const lockedIds = [...selected.values()].filter((item) => item.editLocked).map((item) => item.id);
+        if (!lockedIds.length) announce(copy().no_locked_selected, true);
+        else mutate(lockedIds, "unlock");
+    }
     else if (action === "help")
         showDialog({
             title: page.label,

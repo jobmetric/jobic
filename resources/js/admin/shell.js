@@ -70,7 +70,7 @@ if (shell) {
     } });
     apply();
     const flash = document.querySelector('[data-flash-message]')?.dataset.flashMessage;
-    if (flash) announce(flash);
+    if (flash) announce(flash, document.querySelector('[data-flash-message]')?.dataset.flashError === 'true');
     requestAnimationFrame(() => document.querySelectorAll('[data-cms-reveal]').forEach((element) => element.classList.add('is-ready')));
 }
 

@@ -115,3 +115,9 @@
     .crud-table-card input[type=checkbox] { appearance:auto; }
     .crud-table-card input[type=checkbox]::before { content:none; }
 }
+.taxonomy-edit-lock { color:#b64156; border-color:rgb(182 65 86 / 28%); }
+.taxonomy-edit-lock:hover { color:#a52f45; background:rgb(182 65 86 / 8%); }
+.taxonomy-edit-lock[aria-disabled="true"] { cursor:help; }
+.taxonomy-name-cell { display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; min-width:0; }
+.taxonomy-name-cell > span:first-child { min-width:0; }
+.taxonomy-name-cell .taxonomy-edit-lock { width:30px; height:30px; }

@@ -2,6 +2,7 @@
 
 return [
     'title' => 'Menus',
+    'manage' => 'Manage menus',
     'intro' => 'Create and arrange your website menus and their items.',
     'total' => 'All menus',
     'recent' => 'Added in 30 days',

@@ -1,4 +1,4 @@
-<section class="crud-capability-card crud-menu-link" data-menu-link data-fields-url="{{ route('admin.taxonomies.link-fields', [$type, '__DRIVER__']) }}">
+<section class="crud-capability-card crud-menu-link" data-menu-link data-fields-url="{{ route('admin.taxonomies.driver-fields', [$type, '__DRIVER__']) }}">
     <header><div><h2>{{ __('taxonomies.link_title') }}</h2><p>{{ __('taxonomies.link_hint') }}</p></div><x-vuero.icon name="link" size="22" /></header>
     <x-form.field variant="crud" :label="__('taxonomies.link_driver')" for="menu-link-driver" error="menu_link_driver">
         <x-form.select id="menu-link-driver" name="menu_link_driver" data-menu-link-driver>

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Taxonomies;
 
+use App\Facades\Hooks;
 use App\Support\LocaleCatalog;
-use App\Support\MenuLinks\MenuLinkRegistry;
 use Illuminate\Container\EntryNotFoundException;
 use Illuminate\Contracts\Container\CircularDependencyException;
 use Illuminate\Foundation\Http\FormRequest;
@@ -41,6 +41,7 @@ class TaxonomyRequest extends FormRequest
         $activeLocale = LocaleCatalog::resolve(app()->getLocale());
 
         $rules = [
+            '_version'    => ['sometimes', 'string', 'size:64'],
             'translation' => [
                 'required',
                 'array:' . implode(',', $locales),
@@ -56,6 +57,11 @@ class TaxonomyRequest extends FormRequest
                 'boolean',
             ],
         ];
+
+        if ($this->route('taxonomy') && TaxonomyTypeRegistry::getOption($type, 'optimistic-locking', false)) {
+            $rules['_version'] = ['required', 'string', 'size:64'];
+            $rules['_edit_lock'] = ['required', 'string', 'uuid'];
+        }
 
         foreach ($locales as $locale) {
             $rules["translation.$locale"] = [$locale === $activeLocale ? 'required' : 'sometimes', 'array'];
@@ -148,22 +154,10 @@ class TaxonomyRequest extends FormRequest
             ];
         }
 
-        if (preg_match('/^menu_\d+$/', $type) === 1) {
-            $registry = app(MenuLinkRegistry::class);
-            $driver = (string) $this->input('menu_link_driver', 'none');
-
-            $rules['menu_link_driver'] = [
-                'sometimes',
-                'string',
-                Rule::in(array_keys($registry->all())),
-            ];
-
-            if ($registry->has($driver)) {
-                $rules = array_replace($rules, $registry->get($driver)
-                    ->rules());
-            }
-        }
-
-        return $rules;
+        return Hooks::filter('jobic.taxonomies.validation.rules', $rules, [
+            'type'    => $type,
+            'request' => $this,
+            'builder' => $builder,
+        ]);
     }
 }

@@ -26,8 +26,6 @@ export default defineConfig({
                 'resources/js/admin/shell.js',
                 'resources/js/languages/index.js',
                 'resources/js/languages/form.js',
-                'resources/js/menus/index.js',
-                'resources/js/menus/form.js',
                 'resources/js/taxonomies/form.js',
                 'resources/js/taxonomies/index.js',
                 'resources/js/users/index.js',

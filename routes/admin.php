@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
 use App\Http\Controllers\Media\MediaManagerController;
-use App\Http\Controllers\Menus\MenuController;
 use App\Http\Controllers\Roles\RoleController;
 use App\Http\Controllers\Settings\DynamicSettingController;
 use App\Http\Controllers\Settings\MailController;
@@ -12,6 +11,7 @@ use App\Http\Controllers\Settings\SystemController;
 use App\Http\Controllers\Taxonomies\TaxonomyController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Middleware\Admin\EnsurePermission;
+use App\Http\Middleware\Admin\EnsureTaxonomyPermission;
 use App\Http\Middleware\Admin\Preferences;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +21,7 @@ Route::middleware([
 ])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', DashboardController::class)->middleware(EnsurePermission::class.':admin.dashboard')->name('dashboard');
 
-    Route::prefix('media-manager')->name('media-manager.')->controller(MediaManagerController::class)->middleware(EnsurePermission::class.':admin.content')->group(function (): void {
+    Route::prefix('media-manager')->name('media-manager.')->controller(MediaManagerController::class)->middleware(EnsurePermission::class.':admin.content,admin.menus.manage')->group(function (): void {
         Route::get('browse', 'browse')->name('browse');
         Route::post('upload', 'command')->defaults('operation', 'upload')->middleware('throttle:120,1')->name('upload');
         Route::post('folders', 'command')->defaults('operation', 'folder')->middleware('throttle:30,1')->name('folders.store');
@@ -61,30 +61,22 @@ Route::middleware([
         Route::put('{role}', 'update')->whereNumber('role')->middleware([EnsurePermission::class.':admin.roles.manage', 'throttle:30,1'])->name('update');
     });
 
-    Route::prefix('menus')->name('menus.')->controller(MenuController::class)->group(function (): void {
-        Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.menus.view')->name('index');
-        Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.menus.view')->name('data');
-        Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.menus.manage')->name('create');
-        Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('store');
-        Route::post('bulk', 'bulk')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('bulk');
-        Route::get('{menu}/edit', 'edit')->whereNumber('menu')->middleware(EnsurePermission::class.':admin.menus.manage')->name('edit');
-        Route::get('{menu}', 'show')->whereNumber('menu')->middleware(EnsurePermission::class.':admin.menus.view')->name('show');
-        Route::put('{menu}', 'update')->whereNumber('menu')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('update');
-        Route::delete('{menu}', 'destroy')->whereNumber('menu')->middleware([EnsurePermission::class.':admin.menus.manage', 'throttle:30,1'])->name('destroy');
-    });
-
     Route::prefix('taxonomies/{type}')->name('taxonomies.')->controller(TaxonomyController::class)->group(function (): void {
-        Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.content')->name('index');
-        Route::get('link-fields/{driver}', 'linkFields')->middleware(EnsurePermission::class.':admin.content')->name('link-fields');
-        Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.content')->name('data');
-        Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.content')->name('create');
-        Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('store');
-        Route::post('bulk', 'bulk')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('bulk');
-        Route::put('{taxonomy}/translations/{locale}', 'translation')->whereNumber('taxonomy')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('translation');
-        Route::get('{taxonomy}/history', 'history')->whereNumber('taxonomy')->middleware(EnsurePermission::class.':admin.content')->name('history');
-        Route::get('{taxonomy}/edit', 'edit')->whereNumber('taxonomy')->middleware(EnsurePermission::class.':admin.content')->name('edit');
-        Route::put('{taxonomy}', 'update')->whereNumber('taxonomy')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('update');
-        Route::delete('{taxonomy}', 'destroy')->whereNumber('taxonomy')->middleware([EnsurePermission::class.':admin.content', 'throttle:30,1'])->name('destroy');
+        Route::get('/', 'index')->middleware(EnsureTaxonomyPermission::class)->name('index');
+        Route::get('drivers/{driver}/fields', 'driverFields')->middleware(EnsureTaxonomyPermission::class)->name('driver-fields');
+        Route::get('data', 'data')->middleware(EnsureTaxonomyPermission::class)->name('data');
+        Route::get('create', 'create')->middleware(EnsureTaxonomyPermission::class)->name('create');
+        Route::post('/', 'store')->middleware([EnsureTaxonomyPermission::class, 'throttle:30,1'])->name('store');
+        Route::post('edit-locks/unlock', 'unlockEditLocks')->middleware([EnsureTaxonomyPermission::class, 'throttle:30,1'])->name('edit-locks.unlock');
+        Route::post('bulk', 'bulk')->middleware([EnsureTaxonomyPermission::class, 'throttle:30,1'])->name('bulk');
+        Route::put('{taxonomy}/translations/{locale}', 'translation')->whereNumber('taxonomy')->middleware([EnsureTaxonomyPermission::class, 'throttle:30,1'])->name('translation');
+        Route::get('{taxonomy}/history', 'history')->whereNumber('taxonomy')->middleware(EnsureTaxonomyPermission::class)->name('history');
+        Route::get('{taxonomy}/edit', 'edit')->whereNumber('taxonomy')->middleware(EnsureTaxonomyPermission::class)->name('edit');
+        Route::post('{taxonomy}/edit-lock/renew', 'renewEditLock')->whereNumber('taxonomy')->middleware(EnsureTaxonomyPermission::class)->name('edit-lock.renew');
+        Route::post('{taxonomy}/edit-lock/release', 'releaseEditLock')->whereNumber('taxonomy')->middleware(EnsureTaxonomyPermission::class)->name('edit-lock.release');
+        Route::post('{taxonomy}/edit-lock/unlock', 'unlockEditLock')->whereNumber('taxonomy')->middleware(EnsureTaxonomyPermission::class)->name('edit-lock.unlock');
+        Route::put('{taxonomy}', 'update')->whereNumber('taxonomy')->middleware([EnsureTaxonomyPermission::class, 'throttle:30,1'])->name('update');
+        Route::delete('{taxonomy}', 'destroy')->whereNumber('taxonomy')->middleware([EnsureTaxonomyPermission::class, 'throttle:30,1'])->name('destroy');
     });
 
     Route::prefix('account')->name('account.')->controller(SettingsController::class)->group(function (): void {
