@@ -54,8 +54,8 @@
       "_form-layout-runtime-df83fa2c.js"
     ]
   },
-  "_history-22ee44b9.js": {
-    "file": "assets/history-22ee44b9.js"
+  "_history-9ffb95cb.js": {
+    "file": "assets/history-9ffb95cb.js"
   },
   "_jquery-83fec99f.js": {
     "file": "assets/jquery-83fec99f.js"
@@ -91,6 +91,28 @@
     "imports": [
       "_jquery-83fec99f.js",
       "_apexcharts-e66b3859.js"
+    ]
+  },
+  "_media-manager-f1182a95.js": {
+    "css": [
+      "assets/media-manager-05134cb2.css"
+    ],
+    "dynamicImports": [
+      "resources/js/media/previews/audio.js",
+      "resources/js/media/previews/video.js",
+      "resources/js/media/previews/pdf.js",
+      "resources/js/media/previews/text.js",
+      "resources/js/media/previews/model.js",
+      "resources/js/media/previews/office.js",
+      "resources/js/media/previews/image.js",
+      "resources/js/media/previews/spreadsheet.js",
+      "resources/js/media/previews/archive.js"
+    ],
+    "file": "assets/media-manager-f1182a95.js",
+    "imports": [
+      "_page-1cca34fb.js",
+      "_preload-helper-cf779743.js",
+      "_toast-18d1caa1.js"
     ]
   },
   "_messaging-app-49c00096.js": {
@@ -176,6 +198,9 @@
   "_toast-18d1caa1.js": {
     "file": "assets/toast-18d1caa1.js"
   },
+  "_unsaved-d11e9639.js": {
+    "file": "assets/unsaved-d11e9639.js"
+  },
   "_user-grids-runtime-6f2179c9.js": {
     "file": "assets/user-grids-runtime-6f2179c9.js",
     "imports": [
@@ -223,6 +248,10 @@
     "file": "assets/maps-1fa85e19.css",
     "src": "maps.css"
   },
+  "media-manager.css": {
+    "file": "assets/media-manager-05134cb2.css",
+    "src": "media-manager.css"
+  },
   "node_modules/leaflet/dist/images/layers-2x.png": {
     "file": "assets/layers-2x-066daca8.png",
     "src": "node_modules/leaflet/dist/images/layers-2x.png"
@@ -234,6 +263,11 @@
   "node_modules/leaflet/dist/images/marker-icon.png": {
     "file": "assets/marker-icon-574c3a5c.png",
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
+  },
+  "resources/css/posts.css": {
+    "file": "assets/posts-df445a43.css",
+    "isEntry": true,
+    "src": "resources/css/posts.css"
   },
   "resources/css/settings/social-networks.css": {
     "file": "assets/social-networks-04ddca00.css",
@@ -278,13 +312,14 @@
     "css": [
       "assets/crud-fields-527bec71.css"
     ],
-    "file": "assets/form-cc910a9a.js",
+    "file": "assets/form-8183bf63.js",
     "imports": [
       "_shared-6464d702.js",
       "_page-1cca34fb.js",
       "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_history-22ee44b9.js"
+      "_unsaved-d11e9639.js",
+      "_history-9ffb95cb.js"
     ],
     "isEntry": true,
     "src": "resources/js/languages/form.js"
@@ -359,18 +394,39 @@
     "isDynamicEntry": true,
     "src": "resources/js/media/previews/video.js"
   },
+  "resources/js/posts/form.js": {
+    "file": "assets/form-1479f70a.js",
+    "imports": [
+      "_toast-18d1caa1.js",
+      "_unsaved-d11e9639.js",
+      "_media-manager-f1182a95.js",
+      "_page-1cca34fb.js",
+      "_preload-helper-cf779743.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/posts/form.js"
+  },
+  "resources/js/posts/index.js": {
+    "file": "assets/index-bc7e29da.js",
+    "imports": [
+      "_page-1cca34fb.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/posts/index.js"
+  },
   "resources/js/roles/form.js": {
     "css": [
       "assets/crud-fields-527bec71.css"
     ],
-    "file": "assets/form-76f5160e.js",
+    "file": "assets/form-1d277d42.js",
     "imports": [
       "_shared-91880169.js",
       "_page-1cca34fb.js",
       "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_history-22ee44b9.js",
-      "_selects-89cba92e.js"
+      "_unsaved-d11e9639.js",
+      "_selects-89cba92e.js",
+      "_history-9ffb95cb.js"
     ],
     "isEntry": true,
     "src": "resources/js/roles/form.js"
@@ -395,33 +451,19 @@
     "isEntry": true,
     "src": "resources/js/settings/social-networks.js"
   },
-  "resources/js/taxonomies/form.css": {
-    "file": "assets/form-05134cb2.css",
-    "src": "resources/js/taxonomies/form.css"
-  },
   "resources/js/taxonomies/form.js": {
     "css": [
-      "assets/form-05134cb2.css",
       "assets/crud-fields-527bec71.css"
     ],
-    "dynamicImports": [
-      "resources/js/media/previews/audio.js",
-      "resources/js/media/previews/video.js",
-      "resources/js/media/previews/pdf.js",
-      "resources/js/media/previews/text.js",
-      "resources/js/media/previews/model.js",
-      "resources/js/media/previews/office.js",
-      "resources/js/media/previews/image.js",
-      "resources/js/media/previews/spreadsheet.js",
-      "resources/js/media/previews/archive.js"
-    ],
-    "file": "assets/form-dbdbc042.js",
+    "file": "assets/form-92655e17.js",
     "imports": [
       "_shared-f7290589.js",
       "_page-1cca34fb.js",
       "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_history-22ee44b9.js",
+      "_unsaved-d11e9639.js",
+      "_history-9ffb95cb.js",
+      "_media-manager-f1182a95.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
@@ -446,13 +488,14 @@
     "css": [
       "assets/crud-fields-527bec71.css"
     ],
-    "file": "assets/form-244595b4.js",
+    "file": "assets/form-baf24763.js",
     "imports": [
       "_shared-5815032e.js",
       "_page-1cca34fb.js",
       "_settings-e225b361.js",
       "_toast-18d1caa1.js",
-      "_history-22ee44b9.js"
+      "_unsaved-d11e9639.js",
+      "_history-9ffb95cb.js"
     ],
     "isEntry": true,
     "src": "resources/js/users/form.js"

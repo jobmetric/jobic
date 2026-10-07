@@ -75,7 +75,25 @@ final class AdminMenuDriver implements ApplicationDriver
             ->label('roles.permissions.content')
             ->icon('content')
             ->order(30)
-            ->active('admin.taxonomies.*')
+            ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*', 'admin.posts.*'))
+            ->item('posts')
+            ->label('posts.title')
+            ->icon('file-text')
+            ->permissions(['admin.posts.view', 'admin.posts.manage'])
+            ->childrenProvider(static function ($items): void {
+                foreach (\JobMetric\Post\Facades\PostTypeRegistry::values() as $type) {
+                    $permission = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption($type, 'view-permission', 'admin.posts.view');
+                    $managePermission = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption($type, 'manage-permission', 'admin.posts.manage');
+                    $items->item($type)
+                        ->label((string) \JobMetric\Post\Facades\PostTypeRegistry::getOption($type, 'label', 'posts.types.'.$type))
+                        ->icon('file-text')
+                        ->route('admin.posts.index', ['type' => $type])
+                        ->permissions(array_values(array_unique([$permission, $managePermission])))
+                        ->active(static fn (): bool => request()->routeIs('admin.posts.*') && request()->route('type') === $type)
+                        ->end();
+                }
+            })
+            ->end()
             ->item('manage-menus')
             ->label('menus.manage')
             ->icon('menu')

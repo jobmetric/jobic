@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5624c437aeb69455896571ea77bff5c6",
+    "content-hash": "628a502b80b48699571ce15884796db0",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2209,6 +2209,72 @@
                 }
             ],
             "time": "2026-09-18T13:10:45+00:00"
+        },
+        {
+            "name": "jobmetric/laravel-post",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../maral/packages/laravel-post",
+                "reference": "6bca068492b1ef5067c7e1cc20b88ef51b19085e"
+            },
+            "require": {
+                "jobmetric/laravel-flow": "^2.4",
+                "jobmetric/laravel-metadata": "^4.0.3",
+                "jobmetric/laravel-package-core": "^1.20",
+                "jobmetric/laravel-taxonomy": "^4.2.3",
+                "jobmetric/laravel-translation": "^4.0.2",
+                "jobmetric/laravel-url": "^3.0.1",
+                "jobmetric/media": "^2.2.1",
+                "laravel/framework": ">=9.19",
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "JobMetric\\Post\\PostServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "JobMetric\\Post\\": "src/",
+                    "JobMetric\\Post\\Factories\\": "database/factories/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Majid Mohammadian",
+                    "email": "majeedmohammadian@gmail.com",
+                    "homepage": "https://www.linkedin.com/in/majidmohammadian/",
+                    "role": "Full Stack Developer"
+                }
+            ],
+            "description": "This is a post management package for Laravel that you can use in your projects.",
+            "homepage": "https://doc.jobmetric.net/package/laravel-post",
+            "keywords": [
+                "jobmetric",
+                "laravel",
+                "management",
+                "package",
+                "post"
+            ],
+            "support": {
+                "issues": "https://github.com/jobmetric/laravel-post/issues",
+                "forum": "https://twitter.com/jobmetric",
+                "source": "https://github.com/jobmetric/laravel-post"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "jobmetric/laravel-setting",

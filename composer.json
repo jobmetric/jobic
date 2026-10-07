@@ -22,6 +22,7 @@
         "jobmetric/laravel-language": "^2.5.1",
         "jobmetric/laravel-metadata": "^4.0.3",
         "jobmetric/laravel-package-core": "^1.38.1",
+        "jobmetric/laravel-post": "1.0.*",
         "jobmetric/laravel-setting": "^2.1.2",
         "jobmetric/laravel-taxonomy": "^4.2.3",
         "jobmetric/laravel-translation": "^4.0.2",
@@ -79,6 +80,13 @@
             "dont-discover": []
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../maral/packages/laravel-post",
+            "options": {"symlink": true, "versions": {"jobmetric/laravel-post": "1.0.0"}}
+        }
+    ],
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",

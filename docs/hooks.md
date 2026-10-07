@@ -53,6 +53,55 @@ For every new feature update this registry in the same change: name, type, value
 
 SEO settings use `jobic.settings.seo.saving` immediately after DTO validation and before `jobmetric/laravel-setting` persists the `jobic_seo` form. An exception from `saving` vetoes persistence. `jobic.settings.seo.saved` runs through the isolated notification dispatcher only after persistence succeeds. Both receive only `section=seo`, the authenticated `user_id`, and validated field names; metadata values and raw request data are excluded. For example, an extension may observe `saved` to invalidate a rendered-head cache, then read authorized values from the setting service.
 
+## Post types and Editor.js
+
+`JobMetric\Post\Facades\PostTypeRegistry` is the shared entry point for post types. Register types from a service provider with its fluent builder; `post` and `page` are supplied by Jobic. For example:
+
+```php
+use JobMetric\Post\Facades\PostTypeRegistry;
+
+PostTypeRegistry::register('event')
+    ->label('events.types.event')
+    ->translationFields(['title', 'excerpt', 'content'])
+    ->allowTaxonomy('event-category', 'categories')
+    ->mediaCollection('base', false, ['image'])
+    ->urlPrefix('events')
+    ->workflow('event');
+```
+
+The Jobic Editor.js registry is available through `App\Facades\Editor`. Tool definitions include a server-side data schema or validator and browser class/configuration. A registered tool is accepted by the content validation rule and exposed to the editor UI:
+
+```php
+use App\Facades\Editor;
+
+Editor::register('callout')
+    ->label('Callout')
+    ->clientClass('Acme.CalloutTool')
+    ->script('https://cdn.example.test/callout.js')
+    ->schema(['message' => 'string'])
+    ->register();
+```
+
+Only trusted extension code should register a script. Editor block JSON is validated again after `jobic.editor.content` filters run.
+
+| Hook / event | Type | Context / value | Timing and errors |
+| --- | --- | --- | --- |
+| `jobic.admin.posts.list.before`, `jobic.admin.posts.list.after` | view | `type` | Around the post list; standard view-slot behavior |
+| `jobic.admin.posts.form.before`, `jobic.admin.posts.form.after` | view | `type`, nullable `post_id` | Around the post form; extensions own validation for their fields |
+| `jobic.editor.render.before`, `jobic.editor.render.after` | view | `type`, `locale`, nullable `post_id` | Around each locale’s Editor.js field |
+| `jobic.editor.config` | filter | Editor config; context `type`, nullable `post_id` | Before rendering the form; return the next config |
+| `jobic.editor.tools` | filter | keyed client-tool map; context `type`, nullable `post_id` | Before Editor.js initialization; return the next map |
+| `jobic.editor.content` | filter | one locale’s Editor.js document; context `type`, `locale`, nullable `post_id` | During save after request validation; result is validated again before persistence |
+| `jobic.posts.saving`, `jobic.posts.deleting` | action | `type`, nullable `post_id`, `user_id`; saving also includes field names | Before persistence; throwing vetoes the operation |
+| `jobic.posts.saved`, `jobic.posts.deleted` | notification | `type`, `post_id`, `user_id`; saved also includes field names | After successful persistence; observer failures are isolated |
+| `jobic.posts.revision.restoring`, `jobic.posts.revision.restored` | action / notification | `type`, `post_id`, `revision_id`, `user_id` | Before restore (vetoable) and after the restore transaction commits |
+| `jobic:editor:before-init` | browser event | `type`, `locale`, `holder`, mutable `tools` and Editor.js `options` | Cancelable before creating an editor instance |
+| `jobic:editor:ready` | browser event | `type`, `locale`, `holder`, Editor.js instance | After the editor is ready |
+| `jobic:editor:before-save` | browser event | `locale`, mutable Editor.js `data` | Cancelable before syncing content to the form |
+| `jobic:editor:after-save` | browser event | `type`, persisted post identifier and response | After a successful save |
+
+Post hooks do not receive request objects, passwords, raw form values, or model instances. The content filter receives only editor block data because it is the explicit content transformation point; its output is validated against the active tool registry. Image blocks also validate their media IDs and synchronize used files into the internal `editor` media collection. Taxonomy attachment additionally checks the registered taxonomy type and the post type’s allowed collection.
+
 ## Guest language preference
 
 `jobic.auth.language.saving` and `jobic.auth.language.saved` are actions receiving only `['locale' => 'en'|'fa']`. Authentication::language validates with dto before emitting `saving`, persists the preference in the current guest session, then calls `notify` for `saved`. Saving exceptions veto persistence; saved observer exceptions are isolated using the existing notify semantics. No email, password, session identifier or raw request is exposed. Example: register a `saved` observer to record aggregate language usage using only `$context['locale']`. These hooks do not change login authentication or authorization.

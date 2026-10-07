@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
 use App\Http\Controllers\Media\MediaManagerController;
+use App\Http\Controllers\Posts\PostController;
 use App\Http\Controllers\Roles\RoleController;
 use App\Http\Controllers\Settings\DynamicSettingController;
 use App\Http\Controllers\Settings\MailController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Settings\SystemController;
 use App\Http\Controllers\Taxonomies\TaxonomyController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Middleware\Admin\EnsurePermission;
+use App\Http\Middleware\Admin\EnsurePostPermission;
 use App\Http\Middleware\Admin\EnsureTaxonomyPermission;
 use App\Http\Middleware\Admin\Preferences;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +23,18 @@ Route::middleware([
 ])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', DashboardController::class)->middleware(EnsurePermission::class.':admin.dashboard')->name('dashboard');
 
-    Route::prefix('media-manager')->name('media-manager.')->controller(MediaManagerController::class)->middleware(EnsurePermission::class.':admin.content,admin.menus.manage')->group(function (): void {
+    Route::prefix('posts/{type}')->name('posts.')->controller(PostController::class)->middleware(EnsurePostPermission::class)->group(function (): void {
+        Route::get('/', 'index')->name('index');
+        Route::get('data', 'data')->name('data');
+        Route::get('create', 'create')->name('create');
+        Route::post('/', 'store')->middleware('throttle:30,1')->name('store');
+        Route::get('{post}/edit', 'edit')->whereNumber('post')->name('edit');
+        Route::put('{post}', 'update')->whereNumber('post')->middleware('throttle:30,1')->name('update');
+        Route::delete('{post}', 'destroy')->whereNumber('post')->middleware('throttle:30,1')->name('destroy');
+        Route::post('{post}/revisions/{revision}/restore', 'restoreRevision')->whereNumber(['post', 'revision'])->middleware('throttle:30,1')->name('revisions.restore');
+    });
+
+    Route::prefix('media-manager')->name('media-manager.')->controller(MediaManagerController::class)->middleware(EnsurePermission::class.':admin.content,admin.menus.manage,admin.posts.manage')->group(function (): void {
         Route::get('browse', 'browse')->name('browse');
         Route::post('upload', 'command')->defaults('operation', 'upload')->middleware('throttle:120,1')->name('upload');
         Route::post('folders', 'command')->defaults('operation', 'folder')->middleware('throttle:30,1')->name('folders.store');
