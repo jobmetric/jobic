@@ -20,6 +20,7 @@
             <li class="subsidebar-menu__item {{ $isOpen ? 'is-open' : '' }} {{ ($item['separator'] ?? false) ? 'has-separator' : '' }}" @if ($children) data-accordion @endif>
                 @if ($children)
                     <button type="button" data-accordion-toggle aria-controls="{{ $submenuId }}" aria-expanded="{{ $isOpen ? 'true' : 'false' }}">
+                        <x-vuero.icon class="subsidebar-menu__item-icon" :name="$item['icon'] ?? 'activity'" size="18" />
                         <span>{{ $item['label'] }}</span>
                         <x-vuero.icon name="chevron-right" size="16" />
                     </button>

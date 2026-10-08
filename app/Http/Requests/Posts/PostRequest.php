@@ -6,6 +6,7 @@ namespace App\Http\Requests\Posts;
 
 use App\Rules\EditorContentRule;
 use App\Support\LocaleCatalog;
+use App\Services\Posts\PostWorkflow;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use JobMetric\Post\Facades\PostTypeRegistry;
@@ -21,7 +22,7 @@ final class PostRequest extends FormRequest
     {
         $type = (string) $this->route('type');
         $builder = PostTypeRegistry::for($type);
-        $media = $this->input('media', []);
+        $media = $this->input('media_selection', $this->input('media', []));
         $media = is_array($media) ? $media : [];
         foreach ($media as $collection => $ids) {
             if (is_string($ids)) {
@@ -30,7 +31,7 @@ final class PostRequest extends FormRequest
             }
         }
 
-        foreach (['base' => [], ...($builder->get()['media-collections'] ?? [])] as $collection => $_) {
+        foreach (($builder->get()['media-collections'] ?? []) as $collection => $_) {
             $media[$collection] ??= [];
         }
 
@@ -53,21 +54,31 @@ final class PostRequest extends FormRequest
         $taxonomyTypes = $postType->taxonomyAllowTypes();
         $locales = LocaleCatalog::codes();
         $translationFields = $builder->get()['translation-fields'] ?? ['title', 'excerpt', 'content'];
+        $record = $this->route('post')
+            ? Post::query()->where('type', $type)->findOrFail((int) $this->route('post'))
+            : new Post;
+        $record->type = $type;
+        $allowedStatuses = app(PostWorkflow::class)->availableStatuses($record)
+            ?: ['publish', 'future', 'draft', 'pending', 'private', 'archive', 'disabled'];
         $rules = [
-            'status' => ['required', 'string', Rule::in(['publish', 'future', 'draft', 'pending', 'private', 'archive', 'disabled'])],
+            'status' => ['required', 'string', Rule::in($allowedStatuses)],
             'published_at' => ['nullable', 'date'],
             'comment_status' => ['sometimes', 'boolean'],
             'password' => ['nullable', 'string', 'max:255'],
             'translation' => ['required', 'array:'.implode(',', $locales)],
             'taxonomies' => ['sometimes', 'array:'.implode(',', array_keys($taxonomyTypes))],
         ];
+        if ($this->route('post')) {
+            $rules['_version'] = ['required', 'string', 'size:64'];
+        }
         if (array_key_exists('url-prefix', $builder->get())) {
             $rules['slug'] = ['required', 'string', 'max:100', new SlugExistRule(Post::class, $type, $this->route('post') ? (int) $this->route('post') : null)];
         }
         foreach ($locales as $locale) {
             $rules["translation.$locale"] = ['sometimes', 'array:'.implode(',', $translationFields)];
             foreach ($translationFields as $field) {
-                $required = $field === 'title' && $locale === LocaleCatalog::resolve(app()->getLocale());
+                $requiredLocale = LocaleCatalog::resolve((string) $this->query('locale', app()->getLocale()));
+                $required = $field === 'title' && $locale === $requiredLocale;
                 $rules["translation.$locale.$field"] = $field === 'content'
                     ? [($required ? 'required' : 'nullable'), new EditorContentRule(app(\App\Support\EditorDriverRegistry::class))]
                     : [($required ? 'required' : 'nullable'), 'string', $field === 'title' ? 'max:255' : 'max:100000'];
@@ -77,7 +88,7 @@ final class PostRequest extends FormRequest
             $rules["taxonomies.$collection"] = ['sometimes', 'array', ...(($definition['multiple'] ?? true) ? [] : ['max:1'])];
             $rules["taxonomies.$collection.*"] = ['integer', 'distinct', Rule::exists(config('taxonomy.tables.taxonomy', 'taxonomies'), 'id')->where('type', $definition['type'])->where('status', true)];
         }
-        $mediaCollections = ['base' => ['multiple' => false], ...($builder->get()['media-collections'] ?? [])];
+        $mediaCollections = (array) ($builder->get()['media-collections'] ?? []);
         $rules['media'] = ['sometimes', 'array:'.implode(',', array_keys($mediaCollections))];
         foreach ($mediaCollections as $collection => $definition) {
             $rules["media.$collection"] = ['sometimes', 'array', ...(($definition['multiple'] ?? false) ? [] : ['max:1'])];

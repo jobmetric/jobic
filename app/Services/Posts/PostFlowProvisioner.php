@@ -25,7 +25,11 @@ final class PostFlowProvisioner
         }
 
         foreach (['post', 'page'] as $type) {
-            if (Flow::withTrashed()->where('subject_type', Post::class)->where('subject_collection', $type)->exists()) { continue; }
+            $existing = Flow::withTrashed()->where('subject_type', Post::class)->where('subject_collection', $type)->first();
+            if ($existing) {
+                if (! $existing->trashed()) $this->extendStarterFlow($existing);
+                continue;
+            }
             DB::transaction(function () use ($type): void {
                 if (Flow::withTrashed()->where('subject_type', Post::class)->where('subject_collection', $type)->lockForUpdate()->exists()) { return; }
                 $flow = Flow::query()->create([
@@ -44,6 +48,56 @@ final class PostFlowProvisioner
                 FlowTransition::query()->create(['flow_id' => $flow->id, 'from' => null, 'to' => $draft->id, 'slug' => 'start']);
                 FlowTransition::query()->create(['flow_id' => $flow->id, 'from' => $draft->id, 'to' => $published->id, 'slug' => 'publish']);
             });
+            $created = Flow::query()->where('subject_type', Post::class)->where('subject_collection', $type)->first();
+            if ($created) $this->extendStarterFlow($created);
         }
+    }
+
+    /**
+     * Add common editorial states only to an untouched two-state starter topology.
+     *
+     * @param Flow $flow
+     *
+     * @return void
+     */
+    private function extendStarterFlow(Flow $flow): void
+    {
+        DB::transaction(function () use ($flow): void {
+            $flow = Flow::query()->lockForUpdate()->findOrFail($flow->id);
+            if (! $flow->is_default || $flow->tasks()->exists()) return;
+            $states = $flow->states()->get()->keyBy('status');
+            if ($states->keys()->sort()->values()->all() !== ['draft', 'publish'] || $flow->transitions()->count() !== 2) return;
+            $draft = $states['draft'];
+            $published = $states['publish'];
+            if (! $flow->transitions()->whereNull('from')->where('to', $draft->id)->exists()
+                || ! $flow->transitions()->where('from', $draft->id)->where('to', $published->id)->exists()) return;
+
+            foreach (['pending', 'future', 'private', 'archive', 'disabled'] as $status) {
+                $state = $flow->states()->create(['type' => FlowStateTypeEnum::STATE(), 'status' => $status]);
+                $state->translate('fa', ['name' => trans('posts.statuses.'.$status, [], 'fa')]);
+                $state->translate('en', ['name' => trans('posts.statuses.'.$status, [], 'en')]);
+                $states[$status] = $state;
+            }
+
+            $paths = [
+                'draft' => ['pending', 'publish', 'future', 'private', 'disabled'],
+                'pending' => ['draft', 'publish', 'disabled'],
+                'publish' => ['draft', 'archive', 'private', 'disabled'],
+                'future' => ['draft', 'publish', 'disabled'],
+                'private' => ['draft', 'publish', 'archive', 'disabled'],
+                'archive' => ['draft', 'publish', 'disabled'],
+                'disabled' => ['draft', 'publish'],
+            ];
+            foreach ($paths as $from => $targets) {
+                foreach ($targets as $to) {
+                    if ($from === 'draft' && $to === 'publish') continue;
+                    $flow->transitions()->create([
+                        'from' => $states[$from]->id,
+                        'to' => $states[$to]->id,
+                        'slug' => $from.'-to-'.$to,
+                    ]);
+                }
+            }
+        });
     }
 }

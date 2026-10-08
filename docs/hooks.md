@@ -87,6 +87,10 @@ Only trusted extension code should register a script. Editor block JSON is valid
 | Hook / event | Type | Context / value | Timing and errors |
 | --- | --- | --- | --- |
 | `jobic.admin.posts.list.before`, `jobic.admin.posts.list.after` | view | `type` | Around the post list; standard view-slot behavior |
+| `jobic.admin.posts.list.page.before`, `jobic.admin.posts.list.page.after` | view | `type` | Around the complete post list page |
+| `jobic.admin.posts.list.toolbar.after`, `jobic.admin.posts.list.filters.before`, `jobic.admin.posts.list.filters.after` | view | `type` | Post-list extension slots matching the taxonomy list layout |
+| `jobic.admin.posts.list.filters.actions.before`, `jobic.admin.posts.list.filters.actions.after`, `jobic.admin.posts.list.filter_fields.before`, `jobic.admin.posts.list.filter_fields.after` | view | `type` | Add list-control actions or fields to the status filter dialog |
+| `jobic.admin.posts.list.table.before`, `jobic.admin.posts.list.table.after` | view | `type` | Around the post table and pagination |
 | `jobic.admin.posts.form.before`, `jobic.admin.posts.form.after` | view | `type`, nullable `post_id` | Around the post form; extensions own validation for their fields |
 | `jobic.editor.render.before`, `jobic.editor.render.after` | view | `type`, `locale`, nullable `post_id` | Around each locale’s Editor.js field |
 | `jobic.editor.config` | filter | Editor config; context `type`, nullable `post_id` | Before rendering the form; return the next config |
@@ -101,6 +105,12 @@ Only trusted extension code should register a script. Editor block JSON is valid
 | `jobic:editor:after-save` | browser event | `type`, persisted post identifier and response | After a successful save |
 
 Post hooks do not receive request objects, passwords, raw form values, or model instances. The content filter receives only editor block data because it is the explicit content transformation point; its output is validated against the active tool registry. Image blocks also validate their media IDs and synchronize used files into the internal `editor` media collection. Taxonomy attachment additionally checks the registered taxonomy type and the post type’s allowed collection.
+
+Bulk post publish, disable, and delete operations reuse the same `jobic.posts.saving` / `jobic.posts.saved` and `jobic.posts.deleting` / `jobic.posts.deleted` lifecycle contracts once per selected post. All vetoable pre-actions run inside one transaction; a veto rolls back the complete selection and emits no post-notifications. Notifications run only after the full transaction commits.
+
+Post forms and the list translation dialog submit an opaque `_version` from the most recent read. Stale writes return HTTP 409 before `jobic.posts.saving` runs. Saving a locale from the list updates only that locale's registered translation fields, revalidates Editor.js JSON after content filters, and records a shared audit entry alongside the post revision. The history endpoint is `GET /admin/posts/{type}/{post}/history?page=1` and uses the same paginated before/after display as taxonomy forms.
+
+The post status field uses the states and translated names of its bound `laravel-flow` definition. Save and bulk status changes execute registered transitions; an unavailable transition fails with a field-level validation error. Starter flows with the original two-state topology and no tasks are extended idempotently with review, scheduling, private, archive, and disabled states. Existing translations are preserved, and flows with customized topology or tasks are left unchanged.
 
 ## Guest language preference
 

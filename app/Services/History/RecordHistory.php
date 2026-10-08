@@ -53,6 +53,16 @@ class RecordHistory
             'slug',
             'media',
         ],
+        'posts' => [
+            'translation',
+            'metadata',
+            'taxonomies',
+            'media',
+            'status',
+            'published_at',
+            'comment_status',
+            'slug',
+        ],
     ];
 
     /**
@@ -72,7 +82,7 @@ class RecordHistory
         array $after
     ): void {
         $changes = [];
-        $fields = str_starts_with($resource, 'taxonomies:') ? self::FIELDS['taxonomies'] : (self::FIELDS[$resource] ?? []);
+        $fields = str_starts_with($resource, 'taxonomies:') ? self::FIELDS['taxonomies'] : (str_starts_with($resource, 'posts:') ? self::FIELDS['posts'] : (self::FIELDS[$resource] ?? []));
 
         foreach ($fields as $field) {
             $old = $before[$field] ?? null;

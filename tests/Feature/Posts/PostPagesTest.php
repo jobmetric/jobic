@@ -6,7 +6,11 @@ namespace Tests\Feature\Posts;
 
 use App\Facades\AdminMenu;
 use App\Models\User;
+use App\Services\Posts\PostFlowProvisioner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use JobMetric\Flow\Models\Flow;
+use JobMetric\Post\Models\Post;
+use JobMetric\Post\Facades\PostTypeRegistry;
 use Tests\TestCase;
 
 class PostPagesTest extends TestCase
@@ -46,5 +50,191 @@ class PostPagesTest extends TestCase
         );
         $this->assertSame('همه نوشته‌ها', $items[0]['children'][0]['label']);
         $this->assertSame(route('admin.posts.index', ['type' => 'post']), $items[0]['children'][0]['url']);
+    }
+
+    public function test_post_bulk_operation_requires_a_valid_bounded_selection(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson(route('admin.posts.bulk', ['type' => 'post']), [
+            'operation' => 'publish-everything',
+            'ids' => [],
+        ])->assertUnprocessable()->assertJsonValidationErrors(['operation', 'ids']);
+    }
+
+    public function test_bulk_publish_runs_the_registered_post_flow(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $post = Post::query()->create(['type' => 'post', 'status' => 'draft']);
+
+        $this->postJson(route('admin.posts.bulk', ['type' => 'post']), [
+            'operation' => 'activate', 'ids' => [$post->id],
+        ])->assertOk();
+
+        $this->assertSame('publish', $post->fresh()->status);
+        $this->assertDatabaseHas(config('workflow.tables.flow_instance', 'flow_instances'), [
+            'instanceable_type' => Post::class,
+            'instanceable_id' => $post->id,
+        ]);
+
+        $this->postJson(route('admin.posts.bulk', ['type' => 'post']), [
+            'operation' => 'deactivate', 'ids' => [$post->id],
+        ])->assertOk();
+        $this->assertSame('disabled', $post->fresh()->status);
+    }
+
+    public function test_starter_workflow_provisioning_is_idempotent(): void
+    {
+        $flow = Flow::query()->where('subject_type', Post::class)->where('subject_collection', 'post')->firstOrFail();
+        $states = $flow->states()->count();
+        $transitions = $flow->transitions()->count();
+        $pending = $flow->states()->where('status', 'pending')->firstOrFail();
+        $pending->translate('en', ['name' => 'Custom review step']);
+
+        app(PostFlowProvisioner::class)->ensureDefaults();
+
+        $this->assertSame($states, $flow->states()->count());
+        $this->assertSame($transitions, $flow->transitions()->count());
+        $this->assertSame('Custom review step', $pending->fresh()->getTranslation('name', 'en'));
+    }
+
+    public function test_post_screens_use_the_shared_taxonomy_crud_structure(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('admin.posts.index', ['type' => 'post']))
+            ->assertOk()
+            ->assertSee('data-select-all', false)
+            ->assertSee('data-show-selected', false)
+            ->assertSee('data-filter-form', false)
+            ->assertSee('data-column="translations"', false)
+            ->assertSee('data-column="media"', false);
+
+        $this->get(route('admin.posts.create', ['type' => 'post']))
+            ->assertOk()
+            ->assertSee('crud-taxonomy-layout has-sidebar', false)
+            ->assertSee('crud-translation-group post-translation-group', false)
+            ->assertSee('data-locale-tab', false)
+            ->assertSee('post-media-field', false)
+            ->assertSee('post-url-field', false);
+    }
+
+    public function test_registered_post_type_without_media_does_not_gain_an_implicit_media_field(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+        PostTypeRegistry::register('note')->label('Notes')->translationFields(['title', 'content']);
+
+        $this->get(route('admin.posts.index', ['type' => 'note']))
+            ->assertOk()->assertDontSee('data-column="media"', false);
+        $this->get(route('admin.posts.create', ['type' => 'note']))
+            ->assertOk()->assertDontSee('post-media-field', false);
+    }
+
+    public function test_registered_post_type_can_reuse_a_named_workflow(): void
+    {
+        PostTypeRegistry::register('article')->translationFields(['title'])->workflow('post');
+        $record = Post::query()->create(['type' => 'article', 'status' => 'draft']);
+
+        $this->assertSame('post', $record->boundFlow()?->subject_collection);
+    }
+
+    public function test_post_form_shows_hierarchical_taxonomy_options_in_tree_order(): void
+    {
+        $this->withoutVite();
+        app()->setLocale('en');
+        $this->actingAs(User::factory()->create());
+
+        $parent = $this->postJson(route('admin.taxonomies.store', ['type' => 'category']), [
+            'translation' => ['en' => ['name' => 'Parent']],
+            'ordering' => 0,
+            'status' => 1,
+        ])->assertCreated()->json('data.id');
+
+        $this->postJson(route('admin.taxonomies.store', ['type' => 'category']), [
+            'translation' => ['en' => ['name' => 'Child']],
+            'parent_id' => $parent,
+            'ordering' => 0,
+            'status' => 1,
+        ])->assertCreated();
+
+        $this->get(route('admin.posts.create', ['type' => 'post']))
+            ->assertOk()
+            ->assertSee('Parent', false)
+            ->assertSee('— Child', false);
+    }
+
+    public function test_list_translation_dialog_reads_and_saves_one_locale_without_changing_another(): void
+    {
+        app()->setLocale('en');
+        $this->actingAs(User::factory()->create());
+        $post = Post::query()->create(['type' => 'post', 'status' => 'draft']);
+        $post->translate('en', ['title' => 'Original title']);
+        $post->translate('fa', ['title' => 'عنوان فارسی']);
+
+        $translation = $this->getJson(route('admin.posts.translation', ['type' => 'post', 'post' => $post->id, 'locale' => 'en']))
+            ->assertOk()->assertJsonPath('data.fields.title', 'Original title');
+
+        $this->putJson(route('admin.posts.translation.update', ['type' => 'post', 'post' => $post->id, 'locale' => 'en']), [
+            '_version' => $translation->json('data.version'),
+            'fields' => ['title' => 'Updated title', 'excerpt' => 'Short summary', 'content' => json_encode(['blocks' => []])],
+        ])->assertOk()->assertJsonPath('data.fields.title', 'Updated title');
+
+        $post->refresh();
+        $this->assertSame('Updated title', $post->getTranslation('title', 'en'));
+        $this->assertSame('عنوان فارسی', $post->getTranslation('title', 'fa'));
+        $this->assertSame('Short summary', $post->getTranslation('excerpt', 'en'));
+        $this->assertTrue($post->revisions()->exists());
+    }
+
+    public function test_post_save_and_shared_history_record_the_changes(): void
+    {
+        app()->setLocale('en');
+        $this->actingAs(User::factory()->create());
+
+        $created = $this->postJson(route('admin.posts.store', ['type' => 'post']).'?locale=en', [
+            'status' => 'draft',
+            'slug' => 'post-history-test',
+            'translation' => ['en' => ['title' => 'Original post', 'content' => json_encode(['blocks' => []])]],
+        ])->assertOk();
+        $id = (int) $created->json('data.id');
+        $this->assertNotNull(Post::query()->findOrFail($id)->boundFlow());
+        $this->assertDatabaseHas(config('workflow.tables.flow_instance', 'flow_instances'), [
+            'instanceable_type' => Post::class,
+            'instanceable_id' => $id,
+        ]);
+
+        $this->getJson(route('admin.posts.data', ['type' => 'post']))
+            ->assertOk()
+            ->assertJsonPath('data.data.0.title', 'Original post');
+
+        $this->putJson(route('admin.posts.update', ['type' => 'post', 'post' => $id]).'?locale=en', [
+            '_version' => $created->json('data.version'),
+            'status' => 'publish',
+            'slug' => 'post-history-test',
+            'translation' => ['en' => ['title' => 'Updated post', 'content' => json_encode(['blocks' => []])]],
+        ])->assertOk();
+
+        $history = $this->getJson(route('admin.posts.history', ['type' => 'post', 'post' => $id]))->assertOk();
+        $this->assertSame('update', $history->json('data.entries.0.operation'));
+        $this->assertArrayHasKey('translation', $history->json('data.entries.0.changes'));
+        $this->assertSame('Updated post', Post::query()->findOrFail($id)->getTranslation('title', 'en'));
+
+        $this->putJson(route('admin.posts.update', ['type' => 'post', 'post' => $id]).'?locale=en', [
+            '_version' => \App\Support\RecordVersion::token(Post::query()->findOrFail($id), 'posts:post'),
+            'status' => 'pending',
+            'slug' => 'post-history-test',
+            'translation' => ['en' => ['title' => 'Blocked transition']],
+        ])->assertUnprocessable()->assertJsonValidationErrors('status');
+        $this->assertSame('publish', Post::query()->findOrFail($id)->status);
+
+        $this->putJson(route('admin.posts.update', ['type' => 'post', 'post' => $id]).'?locale=en', [
+            '_version' => $created->json('data.version'),
+            'status' => 'draft',
+            'slug' => 'post-history-test',
+            'translation' => ['en' => ['title' => 'Stale post']],
+        ])->assertConflict();
+        $this->assertSame('Updated post', Post::query()->findOrFail($id)->getTranslation('title', 'en'));
     }
 }

@@ -27,7 +27,11 @@ Route::middleware([
         Route::get('/', 'index')->name('index');
         Route::get('data', 'data')->name('data');
         Route::get('create', 'create')->name('create');
+        Route::post('bulk', 'bulk')->middleware('throttle:30,1')->name('bulk');
         Route::post('/', 'store')->middleware('throttle:30,1')->name('store');
+        Route::get('{post}/translations/{locale}', 'translation')->whereNumber('post')->name('translation');
+        Route::put('{post}/translations/{locale}', 'saveTranslation')->whereNumber('post')->middleware('throttle:30,1')->name('translation.update');
+        Route::get('{post}/history', 'history')->whereNumber('post')->name('history');
         Route::get('{post}/edit', 'edit')->whereNumber('post')->name('edit');
         Route::put('{post}', 'update')->whereNumber('post')->middleware('throttle:30,1')->name('update');
         Route::delete('{post}', 'destroy')->whereNumber('post')->middleware('throttle:30,1')->name('destroy');

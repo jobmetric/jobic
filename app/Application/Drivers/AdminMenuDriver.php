@@ -87,7 +87,7 @@ final class AdminMenuDriver implements ApplicationDriver
                 $postPermissions = array_values(array_unique([$postView, $postManage]));
 
                 $items->item('all-posts')
-                    ->label('posts.all')
+                    ->label('posts.all_posts')
                     ->icon('file-text')
                     ->route('admin.posts.index', ['type' => 'post'])
                     ->permissions($postPermissions)

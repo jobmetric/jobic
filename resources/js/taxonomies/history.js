@@ -1,7 +1,7 @@
 import { copy } from './shared';
 import { appendHistoryChange, appendHistoryHeading } from '../common/history';
 
-export function bindHistory(form) {
+export function bindHistory(form, wording = copy) {
     const panel = document.querySelector('[data-record-history]');
     if (!panel || panel.hidden) return { refresh() {} };
     const body = panel.querySelector('[data-history-entries]');
@@ -17,7 +17,11 @@ export function bindHistory(form) {
         busy = true;
         panel.setAttribute('aria-busy', 'true');
         try {
-            const response = await fetch(`${form.action}/history?page=${requested}`, {headers: {Accept: 'application/json'}});
+            const historyUrl = new URL(form.action);
+            historyUrl.pathname = `${historyUrl.pathname.replace(/\/$/, '')}/history`;
+            historyUrl.search = '';
+            historyUrl.searchParams.set('page', requested);
+            const response = await fetch(historyUrl, {headers: {Accept: 'application/json'}});
             const result = await response.json();
             if (!response.ok || !result.ok) throw new Error();
             page = result.data.page;
@@ -26,18 +30,19 @@ export function bindHistory(form) {
             result.data.entries.forEach((entry) => {
                 const section = document.createElement('details');
                 section.className = 'crud-help-section';
-                appendHistoryHeading(section, entry, copy());
+                appendHistoryHeading(section, entry, wording());
                 Object.entries(entry.changes).forEach(([field, change]) => {
-                    appendHistoryChange(section, {label: copy()[field] || field, beforeLabel: copy().history_before, afterLabel: copy().history_after, before: value(change.before), after: value(change.after)});
+                    const label = wording()[`history_${field}`] || wording()[field];
+                    appendHistoryChange(section, {label: typeof label === 'string' ? label : field, beforeLabel: wording().history_before, afterLabel: wording().history_after, before: value(change.before), after: value(change.after)});
                 });
                 body.append(section);
             });
-            if (!result.data.entries.length) body.textContent = copy().history_empty;
-            panel.querySelector('[data-history-page]').textContent = copy().page.replace(':page', page).replace(':pages', pages);
+            if (!result.data.entries.length) body.textContent = wording().history_empty;
+            panel.querySelector('[data-history-page]').textContent = wording().page.replace(':page', page).replace(':pages', pages);
             previous.disabled = page <= 1;
             next.disabled = page >= pages;
         } catch {
-            body.textContent = copy().failed;
+            body.textContent = wording().failed;
         } finally {
             busy = false;
             panel.removeAttribute('aria-busy');
