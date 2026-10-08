@@ -88,7 +88,14 @@ final class PostWorkflow
     public function transition(Post $post, string $target, ?Authenticatable $actor, bool $isNew = false): void
     {
         $flow = $post->boundFlow();
-        if (! $flow) return;
+        if (! $flow) {
+            if (Post::typeRegistry()->getOption((string) $post->type, 'workflow') !== null) $this->invalidStatus();
+            if ((string) $post->status !== $target) {
+                $post->status = $target;
+                $post->save();
+            }
+            return;
+        }
 
         if ($isNew) {
             $start = $flow->states()->start()->first();

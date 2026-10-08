@@ -110,7 +110,7 @@ Bulk post publish, disable, and delete operations reuse the same `jobic.posts.sa
 
 Post forms and the list translation dialog submit an opaque `_version` from the most recent read. Stale writes return HTTP 409 before `jobic.posts.saving` runs. Saving a locale from the list updates only that locale's registered translation fields, revalidates Editor.js JSON after content filters, and records a shared audit entry alongside the post revision. The history endpoint is `GET /admin/posts/{type}/{post}/history?page=1` and uses the same paginated before/after display as taxonomy forms.
 
-The post status field uses the states and translated names of its bound `laravel-flow` definition. Save and bulk status changes execute registered transitions; an unavailable transition fails with a field-level validation error. Starter flows with the original two-state topology and no tasks are extended idempotently with review, scheduling, private, archive, and disabled states. Existing translations are preserved, and flows with customized topology or tasks are left unchanged.
+The post status field uses the states and translated names of its bound `laravel-flow` definition. Save and bulk status changes execute registered transitions; an unavailable transition fails with a field-level validation error. Types without a configured workflow can still update status directly. Starter flows with the original two-state topology and no tasks are extended idempotently with review, scheduling, private, archive, and disabled states. Existing translations are preserved, and flows with customized topology or tasks are left unchanged.
 
 ## Guest language preference
 

@@ -130,6 +130,14 @@ class PostPagesTest extends TestCase
             ->assertOk()->assertDontSee('data-column="media"', false);
         $this->get(route('admin.posts.create', ['type' => 'note']))
             ->assertOk()->assertDontSee('post-media-field', false);
+
+        $record = Post::query()->create(['type' => 'note', 'status' => 'draft']);
+        $this->putJson(route('admin.posts.update', ['type' => 'note', 'post' => $record->id]).'?locale=en', [
+            '_version' => \App\Support\RecordVersion::token($record->fresh(), 'posts:note'),
+            'status' => 'publish',
+            'translation' => ['en' => ['title' => 'A small note']],
+        ])->assertOk();
+        $this->assertSame('publish', $record->fresh()->status);
     }
 
     public function test_registered_post_type_can_reuse_a_named_workflow(): void
