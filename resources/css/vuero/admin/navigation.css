@@ -40,8 +40,8 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
 .admin-shell.is-subsidebar-open .admin-subsidebar { opacity: 1; pointer-events: auto; transform: translateX(0); }
 .admin-subsidebar__header { display: flex; height: 60px; padding: 0 15px; align-items: center; border-bottom: 1px solid var(--border); }
 .project-avatar { display: grid; width: 36px; height: 36px; place-items: center; color: #fff; background: var(--primary); border-radius: 50%; font-family: var(--font-alt); font-size: 14px; font-weight: 600; }
-.admin-subsidebar__header h2 { margin-left: 12px; font-family: var(--font-alt); font-size: 13px; font-weight: 600; }
-.admin-subsidebar__header button { width: 34px; height: 34px; margin-left: auto; color: var(--muted); background: transparent; border: 0; cursor: pointer; font-size: 25px; font-weight: 300; }
+.admin-subsidebar__header h2 { margin-inline-start: 12px; font-family: var(--font-alt); font-size: 13px; font-weight: 600; }
+.admin-subsidebar__header button { width: 34px; height: 34px; margin-inline-start: auto; color: var(--muted); background: transparent; border: 0; cursor: pointer; font-size: 25px; font-weight: 300; }
 .admin-subsidebar__body { height: calc(100vh - 60px); padding: 10px 0 28px; overflow-x: hidden; overflow-y: auto; }
 .subsidebar-menu, .subsidebar-menu ul { margin: 0; padding: 0; list-style: none; }
 .subsidebar-menu__item[data-accordion] { min-height: 36px; margin-bottom: 4px; }
@@ -52,13 +52,19 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
 .subsidebar-menu__item > button svg { position: relative; top: 1px; flex: none; color: var(--text-soft); transition: color .3s ease, transform .3s ease; }
 .subsidebar-menu__item.is-open > button { color: var(--text); font-weight: 600; }
 .subsidebar-menu__item.is-open > button > svg:last-child { transform: rotate(90deg); }
+.subsidebar-menu { direction: inherit; }
+.subsidebar-menu__item > button, .subsidebar-menu__link, .subsidebar-menu__children a { direction: inherit; text-align: start; }
+.subsidebar-menu__item > button > span, .subsidebar-menu__link > span, .subsidebar-menu__children a > span { min-width: 0; text-align: start; }
+html[dir='rtl'] .subsidebar-menu__item > button > svg:last-child,
+html[dir='rtl'] .subsidebar-menu__link > svg:last-child { transform: rotate(180deg); }
+html[dir='rtl'] .subsidebar-menu__item.is-open > button > svg:last-child { transform: rotate(90deg); }
 .subsidebar-menu__children { padding: 0 !important; overflow: hidden; }
 .subsidebar-menu__children li { display: flex; min-height: 32px; align-items: center; }
-.subsidebar-menu__children a { display: flex; width: 100%; min-height: 32px; padding: 0 20px 0 32px; align-items: center; gap: 10px; color: var(--muted); font-family: var(--font-sans); font-size: 14px; font-weight: 400; }
+.subsidebar-menu__children a { display: flex; width: 100%; min-height: 32px; padding-block: 0; padding-inline: 32px 20px; align-items: center; gap: 10px; color: var(--muted); font-family: var(--font-sans); font-size: 14px; font-weight: 400; }
 .subsidebar-menu__children a .subsidebar-menu__item-icon { width: 19px; height: 19px; flex: none; opacity: 1; }
 .subsidebar-menu__children a:hover, .subsidebar-menu__children a.is-active, .subsidebar-menu__link:hover, .subsidebar-menu__link.is-active { color: var(--primary); }
 .subsidebar-menu__children a.is-active { font-weight: 500; }
-.subsidebar-menu__tag { min-width: 31px; margin-left: auto; padding: 2px 6px; color: var(--primary); background: transparent; border: 1px solid var(--primary); border-radius: 999px; font-size: .62rem; font-weight: 500; line-height: 1.25; text-align: center; }
+.subsidebar-menu__tag { min-width: 31px; margin-inline-start: auto; padding: 2px 6px; color: var(--primary); background: transparent; border: 1px solid var(--primary); border-radius: 999px; font-size: .62rem; font-weight: 500; line-height: 1.25; text-align: center; }
 .subsidebar-menu__children .subsidebar-menu__child-divider { display: flex; min-height: 32px; align-items: center; pointer-events: none; }
 .subsidebar-menu__child-divider > span { display: block; width: 75%; height: 1px; margin: 0 auto; background: var(--border); }
 .subsidebar-menu__divider { display: block; height: 10px; margin: 5px 20px 10px; border-bottom: 1px solid var(--border); pointer-events: none; }

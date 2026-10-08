@@ -264,7 +264,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/posts.css": {
-    "file": "assets/posts-c8ffa134.css",
+    "file": "assets/posts-a396bb90.css",
     "isEntry": true,
     "src": "resources/css/posts.css"
   },
@@ -274,7 +274,7 @@
     "src": "resources/css/settings/social-networks.css"
   },
   "resources/css/vuero/app.css": {
-    "file": "assets/app-d544e971.css",
+    "file": "assets/app-0878c3bc.css",
     "isEntry": true,
     "src": "resources/css/vuero/app.css"
   },
@@ -401,7 +401,7 @@
     "css": [
       "assets/crud-fields-ca516e87.css"
     ],
-    "file": "assets/form-e31fabe1.js",
+    "file": "assets/form-9824fe64.js",
     "imports": [
       "resources/js/posts/editor-runtime.js",
       "_toast-18d1caa1.js",
@@ -410,6 +410,7 @@
       "_settings-e225b361.js",
       "_shared-15d95684.js",
       "_history-4b3ff1fa.js",
+      "_selects-89cba92e.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
@@ -422,7 +423,7 @@
     "dynamicImports": [
       "resources/js/posts/editor-runtime.js"
     ],
-    "file": "assets/index-4d07cbf6.js",
+    "file": "assets/index-8794961f.js",
     "imports": [
       "_preload-helper-cf779743.js",
       "_page-1cca34fb.js",

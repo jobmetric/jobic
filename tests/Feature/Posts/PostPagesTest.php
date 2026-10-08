@@ -34,6 +34,76 @@ class PostPagesTest extends TestCase
         }
     }
 
+    public function test_empty_post_list_returns_an_empty_data_set_and_page_uses_its_own_create_label(): void
+    {
+        $this->withoutVite();
+        app()->setLocale('en');
+        $this->actingAs(User::factory()->create());
+
+        $this->getJson(route('admin.posts.data', ['type' => 'post']))
+            ->assertOk()->assertJsonPath('data.recordsTotal', 0)->assertJsonPath('data.data', []);
+        $this->get(route('admin.posts.index', ['type' => 'page']))
+            ->assertOk()->assertSee('data-table-empty', false);
+        $this->get(route('admin.posts.create', ['type' => 'page']))
+            ->assertOk()->assertSee('Add page');
+    }
+
+    public function test_taxonomy_filters_limit_posts_to_the_selected_term(): void
+    {
+        app()->setLocale('en');
+        $this->actingAs(User::factory()->create());
+        $termId = (int) $this->postJson(route('admin.taxonomies.store', ['type' => 'category']), [
+            'translation' => ['en' => ['name' => 'News']], 'ordering' => 0, 'status' => 1,
+        ])->assertCreated()->json('data.id');
+        $matching = Post::query()->create(['type' => 'post', 'status' => 'draft']);
+        $matching->translate('en', ['title' => 'Matching']);
+        $matching->attachTaxonomy($termId, 'categories');
+        $other = Post::query()->create(['type' => 'post', 'status' => 'draft']);
+        $other->translate('en', ['title' => 'Other']);
+
+        $this->getJson(route('admin.posts.data', ['type' => 'post']).'?categories='.$termId)
+            ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.id', $matching->id);
+    }
+
+    public function test_external_post_type_can_register_a_custom_list_filter(): void
+    {
+        $this->actingAs(User::factory()->create());
+        PostTypeRegistry::register('note')->translationFields(['title'])->option('filters', ['visibility' => [
+            'label' => 'Visibility', 'options' => ['draft' => 'Draft'],
+            'apply' => static fn ($query, $value) => $query->where('status', $value),
+        ]]);
+        Post::query()->create(['type' => 'note', 'status' => 'draft']);
+        Post::query()->create(['type' => 'note', 'status' => 'publish']);
+
+        $this->getJson(route('admin.posts.data', ['type' => 'note']).'?visibility=draft')
+            ->assertOk()->assertJsonPath('data.recordsFiltered', 1);
+    }
+
+    public function test_post_form_only_contains_the_current_locale_translation_fields(): void
+    {
+        $this->withoutVite();
+        app()->setLocale('en');
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('admin.posts.create', ['type' => 'post']))
+            ->assertOk()->assertSee('translation[en][title]', false)
+            ->assertDontSee('translation[fa][title]', false);
+    }
+
+    public function test_persian_publish_date_is_converted_before_storage(): void
+    {
+        $this->actingAs(User::factory()->create(['ui_preferences' => ['locale' => 'fa']]));
+        $jalali = \JobMetric\MultiCalendar\Factory\CalendarConverterFactory::make('jalali')->fromGregorian(2026, 10, 8, '/');
+
+        $created = $this->postJson(route('admin.posts.store', ['type' => 'post']), [
+            'status' => 'draft', 'slug' => 'persian-publish-date',
+            'published_at' => $jalali.' 13:45',
+            'translation' => ['fa' => ['title' => 'نوشته آزمایشی']],
+        ])->assertOk();
+
+        $this->assertSame('2026-10-08 13:45', Post::query()->findOrFail($created->json('data.id'))->published_at?->format('Y-m-d H:i'));
+    }
+
     public function test_content_menu_has_the_requested_post_and_menu_hierarchy(): void
     {
         app()->setLocale('fa');
@@ -115,9 +185,12 @@ class PostPagesTest extends TestCase
             ->assertOk()
             ->assertSee('crud-taxonomy-layout has-sidebar', false)
             ->assertSee('crud-translation-group post-translation-group', false)
-            ->assertSee('data-locale-tab', false)
+            ->assertSee('post-active-locale', false)
+            ->assertDontSee('data-locale-tab', false)
             ->assertSee('post-media-field', false)
-            ->assertSee('post-url-field', false);
+            ->assertSee('post-url-field', false)
+            ->assertSee('data-taxonomy-quick-add', false)
+            ->assertSee('data-post-datepicker', false);
     }
 
     public function test_registered_post_type_without_media_does_not_gain_an_implicit_media_field(): void

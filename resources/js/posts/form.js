@@ -6,6 +6,7 @@ import { sendSettings } from '../admin/settings';
 import { showDialog } from '../taxonomies/shared';
 import { bindMediaManager } from '../taxonomies/media-manager';
 import { pageData } from '../common/page';
+import { enhanceSelects } from '../common/selects';
 import { bindHistory } from '../taxonomies/history';
 
 const editorConfig = pageData().postEditor;
@@ -14,7 +15,40 @@ Object.defineProperty(editorConfig, 'messages', {get: () => pageData().postEdito
 const form = document.querySelector('[data-post-form]');
 if (form) {
     form.noValidate = true;
+    enhanceSelects(form);
+    const dateInput = form.querySelector('[data-post-datepicker]');
+    if (dateInput && window.jQuery?.fn?.datetimepicker) {
+        window.jQuery(dateInput).datetimepicker({dateFormat: ['jalali', 'persian'].includes(dateInput.dataset.calendar) ? 'yy/mm/dd' : 'yy-mm-dd', timeFormat: 'HH:mm', separator: ' ', showButtonPanel: true, changeMonth: true, changeYear: true});
+    }
     bindMediaManager(form);
+    form.querySelectorAll('[data-taxonomy-quick-add]').forEach(group => {
+        const button = group.querySelector('[data-taxonomy-add]');
+        const input = group.querySelector('input');
+        const error = group.querySelector('[data-taxonomy-add-error]');
+        const add = async () => {
+            const name = input.value.trim();
+            if (!name || button.disabled) return;
+            error.textContent = '';
+            button.disabled = true;
+            try {
+                const payload = new FormData();
+                payload.append('translation[' + group.dataset.locale + '][name]', name);
+                payload.append('ordering', '0');
+                payload.append('status', '1');
+                const response = await fetch(group.dataset.url, {method: 'POST', headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': form.querySelector('[name=_token]').value}, body: payload});
+                const result = await response.json();
+                if (!response.ok || !result.ok || !result.data?.id) throw new Error(Object.values(result.errors || {}).flat()[0] || result.message || editorConfig.messages.failed);
+                const select = form.querySelector('#' + CSS.escape(group.dataset.target));
+                const option = new Option(name, String(result.data.id), true, true);
+                select.add(option);
+                window.jQuery?.(select).trigger('change');
+                input.value = '';
+            } catch (failure) { error.textContent = failure.message || editorConfig.messages.failed; }
+            finally { button.disabled = false; }
+        };
+        button.addEventListener('click', add);
+        input.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); add(); } });
+    });
     const labels = new Proxy({}, {get: (_, key) => pageData().postEditor.formLabels[key]});
     let historyPanel = bindHistory(form, () => pageData().posts);
     const toolbar = form.querySelector('[data-crud-toolbar]');
@@ -75,11 +109,6 @@ if (form) {
         pendingEditors.set(locale, ready);
         return ready;
     };
-    document.querySelectorAll('[data-locale-tab]').forEach(tab => tab.addEventListener('click', () => {
-        document.querySelectorAll('[data-locale-tab]').forEach(item => item.setAttribute('aria-selected', String(item === tab)));
-        document.querySelectorAll('[data-locale-panel]').forEach(panel => { panel.hidden = panel.dataset.localePanel !== tab.dataset.localeTab; });
-        createEditor(form.querySelector(`[data-editor][data-locale="${CSS.escape(tab.dataset.localeTab)}"]`));
-    }));
     createEditor(form.querySelector('[data-locale-panel]:not([hidden]) [data-editor]'));
 
     form.addEventListener('click', async event => {

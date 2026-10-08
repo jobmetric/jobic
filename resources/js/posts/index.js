@@ -125,7 +125,8 @@ if (table?.length && $.fn?.DataTable) {
     create.href = config.createUrl;
     create.className = 'vuero-button is-primary';
     create.dataset.crudAction = 'create';
-    create.innerHTML = `${icon('plus')}${escape(config.labels.create)}`;
+    const createLabel = () => config.type === 'page' ? config.labels.create_page : config.labels.create;
+    create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
     document.querySelector('[data-crud-toolbar]').append(create);
     const operations = document.createElement('details'); operations.className = 'crud-dropdown post-list-operations';
     const operationsToggle = document.createElement('summary'); operationsToggle.className = 'vuero-button'; operationsToggle.innerHTML = `${icon('settings')}${escape(config.labels.actions)}${icon('chevron-down')}`;
@@ -135,7 +136,7 @@ if (table?.length && $.fn?.DataTable) {
     });
     operations.append(operationsToggle, operationsMenu); document.querySelector('[data-crud-toolbar]').append(operations);
     window.addEventListener('cms:presentation-refreshed', () => {
-        create.innerHTML = `${icon('plus')}${escape(config.labels.create)}`;
+        create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
         operationsToggle.innerHTML = `${icon('settings')}${escape(config.labels.actions)}${icon('chevron-down')}`;
         operationsMenu.querySelectorAll('[data-post-action]').forEach((button) => {
             const action = button.dataset.postAction;

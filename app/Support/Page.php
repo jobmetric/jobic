@@ -14,6 +14,14 @@ use UnexpectedValueException;
 class Page
 {
     /**
+     * Add a Domi plugin to the current page without replacing plugins already loaded.
+     */
+    public static function addPlugin(string $plugin): void
+    {
+        Domi::setPlugins($plugin);
+    }
+
+    /**
      * Register public page data in the Domi localization registry.
      *
      * @param string $namespace

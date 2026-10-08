@@ -36,6 +36,7 @@ final class PostController extends Controller
     public function index(string $type): View
     {
         $builder = PostTypeRegistry::for($type);
+        $listFilters = $this->listFilters($builder->get());
         $this->preparePage('list');
         $postType = new Post;
         $postType->type = $type;
@@ -71,6 +72,7 @@ final class PostController extends Controller
             'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
             'hasMedia' => $this->mediaCollections($builder->get()) !== [],
             'statusLabels' => $statusLabels,
+            'listFilters' => $listFilters,
         ]);
     }
 
@@ -83,6 +85,20 @@ final class PostController extends Controller
         $total = (clone $query)->count();
         if ($status !== '') {
             $query->where('status', $status);
+        }
+        foreach ($this->listFilters(PostTypeRegistry::for($type)->get(), false) as $key => $filter) {
+            $value = $request->input($key);
+            if (! is_scalar($value) || (string) $value === '') continue;
+            if ($filter['kind'] === 'taxonomy') {
+                if (! ctype_digit((string) $value) || ! Taxonomy::query()->whereKey((int) $value)->where('type', $filter['type'])->where('status', true)->exists()) {
+                    $query->whereRaw('1 = 0');
+                    continue;
+                }
+                $relationTable = config('taxonomy.tables.taxonomy_relation', 'taxonomy_relations');
+                $query->whereHas('taxonomies', fn ($taxonomy) => $taxonomy->whereKey((int) $value)->where($relationTable.'.collection', $filter['collection']));
+            } elseif (array_key_exists((string) $value, $filter['options']) && is_callable($filter['apply'] ?? null)) {
+                ($filter['apply'])($query, (string) $value, $request);
+            }
         }
         if ($search !== '') {
             $query->whereHas('translations', fn ($translation) => $translation->where('locale', $locale)->where('field', 'title')->where('value', 'like', "%{$search}%"));
@@ -191,7 +207,7 @@ final class PostController extends Controller
         $postType = new Post;
         $postType->type = $type;
         $taxonomyTypes = $postType->taxonomyAllowTypes();
-        $activeLocale = LocaleCatalog::resolve((string) request()->query('locale', app()->getLocale()));
+        $activeLocale = LocaleCatalog::resolve(app()->getLocale());
         $editorConfig = Hooks::filter('jobic.editor.config', [
             'tools' => Hooks::filter('jobic.editor.tools', Editor::clientTools(), ['type' => $type, 'post_id' => $post?->id]),
             'minHeight' => 280,
@@ -230,12 +246,13 @@ final class PostController extends Controller
             'indexUrl' => route('admin.posts.index', ['type' => $type]),
             'createUrl' => route('admin.posts.create', ['type' => $type]),
             'activeLocale' => $activeLocale,
+            'calendar' => LocaleCatalog::calendar($activeLocale),
             'formLabels' => [
                 'save' => trans('posts.save'),
                 'cancel' => trans('posts.cancel'),
                 'save_options' => trans('posts.save_options'),
                 'save_close' => trans('posts.save_close'),
-                'save_new' => trans('posts.save_new'),
+                'save_new' => trans($type === 'page' ? 'posts.save_new_page' : 'posts.save_new'),
                 'unsaved_title' => trans('posts.unsaved_title'),
                 'leave' => trans('posts.leave'),
                 'revision_title' => trans('posts.revisions'),
@@ -256,7 +273,9 @@ final class PostController extends Controller
     {
         Page::prepare('posts');
         if ($screen === 'list') {
-            \JobMetric\Domi\Facades\Domi::setPlugins(['jquery', 'datatable', 'select2']);
+            Page::addPlugin('datatable');
+        } else {
+            Page::addPlugin(in_array(LocaleCatalog::calendar(), ['jalali', 'persian'], true) ? 'datepicker.jalali' : 'datepicker');
         }
         Page::addLocalize('posts', trans('posts'));
         Page::addLocalize('fileManager', trans('file-manager'));
@@ -370,6 +389,26 @@ final class PostController extends Controller
         }
 
         return $options;
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private function listFilters(array $definition, bool $includeOptions = true): array
+    {
+        $locale = LocaleCatalog::resolve(app()->getLocale());
+        $filters = [];
+        foreach ((array) ($definition['taxonomy-types'] ?? []) as $collection => $taxonomy) {
+            if (! ($taxonomy['filter'] ?? false)) continue;
+            $filters[$collection] = [
+                'kind' => 'taxonomy', 'collection' => $collection, 'type' => $taxonomy['type'],
+                'label' => TaxonomyTypeRegistry::for($taxonomy['type'])->getLabel(),
+                'options' => $includeOptions ? collect($this->taxonomyOptions($taxonomy['type'], $locale))->mapWithKeys(fn ($term) => [(string) $term['id'] => $term['name']])->all() : [],
+            ];
+        }
+        foreach ((array) ($definition['filters'] ?? []) as $key => $filter) {
+            if (! is_array($filter) || ! isset($filter['label'], $filter['options']) || ! is_array($filter['options'])) continue;
+            $filters[$key] = ['kind' => 'custom', 'label' => $filter['label'], 'options' => $filter['options'], 'apply' => $filter['apply'] ?? null];
+        }
+        return $filters;
     }
 
     public function store(PostRequest $request, string $type): JsonResponse { return $this->save($request, $type, null); }

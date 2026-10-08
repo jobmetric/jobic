@@ -4,10 +4,11 @@
 .posts-table .posts-column-translations { width: 84px; min-width: 84px; text-align: center; }
 .posts-table .posts-column-actions { width: 120px; }
 .post-editor-form .post-translation-group { margin-block-end: 20px; }
-.post-locale-tabs { display: flex; gap: 8px; margin-block: 16px; overflow-x: auto; }
-.post-locale-tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding-inline: 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--muted); cursor: pointer; white-space: nowrap; }
-.post-locale-tabs button[aria-selected="true"] { border-color: var(--primary); color: var(--primary); }
-.post-locale-tabs img { width: 22px; height: 16px; border-radius: 3px; object-fit: cover; }
+.post-active-locale { display: inline-flex; gap: 8px; align-items: center; margin-block: 8px 16px; padding: 7px 11px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-soft); font-size: 13px; }
+.post-active-locale img { width: 22px; height: 16px; border-radius: 3px; object-fit: cover; }
+.post-taxonomy-quick-add { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 16px; }
+.post-taxonomy-quick-add input { flex: 1 1 130px; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
+.post-taxonomy-quick-add .crud-field-error { flex-basis: 100%; }
 .post-locale-panel { min-width: 0; padding: 0; border: 0; }
 .jobic-editor { min-height: 300px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); direction: inherit; }
 .jobic-editor .codex-editor { max-width: 100%; }

@@ -13,6 +13,8 @@ use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Post\Models\Post;
 use JobMetric\Media\Models\Media;
 use JobMetric\Url\Rules\SlugExistRule;
+use JobMetric\MultiCalendar\Factory\CalendarConverterFactory;
+use JobMetric\MultiCalendar\Helpers\NumberTransliterator;
 
 final class PostRequest extends FormRequest
 {
@@ -42,7 +44,21 @@ final class PostRequest extends FormRequest
             $taxonomies[$collection] ??= [];
         }
 
-        $this->merge(['media' => $media, 'taxonomies' => $taxonomies]);
+        $publishedAt = $this->input('published_at');
+        if (is_string($publishedAt) && trim($publishedAt) !== '') {
+            $publishedAt = NumberTransliterator::trNum(trim($publishedAt), 'en');
+            if (preg_match('/^(\d{4})[-\/]([01]?\d)[-\/]([0-3]?\d)(?:[ T]([0-2]?\d):([0-5]\d))?$/', $publishedAt, $parts)) {
+                try {
+                    $calendar = LocaleCatalog::calendar(LocaleCatalog::resolve(app()->getLocale()));
+                    [$year, $month, $day] = CalendarConverterFactory::make($calendar)->toGregorian((int) $parts[1], (int) $parts[2], (int) $parts[3]);
+                    $publishedAt = sprintf('%04d-%02d-%02d %02d:%02d:00', $year, $month, $day, (int) ($parts[4] ?? 0), (int) ($parts[5] ?? 0));
+                } catch (\Throwable) {
+                    // Leave invalid input to the published_at validation rule.
+                }
+            }
+        }
+
+        $this->merge(['media' => $media, 'taxonomies' => $taxonomies, 'published_at' => $publishedAt]);
     }
 
     public function rules(): array
@@ -52,7 +68,7 @@ final class PostRequest extends FormRequest
         $postType = new Post;
         $postType->type = $type;
         $taxonomyTypes = $postType->taxonomyAllowTypes();
-        $locales = LocaleCatalog::codes();
+        $locale = LocaleCatalog::resolve(app()->getLocale());
         $translationFields = $builder->get()['translation-fields'] ?? ['title', 'excerpt', 'content'];
         $record = $this->route('post')
             ? Post::query()->where('type', $type)->findOrFail((int) $this->route('post'))
@@ -65,7 +81,7 @@ final class PostRequest extends FormRequest
             'published_at' => ['nullable', 'date'],
             'comment_status' => ['sometimes', 'boolean'],
             'password' => ['nullable', 'string', 'max:255'],
-            'translation' => ['required', 'array:'.implode(',', $locales)],
+            'translation' => ['required', 'array:'.$locale],
             'taxonomies' => ['sometimes', 'array:'.implode(',', array_keys($taxonomyTypes))],
         ];
         if ($this->route('post')) {
@@ -74,15 +90,12 @@ final class PostRequest extends FormRequest
         if (array_key_exists('url-prefix', $builder->get())) {
             $rules['slug'] = ['required', 'string', 'max:100', new SlugExistRule(Post::class, $type, $this->route('post') ? (int) $this->route('post') : null)];
         }
-        foreach ($locales as $locale) {
-            $rules["translation.$locale"] = ['sometimes', 'array:'.implode(',', $translationFields)];
-            foreach ($translationFields as $field) {
-                $requiredLocale = LocaleCatalog::resolve((string) $this->query('locale', app()->getLocale()));
-                $required = $field === 'title' && $locale === $requiredLocale;
-                $rules["translation.$locale.$field"] = $field === 'content'
-                    ? [($required ? 'required' : 'nullable'), new EditorContentRule(app(\App\Support\EditorDriverRegistry::class))]
-                    : [($required ? 'required' : 'nullable'), 'string', $field === 'title' ? 'max:255' : 'max:100000'];
-            }
+        $rules["translation.$locale"] = ['required', 'array:'.implode(',', $translationFields)];
+        foreach ($translationFields as $field) {
+            $required = $field === 'title';
+            $rules["translation.$locale.$field"] = $field === 'content'
+                ? [($required ? 'required' : 'nullable'), new EditorContentRule(app(\App\Support\EditorDriverRegistry::class))]
+                : [($required ? 'required' : 'nullable'), 'string', $field === 'title' ? 'max:255' : 'max:100000'];
         }
         foreach ($taxonomyTypes as $collection => $definition) {
             $rules["taxonomies.$collection"] = ['sometimes', 'array', ...(($definition['multiple'] ?? true) ? [] : ['max:1'])];
