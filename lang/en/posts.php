@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Posts', 'create' => 'Add post', 'edit' => 'Edit post', 'list_intro' => 'Manage content in this section.',
+    'title' => 'Posts', 'all' => 'All posts', 'create' => 'Add post', 'edit' => 'Edit post', 'list_intro' => 'Manage content in this section.',
     'form_intro' => 'Enter post details and provide content for each language.', 'title_field' => 'Title', 'excerpt' => 'Excerpt', 'content' => 'Content',
     'status' => 'Status', 'published_at' => 'Publish date', 'updated_at' => 'Last updated', 'actions' => 'Actions', 'save' => 'Save', 'cancel' => 'Cancel',
     'search' => 'Search posts', 'empty' => 'No posts found.', 'failed' => 'Could not load posts.', 'saved' => 'Post saved.', 'deleted' => 'Post deleted.', 'delete' => 'Delete', 'confirm_delete' => 'Delete this post?',

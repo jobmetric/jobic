@@ -13,15 +13,36 @@
     @if($customFields !== [])
         <section class="post-custom-fields"><h2>{{ __('posts.custom_fields') }}</h2>
         @foreach($customFields as $key => $definition)
-            <x-form.field variant="crud" :label="__($definition['label'] ?? $key)" :for="'post-meta-'.$key" :error="'metadata.'.$key"><x-form.input :id="'post-meta-'.$key" :name="'metadata['.$key.']'" :type="($definition['type'] ?? 'text') === 'number' ? 'number' : 'text'" :value="old('metadata.'.$key, $metadata[$key] ?? '')" /><span data-error-for="metadata.{{ $key }}" class="crud-field-error"></span></x-form.field>
+            @php
+                $metaId = 'post-meta-'.$key;
+                $metaName = 'metadata['.$key.']';
+                $metaLabel = __($definition['label'] ?? $key);
+                $metaError = 'metadata.'.$key;
+                $metaType = ($definition['type'] ?? 'text') === 'number' ? 'number' : 'text';
+                $metaValue = old('metadata.'.$key, $metadata[$key] ?? '');
+            @endphp
+            <x-form.field variant="crud" :label="$metaLabel" :for="$metaId" :error="$metaError"><x-form.input :id="$metaId" :name="$metaName" :type="$metaType" :value="$metaValue" /><span data-error-for="metadata.{{ $key }}" class="crud-field-error"></span></x-form.field>
         @endforeach
         </section>
     @endif
     @foreach($taxonomyOptions as $collection => $options)
-        <x-form.field variant="crud" :label="$taxonomyLabels[$collection] ?? trans('posts.'.\Illuminate\Support\Str::singular($collection))" :for="'post-taxonomy-'.$collection" :error="'taxonomies.'.$collection"><x-form.select :id="'post-taxonomy-'.$collection" :name="'taxonomies['.$collection.'][]'" :multiple="(bool) ($taxonomyTypes[$collection]['multiple'] ?? true)">@foreach($options as $option)<option value="{{ $option['id'] }}" @selected(in_array($option['id'], old('taxonomies.'.$collection, $selectedTaxonomies[$collection] ?? [])))>{{ $option['name'] }}</option>@endforeach</x-form.select></x-form.field>
+        @php
+            $taxonomyId = 'post-taxonomy-'.$collection;
+            $taxonomyName = 'taxonomies['.$collection.'][]';
+            $taxonomyLabel = $taxonomyLabels[$collection] ?? trans('posts.'.\Illuminate\Support\Str::singular($collection));
+            $taxonomyError = 'taxonomies.'.$collection;
+            $taxonomyMultiple = (bool) ($taxonomyTypes[$collection]['multiple'] ?? true);
+        @endphp
+        <x-form.field variant="crud" :label="$taxonomyLabel" :for="$taxonomyId" :error="$taxonomyError"><x-form.select :id="$taxonomyId" :name="$taxonomyName" :multiple="$taxonomyMultiple">@foreach($options as $option)<option value="{{ $option['id'] }}" @selected(in_array($option['id'], old('taxonomies.'.$collection, $selectedTaxonomies[$collection] ?? [])))>{{ $option['name'] }}</option>@endforeach</x-form.select></x-form.field>
     @endforeach
     @foreach($mediaCollections as $collection => $definition)
-        @php($mediaGroups = collect($definition['mimeTypes'] ?? ['image', 'document', 'audio', 'video'])->map(fn ($mimeType) => \Illuminate\Support\Str::before($mimeType, '/'))->unique()->values()->all())
+        @php
+            $mediaGroups = collect($definition['mimeTypes'] ?? ['image', 'document', 'audio', 'video'])
+                ->map(fn ($mimeType) => \Illuminate\Support\Str::before($mimeType, '/'))
+                ->unique()
+                ->values()
+                ->all();
+        @endphp
         <section class="post-media-field" data-media-picker data-multiple="{{ ($definition['multiple'] ?? false) ? 'true' : 'false' }}" data-groups="{{ e(json_encode($mediaGroups)) }}">
             <h2>{{ __('posts.media.'.$collection) }}</h2>
             <div class="taxonomy-media-picker__selected" data-media-selected>
@@ -36,18 +57,37 @@
     <section class="post-translations" aria-label="{{ __('posts.translations') }}">
         <nav class="post-locale-tabs" role="tablist">@foreach($locales as $locale => $language)<button type="button" role="tab" data-locale-tab="{{ $locale }}" aria-selected="{{ $locale === \App\Support\LocaleCatalog::resolve(app()->getLocale()) ? 'true' : 'false' }}">{{ $language['name'] ?? $locale }}</button>@endforeach</nav>
         @foreach($locales as $locale => $language)
-            @php($translation = $record?->getTranslations($locale) ?? [])
+            @php
+                $translation = $record?->getTranslations($locale) ?? [];
+            @endphp
             <fieldset class="post-locale-panel" data-locale-panel="{{ $locale }}" @if($locale !== \App\Support\LocaleCatalog::resolve(app()->getLocale())) hidden @endif>
                 @foreach($translationFields as $field)
-                    @php($fieldValue = old('translation.'.$locale.'.'.$field, $translation[$field] ?? ''))
+                    @php
+                        $fieldValue = old('translation.'.$locale.'.'.$field, $translation[$field] ?? '');
+                        $fieldError = 'translation.'.$locale.'.'.$field;
+                        $fieldId = 'post-'.$field.'-'.$locale;
+                        $fieldName = 'translation['.$locale.']['.$field.']';
+                        $fieldLabel = $field === 'title' ? __('posts.title_field') : __('posts.fields.'.$field);
+                        $fieldRequired = $field === 'title' && $locale === \App\Support\LocaleCatalog::resolve(app()->getLocale());
+                    @endphp
                     @if($field === 'content')
                         @cmsHook('jobic.editor.render.before', ['type' => $type, 'locale' => $locale, 'post_id' => $record?->id])
-                        <x-form.field variant="crud" :label="__('posts.content')" :for="'post-editor-'.$locale" :error="'translation.'.$locale.'.content"><div class="jobic-editor" id="post-editor-{{ $locale }}" data-editor data-locale="{{ $locale }}" data-content="{{ e($fieldValue) }}"></div><input type="hidden" name="translation[{{ $locale }}][content]" data-editor-content="{{ $locale }}" value="{{ $fieldValue }}"><span data-error-for="translation.{{ $locale }}.content" class="crud-field-error"></span></x-form.field>
+                        @php
+                            $fieldId = 'post-editor-'.$locale;
+                            $fieldName = 'translation['.$locale.'][content]';
+                            $fieldLabel = __('posts.content');
+                        @endphp
+                        <x-form.field variant="crud" :label="$fieldLabel" :for="$fieldId" :error="$fieldError"><div class="jobic-editor" id="{{ $fieldId }}" data-editor data-locale="{{ $locale }}" data-content="{{ e($fieldValue) }}"></div><input type="hidden" name="{{ $fieldName }}" data-editor-content="{{ $locale }}" value="{{ $fieldValue }}"><span data-error-for="{{ $fieldError }}" class="crud-field-error"></span></x-form.field>
                         @cmsHook('jobic.editor.render.after', ['type' => $type, 'locale' => $locale, 'post_id' => $record?->id])
                     @elseif($field === 'excerpt')
-                        <x-form.field variant="crud" :label="__('posts.excerpt')" :for="'post-excerpt-'.$locale" :error="'translation.'.$locale.'.excerpt"><textarea id="post-excerpt-{{ $locale }}" name="translation[{{ $locale }}][excerpt]">{{ $fieldValue }}</textarea><span data-error-for="translation.{{ $locale }}.excerpt" class="crud-field-error"></span></x-form.field>
+                        @php
+                            $fieldId = 'post-excerpt-'.$locale;
+                            $fieldName = 'translation['.$locale.'][excerpt]';
+                            $fieldLabel = __('posts.excerpt');
+                        @endphp
+                        <x-form.field variant="crud" :label="$fieldLabel" :for="$fieldId" :error="$fieldError"><textarea id="{{ $fieldId }}" name="{{ $fieldName }}">{{ $fieldValue }}</textarea><span data-error-for="{{ $fieldError }}" class="crud-field-error"></span></x-form.field>
                     @else
-                        <x-form.field variant="crud" :label="$field === 'title' ? __('posts.title_field') : __('posts.fields.'.$field)" :for="'post-'.$field.'-'.$locale" :error="'translation.'.$locale.'.'.$field"><x-form.input :id="'post-'.$field.'-'.$locale" :name="'translation['.$locale.']['.$field.']'" :value="$fieldValue" :maxlength="$field === 'title' ? 255 : 10000" :required="$field === 'title' && $locale === \App\Support\LocaleCatalog::resolve(app()->getLocale())" /><span data-error-for="translation.{{ $locale }}.{{ $field }}" class="crud-field-error"></span></x-form.field>
+                        <x-form.field variant="crud" :label="$fieldLabel" :for="$fieldId" :error="$fieldError"><x-form.input :id="$fieldId" :name="$fieldName" :value="$fieldValue" :maxlength="$field === 'title' ? 255 : 10000" :required="$fieldRequired" /><span data-error-for="{{ $fieldError }}" class="crud-field-error"></span></x-form.field>
                     @endif
                 @endforeach
             </fieldset>
@@ -75,6 +115,14 @@
 @endsection
 @push('styles')<link rel="stylesheet" href="{{ asset('theme/vendors/keenicons/styles.bundle.css') }}">@endpush
 @push('scripts')
-<script>window.JobicEditorConfig = @json(['tools' => $editorConfig['tools'], 'minHeight' => $editorConfig['minHeight'], 'uploadUrl' => route('admin.media-manager.upload'), 'messages' => __('posts.editor')]);</script>
+@php
+    $postEditorConfig = [
+        'tools' => $editorConfig['tools'],
+        'minHeight' => $editorConfig['minHeight'],
+        'uploadUrl' => route('admin.media-manager.upload'),
+        'messages' => __('posts.editor'),
+    ];
+@endphp
+<script>window.JobicEditorConfig = {{ \Illuminate\Support\Js::from($postEditorConfig) }};</script>
 @vite('resources/js/posts/form.js', 'vuero/build')
 @endpush

@@ -11,6 +11,13 @@
 </section>
 @endsection
 @push('scripts')
-<script>window.JobicPostList = @json(['dataUrl' => route('admin.posts.data', ['type' => $type]), 'locale' => app()->getLocale(), 'labels' => trans('posts')]);</script>
+@php
+    $postListConfig = [
+        'dataUrl' => route('admin.posts.data', ['type' => $type]),
+        'locale' => app()->getLocale(),
+        'labels' => trans('posts'),
+    ];
+@endphp
+<script>window.JobicPostList = {{ \Illuminate\Support\Js::from($postListConfig) }};</script>
 @vite('resources/js/posts/index.js', 'vuero/build')
 @endpush

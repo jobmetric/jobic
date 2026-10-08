@@ -79,31 +79,63 @@ final class AdminMenuDriver implements ApplicationDriver
             ->item('posts')
             ->label('posts.title')
             ->icon('file-text')
+            ->order(10)
             ->permissions(['admin.posts.view', 'admin.posts.manage'])
             ->childrenProvider(static function ($items): void {
-                foreach (\JobMetric\Post\Facades\PostTypeRegistry::values() as $type) {
-                    $permission = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption($type, 'view-permission', 'admin.posts.view');
-                    $managePermission = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption($type, 'manage-permission', 'admin.posts.manage');
+                $postView = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('post', 'view-permission', 'admin.posts.view');
+                $postManage = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('post', 'manage-permission', 'admin.posts.manage');
+                $postPermissions = array_values(array_unique([$postView, $postManage]));
+
+                $items->item('all-posts')
+                    ->label('posts.all')
+                    ->icon('file-text')
+                    ->route('admin.posts.index', ['type' => 'post'])
+                    ->permissions($postPermissions)
+                    ->order(10)
+                    ->active(static fn (): bool => request()->routeIs('admin.posts.*') && request()->route('type') === 'post')
+                    ->end();
+
+                foreach (['category' => 'posts.category', 'tag' => 'posts.tag'] as $type => $label) {
+                    if (! TaxonomyTypeRegistry::has($type)) {
+                        continue;
+                    }
+
+                    $viewPermission = (string) TaxonomyTypeRegistry::getOption($type, 'view-permission', 'admin.posts.view');
+                    $managePermission = (string) TaxonomyTypeRegistry::getOption($type, 'manage-permission', 'admin.posts.manage');
                     $items->item($type)
-                        ->label((string) \JobMetric\Post\Facades\PostTypeRegistry::getOption($type, 'label', 'posts.types.'.$type))
-                        ->icon('file-text')
-                        ->route('admin.posts.index', ['type' => $type])
-                        ->permissions(array_values(array_unique([$permission, $managePermission])))
-                        ->active(static fn (): bool => request()->routeIs('admin.posts.*') && request()->route('type') === $type)
+                        ->label($label)
+                        ->icon('list-tree')
+                        ->route('admin.taxonomies.index', ['type' => $type])
+                        ->permissions(array_values(array_unique([$viewPermission, $managePermission])))
+                        ->order($type === 'category' ? 20 : 30)
+                        ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type)
                         ->end();
                 }
             })
+            ->end()
+            ->item('pages')
+            ->label('posts.types.page')
+            ->icon('file-text')
+            ->route('admin.posts.index', ['type' => 'page'])
+            ->order(20)
+            ->permissions([
+                (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('page', 'view-permission', 'admin.posts.view'),
+                (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('page', 'manage-permission', 'admin.posts.manage'),
+            ])
+            ->active(static fn (): bool => request()->routeIs('admin.posts.*') && request()->route('type') === 'page')
             ->end()
             ->item('manage-menus')
             ->label('menus.manage')
             ->icon('menu')
             ->route('admin.taxonomies.index', ['type' => 'menu'])
+            ->order(30)
             ->permissions(['admin.menus.view', 'admin.menus.manage'])
             ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === 'menu')
             ->end()
             ->item('menu-items')
             ->label('menus.items')
             ->icon('list-tree')
+            ->order(40)
             ->permissions(['admin.menus.view', 'admin.menus.manage'])
             ->childrenProvider(static function ($items): void {
                 $table = (string) config('taxonomy.tables.taxonomy', 'taxonomies');
@@ -122,6 +154,7 @@ final class AdminMenuDriver implements ApplicationDriver
                             ->label(static fn (): string => TaxonomyPresentation::name($taxonomy))
                             ->icon('menu')
                             ->route('admin.taxonomies.index', ['type' => $type])
+                            ->order(50)
                             ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type)
                             ->end();
                     });
@@ -129,7 +162,7 @@ final class AdminMenuDriver implements ApplicationDriver
             ->end()
             ->provider(static function ($items): void {
                 collect(TaxonomyTypeRegistry::values())
-                    ->reject(static fn (string $type): bool => $type === 'menu' || str_starts_with($type, 'menu_'))
+                    ->reject(static fn (string $type): bool => in_array($type, ['menu', 'category', 'tag'], true) || str_starts_with($type, 'menu_'))
                     ->each(static function (string $type) use ($items): void {
                         $builder = TaxonomyTypeRegistry::for($type);
                         $permission = (string) TaxonomyTypeRegistry::getOption($type, 'view-permission', 'admin.content');
@@ -139,6 +172,7 @@ final class AdminMenuDriver implements ApplicationDriver
                             ->icon('list-tree')
                             ->route('admin.taxonomies.index', ['type' => $type])
                             ->permissions(array_values(array_unique([$permission, $managePermission])))
+                            ->order(60)
                             ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type)
                             ->end();
                     });

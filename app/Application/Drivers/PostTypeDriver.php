@@ -20,10 +20,10 @@ final class PostTypeDriver implements ApplicationDriver
     public function boot(Application $app): void
     {
         if (! TaxonomyTypeRegistry::has('category')) {
-            TaxonomyTypeRegistry::register('category')->label('posts.category')->description('posts.category_description')->hierarchical()->url()->urlPrefix('category');
+            TaxonomyTypeRegistry::register('category')->label('posts.category')->description('posts.category_description')->viewPermission('admin.posts.view')->managePermission('admin.posts.manage')->hierarchical()->url()->urlPrefix('category');
         }
         if (! TaxonomyTypeRegistry::has('tag')) {
-            TaxonomyTypeRegistry::register('tag')->label('posts.tag')->description('posts.tag_description')->url()->urlPrefix('tag');
+            TaxonomyTypeRegistry::register('tag')->label('posts.tag')->description('posts.tag_description')->viewPermission('admin.posts.view')->managePermission('admin.posts.manage')->url()->urlPrefix('tag');
         }
 
         PostTypeRegistry::register('post')
