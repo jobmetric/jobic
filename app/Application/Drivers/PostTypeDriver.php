@@ -26,23 +26,13 @@ final class PostTypeDriver implements ApplicationDriver
             TaxonomyTypeRegistry::register('tag')->label('posts.tag')->description('posts.tag_description')->viewPermission('admin.posts.view')->managePermission('admin.posts.manage')->url()->urlPrefix('tag');
         }
 
-        $postType = PostTypeRegistry::register('post')
+        PostTypeRegistry::register('post')
             ->label('posts.types.post')->description('posts.types.post_description')
             ->option('view-permission', 'admin.posts.view')->option('manage-permission', 'admin.posts.manage')
             ->translationFields(['title', 'excerpt', 'content'])
-            ->allowTaxonomy('category', 'categories', true)
-            ->allowTaxonomy('tag', 'tags', true)
+            ->allowTaxonomy('category', 'categories', true)->filterTaxonomy('categories')
+            ->allowTaxonomy('tag', 'tags', true)->filterTaxonomy('tags')
             ->mediaCollection('base', false)->mediaCollection('gallery', true)->urlPrefix('blog')->comments()->workflow('post');
-
-        if (method_exists($postType, 'filterTaxonomy')) {
-            $postType->filterTaxonomy('categories')->filterTaxonomy('tags');
-        } else {
-            // Keep the locked package release usable until the new Builder is published.
-            $taxonomies = $postType->get()['taxonomy-types'];
-            $taxonomies['categories']['filter'] = true;
-            $taxonomies['tags']['filter'] = true;
-            $postType->taxonomyTypes($taxonomies);
-        }
 
         PostTypeRegistry::register('page')
             ->label('posts.types.page')->description('posts.types.page_description')

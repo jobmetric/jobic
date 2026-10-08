@@ -68,10 +68,10 @@ class PostPagesTest extends TestCase
     public function test_external_post_type_can_register_a_custom_list_filter(): void
     {
         $this->actingAs(User::factory()->create());
-        PostTypeRegistry::register('note')->translationFields(['title'])->option('filters', ['visibility' => [
+        PostTypeRegistry::register('note')->translationFields(['title'])->addFilter('visibility', [
             'label' => 'Visibility', 'options' => ['draft' => 'Draft'],
             'apply' => static fn ($query, $value) => $query->where('status', $value),
-        ]]);
+        ]);
         Post::query()->create(['type' => 'note', 'status' => 'draft']);
         Post::query()->create(['type' => 'note', 'status' => 'publish']);
 
