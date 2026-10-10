@@ -2212,16 +2212,16 @@
         },
         {
             "name": "jobmetric/laravel-post",
-            "version": "v1.0.2",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-post.git",
-                "reference": "1af795e56f21a7cb90f1660355851b94438bd1b5"
+                "reference": "9f0e3012c030c4fb82c8513f1f9c707bce9deb51"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/1af795e56f21a7cb90f1660355851b94438bd1b5",
-                "reference": "1af795e56f21a7cb90f1660355851b94438bd1b5",
+                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/9f0e3012c030c4fb82c8513f1f9c707bce9deb51",
+                "reference": "9f0e3012c030c4fb82c8513f1f9c707bce9deb51",
                 "shasum": ""
             },
             "require": {
@@ -2278,7 +2278,7 @@
                 "issues": "https://github.com/jobmetric/laravel-post/issues",
                 "source": "https://github.com/jobmetric/laravel-post"
             },
-            "time": "2026-10-08T18:24:16+00:00"
+            "time": "2026-10-10T19:31:57+00:00"
         },
         {
             "name": "jobmetric/laravel-setting",
