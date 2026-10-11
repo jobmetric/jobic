@@ -1,11 +1,12 @@
 import { pageData } from '../common/page';
+import { iconMarkup } from '../common/icons';
 import '../../css/crud.css';
 import '../../css/crud-fields.css';
 import '../../css/roles.css';
 
 export const copy = () => pageData().roles;
 export const escape = value => { const node = document.createElement('span'); node.textContent = String(value ?? ''); return node.innerHTML; };
-export const icon = name => `<svg class="ui-icon" width="18" height="18" fill="none" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
+export const icon = name => iconMarkup(name, 18);
 
 function button(key, type = 'button') {
     const node = document.createElement('button'); node.type = type; node.dataset.crudAction = key; node.textContent = copy()[key];

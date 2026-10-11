@@ -11,7 +11,6 @@
 @section('body-attribute')class="cms-page @yield('body-class')"@endsection
 
 @section('domi-content')
-    <x-vuero.icon-sprite />
     <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;pointer-events:none">
         <defs>
             <filter id="brand-dark-contrast" color-interpolation-filters="sRGB">
@@ -35,5 +34,12 @@
 @endsection
 
 @section('domi-script-bottom')
+    <script>
+        // Domi's Jalali datepicker replaces window.Date without preserving Date.now.
+        // Restore the standard static method before deferred Vite modules execute.
+        if (typeof Date.now !== 'function') {
+            Date.now = function () { return new Date().getTime(); };
+        }
+    </script>
     @cmsHook('jobic.page.body.end')
 @endsection

@@ -1,4 +1,5 @@
 import { pageData } from '../../common/page';
+import { iconMarkup } from '../../common/icons';
 const fmText = key => pageData().fileManager?.texts?.[key] ?? '';
 export default {
     async renderPdfPreview(item) {
@@ -7,23 +8,23 @@ export default {
         stage.innerHTML = `<div class="panel-file-manager__pdf-viewer" data-pdf-viewer tabindex="0">
             <header class="panel-file-manager__pdf-toolbar">
                 <div class="panel-file-manager__pdf-page-tools">
-                    <button type="button" data-pdf-previous aria-label="${fmText(73)}" title="${fmText(73)}"><i class="ki-filled ki-right"></i></button>
+                    <button type="button" data-pdf-previous aria-label="${fmText(73)}" title="${fmText(73)}">${iconMarkup('chevron-left', 16)}</button>
                     <label><span>${fmText(74)}</span><input type="number" min="1" value="1" data-pdf-page aria-label="${fmText(75)}"><i>/</i><b data-pdf-pages>—</b></label>
-                    <button type="button" data-pdf-next aria-label="${fmText(76)}" title="${fmText(76)}"><i class="ki-filled ki-left"></i></button>
+                    <button type="button" data-pdf-next aria-label="${fmText(76)}" title="${fmText(76)}">${iconMarkup('chevron-right', 16)}</button>
                 </div>
-                <div class="panel-file-manager__pdf-document"><span><i class="ki-filled ki-document"></i></span><div><strong dir="auto">${this.escape(item.name)}</strong><small data-pdf-status>${fmText(77)}</small></div></div>
+                <div class="panel-file-manager__pdf-document"><span>${iconMarkup('file-text', 17)}</span><div><strong dir="auto">${this.escape(item.name)}</strong><small data-pdf-status>${fmText(77)}</small></div></div>
                 <div class="panel-file-manager__pdf-zoom-tools">
-                    <button type="button" data-pdf-zoom-out aria-label="${fmText(78)}" title="${fmText(78)}"><i class="ki-filled ki-minus"></i></button>
+                    <button type="button" data-pdf-zoom-out aria-label="${fmText(78)}" title="${fmText(78)}">${iconMarkup('minus', 15)}</button>
                     <output data-pdf-zoom-value>${fmText(79)}</output>
-                    <button type="button" data-pdf-zoom-in aria-label="${fmText(80)}" title="${fmText(80)}"><i class="ki-filled ki-plus"></i></button>
-                    <button type="button" data-pdf-fit aria-label="${fmText(81)}" title="${fmText(81)}"><i class="ki-filled ki-maximize"></i></button>
-                    <button type="button" data-pdf-rotate aria-label="${fmText(82)}" title="${fmText(82)}"><i class="ki-filled ki-arrow-two-diagonals"></i></button>
+                    <button type="button" data-pdf-zoom-in aria-label="${fmText(80)}" title="${fmText(80)}">${iconMarkup('plus', 15)}</button>
+                    <button type="button" data-pdf-fit aria-label="${fmText(81)}" title="${fmText(81)}">${iconMarkup('maximize', 15)}</button>
+                    <button type="button" data-pdf-rotate aria-label="${fmText(82)}" title="${fmText(82)}">${iconMarkup('rotate', 15)}</button>
                 </div>
             </header>
             <div class="panel-file-manager__pdf-stage" data-pdf-stage>
                 <div class="panel-file-manager__pdf-paper"><canvas data-pdf-canvas aria-label="${fmText(74)} PDF"></canvas></div>
                 <div class="panel-file-manager__pdf-loading" data-pdf-loading><span></span><strong>${fmText(83)}</strong><small>${fmText(84)}</small></div>
-                <div class="panel-file-manager__pdf-error hidden" data-pdf-error><i class="ki-filled ki-information-4"></i><strong>${fmText(85)} PDF ${fmText(86)}</strong><p></p><a href="${this.escape(item.url)}" download="${this.escape(item.name)}">${fmText(87)}</a></div>
+                <div class="panel-file-manager__pdf-error hidden" data-pdf-error>${iconMarkup('info', 19)}<strong>${fmText(85)} PDF ${fmText(86)}</strong><p></p><a href="${this.escape(item.url)}" download="${this.escape(item.name)}">${fmText(87)}</a></div>
             </div>
         </div>`;
 

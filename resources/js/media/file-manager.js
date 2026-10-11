@@ -1,6 +1,10 @@
 import { pageData } from '../common/page';
+import { iconMarkup } from '../common/icons';
 import { resolvePreviewDriver } from './previews/registry';
 const fmText = key => pageData().fileManager?.texts?.[key] ?? '';
+function fileManagerIconMarkup(name, size = 18, className = '') {
+    return iconMarkup(name, size, className);
+}
 
 export default class PanelFileManager {
     constructor(root, config) {
@@ -599,7 +603,7 @@ export default class PanelFileManager {
 
         const ghost = document.createElement('div');
         ghost.className = 'panel-file-manager__drag-ghost';
-        ghost.innerHTML = `<i class="ki-filled ki-folder-up"></i><strong>${ids.length.toLocaleString(document.documentElement.lang || 'fa')} ${fmText(6)}</strong><span>${fmText(7)}</span>`;
+        ghost.innerHTML = `${fileManagerIconMarkup('folder-upload', 24)}<strong>${ids.length.toLocaleString(document.documentElement.lang || 'fa')} ${fmText(6)}</strong><span>${fmText(7)}</span>`;
         document.body.appendChild(ghost);
         event.dataTransfer.setDragImage(ghost, 26, 24);
         setTimeout(() => ghost.remove());
@@ -792,7 +796,7 @@ export default class PanelFileManager {
         const sizeLabel = item.type === 'folder' ? `${Number(item.children_count || 0).toLocaleString(document.documentElement.lang || 'fa')} ${fmText(6)}` : this.formatSize(item.size);
         const dateLabel = item.updated_at_display || '—';
         return `<article class="panel-file-manager__item is-${item.type} ${selected ? 'is-selected' : ''} ${pickerIncompatible ? 'is-picker-incompatible' : ''}" data-fm-item="${item.id}" tabindex="${item.id === this.focusedId ? '0' : '-1'}" role="option" aria-selected="${selected}" draggable="${this.permissions.manage ? 'true' : 'false'}" ${pickerIncompatible ? 'data-picker-incompatible="true"' : ''}>
-            <button type="button" class="panel-file-manager__item-check" aria-label="${fmText(12)} ${this.escape(item.name)}" title="${fmText(13)}"><i class="ki-filled ki-check"></i></button>
+            <button type="button" class="panel-file-manager__item-check" aria-label="${fmText(12)} ${this.escape(item.name)}" title="${fmText(13)}">${fileManagerIconMarkup('check', 17)}</button>
             <div class="panel-file-manager__thumb">${visual}</div>
             <div class="panel-file-manager__item-primary"><strong title="${this.escape(item.name)}">${this.escape(item.name)}</strong><small>${pickerIncompatible ? `${fmText(14)}` : this.escape(sizeLabel)}</small></div>
             <span class="panel-file-manager__item-type">${this.escape(typeLabel)}</span>
@@ -802,10 +806,10 @@ export default class PanelFileManager {
     }
 
     fileIcon(item) {
-        const icons = { image: 'ki-picture', document: 'ki-document', video: 'ki-screen', audio: 'ki-speaker', archive: 'ki-folder-down' };
+        const icons = { image: 'file-image', document: 'file-text', video: 'file-video', audio: 'file-audio', archive: 'file-archive' };
         const group = this.escape(item.group || 'file');
         const extension = this.escape((item.extension || 'FILE').toUpperCase());
-        return `<span class="panel-file-manager__file-icon is-${group}"><i class="ki-filled ${icons[item.group] || 'ki-document'}"></i><b>${extension}</b></span>`;
+        return `<span class="panel-file-manager__file-icon is-${group}">${fileManagerIconMarkup(icons[item.group] || 'file-text', 22)}<b>${extension}</b></span>`;
     }
 
     fileTypeLabel(item) {
@@ -882,7 +886,7 @@ export default class PanelFileManager {
     }
 
     renderBreadcrumbs() {
-        this.elements.breadcrumbs.innerHTML = this.breadcrumbs.map((crumb, index) => `<button type="button" data-crumb="${crumb.id}">${index ? '<i class="ki-filled ki-left"></i>' : '<i class="ki-filled ki-home"></i>'}${this.escape(crumb.name)}</button>`).join('');
+        this.elements.breadcrumbs.innerHTML = this.breadcrumbs.map((crumb, index) => `<button type="button" data-crumb="${crumb.id}">${fileManagerIconMarkup(index ? 'chevron-left' : 'layout-navbar', 16)}${this.escape(crumb.name)}</button>`).join('');
         this.elements.breadcrumbs.querySelectorAll('[data-crumb]').forEach((button) => button.addEventListener('click', () => this.openFolder(Number(button.dataset.crumb))));
     }
 
@@ -1048,11 +1052,11 @@ export default class PanelFileManager {
     }
 
     resetDetails() {
-        this.elements.details.innerHTML = `${this.detailsHeader()}<div class="panel-file-manager__details-empty"><i class="ki-filled ki-mouse-square"></i><strong>${fmText(46)}</strong><p>${fmText(47)}</p></div>`;
+        this.elements.details.innerHTML = `${this.detailsHeader()}<div class="panel-file-manager__details-empty">${fileManagerIconMarkup('mouse-pointer', 35)}<strong>${fmText(46)}</strong><p>${fmText(47)}</p></div>`;
     }
 
     detailsHeader() {
-        return `<header class="panel-file-manager__sidebar-head"><div><i class="ki-filled ki-information-2"></i><strong>${fmText(48)}</strong></div><button type="button" data-fm-details-close aria-label="${fmText(49)}" title="${fmText(50)}"><i class="ki-filled ki-cross"></i></button></header>`;
+        return `<header class="panel-file-manager__sidebar-head"><div>${fileManagerIconMarkup('info', 18)}<strong>${fmText(48)}</strong></div><button type="button" data-fm-details-close aria-label="${fmText(49)}" title="${fmText(50)}">${fileManagerIconMarkup('x', 16)}</button></header>`;
     }
 
     renderDetails(item) {
@@ -1072,7 +1076,7 @@ export default class PanelFileManager {
                 <li><span>${fmText(55)}</span><strong>${this.escape(item.updated_at_display || '—')}</strong></li>
             </ul>
             <div class="panel-file-manager__detail-actions">
-                ${item.type === 'folder' ? `<button type="button" data-details-open><i class="ki-filled ki-folder"></i> ${fmText(56)}</button>` : (item.url ? `<button type="button" data-details-preview><i class="ki-filled ki-eye"></i> ${fmText(57)}</button><a data-details-download><i class="ki-filled ki-cloud-download"></i> ${fmText(58)}</a>` : '')}
+                ${item.type === 'folder' ? `<button type="button" data-details-open>${fileManagerIconMarkup('folder', 16)} ${fmText(56)}</button>` : (item.url ? `<button type="button" data-details-preview>${fileManagerIconMarkup('eye', 16)} ${fmText(57)}</button><a data-details-download>${fileManagerIconMarkup('download', 16)} ${fmText(58)}</a>` : '')}
             </div>`;
         this.elements.details.querySelector('[data-details-open]')?.addEventListener('click', () => this.openFolder(item.id));
         this.elements.details.querySelector('[data-details-preview]')?.addEventListener('click', () => this.openPreview(item));
@@ -1168,7 +1172,7 @@ export default class PanelFileManager {
             if (!button) {
                 button = document.createElement('button'); button.type = 'button';
                 button.dataset.previewNavigation = direction; button.className = 'fm-preview-navigation';
-                button.innerHTML = `<i class="ki-filled ki-${offset < 0 ? 'left' : 'right'}"></i>`;
+                button.innerHTML = fileManagerIconMarkup(offset < 0 ? 'chevron-left' : 'chevron-right', 17);
                 modal.append(button);
             }
             button.setAttribute('aria-label', fmText(label));
@@ -1243,14 +1247,14 @@ export default class PanelFileManager {
             else if (payload.data?.kind === 'archive') this.renderArchivePreview(item, payload.data, Number(options.offset || 0) > 0);
         } catch (error) {
             if (this.previewItem?.id !== item.id) return;
-            this.elements.previewStage.innerHTML = `<div class="panel-file-manager__preview-error"><i class="ki-filled ki-information-4"></i><strong>${fmText(249)}</strong><p>${this.escape(error.message)}</p></div>`;
+            this.elements.previewStage.innerHTML = `<div class="panel-file-manager__preview-error">${fileManagerIconMarkup('info', 32)}<strong>${fmText(249)}</strong><p>${this.escape(error.message)}</p></div>`;
         }
     }
 
     renderSpreadsheetPreview(item, data, append = false) {
         this.elements.previewStage.className = 'panel-file-manager__preview-stage is-spreadsheet';
         this.elements.previewTabs.classList.remove('hidden');
-        this.elements.previewTabs.innerHTML = data.sheets.map((sheet) => `<button type="button" class="${sheet.index === data.active_sheet ? 'is-active' : ''}" data-sheet-index="${sheet.index}"><i class="ki-filled ki-tablet-text-down"></i>${this.escape(sheet.name)}</button>`).join('');
+        this.elements.previewTabs.innerHTML = data.sheets.map((sheet) => `<button type="button" class="${sheet.index === data.active_sheet ? 'is-active' : ''}" data-sheet-index="${sheet.index}">${fileManagerIconMarkup('file-spreadsheet', 16)}${this.escape(sheet.name)}</button>`).join('');
         this.elements.previewTabs.querySelectorAll('[data-sheet-index]').forEach((button) => button.addEventListener('click', () => {
             const sheet = Number(button.dataset.sheetIndex);
             if (sheet === this.previewStructuredState?.sheet) return;
@@ -1306,30 +1310,30 @@ export default class PanelFileManager {
                 <header class="panel-file-manager__archive-overview">
                     <div class="panel-file-manager__archive-identity">
                         <span class="panel-file-manager__archive-art" aria-hidden="true">
-                            <svg viewBox="0 0 48 48"><path d="M10 5h19l9 9v27a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3Z"/><path d="M29 5v10h9"/><path d="M21 10h6m-6 6h6m-6 6h6m-6 6h6"/><rect x="19" y="32" width="10" height="7" rx="2"/></svg>
+                            ${iconMarkup('file-archive', 46)}
                             <b>ZIP</b>
                         </span>
                         <div><span class="panel-file-manager__archive-eyebrow"><i></i> ${fmText(252)}</span><strong dir="auto">${this.escape(item.name)}</strong><small>${totalEntries.toLocaleString(document.documentElement.lang || 'fa')} ${fmText(253)}</small></div>
                     </div>
                     <div class="panel-file-manager__archive-metrics">
-                        <article><span><i class="ki-filled ki-document"></i></span><div><small>${fmText(254)}</small><strong>${fileCount.toLocaleString(document.documentElement.lang || 'fa')}</strong></div></article>
-                        <article><span><i class="ki-filled ki-folder"></i></span><div><small>${fmText(255)}</small><strong>${folderCount.toLocaleString(document.documentElement.lang || 'fa')}</strong></div></article>
-                        <article><span><i class="ki-filled ki-folder-down"></i></span><div><small>${fmText(256)}</small><strong dir="ltr">${this.formatSize(uncompressed)}</strong></div></article>
-                        <article class="is-accent"><span><i class="ki-filled ki-chart-line"></i></span><div><small>${fmText(257)}</small><strong dir="ltr">${savedPercent.toLocaleString(document.documentElement.lang || 'fa')}${fmText(92)}</strong></div></article>
+                        <article><span>${fileManagerIconMarkup('file-text', 19)}</span><div><small>${fmText(254)}</small><strong>${fileCount.toLocaleString(document.documentElement.lang || 'fa')}</strong></div></article>
+                        <article><span>${fileManagerIconMarkup('folder', 19)}</span><div><small>${fmText(255)}</small><strong>${folderCount.toLocaleString(document.documentElement.lang || 'fa')}</strong></div></article>
+                        <article><span>${fileManagerIconMarkup('folder-download', 19)}</span><div><small>${fmText(256)}</small><strong dir="ltr">${this.formatSize(uncompressed)}</strong></div></article>
+                        <article class="is-accent"><span>${fileManagerIconMarkup('chart-bar', 19)}</span><div><small>${fmText(257)}</small><strong dir="ltr">${savedPercent.toLocaleString(document.documentElement.lang || 'fa')}${fmText(92)}</strong></div></article>
                     </div>
                 </header>
                 <div class="panel-file-manager__archive-toolbar">
-                    <label class="panel-file-manager__archive-search"><i class="ki-filled ki-magnifier"></i><input type="search" data-archive-search placeholder="${fmText(258)}" autocomplete="off"><kbd>Ctrl + F</kbd></label>
+                    <label class="panel-file-manager__archive-search">${fileManagerIconMarkup('search', 16)}<input type="search" data-archive-search placeholder="${fmText(258)}" autocomplete="off"><kbd>Ctrl + F</kbd></label>
                     <div class="panel-file-manager__archive-summary">
                         <span><b data-archive-visible-count>${fmText(191)}</b> ${fmText(259)}</span>
-                        ${encryptedCount ? `<span class="is-encrypted"><i class="ki-filled ki-lock-2"></i>${encryptedCount.toLocaleString(document.documentElement.lang || 'fa')} ${fmText(260)}</span>` : ''}
-                        <span class="is-size"><i class="ki-filled ki-archive-tick"></i>${this.formatSize(compressed)} ${fmText(261)} ZIP</span>
+                        ${encryptedCount ? `<span class="is-encrypted">${fileManagerIconMarkup('lock', 15)}${encryptedCount.toLocaleString(document.documentElement.lang || 'fa')} ${fmText(260)}</span>` : ''}
+                        <span class="is-size">${fileManagerIconMarkup('archive', 15)}${this.formatSize(compressed)} ${fmText(261)} ZIP</span>
                     </div>
                 </div>
                 <div class="panel-file-manager__archive-columns" aria-hidden="true"><span>${fmText(262)}</span><span>${fmText(51)}</span><span>${fmText(256)}</span><span>${fmText(263)}</span></div>
                 <div class="panel-file-manager__archive-scroll">
                     <div class="panel-file-manager__archive-list" data-archive-list role="tree"></div>
-                    <div class="panel-file-manager__archive-empty hidden" data-archive-empty><span><i class="ki-filled ki-magnifier"></i></span><strong>${fmText(264)}</strong><p>${fmText(265)}</p></div>
+                    <div class="panel-file-manager__archive-empty hidden" data-archive-empty><span>${fileManagerIconMarkup('search', 24)}</span><strong>${fmText(264)}</strong><p>${fmText(265)}</p></div>
                     <div class="panel-file-manager__structured-loader hidden" data-structured-loader><span></span>${fmText(266)}</div>
                 </div>
             </div>`;
@@ -1363,7 +1367,7 @@ export default class PanelFileManager {
             <div class="panel-file-manager__archive-name-cell">
                 <span class="panel-file-manager__archive-entry-icon">${this.archiveGlyph(extension, Boolean(entry.directory))}${!entry.directory ? `<b>${this.escape(extension || 'FILE')}</b>` : ''}</span>
                 <div><strong dir="auto" title="${this.escape(entry.name || path)}">${this.escape(entry.name || path)}</strong><small dir="ltr" title="${this.escape(path)}">${parentPath ? this.escape(parentPath) : 'Root /'}</small></div>
-                ${entry.encrypted ? `<em title="${fmText(267)}"><i class="ki-filled ki-lock-2"></i></em>` : ''}
+                ${entry.encrypted ? `<em title="${fmText(267)}">${fileManagerIconMarkup('lock', 14)}</em>` : ''}
             </div>
             <span class="panel-file-manager__archive-type"><i></i><b>${this.escape(type.label)}</b></span>
             <span class="panel-file-manager__archive-size">${entry.directory ? '—' : this.formatSize(size)}</span>
@@ -1398,28 +1402,19 @@ export default class PanelFileManager {
     }
 
     archiveGlyph(extension, directory = false) {
-        if (directory) return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2H6a3 3 0 0 0-3 3Z"/><path d="M4.2 10h16.3l-1.8 8.2a2.4 2.4 0 0 1-2.3 1.8H5.7A2.7 2.7 0 0 1 3 17.3V13a3 3 0 0 1 1.2-3Z"/></svg>';
+        if (directory) return iconMarkup('folder', 24);
         const group = this.archiveTypeLabel(extension, false).group;
-        const paths = {
-            image: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="m6.5 17 4-4 2.5 2 2.5-3 2.5 5"/>',
-            video: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3Z"/>',
-            audio: '<path d="M9 18V7l9-2v11"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="16" r="2.5"/>',
-            sheet: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M4 9h16M9 9v12m5-12v12M4 15h16"/>',
-            pdf: '<path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h5M8.5 15h7M8.5 18h5"/>',
-            archive: '<path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h5M10 7h3m-3 3h3m-3 3h3m-3 3h3"/>',
-            document: '<path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h5M9 12h6m-6 3h6m-6 3h4"/>',
-            file: '<path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h5"/>',
-        };
-        return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[group] || paths.file}</svg>`;
+        const icons = { image: 'file-image', video: 'file-video', audio: 'file-audio', sheet: 'file-spreadsheet', pdf: 'file-text', archive: 'file-archive', document: 'file-text', file: 'file' };
+        return iconMarkup(icons[group] || 'file', 24);
     }
 
     archiveIcon(extension) {
-        if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(extension)) return 'ki-picture';
-        if (['xls', 'xlsx', 'csv'].includes(extension)) return 'ki-tablet-text-down';
-        if (['mp4', 'webm', 'mov'].includes(extension)) return 'ki-screen';
-        if (['mp3', 'wav', 'ogg', 'm4a'].includes(extension)) return 'ki-speaker';
-        if (extension === 'pdf') return 'ki-document';
-        return 'ki-document';
+        if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(extension)) return 'media';
+        if (['xls', 'xlsx', 'csv'].includes(extension)) return 'file-spreadsheet';
+        if (['mp4', 'webm', 'mov'].includes(extension)) return 'video';
+        if (['mp3', 'wav', 'ogg', 'm4a'].includes(extension)) return 'headphones';
+        if (extension === 'pdf') return 'file-text';
+        return 'file-text';
     }
 
     async loadMoreStructuredPreview(scroll) {
@@ -1505,7 +1500,7 @@ export default class PanelFileManager {
 
     async createFolder() {
         if (!this.permissions.manage) return;
-        const name = await this.askName({ title: `${fmText(272)}`, text: `${fmText(273)}`, icon: 'ki-add-folder' });
+        const name = await this.askName({ title: `${fmText(272)}`, text: `${fmText(273)}`, icon: 'folder-plus' });
         if (!name) return;
         const response = await this.request(this.config.folderStoreUrl, { method: 'POST', body: { name, parent_id: this.folderId } });
         if (response.ok) { this.toast(`${fmText(274)}`); this.load(); }
@@ -1515,7 +1510,7 @@ export default class PanelFileManager {
         if (!this.permissions.manage || this.selected.size !== 1) { if (this.selected.size !== 1) this.toast(`${fmText(275)}`, 'error'); return; }
         const item = this.selectedItems.get([...this.selected][0]) || this.item([...this.selected][0]);
         if (!item) return;
-        const name = await this.askName({ title: `${fmText(276)}`, text: `${fmText(277)}${item.name}» ${fmText(278)}`, value: item.name, icon: 'ki-notepad-edit' });
+        const name = await this.askName({ title: `${fmText(276)}`, text: `${fmText(277)}${item.name}» ${fmText(278)}`, value: item.name, icon: 'edit' });
         if (!name || name === item.name) return;
         const response = await this.request(`${this.config.itemsUrl}/${item.id}`, { method: 'PATCH', body: { name } });
         if (response.ok) { this.toast(`${fmText(279)}`); this.load(); }
@@ -1542,7 +1537,7 @@ export default class PanelFileManager {
             title: `${fmText(280)} ZIP`,
             text: `${this.selected.size.toLocaleString(document.documentElement.lang || 'fa')} ${fmText(281)} ZIP ${fmText(282)}`,
             value: this.suggestedArchiveName(),
-            icon: 'ki-archive-tick',
+            icon: 'archive',
             confirmLabel: `${fmText(280)} ZIP`,
         });
         if (!name) return;
@@ -1644,14 +1639,14 @@ export default class PanelFileManager {
         this.renderSelection();
     }
 
-    askName({ title, text, value = '', icon = 'ki-add-folder', confirmLabel = `${fmText(290)}` }) {
+    askName({ title, text, value = '', icon = 'folder-plus', confirmLabel = `${fmText(290)}` }) {
         return new Promise((resolve) => {
             const modal = this.elements.prompt;
             const form = modal.querySelector('[data-fm-prompt-form]');
             const input = modal.querySelector('[data-fm-prompt-input]');
             modal.querySelector('[data-fm-prompt-title]').textContent = title;
             modal.querySelector('[data-fm-prompt-text]').textContent = text;
-            modal.querySelector('.panel-file-manager__prompt-icon i').className = `ki-filled ${icon}`;
+            modal.querySelector('.panel-file-manager__prompt-icon').innerHTML = fileManagerIconMarkup(icon, 22, 'panel-file-manager__prompt-svg');
             modal.querySelector('[data-fm-prompt-confirm]').textContent = confirmLabel;
             input.value = value;
             this.promptResolve = resolve;
@@ -1713,7 +1708,7 @@ export default class PanelFileManager {
         if (action.children?.length) {
             return `<div class="panel-file-manager__context-group" data-context-submenu-group>
                 <button type="button" class="panel-file-manager__context-submenu-trigger" data-context-submenu-trigger aria-haspopup="menu" aria-expanded="false" ${action.disabled ? 'disabled' : ''}>
-                    ${this.contextIcon(action.icon)}<span>${this.escape(action.label)}</span><i class="panel-file-manager__context-chevron" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="m3.5 4.5 2.5 2.5 2.5-2.5"/></svg></i>
+                    ${this.contextIcon(action.icon)}<span>${this.escape(action.label)}</span><span class="panel-file-manager__context-chevron" aria-hidden="true">${iconMarkup('chevron-down', 13)}</span>
                 </button>
                 <div class="panel-file-manager__context-submenu hidden" data-context-submenu>
                     ${action.children.map((child) => `<button type="button" data-context-action="${child.key}" ${child.disabled ? 'disabled' : ''}>${this.contextIcon(child.icon)}<span class="panel-file-manager__context-copy"><b>${this.escape(child.label)}</b>${child.description ? `<small>${this.escape(child.description)}</small>` : ''}</span></button>`).join('')}
@@ -1769,38 +1764,19 @@ export default class PanelFileManager {
     }
 
     contextIcon(icon) {
-        const drawings = {
-            'ki-check-squared': '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12 2.7 2.7L16.5 9"/>',
-            'ki-arrow-right': '<path d="M20 12H5m5-6-6 6 6 6"/>',
-            'ki-arrows-circle': '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 8.2A7 7 0 0 1 18.8 9M17.9 15.8A7 7 0 0 1 5.2 15"/>',
-            'ki-add-folder': '<path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5Z"/><path d="M12 10v6m-3-3h6"/>',
-            'ki-cloud-add': '<path d="M7 18H6a4 4 0 0 1-.4-8A6.5 6.5 0 0 1 18 8.5a4.5 4.5 0 0 1 0 9.5h-1"/><path d="M12 11v8m-3-5 3-3 3 3"/>',
-            'ki-clipboard': '<rect x="5" y="4.5" width="14" height="17" rx="3"/><path d="M9 5V3.5h6V5m-6 6h6m-6 4h6"/>',
-            'ki-cursor': '<path d="m5 3 13 9-6 .8-3.2 5.4Z"/><path d="m12 13 4 6"/>',
-            'ki-eye': '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>',
-            'ki-folder': '<path d="M3 8V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2"/><path d="M4 10h17l-2.2 9a2 2 0 0 1-2 1.5H5.5A2.5 2.5 0 0 1 3 18Z"/>',
-            'ki-cloud-download': '<path d="M7 18H6a4 4 0 0 1-.4-8A6.5 6.5 0 0 1 18 8.5a4.5 4.5 0 0 1 0 9.5h-1"/><path d="M12 10v9m-3-3 3 3 3-3"/>',
-            'ki-archive': '<path d="M6 3.5h8l4 4v13H6Z"/><path d="M14 3.5v4h4M10 7h3m-3 3h3m-3 3h3m-3 3h3"/><path d="M9 20h6"/>',
-            'ki-folder-down': '<path d="M3 8V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2"/><path d="M4 10h17l-2.2 9a2 2 0 0 1-2 1.5H5.5A2.5 2.5 0 0 1 3 18Z"/><path d="M12 11.5v6m-2.5-2.5 2.5 2.5 2.5-2.5"/>',
-            'ki-copy': '<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/>',
-            'ki-arrow-right-left': '<circle cx="6" cy="6" r="2.3"/><circle cx="6" cy="18" r="2.3"/><path d="m8 7.2 11 8.3M8 16.8 19 8.5M14.5 12l4.5-3.5"/>',
-            'ki-notepad-edit': '<path d="M6 4.5h7M6 8h5M5 2.5h10a2 2 0 0 1 2 2V10M6 2v3m5-3v3"/><path d="m10 19 1-4 6.8-6.8a1.5 1.5 0 0 1 2.1 2.1L13.1 17Z"/><path d="M8 21H5a2 2 0 0 1-2-2V4.5"/>',
-            'ki-trash': '<path d="M4 7h16M9 3h6l1 4M6.5 7l1 14h9l1-14M10 11v6m4-6v6"/>',
-        };
-        const drawing = drawings[icon] || drawings['ki-cursor'];
-        return `<span class="panel-file-manager__context-icon" data-context-icon="${this.escape(icon)}" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${drawing}</svg></span>`;
+        return `<span class="panel-file-manager__context-icon" data-context-icon="${this.escape(icon)}" aria-hidden="true">${fileManagerIconMarkup(icon, 18)}</span>`;
     }
 
     backgroundContextActions() {
         return [
-            { key: 'select-all', label: `${fmText(291)}`, icon: 'ki-check-squared', shortcut: 'Ctrl+A', run: () => this.selectVisible(true) },
+            { key: 'select-all', label: `${fmText(291)}`, icon: 'check-circle', shortcut: 'Ctrl+A', run: () => this.selectVisible(true) },
             { separator: true },
-            { key: 'back', label: `${fmText(292)}`, icon: 'ki-arrow-right', disabled: this.folderId === this.rootId, run: () => this.goBack() },
-            { key: 'refresh', label: `${fmText(293)}`, icon: 'ki-arrows-circle', run: () => this.load() },
+            { key: 'back', label: `${fmText(292)}`, icon: 'arrow-right', disabled: this.folderId === this.rootId, run: () => this.goBack() },
+            { key: 'refresh', label: `${fmText(293)}`, icon: 'refresh', run: () => this.load() },
             { separator: true },
-            { key: 'folder', label: `${fmText(294)}`, icon: 'ki-add-folder', disabled: !this.permissions.manage, run: () => this.createFolder() },
-            { key: 'upload', label: `${fmText(295)}`, icon: 'ki-cloud-add', disabled: !this.permissions.manage, run: () => this.elements.fileInput?.click() },
-            { key: 'paste', label: `${fmText(296)}`, icon: 'ki-clipboard', shortcut: 'Ctrl+V', disabled: !this.permissions.manage || !this.clipboard, run: () => this.paste() },
+            { key: 'folder', label: `${fmText(294)}`, icon: 'folder-plus', disabled: !this.permissions.manage, run: () => this.createFolder() },
+            { key: 'upload', label: `${fmText(295)}`, icon: 'upload', disabled: !this.permissions.manage, run: () => this.elements.fileInput?.click() },
+            { key: 'paste', label: `${fmText(296)}`, icon: 'clipboard', shortcut: 'Ctrl+V', disabled: !this.permissions.manage || !this.clipboard, run: () => this.paste() },
         ];
     }
 
@@ -1809,35 +1785,35 @@ export default class PanelFileManager {
         const zip = this.isZipItem(item);
         const archiveFolderName = String(item.name || 'archive').replace(/\.zip$/i, '') || 'archive';
         return [
-            { key: 'select', label: `${fmText(13)}`, icon: 'ki-cursor', run: () => this.select(item.id, true) },
+            { key: 'select', label: `${fmText(13)}`, icon: 'cursor', run: () => this.select(item.id, true) },
             {
                 key: 'open',
                 label: file ? `${fmText(57)}` : `${fmText(56)}`,
-                icon: file ? 'ki-eye' : 'ki-folder',
+                icon: file ? 'eye' : 'folder',
                 // In picker mode activateItem() confirms the file and closes the
                 // picker. The context-menu preview must never change selection or
                 // confirm the picker; it only opens the nested preview dialog.
                 run: () => file ? this.openPreview(item) : this.openFolder(item.id),
             },
-            ...(file && item.url ? [{ key: 'download', label: `${fmText(58)}`, icon: 'ki-cloud-download', run: () => this.download(item) }] : []),
+            ...(file && item.url ? [{ key: 'download', label: `${fmText(58)}`, icon: 'download', run: () => this.download(item) }] : []),
             ...(zip ? [{
                 key: 'extract',
                 label: `${fmText(297)} ZIP`,
-                icon: 'ki-folder-down',
+                icon: 'folder-download',
                 disabled: !this.permissions.manage || this.archiveBusy,
                 children: [
-                    { key: 'extract-current', label: `${fmText(298)}`, description: `${fmText(299)}`, icon: 'ki-folder-down', run: () => this.extractArchive(item, 'current') },
-                    { key: 'extract-folder', label: `${fmText(300)}${archiveFolderName}»`, description: `${fmText(301)}`, icon: 'ki-add-folder', run: () => this.extractArchive(item, 'named_folder') },
+                    { key: 'extract-current', label: `${fmText(298)}`, description: `${fmText(299)}`, icon: 'folder-download', run: () => this.extractArchive(item, 'current') },
+                    { key: 'extract-folder', label: `${fmText(300)}${archiveFolderName}»`, description: `${fmText(301)}`, icon: 'folder-plus', run: () => this.extractArchive(item, 'named_folder') },
                 ],
             }] : []),
             { separator: true },
-            { key: 'copy', label: `${fmText(302)}`, icon: 'ki-copy', shortcut: 'Ctrl+C', disabled: !this.permissions.manage, run: () => this.setClipboard('copy') },
-            { key: 'cut', label: `${fmText(303)}`, icon: 'ki-arrow-right-left', shortcut: 'Ctrl+X', disabled: !this.permissions.manage, run: () => this.setClipboard('move') },
-            { key: 'paste', label: file ? `${fmText(304)}` : `${fmText(305)}`, icon: 'ki-clipboard', shortcut: 'Ctrl+V', disabled: !this.permissions.manage || !this.clipboard?.ids?.length, run: () => this.pasteClipboardTo(file ? this.folderId : item.id) },
-            { key: 'compress', label: `${fmText(306)} ZIP`, icon: 'ki-archive', disabled: !this.permissions.manage || !this.selected.size || this.archiveBusy, run: () => this.compressSelected() },
-            { key: 'rename', label: `${fmText(276)}`, icon: 'ki-notepad-edit', shortcut: 'F2', disabled: !this.permissions.manage, run: () => this.rename() },
+            { key: 'copy', label: `${fmText(302)}`, icon: 'copy', shortcut: 'Ctrl+C', disabled: !this.permissions.manage, run: () => this.setClipboard('copy') },
+            { key: 'cut', label: `${fmText(303)}`, icon: 'arrows-left-right', shortcut: 'Ctrl+X', disabled: !this.permissions.manage, run: () => this.setClipboard('move') },
+            { key: 'paste', label: file ? `${fmText(304)}` : `${fmText(305)}`, icon: 'clipboard', shortcut: 'Ctrl+V', disabled: !this.permissions.manage || !this.clipboard?.ids?.length, run: () => this.pasteClipboardTo(file ? this.folderId : item.id) },
+            { key: 'compress', label: `${fmText(306)} ZIP`, icon: 'archive', disabled: !this.permissions.manage || !this.selected.size || this.archiveBusy, run: () => this.compressSelected() },
+            { key: 'rename', label: `${fmText(276)}`, icon: 'edit', shortcut: 'F2', disabled: !this.permissions.manage, run: () => this.rename() },
             { separator: true },
-            { key: 'delete', label: `${fmText(307)}`, icon: 'ki-trash', shortcut: 'Del', danger: true, disabled: !this.permissions.delete, run: () => this.destroySelected() },
+            { key: 'delete', label: `${fmText(307)}`, icon: 'trash', shortcut: 'Del', danger: true, disabled: !this.permissions.delete, run: () => this.destroySelected() },
         ];
     }
 
@@ -2030,14 +2006,14 @@ export default class PanelFileManager {
             </div>
             <div class="panel-file-manager__upload-meter"><div class="panel-file-manager__upload-progress"><span></span></div><output data-upload-percent>${fmText(143)}</output></div>
             <div class="panel-file-manager__upload-error hidden" data-upload-error role="alert">
-                <span aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.8v5.1m0 3.2v.1"/></svg></span>
+                <span aria-hidden="true">${iconMarkup('info', 17)}</span>
                 <div><strong data-upload-error-title>${fmText(323)}</strong><p data-upload-error-message></p></div>
             </div>
             <div class="panel-file-manager__upload-actions">
-                <button type="button" data-upload-error-toggle class="panel-file-manager__upload-action is-error-details hidden" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8v.1"/></svg><span data-upload-error-toggle-label>${fmText(324)}</span><svg class="panel-file-manager__upload-action-chevron" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"/></svg></button>
+                <button type="button" data-upload-error-toggle class="panel-file-manager__upload-action is-error-details hidden" aria-expanded="false">${iconMarkup('info', 15)}<span data-upload-error-toggle-label>${fmText(324)}</span>${iconMarkup('chevron-down', 13, 'panel-file-manager__upload-action-chevron')}</button>
                 <span class="panel-file-manager__upload-actions-spacer"></span>
-                <button type="button" data-upload-retry class="panel-file-manager__upload-action is-retry hidden" aria-label="${fmText(325)}" title="${fmText(325)}"><svg viewBox="0 0 24 24"><path d="M19 8a8 8 0 1 0 .4 7M19 4v4h-4"/></svg><span>${fmText(325)}</span></button>
-                <button type="button" data-upload-cancel class="panel-file-manager__upload-action is-remove" aria-label="${fmText(326)}" title="${fmText(327)}"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 4h6l1 3M7 7l.75 13h8.5L17 7M10 11v5m4-5v5"/></svg></button>
+                <button type="button" data-upload-retry class="panel-file-manager__upload-action is-retry hidden" aria-label="${fmText(325)}" title="${fmText(325)}">${iconMarkup('refresh', 15)}<span>${fmText(325)}</span></button>
+                <button type="button" data-upload-cancel class="panel-file-manager__upload-action is-remove" aria-label="${fmText(326)}" title="${fmText(327)}">${iconMarkup('trash', 15)}</button>
             </div>`;
         this.elements.uploadList.prepend(row);
         this.updateUploadCount();
@@ -2124,16 +2100,9 @@ export default class PanelFileManager {
     }
 
     uploadFileVisual(meta) {
-        const symbols = {
-            image: '<rect x="7.5" y="9" width="9" height="7" rx="1.2"/><circle cx="10.2" cy="11.5" r=".8"/><path d="m8.5 15 2.4-2.3 1.7 1.5 1.5-1.3 1.4 2.1"/>',
-            document: '<path d="M9 10.5h6M9 13h6M9 15.5h4"/>',
-            audio: '<path d="M14.5 9.5v6a1.7 1.7 0 1 1-1.7-1.7c.6 0 1.2.3 1.7.7V11l3-1v4.5a1.7 1.7 0 1 1-1.7-1.7c.6 0 1.2.3 1.7.7"/>',
-            video: '<path d="m10 10 5 3-5 3z"/>',
-            archive: '<path d="M12 8.5h2M12 11h2M12 13.5h2M12 16h2"/>',
-            unknown: '<path d="M12 10v4m0 2.5v.1"/>',
-        };
+        const icons = { image: 'file-image', document: 'file-text', audio: 'file-audio', video: 'file-video', archive: 'file-archive', unknown: 'file-question' };
         const extension = (meta.extension || 'FILE').slice(0, 4).toUpperCase();
-        return `<span class="panel-file-manager__upload-visual is-${this.escape(meta.group)}" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="file-shape" d="M6.5 3h7l4 4v14h-11z"/><path class="file-fold" d="M13.5 3v4h4"/>${symbols[meta.group] || symbols.unknown}</svg><b>${this.escape(extension)}</b></span>`;
+        return `<span class="panel-file-manager__upload-visual is-${this.escape(meta.group)}" aria-hidden="true">${iconMarkup(icons[meta.group] || icons.unknown, 56)}<b>${this.escape(extension)}</b></span>`;
     }
 
     validateUploadCandidate(file) {

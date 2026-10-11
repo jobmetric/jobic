@@ -1,4 +1,5 @@
 import $ from '../../../admin/jquery';
+import { iconMarkup } from '../../../../common/icons';
 
 const escapeHtml = (value) => $('<div>').text(String(value ?? '')).html();
 
@@ -40,7 +41,7 @@ export const createActionController = ($dashboard) => {
         $layer.find('[data-dashboard-action-title]').text(title);
         $layer.find('[data-dashboard-action-eyebrow]').text(eyebrow);
         $layer.find('[data-dashboard-action-body]').html(body);
-        $layer.find('[data-dashboard-action-icon]').html(`<svg class="ui-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#icon-${escapeHtml(icon)}"></use></svg>`);
+        $layer.find('[data-dashboard-action-icon]').html(iconMarkup(icon, 22));
         $layer.find('[data-dashboard-action-confirm]').text(confirmText).toggle(Boolean(onConfirm));
         $layer.addClass('is-open').attr('aria-hidden', 'false');
         $('body').addClass('has-dashboard-dialog');

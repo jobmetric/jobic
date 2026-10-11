@@ -8,6 +8,7 @@ use App\Facades\Hooks;
 use App\Http\Requests\Media\MediaManagerRequest;
 use App\Support\AdminAccess;
 use App\Support\LocalizedDate;
+use App\Support\TaxonomyPermissions;
 use App\Support\TaxonomyPresentation;
 use Illuminate\Validation\ValidationException;
 use JobMetric\Media\Exceptions\FileManagerConflict;
@@ -214,9 +215,14 @@ class MediaManager
         return [
             'ok'          => true,
             'data'        => array_map(fn ($item) => $this->transform($item), $page->items()),
-            'folder'      => ['id' => $parent],
+            'folder'      => [
+                'id' => $parent,
+            ],
             'breadcrumbs' => $crumbs,
-            'permissions' => ['manage' => true, 'delete' => true],
+            'permissions' => [
+                'manage' => true,
+                'delete' => true,
+            ],
             'meta'        => [
                 'current_page' => $page->currentPage(),
                 'last_page'    => $page->lastPage(),
@@ -294,10 +300,13 @@ class MediaManager
 
                     $label = TaxonomyPresentation::typeLabel($record->type, $typeLabel) . ' — ' . TaxonomyPresentation::name($record);
 
-                    $url = app(AdminAccess::class)->allows(auth()->user(), 'admin.content') ? route('admin.taxonomies.edit', [
-                        $record->type,
-                        $record->id,
-                    ]) : null;
+                    $url = null;
+                    if ($registry->has($record->type)) {
+                        $permissions = app(TaxonomyPermissions::class)->for($record->type, $registry->for($record->type));
+                        if (app(AdminAccess::class)->allows(auth()->user(), $permissions['manage'])) {
+                            $url = route('admin.taxonomies.edit', [$record->type, $record->id]);
+                        }
+                    }
                 } else {
                     $label = __('media-manager.content') . ' #' . $relation->mediaable_id;
                     $url = null;

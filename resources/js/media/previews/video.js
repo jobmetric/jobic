@@ -1,4 +1,5 @@
 import { pageData } from '../../common/page';
+import { iconMarkup } from '../../common/icons';
 const fmText = key => pageData().fileManager?.texts?.[key] ?? '';
 export default {
     renderVideoPreview(item) {
@@ -63,23 +64,13 @@ export default {
     },
 
     videoSvg(name) {
-        const paths = {
-            play: '<path d="m9 7 9 5-9 5Z"/>',
-            pause: '<path d="M8.5 7v10M15.5 7v10"/>',
-            back: '<path d="M7.1 5.3H3.7V1.9"/><path d="M4.1 5.5A9 9 0 1 1 3 15.7"/><text x="12" y="12.5" text-anchor="middle" dominant-baseline="middle" fill="currentColor" stroke="none" font-family="Arial, sans-serif" font-size="6.4" font-weight="800">10</text>',
-            forward: '<path d="M16.9 5.3h3.4V1.9"/><path d="M19.9 5.5A9 9 0 1 0 21 15.7"/><text x="12" y="12.5" text-anchor="middle" dominant-baseline="middle" fill="currentColor" stroke="none" font-family="Arial, sans-serif" font-size="6.4" font-weight="800">10</text>',
-            volume: '<path d="M5 10v4h4l5 4V6l-5 4Z"/><path d="M17 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>',
-            muted: '<path d="M5 10v4h4l5 4V6l-5 4Z"/><path d="m18 10 4 4m0-4-4 4"/>',
-            repeat: '<path d="M17 4l3 3-3 3M20 7H7a4 4 0 0 0-4 4M7 20l-3-3 3-3M4 17h13a4 4 0 0 0 4-4"/>',
-            fit: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5"/><rect x="7" y="7" width="10" height="10" rx="1"/>',
-            camera: '<path d="M4 8h4l1.5-2h5L16 8h4v11H4Z"/><circle cx="12" cy="13.5" r="3.5"/>',
-            pip: '<rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="5" rx="1"/>',
-            fullscreen: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5"/>',
-            fullscreenExit: '<path d="M3 8h5V3m13 5h-5V3M3 16h5v5m13-5h-5v5"/>',
-            speed: '<path d="M5.6 16.8a8 8 0 1 1 12.8 0"/><path d="m12 12 4-3"/><circle cx="12" cy="12" r="1.4"/><path d="M5 19h14"/>',
-            chevron: '<path d="m8 10 4 4 4-4"/>',
+        const icons = {
+            play: 'play', pause: 'pause', back: 'rewind-10', forward: 'forward-10',
+            volume: 'volume', muted: 'volume-off', repeat: 'repeat', fit: 'maximize',
+            camera: 'camera', pip: 'layout', fullscreen: 'maximize', fullscreenExit: 'minimize',
+            speed: 'gauge', chevron: 'chevron-down',
         };
-        return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.play}</svg>`;
+        return iconMarkup(icons[name] || 'play', 20);
     },
 
     bindVideoPlayer(state) {

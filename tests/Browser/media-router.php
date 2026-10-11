@@ -26,6 +26,6 @@ $app->afterBootstrapping(\Illuminate\Foundation\Bootstrap\BootProviders::class,f
         file_put_contents($directory.'/ready','1');
     }
     \Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::where('email','media-fixture@example.test')->firstOrFail());
-    \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::register('media_fixture')->label('آزمایش رسانه')->url()->urlPrefix('catalog/media')->media([['collection'=>'base','multiple'=>true,'mimeTypes'=>['image']]]);
+    \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::register('media_fixture')->label('آزمایش رسانه')->url('catalog/media')->media([['collection'=>'base','multiple'=>true,'mimeTypes'=>['image']]]);
 });
 $app->handleRequest(\Illuminate\Http\Request::capture());

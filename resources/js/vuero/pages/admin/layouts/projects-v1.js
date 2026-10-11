@@ -1,4 +1,5 @@
 import $ from '../../../admin/jquery';
+import { iconMarkup } from '../../../../common/icons';
 import { initializeProjectsToolbar } from './projects-runtime';
 
 const sortKeys = ['username', 'position', 'earnings', 'status', 'contacts'];
@@ -30,7 +31,7 @@ $(() => {
                 ? (currentSort.direction === 'asc' ? 'sort-up' : 'sort-down')
                 : 'sort';
             const label = String($(this).data('sort-label'));
-            $(this).html(`${label}<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#icon-${icon}"></use></svg>`);
+            $(this).html(`${label}${iconMarkup(icon, 14)}`);
         });
     };
 

@@ -1,4 +1,5 @@
 import $ from '../../admin/jquery';
+import { iconMarkup } from '../../../common/icons';
 
 $(() => {
     const $wizard = $('[data-project-wizard]');
@@ -32,7 +33,7 @@ $(() => {
     const persist = () => {};
 
     const escapeHtml = (value) => $('<div>').text(String(value ?? '')).html();
-    const icon = (name, size = 16) => `<svg class="ui-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
+    const icon = (name, size = 16) => iconMarkup(name, size);
 
     const showToast = (message, isError = false) => {
         const $toast = $('[data-wizard-toast]');

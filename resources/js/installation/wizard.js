@@ -1,4 +1,5 @@
 import { announce } from '../common/toast';
+import { iconMarkup } from '../common/icons';
 import { loadingButton, pageData } from '../common/page';
 import '../../css/installation.css';
 
@@ -38,13 +39,13 @@ function initialize(root, restoredStep = null, restoredConnections = null) {
         toggle.tabIndex = -1;
         toggle.addEventListener('mousedown', (event) => event.preventDefault());
         toggle.className = 'installation-password-toggle';
-        toggle.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="password-eye-slash" d="M3 3 21 21" hidden/></svg>';
+        toggle.innerHTML = iconMarkup('eye', 18);
         toggle.setAttribute('aria-label', messages.show_password);
         toggle.setAttribute('aria-pressed', 'false');
         toggle.addEventListener('click', () => {
             const visible = input.type === 'password';
             input.type = visible ? 'text' : 'password';
-            toggle.querySelector('.password-eye-slash').toggleAttribute('hidden', !visible);
+            toggle.innerHTML = iconMarkup(visible ? 'eye-off' : 'eye', 18);
             toggle.setAttribute('aria-label', visible ? messages.hide_password : messages.show_password);
             toggle.setAttribute('aria-pressed', String(visible));
         });

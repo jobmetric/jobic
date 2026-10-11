@@ -1,4 +1,5 @@
 import { pageData } from '../../common/page';
+import { iconMarkup } from '../../common/icons';
 const fmText = key => pageData().fileManager?.texts?.[key] ?? '';
 export default {
     renderAudioPreview(item) {
@@ -10,7 +11,7 @@ export default {
             <section class="panel-file-manager__audio-visual">
                 <canvas data-audio-visualizer aria-label="${fmText(149)}"></canvas>
                 <div class="panel-file-manager__audio-glow"></div>
-                <div class="panel-file-manager__audio-cover" aria-hidden="true"><span>${this.audioSvg('music')}<b>${extension}</b></span></div>
+                <div class="panel-file-manager__audio-cover" aria-hidden="true"><span>${this.audioSvg('music', 58)}<b>${extension}</b></span></div>
                 <div class="panel-file-manager__audio-track-copy"><span><i></i> ${fmText(150)}</span><div><strong dir="auto">${this.escape(item.name)}</strong>${this.audioSvg('equalizer')}</div><small><b>${extension}</b><b>${this.formatSize(item.size)}</b><b dir="ltr" data-audio-bitrate>${fmText(151)}</b></small></div>
                 <div class="panel-file-manager__audio-viz-picker">
                     <button type="button" class="panel-file-manager__audio-viz-mode" data-audio-viz-mode aria-expanded="false" title="${fmText(152)}">${this.audioSvg('visualizer')}<span>${fmText(153)}</span>${this.audioSvg('chevron')}</button>
@@ -118,41 +119,16 @@ export default {
         this.startAudioPlayback(state);
     },
 
-    audioSvg(name) {
-        const paths = {
-            play: '<path d="m9 7 9 5-9 5Z"/>',
-            pause: '<path d="M8.5 7v10M15.5 7v10"/>',
-            back: '<path d="M5 8V4m0 0H1m4 0L2.5 6.5A8 8 0 1 0 12 4"/><text x="12" y="12.5" text-anchor="middle" dominant-baseline="middle" fill="currentColor" stroke="none" font-family="Arial" font-size="6.5">10</text>',
-            forward: '<path d="M19 8V4m0 0h4m-4 0 2.5 2.5A8 8 0 1 1 12 4"/><text x="12" y="12.5" text-anchor="middle" dominant-baseline="middle" fill="currentColor" stroke="none" font-family="Arial" font-size="6.5">10</text>',
-            repeat: '<path d="M17 4l3 3-3 3M20 7H7a4 4 0 0 0-4 4M7 20l-3-3 3-3M4 17h13a4 4 0 0 0 4-4"/>',
-            volume: '<path d="M5 10v4h4l5 4V6l-5 4Z"/><path d="M17 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>',
-            muted: '<path d="M5 10v4h4l5 4V6l-5 4Z"/><path d="m18 10 4 4m0-4-4 4"/>',
-            bass: '<path d="M4 16c2.1 0 2.1-8 4.2-8s2.1 10 4.2 10 2.1-12 4.2-12S18.7 16 21 16"/>',
-            warmth: '<circle cx="12" cy="12" r="3.5"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-            reverb: '<path d="M4 9c2.5 0 2.5 6 5 6s2.5-8 5-8 2.5 10 5 10"/><path d="M4 5c4 0 4 14 8 14"/>',
-            echo: '<path d="M5 8a8 8 0 1 0 2-2"/><path d="M5 3v5h5M12 7v5l3 2"/>',
-            night: '<path d="M19.5 15.5A8 8 0 0 1 8.5 4.5 8 8 0 1 0 19.5 15.5Z"/><path d="m17 4 .5 1.5L19 6l-1.5.5L17 8l-.5-1.5L15 6l1.5-.5Z"/>',
-            music: '<path d="M9 18V7l9-2v10"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="15.5" cy="15" r="2.5"/>',
-            visualizer: '<path d="M4 14v-4m4 8V6m4 14V4m4 13V7m4 7v-4"/>',
-            region: '<path d="M7 5H4v14h3M17 5h3v14h-3"/><path d="M9 9v6m6-6v6"/>',
-            restart: '<path d="M8 7V3L3 8l5 5V9a7 7 0 1 1-1 8"/>',
-            previous: '<path d="M7 5v14M18 6l-8 6 8 6Z"/>',
-            next: '<path d="M17 5v14M6 6l8 6-8 6Z"/>',
-            close: '<path d="m7 7 10 10M17 7 7 17"/>',
-            equalizer: '<path d="M5 4v16m7-16v16m7-16v16"/><circle cx="5" cy="9" r="2"/><circle cx="12" cy="15" r="2"/><circle cx="19" cy="8" r="2"/>',
-            sparkles: '<path d="m12 3 1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2Z"/><path d="m18.5 14 .7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7Z"/>',
-            normalize: '<path d="M3 12h3l2-6 3 12 3-9 2 6h5"/>',
-            balance: '<path d="M4 7h10m4 0h2M4 17h2m4 0h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
-            settings: '<path d="M4 7h10m4 0h2M4 17h2m4 0h10"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/>',
-            chevron: '<path d="m8 10 4 4 4-4"/>',
-            speed: '<path d="M5.6 16.8a8 8 0 1 1 12.8 0"/><path d="m12 12 4-3"/><circle cx="12" cy="12" r="1.4"/><path d="M5 19h14"/>',
-            microphone: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6.5 11a5.5 5.5 0 0 0 11 0M12 16.5V21M9 21h6"/>',
-            bolt: '<path d="m13.5 2-8 12h6L10.5 22l8-12h-6Z"/>',
-            broadcast: '<circle cx="12" cy="12" r="2"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.5 5.5a9 9 0 0 0 0 13M18.5 5.5a9 9 0 0 1 0 13"/>',
-            film: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 9h4m10 0h4M3 15h4m10 0h4"/>',
-            add: '<path d="M12 5v14M5 12h14"/>',
+    audioSvg(name, size = 20) {
+        const icons = {
+            play: 'play', pause: 'pause', back: 'rewind-10', forward: 'forward-10', repeat: 'repeat',
+            volume: 'volume', muted: 'volume-off', bass: 'activity', warmth: 'sun', reverb: 'wifi', echo: 'radio',
+            night: 'moon', music: 'headphones', visualizer: 'chart-bar', region: 'layout', restart: 'refresh',
+            previous: 'arrow-left', next: 'arrow-right', close: 'x', equalizer: 'activity', sparkles: 'energy',
+            normalize: 'activity', balance: 'arrows-left-right', settings: 'settings', chevron: 'chevron-down',
+            speed: 'gauge', microphone: 'microphone', bolt: 'energy', broadcast: 'wifi', film: 'video', add: 'plus',
         };
-        return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.play}</svg>`;
+        return iconMarkup(icons[name] || 'play', size);
     },
 
     bindAudioPlayer(state) {

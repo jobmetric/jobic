@@ -1,4 +1,5 @@
 import { pageData } from '../common/page';
+import { iconMarkup } from '../common/icons';
 import '../../css/crud.css';
 import '../../css/crud-fields.css';
 export const copy = () => pageData().users;
@@ -8,7 +9,7 @@ export function escape(value) {
     return span.innerHTML;
 }
 export function icon(name) {
-    return `<svg class="ui-icon" width="18" height="18" fill="none" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
+    return iconMarkup(name, 18);
 }
 function button(key, type = 'button') {
     const node = document.createElement('button');

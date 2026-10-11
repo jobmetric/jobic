@@ -31,8 +31,7 @@ class SocialNetworksSettingsTest extends TestCase
         $url = route('admin.settings.forms.edit', ['jobic', 'social_networks']);
 
         $this->actingAs($user)->get(route('admin.settings.index'))
-            ->assertOk()->assertSee($url, false)->assertSee(__('settings/social_networks.title'))
-            ->assertSee('href="#icon-share"', false);
+            ->assertOk()->assertSee($url, false)->assertSee(__('settings/social_networks.title'));
         $this->get($url)->assertOk()
             ->assertSee('class="cms-settings-section"', false)
             ->assertSee(__('settings/social_networks.profiles_group'))

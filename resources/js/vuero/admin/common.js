@@ -19,7 +19,6 @@ $(() => {
     const cmsPreferences = $shell.is('[data-cms-shell]') ? JSON.parse($shell.attr('data-preferences')) : null;
     const $circularMenu = $('[data-circular-menu]');
     const mobileQuery = window.matchMedia('(max-width: 820px)');
-    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     let activeMobilePanel = String($('[data-sidebar-panel-target].is-active').first().data('sidebar-panel-target') || 'dashboard');
     let lastPanelTrigger = null;
     let lastModalTrigger = null;
@@ -369,9 +368,18 @@ $(() => {
 
     $document.on('click', '[data-dropdown-menu]', (event) => event.stopPropagation());
     $document.on('click', (event) => {
-        if (!$(event.target).closest('[data-circular-menu]').length) {
+        const $target = $(event.target);
+
+        if (!$target.closest('[data-circular-menu]').length) {
             setCircularMenuOpen(false);
         }
+
+        // Toggle clicks are handled by their delegated handlers above; do not
+        // immediately close a dropdown that has just been opened.
+        if ($target.closest('[data-dropdown-toggle], [data-navdrop-toggle]').length) {
+            return;
+        }
+
         closeDropdowns();
         $('[data-navdrop]').removeClass('is-open');
         $('[data-navdrop-toggle]').attr('aria-expanded', 'false');
@@ -445,9 +453,14 @@ $(() => {
             openSubsidebar(activeMobilePanel);
         }
     });
-    $document.on('click', '[data-sidebar-panel-target]', function () {
-        openSubsidebar(String($(this).data('sidebar-panel-target')));
-    });
+    document.addEventListener('click', (event) => {
+        const trigger = event.target instanceof Element
+            ? event.target.closest('[data-sidebar-panel-target]')
+            : null;
+        if (!trigger) return;
+        event.preventDefault();
+        openSubsidebar(trigger.dataset.sidebarPanelTarget);
+    }, true);
 
     $document.on('click', '[data-sideblock-group-toggle]', function () {
         const $button = $(this);
@@ -501,13 +514,13 @@ $(() => {
         $tabs.find(`[data-tab-content="${tabId}"]`).prop('hidden', false).addClass('is-active');
     });
 
-    $document.on('click', '[data-accordion-toggle]', function () {
+    $document.on('click', '[data-accordion-toggle]', function (event) {
+        event.preventDefault();
         const $button = $(this);
         const $accordion = $button.closest('[data-accordion]');
         const $scope = $accordion.closest('[data-accordion-scope]');
         const $content = $accordion.children('[data-accordion-content]').first();
         const isOpen = $accordion.hasClass('is-open');
-        const duration = reducedMotionQuery.matches ? 0 : 180;
 
         const closeAccordion = ($item) => {
             const $itemButton = $item.children('[data-accordion-toggle]').first();
@@ -515,14 +528,7 @@ $(() => {
 
             $item.removeClass('is-open');
             $itemButton.attr('aria-expanded', 'false');
-
-            if (duration && !$itemContent.prop('hidden')) {
-                $itemContent.stop(true, true).slideUp(duration, () => {
-                    $itemContent.prop('hidden', true).removeAttr('style');
-                });
-            } else {
-                $itemContent.stop(true, true).prop('hidden', true).removeAttr('style');
-            }
+            $itemContent.stop(true, true).prop('hidden', true).removeAttr('style');
         };
 
         $scope.children('[data-accordion]').not($accordion).filter('.is-open').each(function () {
@@ -536,13 +542,7 @@ $(() => {
 
         $accordion.addClass('is-open');
         $button.attr('aria-expanded', 'true');
-        $content.stop(true, true).prop('hidden', false);
-
-        if (duration) {
-            $content.hide().slideDown(duration, () => $content.removeAttr('style'));
-        } else {
-            $content.removeAttr('style');
-        }
+        $content.stop(true, true).prop('hidden', false).removeAttr('style');
     });
 
     $document.on('click', '[data-language-option]', function () {

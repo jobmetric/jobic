@@ -40,7 +40,7 @@ class SocialNetworkRegistry
         }
 
         if (! preg_match('/^[a-z0-9][a-z0-9_-]*$/', $icon)) {
-            throw new InvalidArgumentException('Social-network icons must reference a safe icon-sprite key.');
+            throw new InvalidArgumentException('Social-network icons must reference a safe SVG icon key.');
         }
 
         $this->networks[$key] = compact('key', 'name', 'icon') + ['url_template' => $urlTemplate];

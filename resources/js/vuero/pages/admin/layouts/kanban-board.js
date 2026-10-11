@@ -1,4 +1,5 @@
 import $ from '../../../admin/jquery';
+import { iconMarkup } from '../../../../common/icons';
 import { initializeProjectsToolbar } from './projects-runtime';
 
 const updateCounts = ($view) => {
@@ -150,7 +151,7 @@ $(() => {
         $card.find('.new-avatar, .card-footer').remove();
         $card.find('.card-body').append(`
             <div class="kanban-card-stats">
-                <span><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#icon-clock"></use></svg>${due}</span>
+                <span>${iconMarkup('clock', 14)}${due}</span>
                 <span class="flex-avatar-stack"><span class="flex-avatar is-small"><img src="${owner}" alt=""></span></span>
             </div>
         `);

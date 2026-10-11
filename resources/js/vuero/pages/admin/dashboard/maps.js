@@ -1,6 +1,7 @@
 import $ from '../../../admin/jquery';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { iconMarkup } from '../../../../common/icons';
 
 const TILESETS = {
     light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
@@ -13,11 +14,7 @@ const TILE_OPTIONS = {
     subdomains: 'abcd',
 };
 
-const iconSvg = (name, size = 13) => `
-    <svg class="ui-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <use href="#icon-${name}"></use>
-    </svg>
-`;
+const iconSvg = (name, size = 13) => iconMarkup(name, size);
 
 const normalizeSearch = (value) => String(value || '').trim().toLocaleLowerCase();
 

@@ -35,7 +35,7 @@ dialog.panel-file-picker-modal .panel-file-manager__audio-extra-fx .select2-cont
 .panel-file-manager__delete-list li { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid #f1d7df; border-radius:10px; background:#fff6f8; color:#76293f; }
 .panel-file-manager__delete-list .panel-file-manager__file-icon { width:28px; height:36px; flex-shrink:0; }
 .panel-file-manager__delete-list .panel-file-manager__file-icon b { display:none; }
-.panel-file-manager__delete-list .panel-file-manager__file-icon i { font-size:16px; }
+.panel-file-manager__delete-list .panel-file-manager__file-icon svg.ui-icon { width:16px !important; height:16px !important; }
 .panel-file-manager__delete-list li > span:last-child { overflow-wrap:anywhere; }
 .panel-file-picker-modal *, .panel-file-picker-modal *::before, .panel-file-picker-modal *::after { box-sizing:border-box; }
 .panel-file-picker-modal button { border:0 solid; background:transparent; color:inherit; padding:0; font:inherit; }
@@ -532,7 +532,7 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
 
 .panel-file-manager__file-icon { position: relative; display: grid; width: 72px; height: 88px; margin-top: 3px; grid-template-rows: 1fr auto; place-items: center; overflow: hidden; padding: 17px 8px 9px; border: 1px solid rgb(255 255 255 / 25%); border-radius: 8px 18px 8px 8px; background: linear-gradient(145deg, #8494aa, #58697f); color: #fff; box-shadow: 0 8px 18px rgb(15 23 42 / 18%); }
 .panel-file-manager__file-icon::before { content: ''; position: absolute; top: 0; inset-inline-end: 0; width: 25px; height: 25px; background: rgb(255 255 255 / 52%); clip-path: polygon(0 0, 100% 100%, 0 100%); }
-.panel-file-manager__file-icon > i { font-size: 21.6px; }
+.panel-file-manager__file-icon > svg.ui-icon { width: 22px !important; height: 22px !important; }
 .panel-file-manager__file-icon > b { padding: 1.6px 4.8px; border-radius: 99px; background: rgb(0 0 0 / 12%); font-size: 9.12px; font-weight: 850; letter-spacing: .04em; }
 .panel-file-manager__file-icon.is-document { background: linear-gradient(145deg, #4d91f1, #245cba); }
 .panel-file-manager__file-icon.is-video { background: linear-gradient(145deg, #ff6b6b, #d9364b); }
@@ -561,7 +561,7 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
 .panel-file-manager.is-list .panel-file-manager__folder-icon::after { inset: 8px 1px 0; border-radius: 4px 6px 6px 6px; }
 .panel-file-manager.is-list .panel-file-manager__file-icon { width: 34px; height: 41px; margin: 0; grid-template-rows: 1fr auto; padding: 8px 3px 3px; border-radius: 4px 8px 4px 4px; }
 .panel-file-manager.is-list .panel-file-manager__file-icon::before { width: 13px; height: 13px; }
-.panel-file-manager.is-list .panel-file-manager__file-icon > i { font-size: 12px; }
+.panel-file-manager.is-list .panel-file-manager__file-icon > svg.ui-icon { width: 12px !important; height: 12px !important; }
 .panel-file-manager.is-list .panel-file-manager__file-icon > b { padding: 0 2.4px; font-size: 5.6px; }
 .panel-file-manager.is-list .panel-file-manager__item-primary { margin: 0; text-align: start; }
 .panel-file-manager.is-list .panel-file-manager__item-primary strong { display: block; overflow: hidden; font-size: 11.04px; font-weight: 780; text-overflow: ellipsis; white-space: nowrap; }
@@ -612,7 +612,7 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
 .panel-file-manager__sidebar-head button { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 5.6px; color: var(--color-secondary-foreground); font-size: 14.4px; }
 .panel-file-manager__sidebar-head button:hover { background: color-mix(in srgb, var(--color-destructive) 9%, transparent); color: var(--color-destructive); }
 .panel-file-manager__details-empty { display: flex; min-height: 0; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; gap: 7.2px; padding: 24px 12px; color: var(--color-secondary-foreground); text-align: center; }
-.panel-file-manager__details-empty i { font-size: 35.2px; }
+.panel-file-manager__details-empty > svg.ui-icon { width:35px !important; height:35px !important; }
 .panel-file-manager__details-empty strong { color: var(--color-foreground); font-size: 12.32px; }
 .panel-file-manager__details-empty p { max-width: 210px; font-size: 10.4px; line-height: 1.9; }
 .panel-file-manager__side-title { display: flex; align-items: center; gap: 4.8px; margin-bottom: 11.2px; color: var(--color-secondary-foreground); font-size: 10.88px; font-weight: 800; }
@@ -776,7 +776,7 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
 .panel-file-manager__upload-visual.is-video { --upload-accent: #f34f63; }
 .panel-file-manager__upload-visual.is-archive { --upload-accent: #14b87a; }
 .panel-file-manager__upload-visual.is-unknown { --upload-accent: #8490a3; }
-.panel-file-manager__upload-visual svg { position: absolute; inset: 0; width: 56px; height: 64px; fill: none; stroke: #fff; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+.panel-file-manager__upload-visual svg { position: absolute; inset: 0; width: 56px !important; height: 64px !important; fill: none; stroke: currentColor; stroke-width: 1.55; stroke-linecap: round; stroke-linejoin: round; }
 .panel-file-manager__upload-visual svg .file-shape { fill: var(--upload-accent); stroke: var(--upload-accent); }
 .panel-file-manager__upload-visual svg .file-fold { fill: color-mix(in srgb, var(--upload-accent) 46%, #fff); stroke: color-mix(in srgb, var(--upload-accent) 46%, #fff); }
 .panel-file-manager__upload-visual b { position: absolute; right: 9px; bottom: 7px; max-width: 38px; padding: 2px 5px; overflow: hidden; border-radius: 99px; background: color-mix(in srgb, var(--upload-accent) 76%, #172033); color: #fff; font-family: Arial, sans-serif; font-size: 7px; font-weight: 800; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; direction: ltr; }
@@ -1524,7 +1524,7 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
 .panel-file-manager__structured-loader > span { width: 26px; height: 26px; border: 3px solid rgb(255 255 255 / 15%); border-top-color: #8da5ff; border-radius: 50%; animation: panel-file-manager-spin .75s linear infinite; }
 .panel-file-manager__preview-loading strong,
 .panel-file-manager__preview-error strong { font-size: 11.2px; }
-.panel-file-manager__preview-error > i { color: #fb7185; font-size: 32px; }
+.panel-file-manager__preview-error > svg.ui-icon { width:32px !important; height:32px !important; color: #fb7185; }
 .panel-file-manager__preview-error p { max-width: 470px; color: #94a3b8; font-size: 9.92px; line-height: 1.9; }
 
 .panel-file-manager__sheet-tabs { display: flex; min-height: 45px; flex: 0 0 45px; align-items: end; gap: 4px; overflow-x: auto; padding: 6px 12px 0; border-bottom: 1px solid rgb(255 255 255 / 10%); background: #111a28; scrollbar-width: none; direction: rtl; }
@@ -1661,6 +1661,118 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
     .panel-file-manager__archive-name-cell::before { width: calc(var(--entry-depth) * 10px); }
     .panel-file-manager__archive-entry-icon { width: 38px; height: 38px; flex-basis: 38px; }
 }
+
+/* The admin theme is stored on <html data-theme>, not on a .dark wrapper. */
+:root[data-theme='dark'] .panel-file-manager,
+:root[data-theme='dark'] .panel-file-picker-modal,
+:root[data-theme='dark'] .taxonomy-media-picker {
+    --color-background: var(--surface-raised);
+    --color-foreground: var(--text);
+    --color-secondary-foreground: var(--text-soft);
+    --color-border: var(--border);
+    --color-muted: var(--surface-soft);
+}
+:root[data-theme='dark'] .panel-file-manager { color: var(--text); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-picker-modal { color: var(--text); background: var(--surface-raised); }
+:root[data-theme='dark'] .panel-file-manager__toolbar,
+:root[data-theme='dark'] .panel-file-manager__browser,
+:root[data-theme='dark'] .panel-file-manager__location-bar,
+:root[data-theme='dark'] .panel-file-manager__location-view,
+:root[data-theme='dark'] .panel-file-manager__list-head,
+:root[data-theme='dark'] .panel-file-manager__sidebar,
+:root[data-theme='dark'] .panel-file-manager__details,
+:root[data-theme='dark'] .panel-file-manager__details-panel { color: var(--text); background-color: var(--surface-raised); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__search input,
+:root[data-theme='dark'] .panel-file-manager__filter-fields select,
+:root[data-theme='dark'] .panel-file-manager .select2-container .select2-selection--single,
+:root[data-theme='dark'] .panel-file-manager .select2-dropdown,
+:root[data-theme='dark'] .panel-file-picker-modal .select2-dropdown { color: var(--text) !important; background: var(--surface-soft) !important; border-color: var(--border) !important; }
+:root[data-theme='dark'] .panel-file-manager .select2-container .select2-selection__rendered,
+:root[data-theme='dark'] .panel-file-picker-modal .select2-results__option { color: var(--text) !important; }
+:root[data-theme='dark'] .panel-file-picker-modal .select2-results__option--highlighted[aria-selected] { color: #fff !important; background: var(--primary) !important; }
+:root[data-theme='dark'] .panel-file-manager__filters-popover,
+:root[data-theme='dark'] .panel-file-manager__filter-head,
+:root[data-theme='dark'] .panel-file-manager__filter-body,
+:root[data-theme='dark'] .panel-file-manager__actions-popover,
+:root[data-theme='dark'] .panel-file-manager__actions-head,
+:root[data-theme='dark'] .panel-file-manager__actions-list { color: var(--text); background: var(--surface-raised); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__filter-head strong,
+:root[data-theme='dark'] .panel-file-manager__actions-head strong,
+:root[data-theme='dark'] .panel-file-manager__actions-list button { color: var(--text); }
+:root[data-theme='dark'] .panel-file-manager__filter-head p,
+:root[data-theme='dark'] .panel-file-manager__actions-head p,
+:root[data-theme='dark'] .panel-file-manager__actions-list button small,
+:root[data-theme='dark'] .panel-file-manager__filter-field { color: var(--text-soft); }
+:root[data-theme='dark'] .panel-file-manager__filter-head > button,
+:root[data-theme='dark'] .panel-file-manager__filter-hint,
+:root[data-theme='dark'] .panel-file-manager__actions-list button kbd { color: var(--text-soft); background: var(--surface-soft); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__filter-fields select { color-scheme: dark; }
+:root[data-theme='dark'] .panel-file-manager__actions-list button { border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__actions-list button:hover:not(:disabled) { background: color-mix(in srgb, var(--fm-action-color) 13%, var(--surface-raised)); }
+:root[data-theme='dark'] .panel-file-manager__actions-list button.is-danger { color: #ff8290; background: rgb(239 51 64 / 12%); }
+:root[data-theme='dark'] .panel-file-manager__actions-list button:disabled { color: var(--muted); }
+:root[data-theme='dark'] .panel-file-manager__actions-list button:disabled small { color: var(--muted); }
+:root[data-theme='dark'] .panel-file-manager__location-view button { color: var(--text-soft); }
+:root[data-theme='dark'] .panel-file-manager__location-view button:hover:not(.is-active) { color: var(--text); background: var(--surface-soft); }
+:root[data-theme='dark'] .panel-file-manager__item,
+:root[data-theme='dark'] .panel-file-manager__list-row { color: var(--text); }
+:root[data-theme='dark'] .panel-file-manager__item-primary strong,
+:root[data-theme='dark'] .panel-file-manager__item-type,
+:root[data-theme='dark'] .panel-file-manager__item-size,
+:root[data-theme='dark'] .panel-file-manager__item-date,
+:root[data-theme='dark'] .panel-file-manager__detail-name,
+:root[data-theme='dark'] .panel-file-manager__meta li,
+:root[data-theme='dark'] .panel-file-manager__meta strong { color: var(--text); }
+:root[data-theme='dark'] .panel-file-manager__meta span,
+:root[data-theme='dark'] .panel-file-manager__meta small,
+:root[data-theme='dark'] .panel-file-manager__usage-list small { color: var(--text-soft); }
+:root[data-theme='dark'] .panel-file-manager__meta li,
+:root[data-theme='dark'] .panel-file-manager__usage-list { border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__usage-list > a,
+:root[data-theme='dark'] .panel-file-manager__usage-list > div { color: var(--text); background: var(--surface-soft); }
+:root[data-theme='dark'] .panel-file-manager__context-menu,
+:root[data-theme='dark'] .panel-file-manager__context-submenu,
+:root[data-theme='dark'] .panel-file-manager__prompt-card { color: var(--text); background: var(--surface-raised); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__context-menu button,
+:root[data-theme='dark'] .panel-file-manager__context-submenu button,
+:root[data-theme='dark'] .panel-file-manager__prompt-card strong { color: var(--text); }
+:root[data-theme='dark'] .panel-file-manager__context-menu button:hover:not(:disabled),
+:root[data-theme='dark'] .panel-file-manager__context-submenu button:hover:not(:disabled) { color: var(--primary); background: var(--surface-soft); }
+:root[data-theme='dark'] .panel-file-manager__context-separator { background: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__prompt-card p { color: var(--text-soft); }
+:root[data-theme='dark'] .panel-file-manager__prompt-card > input { color: var(--text); background: var(--surface-soft); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__list-head { color: var(--text-soft); }
+:root[data-theme='dark'] .panel-file-manager__item:hover,
+:root[data-theme='dark'] .panel-file-manager__item.is-selected,
+:root[data-theme='dark'] .panel-file-manager__list-row:hover,
+:root[data-theme='dark'] .panel-file-manager__list-row.is-selected { background: color-mix(in srgb, var(--primary) 15%, var(--surface-raised)); }
+:root[data-theme='dark'] .panel-file-manager__loading,
+:root[data-theme='dark'] .panel-file-manager__empty { color: var(--text-soft); background: color-mix(in srgb, var(--surface-raised) 90%, transparent); }
+:root[data-theme='dark'] .panel-file-manager__empty strong,
+:root[data-theme='dark'] .panel-file-manager__details-empty strong { color: var(--text); }
+:root[data-theme='dark'] .panel-file-manager__uploads,
+:root[data-theme='dark'] .panel-file-manager__uploads > header,
+:root[data-theme='dark'] .panel-file-manager__uploads > [data-fm-upload-list],
+:root[data-theme='dark'] .panel-file-manager__upload-task { color: var(--text); background: var(--surface-raised); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__uploads-title strong,
+:root[data-theme='dark'] .panel-file-manager__upload-copy strong { color: var(--text); }
+:root[data-theme='dark'] .panel-file-manager__uploads-title small,
+:root[data-theme='dark'] .panel-file-manager__upload-copy small { color: var(--text-soft); }
+:root[data-theme='dark'] .panel-file-manager__uploads-empty { color: var(--text); background: var(--surface-soft); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__uploads-empty p { color: var(--text-soft); }
+:root[data-theme='dark'] .panel-file-manager__upload-progress { background: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__upload-meter output { color: var(--text); }
+:root[data-theme='dark'] .panel-file-manager__upload-action { color: var(--text); background: var(--surface-soft); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__upload-task.is-done { color: var(--text); background: color-mix(in srgb, var(--primary) 10%, var(--surface-raised)); border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+:root[data-theme='dark'] .panel-file-manager__upload-task.is-error { background: #302127; border-color: #70404a; }
+:root[data-theme='dark'] .panel-file-manager__conflict-card,
+:root[data-theme='dark'] .panel-file-manager__conflict-card > header,
+:root[data-theme='dark'] .panel-file-manager__conflict-card > footer,
+:root[data-theme='dark'] .panel-file-manager__compare-card { color: var(--text); background: var(--surface-raised); border-color: var(--border); }
+:root[data-theme='dark'] .panel-file-manager__delete-list li { color: #ffb2bd; background: rgb(239 51 64 / 10%); border-color: #70404a; }
+:root[data-theme='dark'] .taxonomy-media-picker .taxonomy-media-picker__items article { background: var(--surface-raised); border-color: var(--border); }
+:root[data-theme='dark'] .taxonomy-media-picker .taxonomy-media-picker__items article .media-selector-preview { background: var(--surface-soft); }
+:root[data-theme='dark'] .taxonomy-media-picker .taxonomy-media-picker__open { background: color-mix(in srgb, var(--primary) 9%, var(--surface-raised)); border-color: color-mix(in srgb, var(--primary) 52%, var(--border)); }
 
 .panel-file-picker-modal { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 25px; }
 .panel-file-picker-modal__backdrop { position: absolute; inset: 0; background: rgb(15 23 42 / 68%); }
@@ -1917,7 +2029,7 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
 .panel-file-manager__pdf-toolbar button:hover { border-color: rgb(117 138 247 / 32%); background: rgb(93 125 242 / 11%); color: #eef2ff; }
 .panel-file-manager__pdf-toolbar button:active { scale: .94; }
 .panel-file-manager__pdf-toolbar button:disabled { opacity: .3; cursor: not-allowed; }
-.panel-file-manager__pdf-toolbar button i { font-size: 15.2px; }
+.panel-file-manager__pdf-toolbar button > svg.ui-icon { width:15px !important; height:15px !important; }
 .panel-file-manager__pdf-page-tools label { display: flex; height: 38px; align-items: center; gap: 5.44px; padding: 0 8.8px; border: 1px solid rgb(132 152 212 / 10%); border-radius: 10.4px; background: rgb(255 255 255 / 2.5%); color: #8290a5; font-size: 8.16px; }
 .panel-file-manager__pdf-page-tools input { width: 43px; height: 28px; appearance: textfield; border: 1px solid rgb(127 147 207 / 14%); border-radius: 7.2px; background: rgb(6 15 29 / 75%); color: #eef2ff; font-family: Inter, Arial, sans-serif; font-size: 9.6px; font-weight: 750; text-align: center; outline: none; direction: ltr; }
 .panel-file-manager__pdf-page-tools input:focus { border-color: rgb(117 138 247 / 44%); box-shadow: 0 0 0 3px rgb(103 92 241 / 9%); }
@@ -1926,7 +2038,7 @@ dialog.panel-file-picker-modal { margin:0; color:var(--text); }
 .panel-file-manager__pdf-page-tools label b { min-width: 20px; color: #b6c1d0; font-family: Inter, Arial, sans-serif; text-align: center; direction: ltr; }
 .panel-file-manager__pdf-document { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 8.8px; direction: rtl; }
 .panel-file-manager__pdf-document > span { display: grid; width: 39px; height: 39px; place-items: center; flex: 0 0 39px; border: 1px solid rgb(107 130 236 / 18%); border-radius: 10.88px; background: linear-gradient(145deg, rgb(57 102 230 / 24%), rgb(113 63 218 / 17%)); color: #aebeff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%), 0 8px 18px rgb(30 43 105 / 15%); }
-.panel-file-manager__pdf-document > span i { font-size: 16.8px; }
+.panel-file-manager__pdf-document > span > svg.ui-icon { width:17px !important; height:17px !important; }
 .panel-file-manager__pdf-document > div { display: grid; min-width: 0; gap: 1.92px; text-align: right; }
 .panel-file-manager__pdf-document strong { max-width: 320px; overflow: hidden; color: #f2f5ff; font-size: 10.72px !important; text-overflow: ellipsis; white-space: nowrap; }
 .panel-file-manager__pdf-document small { color: #7d8ba0; font-size: 8px !important; }

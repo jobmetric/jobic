@@ -1,3 +1,5 @@
+import { iconMarkup } from '../common/icons';
+
 function initializeSocialNetworks() {
     document.querySelectorAll('[data-social-networks]').forEach((editor) => {
         if (editor.dataset.initialized) return;
@@ -19,8 +21,8 @@ function initializeSocialNetworks() {
             const example = row.querySelector('[data-social-network-example]');
             example.hidden = !url;
             example.querySelector('[data-social-network-example-text]').textContent = url ? editor.dataset.addressExample.replace('{url}', url) : '';
-            const use = row.querySelector('[data-social-network-icon] use');
-            if (use) use.setAttribute('href', `#icon-${option?.dataset.icon || 'share'}`);
+            const icon = row.querySelector('[data-social-network-icon]');
+            if (icon) icon.innerHTML = iconMarkup(option?.dataset.icon || 'share', 21);
         };
         const bind = (row) => {
             row.querySelector('[data-social-network-type]').addEventListener('change', () => update(row));

@@ -1,4 +1,5 @@
 import $ from '../../../admin/jquery';
+import { iconMarkup } from '../../../../common/icons';
 
 const normalize = (value) => String(value || '').trim().toLocaleLowerCase();
 
@@ -25,11 +26,7 @@ export const initializeInboxApp = ($dashboard, actions) => {
     const getMessage = (id = activeId) => messages.get(Number(id));
     const isCardVisible = (element) => Boolean(element) && !$(element).is('.is-filtered, .is-read-hidden, .is-deleted');
 
-    const createIcon = (name, size = 13) => `
-        <svg class="ui-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <use href="#icon-${actions.escapeHtml(name)}"></use>
-        </svg>
-    `;
+    const createIcon = (name, size = 13) => iconMarkup(name, size);
 
     const initials = (name) => String(name || '')
         .split(/\s+/)

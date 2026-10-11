@@ -1,4 +1,5 @@
 import { loadingButton, pageData } from '../common/page';
+import { iconMarkup } from '../common/icons';
 // Save forms without navigation. All core endpoints return PackageCore JSON.
 export async function sendSettings(url, data) {
     const response = await fetch(url, {
@@ -96,9 +97,7 @@ export function bindSettingsForms({ announce, applyPreferences }) {
         const showEmptyImage = () => {
             [imagePreview, uploaderPreview].forEach((preview) => {
                 if (!preview) return;
-                const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                icon.setAttribute('class', 'ui-icon'); icon.setAttribute('width', '28'); icon.setAttribute('height', '28'); icon.setAttribute('viewBox', '0 0 24 24');
-                const use = document.createElementNS('http://www.w3.org/2000/svg', 'use'); use.setAttribute('href', '#icon-upload'); icon.append(use); preview.replaceChildren(icon);
+                preview.innerHTML = iconMarkup('upload', 28);
             });
         };
         image?.addEventListener('change', () => {

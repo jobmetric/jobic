@@ -1,4 +1,5 @@
 import $ from '../../../admin/jquery';
+import { iconMarkup } from '../../../../common/icons';
 
 const text = ($element) => $.trim($element.text().replace(/\s+/g, ' '));
 
@@ -35,7 +36,7 @@ const initializeCompany = ($dashboard, actions) => {
         event.stopPropagation();
         const following = !$(this).hasClass('is-following');
         $(this).toggleClass('is-following', following).attr('aria-label', following ? 'Unfollow U Learning' : 'Follow U Learning');
-        $(this).find('use').attr('href', following ? '#icon-check' : '#icon-plus');
+        this.innerHTML = iconMarkup(following ? 'check' : 'plus', 16);
         actions.announce(following ? 'U Learning is now followed.' : 'U Learning was removed from followed companies.');
     });
 

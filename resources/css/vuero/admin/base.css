@@ -53,13 +53,6 @@ p {
     margin-block: 0;
 }
 
-.icon-sprite {
-    position: absolute;
-    width: 0;
-    height: 0;
-    overflow: hidden;
-}
-
 .sr-only {
     position: absolute;
     width: 1px;
@@ -78,6 +71,15 @@ p {
     stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+/* jQuery UI applies bitmap sprites to .ui-icon; CMS SVGs use independent inline vector paths. */
+svg.ui-icon {
+    text-indent: 0 !important;
+    overflow: visible !important;
+    background-image: none !important;
+    background-position: initial !important;
+    background-repeat: no-repeat !important;
 }
 
 [hidden] {

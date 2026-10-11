@@ -37,7 +37,7 @@ const openPopover = ($trigger, actions) => {
     });
 };
 
-const influencerMenuItem = (action, icon, title, description) => `<button type="button" role="menuitem" data-influencer-action="${action}"><span><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-${icon}"></use></svg></span><span><strong>${title}</strong><small>${description}</small></span></button>`;
+const influencerMenuItem = (action, icon, title, description) => `<button type="button" role="menuitem" data-influencer-action="${action}"><span>${iconMarkup(icon, 18)}</span><span><strong>${title}</strong><small>${description}</small></span></button>`;
 
 const openInfluencerMenu = ($trigger, actions) => {
     closePopover();
@@ -85,8 +85,8 @@ const openAchievementPopover = ($trigger) => {
     const rect = $trigger.get(0).getBoundingClientRect();
     const title = $trigger.data('achievement');
     const copy = $trigger.data('achievement-copy');
-    const icon = $trigger.find('use').attr('href')?.replace('#icon-', '') || 'award';
-    const $popover = $(`<aside class="lifestyle-achievement-popover" role="tooltip"><header><span><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-${icon}"></use></svg></span><h4>${title}</h4></header><p>${copy}</p></aside>`).appendTo(document.body);
+    const icon = $trigger.find('[data-icon]').first().attr('data-icon') || 'award';
+    const $popover = $(`<aside class="lifestyle-achievement-popover" role="tooltip"><header><span>${iconMarkup(icon, 18)}</span><h4>${title}</h4></header><p>${copy}</p></aside>`).appendTo(document.body);
     const width = $popover.outerWidth();
     $popover.css({ top: Math.min(window.innerHeight - $popover.outerHeight() - 10, rect.bottom + 8), left: Math.max(10, Math.min(window.innerWidth - width - 10, rect.left + rect.width / 2 - width / 2)) });
 };
@@ -94,7 +94,7 @@ const openAchievementPopover = ($trigger) => {
 const openPlayer = ($card, actions) => {
     const title = actions.escapeHtml($card.data('video-title') || text($card.find('h3')) || 'Live match');
     const poster = $card.css('--video-poster') || '';
-    const $modal = $(`<div class="lifestyle-video-modal" role="dialog" aria-modal="true" aria-label="${title}"><div class="lifestyle-video-modal__dialog"><div class="lifestyle-video-modal__stage"><button type="button" data-player-toggle aria-label="Play"><svg class="ui-icon" width="29" height="29" viewBox="0 0 24 24"><use href="#icon-play"></use></svg></button></div><footer><h2>${title}</h2><button type="button" class="lifestyle-video-modal__close" data-player-close aria-label="Close"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24"><use href="#icon-x"></use></svg></button></footer></div></div>`).appendTo(document.body);
+    const $modal = $(`<div class="lifestyle-video-modal" role="dialog" aria-modal="true" aria-label="${title}"><div class="lifestyle-video-modal__dialog"><div class="lifestyle-video-modal__stage"><button type="button" data-player-toggle aria-label="Play">${iconMarkup('play', 29)}</button></div><footer><h2>${title}</h2><button type="button" class="lifestyle-video-modal__close" data-player-close aria-label="Close">${iconMarkup('x', 18)}</button></footer></div></div>`).appendTo(document.body);
     if (poster && poster !== 'none') $modal.find('.lifestyle-video-modal__stage').css('background-image', poster);
     $('body').css('overflow', 'hidden');
     $modal.find('[data-player-close]').trigger('focus');
