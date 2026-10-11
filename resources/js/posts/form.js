@@ -20,15 +20,20 @@ if (form) {
     enhanceSelects(form);
     let editLockTimer = null;
     let editLockListenersBound = false;
+    let editLockLost = false;
     const startEditLockRenewal = () => {
         const token = form.elements.namedItem('_edit_lock');
-        if (!token?.value || editLockTimer) return;
+        if (!token?.value || editLockTimer || editLockLost) return;
         const renew = async () => {
+            if (editLockLost || document.hidden) return;
             try {
                 const data = new FormData(); data.set('_edit_lock', token.value);
                 await sendSettings(form.dataset.editLockRenewUrl, data);
             } catch (error) {
                 if (error.status === 423) {
+                    editLockLost = true;
+                    window.clearInterval(editLockTimer);
+                    editLockTimer = null;
                     announce(pageData().posts.edit_lock_lost, true);
                     form.querySelectorAll('button[type="submit"]').forEach((button) => { button.disabled = true; });
                 }
@@ -38,7 +43,8 @@ if (form) {
         if (!editLockListenersBound) {
             editLockListenersBound = true;
             document.addEventListener('visibilitychange', () => { if (!document.hidden) renew(); });
-            window.addEventListener('pagehide', () => {
+            window.addEventListener('pagehide', (event) => {
+                if (event.persisted) return;
                 window.clearInterval(editLockTimer);
                 if (!token.value || !form.dataset.editLockReleaseUrl) return;
                 const data = new URLSearchParams();
