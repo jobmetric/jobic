@@ -582,9 +582,11 @@ final class PostController extends Controller
             ]) : null,
             'version'            => $post && $builder->hasOptimisticLocking() ? RecordVersion::token($post, 'posts:' . $type) : null,
             'revisions'          => $post?->revisions()
+                    ->latest('id')
                     ->get([
                         'id',
                         'created_at',
+                        'snapshot',
                     ]) ?? collect(),
             'locales'            => LocaleCatalog::all(),
             'translationFields'  => $builder->getTranslationFields(),

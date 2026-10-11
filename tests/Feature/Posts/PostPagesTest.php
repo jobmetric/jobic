@@ -91,6 +91,37 @@ class PostPagesTest extends TestCase
         }
     }
 
+    public function test_revision_history_shows_readable_safe_snapshots_instead_of_raw_json(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+        $post = Post::query()->create(['type' => 'post', 'status' => 'publish']);
+        $post->translate('fa', ['title' => 'عنوان فعلی']);
+        $post->revisions()->create(['snapshot' => [
+            'attributes' => ['status' => 'draft', 'password' => 'private-value', 'slug' => 'old-post'],
+            'translation' => [
+                ['locale' => 'fa', 'field' => 'title', 'value' => 'عنوان نسخه قدیمی'],
+                ['locale' => 'fa', 'field' => 'excerpt', 'value' => 'خلاصه نسخه قدیمی'],
+                ['locale' => 'fa', 'field' => 'content', 'value' => json_encode(['blocks' => [['type' => 'paragraph', 'data' => ['text' => 'متن نسخه']]]])],
+            ],
+            'metadata' => ['secret' => 'hidden-value'],
+            'files' => [],
+            'taxonomies' => [],
+        ]]);
+
+        $this->get(route('admin.posts.edit', ['type' => 'post', 'post' => $post->id]))
+            ->assertOk()
+            ->assertSee('post-revisions__list', false)
+            ->assertSee('crud-help-section post-revisions__item', false)
+            ->assertSee('عنوان نسخه قدیمی')
+            ->assertSee('خلاصه نسخه قدیمی')
+            ->assertSee('old-post')
+            ->assertSee('data-revision-restore', false)
+            ->assertDontSee('private-value')
+            ->assertDontSee('hidden-value')
+            ->assertDontSee('"blocks"', false);
+    }
+
     public function test_empty_post_list_returns_an_empty_data_set_and_page_uses_its_own_create_label(): void
     {
         $this->withoutVite();

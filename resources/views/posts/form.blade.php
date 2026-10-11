@@ -151,8 +151,14 @@
         <template data-record-history-template>@include('posts.partials.history-panel')</template>
     @endif
     @if($record && $revisions->isNotEmpty())
-        <section class="crud-history post-revisions"><header><h2>{{ __('posts.revisions') }}</h2></header>
-            @foreach($revisions as $revision)<details class="crud-help-section"><summary><span>{{ __('posts.revision') }} #{{ $revision->id }}</span><time>{{ \App\Support\LocalizedDate::format($revision->created_at) }}</time></summary><pre dir="ltr">{{ json_encode($revision->snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre><button class="vuero-button" type="button" data-revision-restore data-url="{{ route('admin.posts.revisions.restore', ['type' => $type, 'post' => $record->id, 'revision' => $revision->id]) }}">{{ __('posts.restore_revision') }}</button></details>@endforeach
+        <section class="crud-history crud-page post-revisions" aria-labelledby="post-revisions-title">
+            <header><h2 id="post-revisions-title">{{ __('posts.revisions') }}</h2></header>
+            <p class="crud-hint">{{ __('posts.revision_intro') }}</p>
+            <div class="post-revisions__list">
+                @foreach($revisions as $revision)
+                    @include('posts.partials.revision-card', ['revision' => $revision, 'number' => $revisions->count() - $loop->index])
+                @endforeach
+            </div>
         </section>
     @endif
     @cmsHook('jobic.admin.posts.form.after', ['type' => $type, 'post_id' => $record?->id])
