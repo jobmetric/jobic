@@ -22,7 +22,7 @@
                     <button type="button" data-accordion-toggle aria-controls="{{ $submenuId }}" aria-expanded="{{ $isOpen ? 'true' : 'false' }}">
                         <x-vuero.icon class="subsidebar-menu__item-icon" :name="$item['icon'] ?? 'activity'" size="18" />
                         <span>{{ $item['label'] }}</span>
-                        <x-vuero.icon name="chevron-right" size="16" />
+                        <x-vuero.icon class="subsidebar-menu__chevron" name="chevron-right" size="15" />
                     </button>
 
                     <ul class="subsidebar-menu__children" id="{{ $submenuId }}" data-accordion-content @if (! $isOpen) hidden @endif>
@@ -32,19 +32,16 @@
                             @else
                                 <li>
                                     <a class="{{ ($child['active'] ?? false) ? 'is-active' : '' }}" href="{{ $child['url'] ?? '#' }}" @if ($child['active'] ?? false) aria-current="page" @endif>
-                                        <x-vuero.icon class="subsidebar-menu__item-icon" :name="$child['icon'] ?? 'activity'" size="18" />
                                         <span>{{ $child['label'] }}</span>
-                                        @if ($child['tag'] ?? null)<small class="subsidebar-menu__tag">{{ $child['tag'] }}</small>@endif
                                     </a>
                                 </li>
                             @endif
                         @endforeach
                     </ul>
                 @else
-                    <a class="subsidebar-menu__link {{ $isActive ? 'is-active' : '' }}" href="{{ $item['url'] ?? '#' }}" @if ($isActive) aria-current="page" @endif>
-                        @if ($item['icon'] ?? null)<x-vuero.icon class="subsidebar-menu__item-icon" :name="$item['icon']" size="18" />@endif
+                    <a class="subsidebar-menu__link has-icon {{ $isActive ? 'is-active' : '' }}" href="{{ $item['url'] ?? '#' }}" @if ($isActive) aria-current="page" @endif>
+                        <x-vuero.icon class="subsidebar-menu__item-icon" :name="$item['icon'] ?? 'activity'" size="18" />
                         <span>{{ $item['label'] }}</span>
-                        @if ($item['chevron'] ?? false)<x-vuero.icon name="chevron-right" size="16" />@endif
                     </a>
                 @endif
             </li>

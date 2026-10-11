@@ -63,9 +63,9 @@ use JobMetric\Post\Facades\PostTypeRegistry;
 PostTypeRegistry::register('event')
     ->label('events.types.event')
     ->translationFields(['title', 'excerpt', 'content'])
-    ->allowTaxonomy('event-category', 'categories')
+    ->taxonomy('event-category', 'categories')
     ->mediaCollection('base', false, ['image'])
-    ->urlPrefix('events')
+    ->url('events')
     ->workflow('event');
 ```
 
@@ -90,6 +90,8 @@ Only trusted extension code should register a script. Editor block JSON is valid
 | `jobic.admin.posts.list.page.before`, `jobic.admin.posts.list.page.after` | view | `type` | Around the complete post list page |
 | `jobic.admin.posts.list.toolbar.after`, `jobic.admin.posts.list.filters.before`, `jobic.admin.posts.list.filters.after` | view | `type` | Post-list extension slots matching the taxonomy list layout |
 | `jobic.admin.posts.list.filters.actions.before`, `jobic.admin.posts.list.filters.actions.after`, `jobic.admin.posts.list.filter_fields.before`, `jobic.admin.posts.list.filter_fields.after` | view | `type` | Add list-control actions or fields to the status filter dialog |
+| `jobic.posts.help.items` | filter | translated list of five help items; context `type` | Before post/page list help is rendered; return the next list |
+| `jobic.posts.help.intro` | filter | translated help introduction; context `type` | Before post/page list help is rendered; return the next introduction |
 | `jobic.admin.posts.list.table.before`, `jobic.admin.posts.list.table.after` | view | `type` | Around the post table and pagination |
 | `jobic.admin.posts.form.before`, `jobic.admin.posts.form.after` | view | `type`, nullable `post_id` | Around the post form; extensions own validation for their fields |
 | `jobic.editor.render.before`, `jobic.editor.render.after` | view | `type`, `locale`, nullable `post_id` | Around each locale’s Editor.js field |

@@ -1,6 +1,7 @@
 import '../../css/file-manager.css';
 import PanelFileManager from '../media/file-manager';
 import { pageData } from '../common/page';
+import { iconMarkup } from '../common/icons';
 import { announce } from '../common/toast';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
@@ -77,7 +78,7 @@ export function bindMediaManager(form) {
                 const cards = items.map(item => {
                     const card = document.createElement('article');
                     card.dataset.mediaId = item.id; card.dataset.mediaRecord = JSON.stringify(item);
-                    card.innerHTML = `<button type="button" class="media-selector-preview" data-media-open aria-label="${escape(pageData().taxonomies?.media_replace || 'Replace image')}">${item.thumbnail_url ? `<img src="${escape(item.url || item.thumbnail_url)}" alt="${escape(item.name)}">` : `<span class="taxonomy-media-picker__file">${escape(item.extension)}</span>`}</button><span title="${escape(item.name)}">${escape(item.name)}</span><button type="button" data-media-remove aria-label="${escape(pageData().taxonomies?.media_remove || '')}"><i class="ki-filled ki-trash"></i></button>`;
+                    card.innerHTML = `<button type="button" class="media-selector-preview" data-media-open aria-label="${escape(pageData().taxonomies?.media_replace || 'Replace image')}">${item.thumbnail_url ? `<img src="${escape(item.url || item.thumbnail_url)}" alt="${escape(item.name)}">` : `<span class="taxonomy-media-picker__file">${escape(item.extension)}</span>`}</button><span title="${escape(item.name)}">${escape(item.name)}</span><button type="button" data-media-remove aria-label="${escape(pageData().taxonomies?.media_remove || '')}">${iconMarkup('trash', 16)}</button>`;
                     return card;
                 });
                 if (replacing) {

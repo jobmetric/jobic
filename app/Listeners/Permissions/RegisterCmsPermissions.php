@@ -6,7 +6,9 @@ namespace App\Listeners\Permissions;
 
 use App\Services\Settings\DynamicSettings;
 use App\Support\Permissions\PermissionRegistry;
+use App\Support\TaxonomyPermissions;
 use JobMetric\Rolix\Events\RegisterPathPermissionEvent;
+use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 
 /**
  * Synchronize discovered settings permissions and expose the catalog to Rolix.
@@ -41,6 +43,11 @@ readonly class RegisterCmsPermissions
                 'application' => $setting['application'],
                 'key'         => $setting['key'],
             ], 100);
+        }
+
+        $taxonomyPermissions = app(TaxonomyPermissions::class);
+        foreach (TaxonomyTypeRegistry::values() as $type) {
+            $taxonomyPermissions->for($type, TaxonomyTypeRegistry::for($type));
         }
 
         $event->addPath('cms', app_path('Support/Permissions/registry.php'));

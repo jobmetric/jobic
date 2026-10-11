@@ -8,6 +8,32 @@ import { bindMediaManager } from "./media-manager";
 toolbar("form");
 const form = document.querySelector("[data-taxonomy-form]");
 form.noValidate = true;
+const seoTabs = Array.from(form.querySelectorAll('[data-taxonomy-form-tab]'));
+const activateSeoTab = (tab, focus = false) => {
+    seoTabs.forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-selected', String(active));
+        item.tabIndex = active ? 0 : -1;
+        const panel = form.querySelector(`#${CSS.escape(item.getAttribute('aria-controls'))}`);
+        if (panel) panel.hidden = !active;
+    });
+    if (focus) tab.focus();
+};
+seoTabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => activateSeoTab(tab));
+    tab.addEventListener('keydown', (event) => {
+        const rtl = getComputedStyle(tab.parentElement).direction === 'rtl';
+        let next = null;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = seoTabs.length - 1;
+        if (event.key === 'ArrowRight') next = (index + (rtl ? -1 : 1) + seoTabs.length) % seoTabs.length;
+        if (event.key === 'ArrowLeft') next = (index + (rtl ? 1 : -1) + seoTabs.length) % seoTabs.length;
+        if (next === null) return;
+        event.preventDefault();
+        activateSeoTab(seoTabs[next], true);
+    });
+});
 const guard = guardUnsaved(form, () =>
     showDialog({
         title: copy().unsaved_title,
@@ -124,7 +150,13 @@ form.addEventListener("submit", async (event) => {
                 field.setAttribute("aria-describedby", message.id);
             }
         });
-        form.querySelector("[aria-invalid=true]")?.focus();
+        const invalidField = form.querySelector("[aria-invalid=true]");
+        const invalidPanel = invalidField?.closest('[data-taxonomy-form-panel]');
+        if (invalidPanel?.hidden) {
+            const tab = seoTabs.find((item) => item.getAttribute('aria-controls') === invalidPanel.id);
+            if (tab) activateSeoTab(tab);
+        }
+        invalidField?.focus();
         if (error.status !== 422 || displayedErrors === 0) {
             announce(error.status ? error.message : copy().failed, true);
         }

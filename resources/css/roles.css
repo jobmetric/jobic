@@ -19,6 +19,7 @@
 .role-permission-tree,.role-permission-tree ul { list-style:none; margin:0; padding:10px 20px; }
 .role-permission-tree ul { margin-inline-start:10px; border-inline-start:1px dashed var(--border); }
 .role-permission-node { position:relative; }.role-permission-row{position:relative;display:flex;align-items:center;gap:9px;min-height:38px;cursor:pointer}
+.role-permission-row--group{font-weight:700;cursor:default;color:var(--text)}
 .role-permission-tree ul > .role-permission-node::before{content:"";position:absolute;inset-inline-start:-14px;top:19px;width:14px;border-block-start:1px dashed var(--border)}
 .role-permission-node input { width:17px; height:17px; accent-color:var(--primary); }
 .role-permission-column.is-deny input { accent-color:#df5269; }

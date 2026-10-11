@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93d941c326e8768390b133ecbea1a9f7",
+    "content-hash": "6e0c40caf503dc541b2c0acf15c892d1",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1656,16 +1656,16 @@
         },
         {
             "name": "jobmetric/laravel-flow",
-            "version": "2.4.3",
+            "version": "2.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-flow.git",
-                "reference": "51eb39c65b355a8e982c665c0ffe8c379f722041"
+                "reference": "8d51a67e12655d1a2c0b9f207d73fb5a43de8d7d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-flow/zipball/51eb39c65b355a8e982c665c0ffe8c379f722041",
-                "reference": "51eb39c65b355a8e982c665c0ffe8c379f722041",
+                "url": "https://api.github.com/repos/jobmetric/laravel-flow/zipball/8d51a67e12655d1a2c0b9f207d73fb5a43de8d7d",
+                "reference": "8d51a67e12655d1a2c0b9f207d73fb5a43de8d7d",
                 "shasum": ""
             },
             "require": {
@@ -1732,7 +1732,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-28T23:50:48+00:00"
+            "time": "2026-10-11T14:29:35+00:00"
         },
         {
             "name": "jobmetric/laravel-form",
@@ -2212,28 +2212,31 @@
         },
         {
             "name": "jobmetric/laravel-post",
-            "version": "v1.0.4",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-post.git",
-                "reference": "9f0e3012c030c4fb82c8513f1f9c707bce9deb51"
+                "reference": "3c90e3eb98c58c0e47f1c9fcd4fd473d59b076e1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/9f0e3012c030c4fb82c8513f1f9c707bce9deb51",
-                "reference": "9f0e3012c030c4fb82c8513f1f9c707bce9deb51",
+                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/3c90e3eb98c58c0e47f1c9fcd4fd473d59b076e1",
+                "reference": "3c90e3eb98c58c0e47f1c9fcd4fd473d59b076e1",
                 "shasum": ""
             },
             "require": {
                 "jobmetric/laravel-flow": "^2.4",
                 "jobmetric/laravel-metadata": "^4.0.3",
-                "jobmetric/laravel-package-core": "^1.20",
-                "jobmetric/laravel-taxonomy": "^4.2.3",
+                "jobmetric/laravel-package-core": "^1.38.1",
+                "jobmetric/laravel-taxonomy": "^4.3",
                 "jobmetric/laravel-translation": "^4.0.2",
                 "jobmetric/laravel-url": "^3.0.1",
                 "jobmetric/media": "^2.2.1",
                 "laravel/framework": ">=9.19",
                 "php": ">=8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.6|^10.5|^11.5|^12.5"
             },
             "type": "library",
             "extra": {
@@ -2278,7 +2281,7 @@
                 "issues": "https://github.com/jobmetric/laravel-post/issues",
                 "source": "https://github.com/jobmetric/laravel-post"
             },
-            "time": "2026-10-10T19:31:57+00:00"
+            "time": "2026-10-11T13:16:27+00:00"
         },
         {
             "name": "jobmetric/laravel-setting",
@@ -2421,16 +2424,16 @@
         },
         {
             "name": "jobmetric/laravel-taxonomy",
-            "version": "4.2.3",
+            "version": "4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-taxonomy.git",
-                "reference": "3af645f3d13591b7d35f3c61185a98dd62eeba88"
+                "reference": "7fb5afcdde8147dac0d86af84a16b84caa60de20"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-taxonomy/zipball/3af645f3d13591b7d35f3c61185a98dd62eeba88",
-                "reference": "3af645f3d13591b7d35f3c61185a98dd62eeba88",
+                "url": "https://api.github.com/repos/jobmetric/laravel-taxonomy/zipball/7fb5afcdde8147dac0d86af84a16b84caa60de20",
+                "reference": "7fb5afcdde8147dac0d86af84a16b84caa60de20",
                 "shasum": ""
             },
             "require": {
@@ -2493,7 +2496,7 @@
                 "issues": "https://github.com/jobmetric/laravel-taxonomy/issues",
                 "source": "https://github.com/jobmetric/laravel-taxonomy"
             },
-            "time": "2026-10-03T16:22:24+00:00"
+            "time": "2026-10-11T13:16:24+00:00"
         },
         {
             "name": "jobmetric/laravel-translation",
@@ -11176,7 +11179,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -11185,6 +11188,6 @@
         "ext-redis": "*",
         "ext-zip": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }

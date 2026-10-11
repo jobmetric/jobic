@@ -28,17 +28,21 @@ Route::middleware([
         Route::get('data', 'data')->name('data');
         Route::get('create', 'create')->name('create');
         Route::post('bulk', 'bulk')->middleware('throttle:30,1')->name('bulk');
+        Route::post('edit-locks/unlock', 'unlockEditLocks')->middleware('throttle:30,1')->name('edit-locks.unlock');
         Route::post('/', 'store')->middleware('throttle:30,1')->name('store');
         Route::get('{post}/translations/{locale}', 'translation')->whereNumber('post')->name('translation');
         Route::put('{post}/translations/{locale}', 'saveTranslation')->whereNumber('post')->middleware('throttle:30,1')->name('translation.update');
         Route::get('{post}/history', 'history')->whereNumber('post')->name('history');
         Route::get('{post}/edit', 'edit')->whereNumber('post')->name('edit');
+        Route::post('{post}/edit-lock/unlock', 'unlockEditLock')->whereNumber('post')->middleware('throttle:30,1')->name('edit-lock.unlock');
+        Route::post('{post}/edit-lock/renew', 'renewEditLock')->whereNumber('post')->middleware('throttle:60,1')->name('edit-lock.renew');
+        Route::post('{post}/edit-lock/release', 'releaseEditLock')->whereNumber('post')->middleware('throttle:60,1')->name('edit-lock.release');
         Route::put('{post}', 'update')->whereNumber('post')->middleware('throttle:30,1')->name('update');
         Route::delete('{post}', 'destroy')->whereNumber('post')->middleware('throttle:30,1')->name('destroy');
         Route::post('{post}/revisions/{revision}/restore', 'restoreRevision')->whereNumber(['post', 'revision'])->middleware('throttle:30,1')->name('revisions.restore');
     });
 
-    Route::prefix('media-manager')->name('media-manager.')->controller(MediaManagerController::class)->middleware(EnsurePermission::class.':admin.content,admin.menus.manage,admin.posts.manage')->group(function (): void {
+    Route::prefix('media-manager')->name('media-manager.')->controller(MediaManagerController::class)->middleware(EnsurePermission::class.':admin.content,admin.content.taxonomy.manage.any,admin.content.posts.manage,admin.content.pages.manage')->group(function (): void {
         Route::get('browse', 'browse')->name('browse');
         Route::post('upload', 'command')->defaults('operation', 'upload')->middleware('throttle:120,1')->name('upload');
         Route::post('folders', 'command')->defaults('operation', 'folder')->middleware('throttle:30,1')->name('folders.store');

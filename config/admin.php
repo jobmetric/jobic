@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'permissions' => [
+        'unlock_edit_lock' => 'admin.unlock_edit_lock',
+    ],
     'settings'   => [
         'general'   => [
             'icon' => 'building',

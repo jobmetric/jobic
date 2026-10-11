@@ -34,16 +34,35 @@ final class PostTranslationRequest extends FormRequest
      */
     public function rules(): array
     {
-        $fields = (array) PostTypeRegistry::getOption((string) $this->route('type'), 'translation-fields', ['title', 'excerpt', 'content']);
+        $builder = PostTypeRegistry::for((string) $this->route('type'));
+
+        $fields = $builder->getTranslationFields();
+
         $rules = [
-            'locale' => ['required', 'string', Rule::in(LocaleCatalog::codes())],
-            'fields' => ['required', 'array:'.implode(',', $fields)],
-            '_version' => ['required', 'string', 'size:64'],
+            'locale' => [
+                'required',
+                'string',
+                Rule::in(LocaleCatalog::codes()),
+            ],
+            'fields' => [
+                'required',
+                'array:' . implode(',', $fields),
+            ],
         ];
+        if ($builder->hasOptimisticLocking()) {
+            $rules['_version'] = [
+                'required',
+                'string',
+                'size:64',
+            ];
+        }
 
         foreach ($fields as $field) {
-            $rules['fields.'.$field] = match ($field) {
+            $rules['fields.' . $field] = match ($field) {
                 'title' => ['required', 'string', 'max:255'],
+                'meta_title' => ['nullable', 'string', 'max:255'],
+                'meta_description' => ['nullable', 'string', 'max:500'],
+                'meta_keywords' => ['nullable', 'string', 'max:1000'],
                 'content' => ['nullable', new EditorContentRule(app(EditorDriverRegistry::class))],
                 default => ['nullable', 'string', 'max:100000'],
             };
@@ -72,26 +91,36 @@ final class PostTranslationRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator): void {
-            if ($validator->errors()->isNotEmpty()) {
+            if ($validator->errors()
+                ->isNotEmpty()) {
                 return;
             }
 
             $content = $this->input('fields.content');
             $document = is_string($content) ? json_decode($content, true) : $content;
+
             $ids = [];
             foreach ((array) ($document['blocks'] ?? []) as $block) {
                 if (is_array($block) && ($block['type'] ?? null) === 'image' && is_numeric($block['data']['file']['id'] ?? null)) {
                     $ids[] = (int) $block['data']['file']['id'];
                 }
             }
+
             $ids = array_values(array_unique($ids));
             if ($ids === []) {
                 return;
             }
 
-            $valid = Media::query()->whereIn('id', $ids)->where('type', 'f')->where('mime_type', 'like', 'image/%')->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+            $valid = Media::query()
+                ->whereIn('id', $ids)
+                ->where('type', 'f')
+                ->where('mime_type', 'like', 'image/%')
+                ->pluck('id')
+                ->map(static fn ($id): int => (int) $id)
+                ->all();
             if (array_diff($ids, $valid) !== []) {
-                $validator->errors()->add('fields.content', trans('posts.validation.editor_image_media'));
+                $validator->errors()
+                    ->add('fields.content', trans('posts.validation.editor_image_media'));
             }
         });
     }

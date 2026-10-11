@@ -17,6 +17,35 @@ class AdminAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     /**
+     * Grant an entire sidebar group while respecting a denied child permission.
+     *
+     * @return void
+     */
+    public function test_sidebar_group_permissions_grant_their_members(): void
+    {
+        $user = User::factory()->create();
+        $role = Role::query()->create([
+            'type' => 'system',
+            'name' => 'Content and people viewer',
+            'allow' => ['admin.people', 'admin.content.writings'],
+            'deny' => ['admin.roles.manage', 'admin.content.taxonomy_tag.manage'],
+            'is_super' => false,
+            'is_default' => false,
+            'ordering' => 1,
+        ]);
+        $user->assignRole($role);
+
+        $access = app(\App\Support\AdminAccess::class);
+        self::assertTrue($access->allows($user, 'admin.users.view'));
+        self::assertTrue($access->allows($user, 'admin.roles.view'));
+        self::assertFalse($access->allows($user, 'admin.roles.manage'));
+        self::assertTrue($access->allows($user, 'admin.content.posts.view'));
+        self::assertTrue($access->allows($user, 'admin.content.taxonomy_category.manage'));
+        self::assertFalse($access->allows($user, 'admin.content.taxonomy_tag.manage'));
+        self::assertFalse($access->allows($user, 'admin.content.pages.view'));
+    }
+
+    /**
      * Deny direct page requests and hide complete unauthorized menu branches.
      */
     public function test_direct_requests_are_denied_and_unauthorized_menus_are_hidden(): void

@@ -29,9 +29,9 @@ final class BulkPostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'operation' => ['required', 'string', 'in:activate,deactivate,delete'],
-            'ids' => ['required', 'array', 'min:1', 'max:100'],
-            'ids.*' => ['required', 'integer', 'distinct', 'min:1'],
+            'operation' => ['required', 'string', 'in:activate,deactivate,delete,unlock'],
+            'ids'       => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*'     => ['required', 'integer', 'distinct', 'min:1'],
         ];
     }
 }

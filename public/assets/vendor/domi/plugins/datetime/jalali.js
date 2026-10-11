@@ -368,7 +368,7 @@ function JalaliDate(p0, p1, p2) {
 
 	if (!isNaN(parseInt(p0)) && !isNaN(parseInt(p1)) && !isNaN(parseInt(p2))) {
         var g = jalali_to_gregorian([parseInt(p0, 10), parseInt(p1, 10), parseInt(p2, 10)]);
-		setFullDate(new Date(g[0], g[1], g[2]));
+		setFullDate(new $._gDate(g[0], g[1], g[2]));
     } else {
         setFullDate(p0);
     }
@@ -392,15 +392,15 @@ function JalaliDate(p0, p1, p2) {
 
     function setFullDate(date) {
         if (date && date.getGregorianDate) date = date.getGregorianDate();
-        gregorianDate = new Date(date);
+        gregorianDate = new $._gDate(date);
 		gregorianDate.setHours(gregorianDate.getHours() > 12 ? gregorianDate.getHours() + 2 : 0)
         if (!gregorianDate || gregorianDate == 'Invalid Date' || isNaN(gregorianDate || !gregorianDate.getDate())) {
-            gregorianDate = new Date();
+            gregorianDate = new $._gDate();
         }
         jalaliDate = gregorian_to_jalali([
-            gregorianDate.getFullYear(),
-            gregorianDate.getMonth(),
-            gregorianDate.getDate()]);
+			gregorianDate._getFullYear(),
+			gregorianDate._getMonth(),
+			gregorianDate._getDate()]);
         return this;
     }
 
@@ -411,14 +411,14 @@ function JalaliDate(p0, p1, p2) {
 	this.setMonth = function(e) {
 		jalaliDate[1] = e;
         var g = jalali_to_gregorian(jalaliDate);
-        gregorianDate = new Date(g[0], g[1], g[2]);
+        gregorianDate = new $._gDate(g[0], g[1], g[2]);
         jalaliDate = gregorian_to_jalali([g[0], g[1], g[2]]);
 	}
 
     this.setDate = function(e) {
         jalaliDate[2] = e;
         var g = jalali_to_gregorian(jalaliDate);
-        gregorianDate = new Date(g[0], g[1], g[2]);
+        gregorianDate = new $._gDate(g[0], g[1], g[2]);
         jalaliDate = gregorian_to_jalali([g[0], g[1], g[2]]);
     };
 

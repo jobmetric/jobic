@@ -6,6 +6,7 @@ namespace Tests\Unit\Support;
 
 use App\Facades\AdminMenu;
 use App\Support\AdminMenuRegistry;
+use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ class AdminMenuRegistryTest extends TestCase
         $this->assertSame('Products', $registry->items('extension')[0]['children'][0]['label']);
     }
 
-    public function test_every_rendered_navigation_item_has_an_icon(): void
+    public function test_second_level_items_have_icons_and_third_level_items_only_have_labels(): void
     {
         $registry = app(AdminMenuRegistry::class);
         $registry->register('icon-test')->label('Icon test')->icon('apps')
@@ -65,7 +66,13 @@ class AdminMenuRegistryTest extends TestCase
 
         $html = $registry->render('icon-test')->toHtml();
         $this->assertStringContainsString('subsidebar-menu__item-icon', $html);
-        $this->assertStringContainsString('icon-file-text', $html);
+        $this->assertStringContainsString('subsidebar-menu__chevron', $html);
+        $this->assertStringContainsString('data-icon="file-text"', $html);
+        $this->assertSame(1, substr_count($html, 'subsidebar-menu__item-icon'));
+        $icon = Blade::render('<x-vuero.icon name="file-text" />');
+        $this->assertStringContainsString('data-icon="file-text"', $icon);
+        $this->assertStringContainsString('<path', $icon);
+        $this->assertStringNotContainsString('<use', $icon);
     }
 
     public function test_dynamic_items_are_defined_with_builders(): void

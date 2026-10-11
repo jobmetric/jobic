@@ -46,18 +46,18 @@ body.has-side-panel, body.has-navigation-overlay, body.has-modal { overflow: hid
 .subsidebar-menu, .subsidebar-menu ul { margin: 0; padding: 0; list-style: none; }
 .subsidebar-menu__item[data-accordion] { min-height: 36px; margin-bottom: 4px; }
 .subsidebar-menu__item > button, .subsidebar-menu__link { display: flex; width: 100%; min-height: 36px; padding: 0 20px; align-items: center; justify-content: space-between; color: var(--text-soft); background: transparent; border: 0; cursor: pointer; font-family: var(--font-alt); font-size: 14px; font-weight: 500; text-align: left; transition: color .2s ease; }
-.subsidebar-menu__item > button { justify-content: flex-start; gap: 10px; }
-.subsidebar-menu__item > button > span { flex: 1; }
+.subsidebar-menu__item > button, .subsidebar-menu__link.has-icon { justify-content: flex-start; gap: 10px; }
+.subsidebar-menu__item > button > span, .subsidebar-menu__link.has-icon > span { flex: 1; }
 .subsidebar-menu__item > button:hover, .subsidebar-menu__item > button:focus-visible { color: var(--text); }
 .subsidebar-menu__item > button svg { position: relative; top: 1px; flex: none; color: var(--text-soft); transition: color .3s ease, transform .3s ease; }
+.subsidebar-menu__item > button .subsidebar-menu__chevron { margin-inline-start: auto; transition: transform .2s ease; }
+.subsidebar-menu__item.is-open > button .subsidebar-menu__chevron { transform: rotate(90deg); }
+html[dir='rtl'] .subsidebar-menu__item > button .subsidebar-menu__chevron { transform: scaleX(-1); }
+html[dir='rtl'] .subsidebar-menu__item.is-open > button .subsidebar-menu__chevron { transform: scaleX(-1) rotate(90deg); }
 .subsidebar-menu__item.is-open > button { color: var(--text); font-weight: 600; }
-.subsidebar-menu__item.is-open > button > svg:last-child { transform: rotate(90deg); }
 .subsidebar-menu { direction: inherit; }
 .subsidebar-menu__item > button, .subsidebar-menu__link, .subsidebar-menu__children a { direction: inherit; text-align: start; }
 .subsidebar-menu__item > button > span, .subsidebar-menu__link > span, .subsidebar-menu__children a > span { min-width: 0; text-align: start; }
-html[dir='rtl'] .subsidebar-menu__item > button > svg:last-child,
-html[dir='rtl'] .subsidebar-menu__link > svg:last-child { transform: rotate(180deg); }
-html[dir='rtl'] .subsidebar-menu__item.is-open > button > svg:last-child { transform: rotate(90deg); }
 .subsidebar-menu__children { padding: 0 !important; overflow: hidden; }
 .subsidebar-menu__children li { display: flex; min-height: 32px; align-items: center; }
 .subsidebar-menu__children a { display: flex; width: 100%; min-height: 32px; padding-block: 0; padding-inline: 32px 20px; align-items: center; gap: 10px; color: var(--muted); font-family: var(--font-sans); font-size: 14px; font-weight: 400; }
@@ -133,8 +133,9 @@ html[dir='rtl'] .subsidebar-menu__item.is-open > button > svg:last-child { trans
 .admin-toolbar { display: flex; align-items: center; gap: 4px; }
 .toolbar-button { position: relative; display: grid; width: 36px; height: 36px; padding: 0; place-items: center; color: #a2a5b9; background: transparent; border: 0; border-radius: 50%; cursor: pointer; transition: color .2s ease, background .2s ease; }
 .toolbar-button:hover { color: var(--primary); background: var(--primary-soft); }
-.theme-toggle__moon, :root[data-theme='dark'] .theme-toggle__sun { display: none; }
-:root[data-theme='dark'] .theme-toggle__moon { display: block; }
+.cms-page svg.theme-toggle__moon,
+:root[data-theme='dark'] .cms-page svg.theme-toggle__sun { display: none !important; }
+:root[data-theme='dark'] .cms-page svg.theme-toggle__moon { display: block !important; }
 .notification-dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; background: #e62965; border: 2px solid var(--page); border-radius: 50%; }
 
 /* Vuero circular quick menu */
@@ -194,11 +195,12 @@ html[dir='rtl'] .subsidebar-menu__item.is-open > button > svg:last-child { trans
 .circular-menu__item:focus-visible,
 .circular-menu__item > .toolbar-button:focus-visible { outline: 2px solid rgb(255 255 255 / 80%); outline-offset: 2px; }
 .circular-menu.is-open .circular-menu__toggle { box-shadow: 0 4px 8px rgb(0 0 0 / 30%); }
-.circular-menu__toggle > .ui-icon { position: absolute; transition: opacity .2s ease, transform .25s cubic-bezier(.22,1,.36,1); }
-.circular-menu__menu-icon { opacity: 1; transform: rotate(0) scale(1); }
-.circular-menu__close-icon { opacity: 0; transform: rotate(-90deg) scale(.65); }
-.circular-menu.is-open .circular-menu__menu-icon { opacity: 0; transform: rotate(90deg) scale(.65); }
-.circular-menu.is-open .circular-menu__close-icon { opacity: 1; transform: rotate(0) scale(1); }
+.circular-menu__toggle > .circular-menu__menu-icon,
+.circular-menu__toggle > .circular-menu__close-icon { position: absolute; inset: 50% auto auto 50%; margin: 0; transform: translate(-50%, -50%); transition: opacity .2s ease, transform .25s cubic-bezier(.22,1,.36,1); }
+.circular-menu__toggle > .circular-menu__menu-icon { opacity: 1; transform: translate(-50%, -50%) rotate(0) scale(1); }
+.circular-menu__toggle > .circular-menu__close-icon { opacity: 0; transform: translate(-50%, -50%) rotate(-90deg) scale(.65); }
+.circular-menu.is-open .circular-menu__toggle > .circular-menu__menu-icon { opacity: 0; transform: translate(-50%, -50%) rotate(90deg) scale(.65); }
+.circular-menu.is-open .circular-menu__toggle > .circular-menu__close-icon { opacity: 1; transform: translate(-50%, -50%) rotate(0) scale(1); }
 .circular-menu__items { margin: 0; padding: 0; }
 .circular-menu .circular-menu__item {
     position: absolute;
@@ -335,6 +337,7 @@ html[dir='rtl'] .subsidebar-menu__item.is-open > button > svg:last-child { trans
 .vuero-progress { height: 5px; overflow: hidden; background: var(--surface-soft); border-radius: 10px; }
 .vuero-progress span { display: block; height: 100%; background: var(--primary); border-radius: inherit; }
 .ui-toast { position: fixed; z-index: 150; right: 20px; bottom: 20px; display: flex; padding: 11px 15px; align-items: center; gap: 8px; color: #fff; background: #283252; border-radius: 6px; box-shadow: var(--shadow-md); font-size: 12px; opacity: 0; transform: translateY(10px); transition: .2s ease; }
+.ui-toast[hidden] { display: none !important; }
 .ui-toast.is-visible { opacity: 1; transform: translateY(0); }
 .admin-shell__overlay { display: none; }
 

@@ -51,9 +51,9 @@ class TaxonomyDriver implements ApplicationDriver
             });
 
             TaxonomyTypeRegistry::register('menu')
-                ->viewPermission('admin.menus.view')
-                ->managePermission('admin.menus.manage')
-                ->unlockPermission('admin.taxonomies.unlock')
+                ->label('menus.title')
+                ->description('menus.intro')
+                ->permission('admin.content.menus')
                 ->optimisticLocking()
                 ->help()
                 ->rowAction([
@@ -62,9 +62,8 @@ class TaxonomyDriver implements ApplicationDriver
                     'icon'  => 'list-tree',
                     'url'   => url('/admin/taxonomies/menu_:id'),
                 ])
-                ->label('menus.title')
-                ->description('menus.intro')
-                ->changeStatusInList();
+                ->changeStatusInList()
+                ->filters(['status']);
 
             Hooks::addAction('jobic.taxonomies.persisted', function (array $context): void {
                 if (($context['type'] ?? null) === 'menu' && ($context['record'] ?? null) instanceof Taxonomy) {
@@ -124,16 +123,23 @@ class TaxonomyDriver implements ApplicationDriver
 
     private function registerMenuItemType(Taxonomy $menu): void
     {
-        TaxonomyTypeRegistry::register('menu_' . $menu->id)
+        $type = 'menu_' . $menu->id;
+        $permission = 'admin.content.menu_item_' . $menu->id;
+        app(\App\Support\Permissions\PermissionRegistry::class)
+            ->addPermission($permission, 'roles.permissions.taxonomy_menu_item')
+            ->addPermission($permission . '.view', 'roles.permissions.taxonomy_menu_item_view', 'admin.taxonomies.index', ['type' => $type])
+            ->addPermission($permission . '.manage', 'roles.permissions.taxonomy_menu_item_manage', 'admin.taxonomies.index', ['type' => $type]);
+
+        TaxonomyTypeRegistry::register($type)
+            ->label(TaxonomyPresentation::name($menu))
             ->backUrl(url('/admin/taxonomies/menu'))
-            ->viewPermission('admin.menus.view')
-            ->managePermission('admin.menus.manage')
-            ->unlockPermission('admin.taxonomies.unlock')
+            ->permission($permission)
+            ->hasSeo()
             ->optimisticLocking()
             ->help()
-            ->label(TaxonomyPresentation::name($menu))
             ->hierarchical()
             ->baseMedia()
-            ->changeStatusInList();
+            ->changeStatusInList()
+            ->filters(['status']);
     }
 }

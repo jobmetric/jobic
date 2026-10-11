@@ -6,6 +6,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Support\RecordVersion;
+use App\Support\Permissions\PermissionRegistry;
+use App\Support\TaxonomyPermissions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +22,29 @@ use Tests\TestCase;
 class TaxonomiesTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_unconfigured_taxonomy_types_get_independent_type_scoped_permissions(): void
+    {
+        $first = TaxonomyTypeRegistry::register('regional_terms')->label('Regional terms');
+        $second = TaxonomyTypeRegistry::register('product_topics')->label('Product topics');
+        $permissions = app(TaxonomyPermissions::class);
+
+        $firstKeys = $permissions->for('regional_terms', $first);
+        $secondKeys = $permissions->for('product_topics', $second);
+
+        $this->assertSame('admin.content.taxonomy_regional_terms.view', $firstKeys['view']);
+        $this->assertSame('admin.content.taxonomy_regional_terms.manage', $firstKeys['manage']);
+        $this->assertSame('admin.content.taxonomy_product_topics.view', $secondKeys['view']);
+        $this->assertSame('admin.content.taxonomy_product_topics.manage', $secondKeys['manage']);
+        $this->assertNotSame($firstKeys['view'], $secondKeys['view']);
+        $this->assertNotSame('admin.content', $firstKeys['view']);
+
+        $catalog = app(PermissionRegistry::class);
+        $this->assertTrue($catalog->has($firstKeys['view']));
+        $this->assertTrue($catalog->has($firstKeys['manage']));
+        $this->assertTrue($catalog->has($secondKeys['view']));
+        $this->assertTrue($catalog->has($secondKeys['manage']));
+    }
 
     public function test_deleting_taxonomy_detaches_media_without_deleting_the_file(): void
     {
@@ -73,22 +98,48 @@ class TaxonomiesTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors(['translation.en.name', 'ordering', 'status']);
     }
 
-    public function test_optional_fields_and_seo_use_the_installed_registry_options_api(): void
+    public function test_has_seo_renders_translated_fields_and_persists_them(): void
     {
         $this->actingAs(User::factory()->create());
+        Storage::fake('media_public');
         TaxonomyTypeRegistry::register('configured', [
-            'label' => 'Configured category', 'seo' => true,
+            'label' => 'Configured category', 'has-seo' => true,
             'custom-fields' => ['subtitle' => ['label' => 'Subtitle', 'type' => 'text', 'rules' => ['required', 'string', 'max:30']]],
         ]);
         $this->get(route('admin.taxonomies.create', 'configured'))->assertOk()
-            ->assertSee('custom_fields[subtitle]', false)->assertSee('seo[en][title]', false)
-            ->assertSee('media_selection[seo_image]', false);
+            ->assertSee('custom_fields[subtitle]', false)
+            ->assertSee('data-taxonomy-form-tabs', false)
+            ->assertSee('translation[en][meta_title]', false)
+            ->assertSee('translation[en][meta_description]', false)
+            ->assertSee('translation[en][meta_keywords]', false)
+            ->assertSee('metadata[seo_index]', false)
+            ->assertSee('media_selection[seo_image]', false)
+            ->assertDontSee('seo[en][index]', false)
+            ->assertDontSee('seo[en][title]', false);
         $payload = ['translation' => ['en' => ['name' => 'Configured']], 'ordering' => 0, 'status' => 1];
         $this->postJson(route('admin.taxonomies.store', 'configured'), $payload)
             ->assertUnprocessable()->assertJsonValidationErrors('custom_fields.subtitle');
-        $payload += ['custom_fields' => ['subtitle' => 'Details'], 'seo' => ['en' => ['title' => 'Search title', 'index' => 1]]];
+        $payload['custom_fields'] = ['subtitle' => 'Details'];
+        $payload['translation']['en'] += [
+            'meta_title' => 'Search title',
+            'meta_description' => 'Search description',
+            'meta_keywords' => 'news, category',
+        ];
+        $mediaId = $this->postJson(route('admin.media-manager.upload'), [
+            'file' => UploadedFile::fake()->image('sharing.png'),
+        ])->assertCreated()->json('data.id');
+        $payload['metadata'] = ['seo_index' => 0];
+        $payload['media_selection'] = ['seo_image' => json_encode([$mediaId])];
         $id = $this->postJson(route('admin.taxonomies.store', 'configured'), $payload)->assertCreated()->json('data.id');
-        $this->get(route('admin.taxonomies.edit', ['configured', $id]))->assertOk()->assertSee('Details')->assertSee('Search title');
+        $this->assertSame(0, app(\App\Services\Taxonomies\Taxonomies::class)->capabilityValues(Taxonomy::findOrFail($id))['seo_index']);
+        $this->assertDatabaseHas(config('media.tables.media_relation'), [
+            'mediaable_type' => Taxonomy::class,
+            'mediaable_id' => $id,
+            'media_id' => $mediaId,
+            'collection' => 'seo_image',
+        ]);
+        $this->get(route('admin.taxonomies.edit', ['configured', $id]))->assertOk()
+            ->assertSee('Details')->assertSee('Search title')->assertSee('Search description')->assertSee('news, category');
     }
 
     public function test_menu_item_edit_and_update_work_with_installed_package_in_both_locales(): void

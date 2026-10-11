@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Admin;
 
 use App\Support\AdminAccess;
+use App\Support\TaxonomyPermissions;
 use Closure;
 use Illuminate\Http\Request;
+use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -29,11 +31,22 @@ readonly class EnsurePermission
      */
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
-        $permissions = array_map(fn (string $permission) => match ($permission) {
-            'admin.settings.section' => $this->access->settingsPermission((string) $request->route('section')),
-            'admin.settings.dynamic' => $this->access->dynamicSettingsPermission((string) $request->route('application'), (string) $request->route('key')),
-            default => $permission,
-        }, $permissions);
+        $resolved = [];
+        foreach ($permissions as $permission) {
+            if ($permission === 'admin.content.taxonomy.manage.any') {
+                foreach (TaxonomyTypeRegistry::values() as $type) {
+                    $resolved[] = app(TaxonomyPermissions::class)->for($type, TaxonomyTypeRegistry::for($type))['manage'];
+                }
+                continue;
+            }
+
+            $resolved[] = match ($permission) {
+                'admin.settings.section' => $this->access->settingsPermission((string) $request->route('section')),
+                'admin.settings.dynamic' => $this->access->dynamicSettingsPermission((string) $request->route('application'), (string) $request->route('key')),
+                default => $permission,
+            };
+        }
+        $permissions = $resolved;
 
         $allowsRegistered = in_array('admin.settings.any', $permissions, true) && $this->access->allowsAnyRegistered($request->user(), 'admin.settings');
 

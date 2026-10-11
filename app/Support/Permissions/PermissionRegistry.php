@@ -14,6 +14,49 @@ class PermissionRegistry
     /** @var array<string, array{label: string, route: string|null, parameters: array<string, scalar>, order: int}> */
     private array $permissions = [];
 
+    /** @var array<string, list<string>> */
+    private array $groups = [];
+
+    /**
+     * Register a permission that grants or denies several existing namespaces.
+     *
+     * @param string $key
+     * @param string $label
+     * @param list<string> $members
+     *
+     * @return self
+     */
+    public function addGroupPermission(string $key, string $label, array $members): self
+    {
+        $this->addPermission($key, $label);
+        if (isset($this->groups[$key]) && $this->groups[$key] !== $members) {
+            throw new InvalidArgumentException("Permission group [{$key}] is already registered with different members.");
+        }
+
+        $this->groups[$key] = $members;
+
+        return $this;
+    }
+
+    /**
+     * Determine whether a group permission covers a requested key.
+     *
+     * @param string $group
+     * @param string $permission
+     *
+     * @return bool
+     */
+    public function groupCovers(string $group, string $permission): bool
+    {
+        foreach ($this->groups[$group] ?? [] as $member) {
+            if ($permission === $member || str_starts_with($permission, $member . '.')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Add one permission definition to the application catalog.
      *
@@ -84,8 +127,7 @@ class PermissionRegistry
      */
     public function beneath(string $prefix): array
     {
-        return array_values(array_filter(array_keys($this->permissions), static fn (string $key
-        ): bool => $key === $prefix || str_starts_with($key, $prefix . '.')));
+        return array_values(array_filter(array_keys($this->permissions), static fn (string $key): bool => $key === $prefix || str_starts_with($key, $prefix . '.')));
     }
 
     /**
@@ -95,8 +137,7 @@ class PermissionRegistry
      */
     public function landingPermissions(): array
     {
-        $permissions = array_filter($this->permissions, static fn (array $definition
-        ): bool => $definition['route'] !== null);
+        $permissions = array_filter($this->permissions, static fn (array $definition): bool => $definition['route'] !== null);
         uasort($permissions, static fn (array $left, array $right): int => $left['order'] <=> $right['order']);
 
         return $permissions;

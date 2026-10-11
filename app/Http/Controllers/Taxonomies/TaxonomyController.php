@@ -55,7 +55,8 @@ class TaxonomyController extends Controller
         Domi::setPlugins(['jquery', 'datatable']);
 
         return view('taxonomies.index', [
-            'type' => $type,
+            'type'        => $type,
+            'listFilters' => $this->taxonomies->listFilters($type),
         ]);
     }
 
@@ -79,6 +80,7 @@ class TaxonomyController extends Controller
      *
      * @return View
      * @throws SetPluginNotFoundException
+     * @throws Throwable
      */
     public function create(string $type): View
     {
@@ -101,6 +103,7 @@ class TaxonomyController extends Controller
             'type'   => $type,
             'driver' => $driver,
         ]);
+
         abort_unless(is_string($html) && $html !== '', 404);
 
         return response($html);
@@ -114,6 +117,7 @@ class TaxonomyController extends Controller
      *
      * @return View|RedirectResponse
      * @throws SetPluginNotFoundException
+     * @throws Throwable
      */
     public function edit(string $type, int $taxonomy): View|RedirectResponse
     {
@@ -231,8 +235,12 @@ class TaxonomyController extends Controller
 
         return response()->json([
             'ok'      => true,
-            'message' => trans('taxonomies.edit_locks_released', ['count' => $released]),
-            'data'    => ['released' => $released],
+            'message' => trans('taxonomies.edit_locks_released', [
+                'count' => $released,
+            ]),
+            'data'    => [
+                'released' => $released,
+            ],
         ]);
     }
 
@@ -298,13 +306,17 @@ class TaxonomyController extends Controller
             $field = (string) Arr::get($item->customField->params, 'uniqName');
 
             if ($field !== '') {
-                $rules[$field] = $field === 'name' ? [
-                    'required',
+                $maxLength = match ($field) {
+                    'name', 'meta_title' => 255,
+                    'meta_description' => 500,
+                    'meta_keywords' => 1000,
+                    default => null,
+                };
+
+                $rules[$field] = [
+                    $field === 'name' ? 'required' : 'nullable',
                     'string',
-                    'max:255',
-                ] : [
-                    'nullable',
-                    'string',
+                    ...($maxLength === null ? [] : ['max:' . $maxLength]),
                 ];
             }
         }
@@ -375,12 +387,16 @@ class TaxonomyController extends Controller
     private function prepare(string $type): void
     {
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
-        Hooks::action('jobic.taxonomies.preparing', ['type' => $type]);
+        Hooks::action('jobic.taxonomies.preparing', [
+            'type' => $type,
+        ]);
 
         $builder = TaxonomyTypeRegistry::for($type);
         Page::prepare('taxonomies');
 
-        $context = ['type' => $type];
+        $context = [
+            'type' => $type,
+        ];
 
         Page::addLocalize('taxonomies', trans('taxonomies'));
         Page::addLocalize('fileManager', trans('file-manager'));
@@ -390,6 +406,7 @@ class TaxonomyController extends Controller
             ->map(function ($item): array {
                 $field = (string) Arr::get($item->customField->params, 'uniqName');
                 $translated = trans((string) ($item->customField->label ?: $field));
+
                 if ($translated === $item->customField->label) {
                     $translated = trans('taxonomies.' . $field);
                 }
@@ -434,7 +451,7 @@ class TaxonomyController extends Controller
             $toolbar[] = 'help';
         }
 
-        $unlockPermission = (string) TaxonomyTypeRegistry::getOption($type, 'unlock-permission', 'admin.taxonomies.unlock');
+        $unlockPermission = (string) ($builder->getUnlockPermission() ?? config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock'));
         $canUnlockEditLocks = $this->access->allows(auth()->user(), $unlockPermission);
 
         if ($builder->hasOptimisticLocking() && $canUnlockEditLocks) {
@@ -508,7 +525,7 @@ class TaxonomyController extends Controller
             'activeLocale'       => LocaleCatalog::resolve(app()->getLocale()),
             'translations'       => $record?->getTranslations() ?? [],
             'mediaSelections'    => $record && ($builder->hasBaseMedia() || $builder->getMedia()
-                    ->isNotEmpty() || ($builder->get()['seo'] ?? false)) ? $this->taxonomies->mediaSelections($record) : [],
+                    ->isNotEmpty()) ? $this->taxonomies->mediaSelections($record) : [],
             'mediaManager'       => [
                 'browse'  => route('admin.media-manager.browse'),
                 'upload'  => route('admin.media-manager.upload'),

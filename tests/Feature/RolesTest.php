@@ -95,6 +95,8 @@ class RolesTest extends TestCase
         $this->get(route('admin.roles.index'))->assertOk()->assertSee('datatables.bundle.min.js')->assertSee('<tbody></tbody>', false);
         $this->get(route('admin.roles.create'))->assertOk()->assertDontSee('datatables.bundle.min.js')
             ->assertSee('data-permission-tree="allow"', false)->assertSee('data-permission-tree="deny"', false)
+            ->assertSee('name="allow[]" value="admin.people"', false)
+            ->assertSee('name="allow[]" value="admin.content.writings"', false)
             ->assertSee('roleForm', false)->assertSee('ip_range', false)->assertDontSee('custom_expression', false);
     }
 

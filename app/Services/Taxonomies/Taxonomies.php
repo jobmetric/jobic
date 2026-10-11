@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use JobMetric\Media\Enums\MediaTypeEnum;
 use JobMetric\Media\Models\Media;
+use JobMetric\Metadata\Models\Meta;
 use JobMetric\PackageCore\Output\Response;
 use JobMetric\Taxonomy\Facades\Taxonomy;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
@@ -48,8 +49,24 @@ class Taxonomies
 
         $total = (clone $query)->count();
 
-        if (($input['status'] ?? '') !== '') {
-            $query->where('status', $input['status']);
+        $filters = (array) ($input['filters'] ?? []);
+        foreach ($this->listFilters($type) as $key => $filter) {
+            $value = $filters[$key] ?? ($key === 'status' ? ($input['status'] ?? null) : null);
+            if (! is_scalar($value) || (string) $value === '') {
+                continue;
+            }
+            if ($filter['kind'] === 'status' && array_key_exists((string) $value, $filter['options'])) {
+                $query->where('status', (string) $value);
+            } else if ($filter['kind'] === 'taxonomy' && array_key_exists((string) $value, $filter['options'])) {
+                $query->whereHas('taxonomies', fn ($taxonomy) => $taxonomy->whereKey((int) $value)
+                    ->where('type', $filter['type'])
+                    ->where(config('taxonomy.tables.taxonomy_relation', 'taxonomy_relations') . '.collection', $filter['collection']));
+            } else if ($filter['kind'] === 'metadata' && array_key_exists((string) $value, $filter['options'])) {
+                $query->whereHas('metas', fn ($meta) => $meta->where('key', $filter['field'])
+                    ->where('value', (string) $value));
+            } else if ($filter['kind'] === 'custom' && array_key_exists((string) $value, $filter['options'])) {
+                ($filter['apply'])($query, (string) $value, $input);
+            }
         }
 
         if ($term = ($input['search']['value'] ?? null)) {
@@ -144,6 +161,82 @@ class Taxonomies
             'recordsFiltered' => $filtered,
             'data'            => $rows,
         ]);
+    }
+
+    /**
+     * Build the configured field filters for a taxonomy list.
+     *
+     * @param string $type
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function listFilters(string $type): array
+    {
+        $builder = TaxonomyTypeRegistry::for($type);
+        $filters = [];
+        foreach ($builder->getFilterFields() as $field) {
+            if ($field === 'status') {
+                $filters[$field] = [
+                    'kind'    => 'status',
+                    'label'   => 'taxonomies.status',
+                    'options' => ['1' => 'taxonomies.active', '0' => 'taxonomies.inactive'],
+                ];
+                continue;
+            }
+            if (str_starts_with($field, 'taxonomy.')) {
+                $taxonomyType = substr($field, strlen('taxonomy.'));
+                $collection = collect($builder->getTaxonomyTypes())
+                    ->filter(fn (array $definition): bool => ($definition['type'] ?? null) === $taxonomyType)
+                    ->keys()
+                    ->first();
+                if ($collection === null || ! TaxonomyTypeRegistry::has($taxonomyType)) {
+                    continue;
+                }
+                $filters[$field] = [
+                    'kind'       => 'taxonomy',
+                    'type'       => $taxonomyType,
+                    'collection' => $collection,
+                    'label'      => TaxonomyTypeRegistry::for($taxonomyType)
+                        ->getLabel(),
+                    'options'    => TaxonomyModel::query()
+                        ->where('type', $taxonomyType)
+                        ->with('translations')
+                        ->get()
+                        ->mapWithKeys(fn (TaxonomyModel $taxonomy): array => [(string) $taxonomy->id => TaxonomyPresentation::name($taxonomy)])
+                        ->all(),
+                ];
+                continue;
+            }
+            if (str_starts_with($field, 'metadata.')) {
+                $metadataKey = substr($field, strlen('metadata.'));
+                $metadataDefinition = $builder->getMetadata()
+                    ->first(fn ($metadata): bool => (string) data_get($metadata, 'customField.params.uniqName') === $metadataKey);
+                $label = data_get($metadataDefinition, 'customField.label') ?: $metadataKey;
+                $values = Meta::query()
+                    ->where('metaable_type', (new TaxonomyModel)->getMorphClass())
+                    ->where('key', $metadataKey)
+                    ->whereIn('metaable_id', TaxonomyModel::query()
+                        ->where('type', $type)
+                        ->select('id'))
+                    ->where('is_json', false)
+                    ->whereNotNull('value')
+                    ->distinct()
+                    ->orderBy('value')
+                    ->limit(100)
+                    ->pluck('value')
+                    ->mapWithKeys(fn ($value): array => [(string) $value => (string) $value])
+                    ->all();
+                $filters[$field] = ['kind' => 'metadata', 'field' => $metadataKey, 'label' => $label, 'options' => $values];
+            }
+        }
+        foreach ($builder->getCustomFilters() as $key => $filter) {
+            if (! is_array($filter) || ! isset($filter['label'], $filter['options']) || ! is_array($filter['options'])) {
+                continue;
+            }
+            $filters[$key] = ['kind' => 'custom', 'label' => $filter['label'], 'options' => $filter['options'], 'apply' => $filter['apply'] ?? null];
+        }
+
+        return $filters;
     }
 
     /**
@@ -278,14 +371,6 @@ class Taxonomies
                 ]))
             ->keyBy('collection');
 
-        if (($builder->get()['seo'] ?? false)) {
-            $mediaDefinitions->put('seo_image', [
-                'collection' => 'seo_image',
-                'multiple'   => false,
-                'mime'       => ['image'],
-            ]);
-        }
-
         $mediaPayload = collect((array) ($data['media_selection'] ?? []))
             ->mapWithKeys(function ($value, string $collection) use ($mediaDefinitions): array {
                 $definition = $mediaDefinitions->get($collection);
@@ -408,12 +493,11 @@ class Taxonomies
                     ]);
             }
 
-            if (($definition->get()['seo'] ?? false) && array_key_exists('seo', $data)) {
-                $existingSeo = $this->capabilityValues($saved)['seo'];
+            if ($definition->isSeoEnabled() && array_key_exists('seo_index', (array) ($data['metadata'] ?? []))) {
                 $saved->metas()
-                    ->updateOrCreate(['key' => 'taxonomy_seo'], [
-                        'value'   => json_encode(array_replace($existingSeo, $data['seo']), JSON_UNESCAPED_UNICODE),
-                        'is_json' => true,
+                    ->updateOrCreate(['key' => 'seo_index'], [
+                        'value'   => (string) $data['metadata']['seo_index'],
+                        'is_json' => false,
                     ]);
             }
 
@@ -684,7 +768,7 @@ class Taxonomies
             'slug'          => $record->slugByCollection($record->type, true),
             'media'         => $this->mediaPreview($record),
             'custom_fields' => $this->capabilityValues($record)['custom_fields'],
-            'seo'           => $this->capabilityValues($record)['seo'],
+            'seo_index'     => $this->capabilityValues($record)['seo_index'],
         ];
 
         return Hooks::filter('jobic.taxonomies.history.snapshot', $state, [
@@ -706,12 +790,20 @@ class Taxonomies
             ->whereIn('key', [
                 'taxonomy_fields',
                 'taxonomy_seo',
+                'seo_index',
             ])
             ->pluck('value', 'key') ?? collect();
 
+        $legacySeo = json_decode($values->get('taxonomy_seo', '{}'), true) ?: [];
+        $locale = LocaleCatalog::resolve(app()->getLocale());
+        $legacyIndex = $legacySeo[$locale]['index'] ?? collect($legacySeo)
+            ->pluck('index')
+            ->first() ?? 1;
+
         return [
             'custom_fields' => json_decode($values->get('taxonomy_fields', '{}'), true) ?: [],
-            'seo'           => json_decode($values->get('taxonomy_seo', '{}'), true) ?: [],
+            'seo'           => $legacySeo,
+            'seo_index'     => $values->has('seo_index') ? (int) $values->get('seo_index') : (int) $legacyIndex,
         ];
     }
 }

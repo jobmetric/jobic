@@ -98,19 +98,21 @@ class AdminMenuRegistry
     public function addSectionProvider(string $section, Closure $provider): void
     {
         $this->assertSection($section);
+
         $this->providers[$section][] = static function () use ($provider): array {
             $items = new AdminMenuItemsBuilder(new \stdClass);
             $provider($items);
 
             return $items->definitions();
         };
+
         $this->invalidate();
     }
 
     /**
      * Resolve the menu tree for the current request, filtering out items that are not visible to the current user.
      *
-     * @return array|mixed[][]
+     * @return array
      */
     public function sections(): array
     {
@@ -296,15 +298,19 @@ class AdminMenuRegistry
         $url = $definition['url'] ?? null;
         if (is_callable($url)) {
             $url = $url();
-        } else if (isset($definition['route'])) {
-            $url = route((string) $definition['route'], $definition['parameters'] ?? []);
+        } else {
+            if (isset($definition['route'])) {
+                $url = route((string) $definition['route'], $definition['parameters'] ?? []);
+            }
         }
 
         $active = $definition['active'] ?? false;
         if (is_callable($active)) {
             $active = (bool) $active();
-        } else if (is_string($active)) {
-            $active = request()->routeIs($active);
+        } else {
+            if (is_string($active)) {
+                $active = request()->routeIs($active);
+            }
         }
 
         $open = $definition['open'] ?? false;
@@ -343,6 +349,9 @@ class AdminMenuRegistry
         }
 
         $permissions = $definition['permissions'] ?? $definition['permission'] ?? null;
+        if (is_callable($permissions)) {
+            $permissions = $permissions();
+        }
         if ($permissions === null || $permissions === '') {
             return true;
         }
@@ -380,9 +389,11 @@ class AdminMenuRegistry
         if ($level > 3) {
             throw new InvalidArgumentException('Admin navigation supports no more than three levels.');
         }
+
         if (($definition['children'] ?? null) instanceof Closure) {
             return;
         }
+
         foreach ($definition['children'] ?? [] as $child) {
             if (is_array($child)) {
                 $this->assertMaximumDepth($child, $level + 1);

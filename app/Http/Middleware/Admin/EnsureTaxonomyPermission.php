@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Admin;
 
 use App\Support\AdminAccess;
+use App\Support\TaxonomyPermissions;
 use Closure;
 use Illuminate\Http\Request;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
@@ -20,15 +21,19 @@ readonly class EnsureTaxonomyPermission
     public function handle(Request $request, Closure $next): Response
     {
         $type = (string) $request->route('type');
+
         abort_unless(TaxonomyTypeRegistry::has($type), 404);
 
         $action = $request->route()
             ->getActionMethod();
+
         if (in_array($action, [
             'unlockEditLock',
             'unlockEditLocks',
         ], true)) {
-            $permission = (string) TaxonomyTypeRegistry::getOption($type, 'unlock-permission', 'admin.taxonomies.unlock');
+            $permission = (string) (TaxonomyTypeRegistry::for($type)
+                ->getUnlockPermission() ?? config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock'));
+
             abort_unless($this->access->allows($request->user(), $permission), 403);
 
             return $next($request);
@@ -40,8 +45,8 @@ readonly class EnsureTaxonomyPermission
                 'history',
             ], true);
 
-        $option = $isRead ? 'view-permission' : 'manage-permission';
-        $permission = (string) TaxonomyTypeRegistry::getOption($type, $option, 'admin.content');
+        $permissions = app(TaxonomyPermissions::class)->for($type, TaxonomyTypeRegistry::for($type));
+        $permission = $isRead ? $permissions['view'] : $permissions['manage'];
 
         abort_unless($this->access->allows($request->user(), $permission), 403);
 

@@ -81,6 +81,16 @@ class TaxonomyRequest extends FormRequest
                     array_unshift($fieldRules, 'nullable');
                 }
 
+                $maxLength = match ($field) {
+                    'meta_title' => 255,
+                    'meta_description' => 500,
+                    'meta_keywords' => 1000,
+                    default => null,
+                };
+                if ($maxLength !== null) {
+                    $fieldRules[] = 'max:' . $maxLength;
+                }
+
                 $rules["translation.$locale.$field"] = array_unique($fieldRules);
             }
         }
@@ -93,25 +103,9 @@ class TaxonomyRequest extends FormRequest
                 $rules["custom_fields.$key"] = [...$fieldRules, Rule::in(array_keys($field['options']))];
             }
         }
-        if (($builder->get()['seo'] ?? false)) {
-            $rules['seo'] = ['sometimes', 'array:' . implode(',', $locales)];
-
-            foreach ($locales as $locale) {
-                $rules["seo.$locale.title"] = [
-                    'nullable',
-                    'string',
-                    'max:255',
-                ];
-                $rules["seo.$locale.description"] = [
-                    'nullable',
-                    'string',
-                    'max:500',
-                ];
-                $rules["seo.$locale.index"] = [
-                    'sometimes',
-                    'boolean',
-                ];
-            }
+        if ($builder->isSeoEnabled()) {
+            $rules['metadata'] = ['sometimes', 'array:seo_index'];
+            $rules['metadata.seo_index'] = ['sometimes', 'boolean'];
         }
 
         if ($builder->hasHierarchical()) {
@@ -133,13 +127,6 @@ class TaxonomyRequest extends FormRequest
 
         if ($builder->hasBaseMedia()) {
             $rules['media_selection.base'] = [
-                'nullable',
-                'json',
-            ];
-        }
-
-        if (($builder->get()['seo'] ?? false)) {
-            $rules['media_selection.seo_image'] = [
                 'nullable',
                 'json',
             ];

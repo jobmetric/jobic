@@ -7,6 +7,7 @@ namespace App\Application\Drivers;
 use App\Contracts\ApplicationDriver;
 use App\Facades\AdminMenu;
 use App\Support\AdminMenuRegistry;
+use App\Support\TaxonomyPermissions;
 use App\Support\TaxonomyPresentation;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
@@ -80,10 +81,12 @@ final class AdminMenuDriver implements ApplicationDriver
             ->label('posts.title')
             ->icon('file-text')
             ->order(10)
-            ->permissions(['admin.posts.view', 'admin.posts.manage'])
+            ->permissions(['admin.content.posts.view', 'admin.content.posts.manage', 'admin.content.pages.view', 'admin.content.pages.manage'])
             ->childrenProvider(static function ($items): void {
-                $postView = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('post', 'view-permission', 'admin.posts.view');
-                $postManage = (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('post', 'manage-permission', 'admin.posts.manage');
+                $postView = \JobMetric\Post\Facades\PostTypeRegistry::for('post')
+                    ->getViewPermission() ?? 'admin.content.posts.view';
+                $postManage = \JobMetric\Post\Facades\PostTypeRegistry::for('post')
+                    ->getManagePermission() ?? 'admin.content.posts.manage';
                 $postPermissions = array_values(array_unique([$postView, $postManage]));
 
                 $items->item('all-posts')
@@ -100,13 +103,13 @@ final class AdminMenuDriver implements ApplicationDriver
                         continue;
                     }
 
-                    $viewPermission = (string) TaxonomyTypeRegistry::getOption($type, 'view-permission', 'admin.posts.view');
-                    $managePermission = (string) TaxonomyTypeRegistry::getOption($type, 'manage-permission', 'admin.posts.manage');
+                    $taxonomyType = TaxonomyTypeRegistry::for($type);
+                    $permissions = app(TaxonomyPermissions::class)->for($type, $taxonomyType);
                     $items->item($type)
                         ->label($label)
                         ->icon('list-tree')
                         ->route('admin.taxonomies.index', ['type' => $type])
-                        ->permissions(array_values(array_unique([$viewPermission, $managePermission])))
+                        ->permissions([$permissions['view'], $permissions['manage']])
                         ->order($type === 'category' ? 20 : 30)
                         ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type)
                         ->end();
@@ -119,8 +122,10 @@ final class AdminMenuDriver implements ApplicationDriver
             ->route('admin.posts.index', ['type' => 'page'])
             ->order(20)
             ->permissions([
-                (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('page', 'view-permission', 'admin.posts.view'),
-                (string) \JobMetric\Post\Facades\PostTypeRegistry::getOption('page', 'manage-permission', 'admin.posts.manage'),
+                \JobMetric\Post\Facades\PostTypeRegistry::for('page')
+                    ->getViewPermission() ?? 'admin.content.pages.view',
+                \JobMetric\Post\Facades\PostTypeRegistry::for('page')
+                    ->getManagePermission() ?? 'admin.content.pages.manage',
             ])
             ->active(static fn (): bool => request()->routeIs('admin.posts.*') && request()->route('type') === 'page')
             ->end()
@@ -129,14 +134,14 @@ final class AdminMenuDriver implements ApplicationDriver
             ->icon('menu')
             ->route('admin.taxonomies.index', ['type' => 'menu'])
             ->order(30)
-            ->permissions(['admin.menus.view', 'admin.menus.manage'])
+            ->permissions(fn (): array => $this->taxonomyMenuPermissions('menu'))
             ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === 'menu')
             ->end()
             ->item('menu-items')
             ->label('menus.items')
             ->icon('list-tree')
             ->order(40)
-            ->permissions(['admin.menus.view', 'admin.menus.manage'])
+            ->permissions(fn (): array => $this->menuItemPermissions())
             ->childrenProvider(static function ($items): void {
                 $table = (string) config('taxonomy.tables.taxonomy', 'taxonomies');
                 if (! Schema::hasTable($table)) {
@@ -150,10 +155,16 @@ final class AdminMenuDriver implements ApplicationDriver
                     ->get()
                     ->each(static function (Taxonomy $taxonomy) use ($items): void {
                         $type = 'menu_' . $taxonomy->id;
+                        $builder = TaxonomyTypeRegistry::has($type) ? TaxonomyTypeRegistry::for($type) : null;
+                        if (! $builder) {
+                            return;
+                        }
+                        $permissions = app(TaxonomyPermissions::class)->for($type, $builder);
                         $items->item('menu-' . $taxonomy->id)
                             ->label(static fn (): string => TaxonomyPresentation::name($taxonomy))
                             ->icon('menu')
                             ->route('admin.taxonomies.index', ['type' => $type])
+                            ->permissions([$permissions['view'], $permissions['manage']])
                             ->order(50)
                             ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type)
                             ->end();
@@ -165,13 +176,12 @@ final class AdminMenuDriver implements ApplicationDriver
                     ->reject(static fn (string $type): bool => in_array($type, ['menu', 'category', 'tag'], true) || str_starts_with($type, 'menu_'))
                     ->each(static function (string $type) use ($items): void {
                         $builder = TaxonomyTypeRegistry::for($type);
-                        $permission = (string) TaxonomyTypeRegistry::getOption($type, 'view-permission', 'admin.content');
-                        $managePermission = (string) TaxonomyTypeRegistry::getOption($type, 'manage-permission', 'admin.content');
+                        $permissions = app(TaxonomyPermissions::class)->for($type, $builder);
                         $items->item('taxonomy-' . $type)
                             ->label(static fn (): string => TaxonomyPresentation::typeLabel($type, $builder->getLabel()))
                             ->icon('list-tree')
                             ->route('admin.taxonomies.index', ['type' => $type])
-                            ->permissions(array_values(array_unique([$permission, $managePermission])))
+                            ->permissions([$permissions['view'], $permissions['manage']])
                             ->order(60)
                             ->active(static fn (): bool => request()->routeIs('admin.taxonomies.*') && request()->route('type') === $type)
                             ->end();
@@ -205,5 +215,34 @@ final class AdminMenuDriver implements ApplicationDriver
                         ->end();
                 }
             });
+    }
+
+    /** Return each registered menu-item taxonomy's independent access keys. */
+    private function menuItemPermissions(): array
+    {
+        $permissions = [];
+        foreach (TaxonomyTypeRegistry::values() as $type) {
+            if (! str_starts_with($type, 'menu_')) {
+                continue;
+            }
+            $builder = TaxonomyTypeRegistry::for($type);
+            $typePermissions = app(TaxonomyPermissions::class)->for($type, $builder);
+            $permissions[] = $typePermissions['view'];
+            $permissions[] = $typePermissions['manage'];
+        }
+
+        return array_values(array_unique(array_filter($permissions)));
+    }
+
+    /** Return the independent access keys for one registered taxonomy type. */
+    private function taxonomyMenuPermissions(string $type): array
+    {
+        if (! TaxonomyTypeRegistry::has($type)) {
+            return [];
+        }
+
+        $permissions = app(TaxonomyPermissions::class)->for($type, TaxonomyTypeRegistry::for($type));
+
+        return [$permissions['view'], $permissions['manage']];
     }
 }

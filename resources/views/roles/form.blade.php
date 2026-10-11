@@ -30,7 +30,7 @@
         <div class="role-permission-columns">
             @foreach(['allow', 'deny'] as $side)
                 <section class="role-permission-column is-{{ $side }}"><header><h2>{{ __('roles.'.$side) }}</h2><p>{{ __('roles.'.$side.'_hint') }}</p></header><ul class="role-permission-tree" data-permission-tree="{{ $side }}">
-                    @foreach(\JobMetric\Rolix\Facades\Permission::getPermissionTreeForType('system') as $node)
+                    @foreach($permissionTree as $node)
                         @include('roles.permission-node', ['node' => $node, 'side' => $side, 'values' => old($side, $record?->{$side} ?? []), 'readonly' => $readonly])
                     @endforeach
                 </ul></section>

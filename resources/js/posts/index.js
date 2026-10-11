@@ -3,6 +3,7 @@ import { announce } from '../common/toast';
 import { enhanceSelects } from '../common/selects';
 import { sendSettings } from '../admin/settings';
 import { loadingButton } from '../common/page';
+import { iconMarkup } from '../common/icons';
 import '../../css/crud.css';
 import '../../css/crud-fields.css';
 
@@ -23,10 +24,10 @@ function escape(value) {
 }
 
 function icon(name) {
-    return `<svg class="ui-icon" width="18" height="18" fill="none" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
+    return iconMarkup(name, 18);
 }
 
-function dialog({title, description, items = [], confirm = null, onRemove = null}) {
+function dialog({title, description, items = [], confirm = null, onRemove = null, accordion = false}) {
     const node = document.querySelector('[data-crud-dialog]');
     const heading = node.querySelector('[data-dialog-title]');
     const body = node.querySelector('[data-dialog-body]');
@@ -34,6 +35,14 @@ function dialog({title, description, items = [], confirm = null, onRemove = null
     body.replaceChildren();
     const intro = document.createElement('p'); intro.textContent = description; body.append(intro);
     items.forEach((item) => {
+        if (accordion) {
+            const index = body.querySelectorAll('.crud-help-section').length;
+            const section = document.createElement('details'); section.className = 'crud-help-section';
+            const summary = document.createElement('summary'); summary.textContent = Object.values(pageData().crudHelp || {})[index] || '';
+            const content = document.createElement('p'); content.textContent = item;
+            section.append(summary, content); section.open = index === 0; body.append(section);
+            return;
+        }
         const row = document.createElement('div'); row.className = 'crud-dialog-item';
         const name = document.createElement('span'); name.textContent = item.title || item.name || String(item); row.append(name);
         if (onRemove) {
@@ -118,7 +127,7 @@ if (table?.length && $.fn?.DataTable) {
     function selectPost(id) {
         if (selected.size >= 100 && !selected.has(id)) { announce(config.labels.selection_limit, true); return; }
         const row = rows.find((item) => Number(item.id) === id);
-        if (row) selected.set(id, {id, title: row.title});
+        if (row) selected.set(id, {id, title: row.title, editLocked: Boolean(row.edit_lock)});
     }
 
     const create = document.createElement('a');
@@ -129,18 +138,18 @@ if (table?.length && $.fn?.DataTable) {
     create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
     document.querySelector('[data-crud-toolbar]').append(create);
     const operations = document.createElement('details'); operations.className = 'crud-dropdown post-list-operations';
-    const operationsToggle = document.createElement('summary'); operationsToggle.className = 'vuero-button'; operationsToggle.innerHTML = `${icon('settings')}${escape(config.labels.actions)}${icon('chevron-down')}`;
+    const operationsToggle = document.createElement('summary'); operationsToggle.className = 'vuero-button'; operationsToggle.innerHTML = `${escape(config.labels.actions)}${icon('chevron-down')}`;
     const operationsMenu = document.createElement('div'); operationsMenu.className = 'crud-dropdown__menu';
-    [['activate', 'check'], ['deactivate', 'pause'], ['delete', 'trash'], ['help', 'info']].forEach(([action, glyph]) => {
-        const button = document.createElement('button'); button.type = 'button'; button.dataset.postAction = action; button.innerHTML = `${icon(glyph)}${escape(config.labels[action] || config.labels.help)}`; operationsMenu.append(button);
+    (config.operations || ['delete']).forEach((action) => {
+        const button = document.createElement('button'); button.type = 'button'; button.dataset.postAction = action; button.dataset.crudAction = action; button.textContent = config.labels[action] || action; operationsMenu.append(button);
     });
     operations.append(operationsToggle, operationsMenu); document.querySelector('[data-crud-toolbar]').append(operations);
     window.addEventListener('cms:presentation-refreshed', () => {
         create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
-        operationsToggle.innerHTML = `${icon('settings')}${escape(config.labels.actions)}${icon('chevron-down')}`;
+        operationsToggle.innerHTML = `${escape(config.labels.actions)}${icon('chevron-down')}`;
         operationsMenu.querySelectorAll('[data-post-action]').forEach((button) => {
             const action = button.dataset.postAction;
-            button.innerHTML = `${icon({activate: 'check', deactivate: 'pause', delete: 'trash', help: 'info'}[action])}${escape(config.labels[action] || config.labels.help)}`;
+            button.textContent = config.labels[action] || action;
         });
         dataTable.ajax.reload(null, false);
     });
@@ -217,7 +226,13 @@ if (table?.length && $.fn?.DataTable) {
             },
             {
                 data: null, orderable: false, searchable: false, className: 'posts-column-actions',
-                render: (row) => `<div class="crud-row-actions"><a class="crud-icon-button" href="${escape(row.edit_url)}" aria-label="${escape(config.labels.edit)}" data-tooltip="${escape(config.labels.edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(config.labels.actions)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><button type="button" data-post-delete="${Number(row.id)}" data-url="${escape(row.delete_url)}">${icon('trash')}${escape(config.labels.delete)}</button></div></details></div>`,
+                render: (row) => {
+                    const lock = row.edit_lock;
+                    const lockHint = lock ? config.labels.edit_lock_owner.replace(':user', lock.user_name).replace(':time', lock.locked_at) : '';
+                    const lockButton = lock ? `<button type="button" class="crud-icon-button taxonomy-edit-lock" aria-label="${escape(lockHint)}" data-tooltip="${escape(lockHint)}" ${config.canUnlockEditLocks && !lock.owned ? `data-unlock-post-lock="${Number(row.id)}"` : 'aria-disabled="true"'}>${icon('lock')}</button>` : '';
+                    const edit = lock && !lock.owned ? '' : `<a class="crud-icon-button" href="${escape(row.edit_url)}" aria-label="${escape(config.labels.edit)}" data-tooltip="${escape(config.labels.edit)}">${icon('edit')}</a>`;
+                    return `<div class="crud-row-actions">${lockButton}${edit}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(config.labels.actions)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><button type="button" data-post-delete="${Number(row.id)}" data-url="${escape(row.delete_url)}">${icon('trash')}${escape(config.labels.delete)}</button></div></details></div>`;
+                },
             },
         ],
         order: [[config.hasMedia ? 2 : 1, 'asc']],
@@ -377,6 +392,7 @@ if (table?.length && $.fn?.DataTable) {
     }));
 
     async function mutate(ids, operation) {
+        if (operation === 'unlock') ids = ids.filter((id) => (selected.get(id) || rows.find((row) => Number(row.id) === Number(id)))?.editLocked || (rows.find((row) => Number(row.id) === Number(id)))?.edit_lock);
         if (!ids.length) { announce(config.labels.selection_required, true); return; }
         const label = config.labels[operation];
         const confirmed = await dialog({
@@ -386,9 +402,12 @@ if (table?.length && $.fn?.DataTable) {
             confirm: config.labels.confirm_operation,
         });
         if (!confirmed) return;
-        const payload = new FormData(); payload.set('operation', operation); ids.forEach((id) => payload.append('ids[]', id));
+        const payload = new FormData();
+        if (operation !== 'unlock') payload.set('operation', operation);
+        ids.forEach((id) => payload.append('ids[]', id));
         try {
-            const response = await fetch(config.bulkUrl, {method: 'POST', headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''}, body: payload});
+            const url = operation === 'unlock' ? config.editLockUnlockUrl : config.bulkUrl;
+            const response = await fetch(url, {method: 'POST', headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''}, body: payload});
             const result = await response.json();
             if (!response.ok || !result.ok) throw new Error(result.message || config.labels.failed);
             selected.clear(); updateSelection(); announce(result.message); dataTable.ajax.reload(null, false);
@@ -397,8 +416,31 @@ if (table?.length && $.fn?.DataTable) {
 
     document.querySelector('[data-crud-toolbar]').addEventListener('click', (event) => {
         const action = event.target.closest('[data-post-action]')?.dataset.postAction;
-        if (action === 'help') dialog({title: config.labels.help, description: config.labels.help_intro});
-        else if (action) mutate([...selected.keys()], action);
+        if (action === 'help') dialog({title: config.helpTitle, description: config.helpIntro, items: config.help, accordion: true});
+        else if (action === 'unlock') {
+            const lockedIds = [...selected.values()].filter((item) => item.editLocked).map((item) => item.id);
+            if (!lockedIds.length) announce(config.labels.no_locked_selected, true);
+            else mutate(lockedIds, 'unlock');
+        } else if (action) mutate([...selected.keys()], action);
+    });
+
+    table.on('click', '[data-unlock-post-lock]', async (event) => {
+        const button = event.currentTarget;
+        const id = Number(button.dataset.unlockPostLock);
+        const row = rows.find((item) => Number(item.id) === id);
+        if (!row?.edit_lock) return;
+        const confirmed = await dialog({
+            title: config.labels.unlock_title,
+            description: config.labels.unlock_description.replace(':user', row.edit_lock.user_name).replace(':time', row.edit_lock.locked_at),
+            confirm: config.labels.unlock_confirm,
+        });
+        if (!confirmed) return;
+        try {
+            const response = await fetch(config.editLockItemUrl.replace('__ID__', id), {method: 'POST', headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''}});
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw new Error(result.message || config.labels.failed);
+            announce(result.message); dataTable.ajax.reload(null, false);
+        } catch (error) { announce(error.message || config.labels.failed, true); }
     });
 
     table.on('click', '[data-post-delete]', async (event) => {

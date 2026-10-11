@@ -1,10 +1,10 @@
 @extends('common.admin')
-@section('title', __($typeLabel))
+@section('title', $typeLabel)
 @section('content')
 @push('styles') @vite('resources/css/posts.css', 'vuero/build') @endpush
 <section class="crud-page" data-post-list>
     @cmsHook('jobic.admin.posts.list.page.before', ['type' => $type])
-    <header class="crud-toolbar"><div class="crud-taxonomy-heading"><div><h1>{{ __($typeLabel) }}</h1><p>{{ $description ? __($description) : __('posts.list_intro') }}</p></div></div><div data-crud-toolbar data-list-controls></div></header>
+    <header class="crud-toolbar"><div class="crud-taxonomy-heading">@if($backUrl)<a class="crud-title-back" href="{{ $backUrl }}" aria-label="{{ __('taxonomies.back') }}"><x-vuero.icon name="arrow-left" size="24" /></a>@endif<div><h1>{{ $typeLabel }}</h1><p>{{ $description ?: __('posts.list_intro') }}</p></div></div><div data-crud-toolbar data-list-controls></div></header>
     @cmsHook('jobic.admin.posts.list.toolbar.after', ['type' => $type])
     @cmsHook('jobic.admin.posts.list.before', ['type' => $type])
     <div class="crud-list-controls" data-list-controls>
@@ -26,8 +26,8 @@
     @cmsHook('jobic.admin.posts.list.page.after', ['type' => $type])
 </section>
 <dialog class="crud-filter-dialog" data-filter-dialog aria-labelledby="post-filters-title">
-    <header><div><span>{{ __($typeLabel) }}</span><h2 id="post-filters-title">{{ __('posts.filters') }}</h2></div><button class="crud-icon-button" type="button" data-close-filters aria-label="{{ __('posts.dismiss') }}"><x-vuero.icon name="x" /></button></header>
-    <form data-filter-form class="crud-filter-form"><div class="crud-filter-fields">@cmsHook('jobic.admin.posts.list.filter_fields.before', ['type' => $type])<label>{{ __('posts.status') }}<select name="status"><option value="">{{ __('posts.all') }}</option>@foreach($statusLabels as $status => $label)<option value="{{ $status }}">{{ $label }}</option>@endforeach</select></label>@foreach($listFilters as $key => $filter)<label>{{ __($filter['label']) }}<select name="{{ $key }}"><option value="">{{ __('posts.all') }}</option>@foreach($filter['options'] as $value => $label)<option value="{{ $value }}">{{ __($label) }}</option>@endforeach</select></label>@endforeach @cmsHook('jobic.admin.posts.list.filter_fields.after', ['type' => $type])</div><footer><button class="vuero-button is-primary" type="submit">{{ __('posts.apply') }}</button><button class="crud-icon-button" type="reset" aria-label="{{ __('posts.reset') }}" data-tooltip="{{ __('posts.reset') }}"><x-vuero.icon name="rotate" /></button></footer></form>
+    <header><div><span>{{ $typeLabel }}</span><h2 id="post-filters-title">{{ __('posts.filters') }}</h2></div><button class="crud-icon-button" type="button" data-close-filters aria-label="{{ __('posts.dismiss') }}"><x-vuero.icon name="x" /></button></header>
+    <form data-filter-form class="crud-filter-form"><div class="crud-filter-fields">@cmsHook('jobic.admin.posts.list.filter_fields.before', ['type' => $type])@foreach($listFilters as $key => $filter)<label>{{ __($filter['label']) }}<select name="filters[{{ $key }}]"><option value="">{{ __('posts.all') }}</option>@foreach($filter['options'] as $value => $label)<option value="{{ $value }}">{{ __($label) }}</option>@endforeach</select></label>@endforeach @cmsHook('jobic.admin.posts.list.filter_fields.after', ['type' => $type])</div><footer><button class="vuero-button is-primary" type="submit">{{ __('posts.apply') }}</button><button class="crud-icon-button" type="reset" aria-label="{{ __('posts.reset') }}" data-tooltip="{{ __('posts.reset') }}"><x-vuero.icon name="rotate" /></button></footer></form>
 </dialog>
 <dialog class="crud-filter-dialog crud-row-translation-dialog post-row-translation-dialog" data-post-translation-dialog aria-labelledby="post-translation-title">
     <header><div><span data-post-translation-subtitle></span><h2 id="post-translation-title" data-post-translation-title></h2></div><button class="crud-icon-button" type="button" data-close-post-translation aria-label="{{ __('posts.dismiss') }}"><x-vuero.icon name="x" /></button></header>

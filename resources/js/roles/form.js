@@ -18,13 +18,15 @@ document.querySelectorAll('[data-role-tab]').forEach(tab => tab.addEventListener
 
 function updateInherited(tree) {
     function visit(list, inherited) {
-        [...list.children].filter(node => node.matches('[data-permission-node]')).forEach(node => {
+        [...list.children].filter(node => node.matches('[data-permission-node], [data-permission-group]')).forEach(node => {
             const checkbox = node.querySelector(':scope > .role-permission-row input');
-            checkbox.classList.toggle('is-inherited', inherited);
-            checkbox.disabled = readonly || inherited;
-            if (inherited) checkbox.checked = true;
+            if (checkbox) {
+                checkbox.classList.toggle('is-inherited', inherited);
+                checkbox.disabled = readonly || inherited;
+                if (inherited) checkbox.checked = true;
+            }
             const children = node.querySelector(':scope > ul');
-            if (children) visit(children, inherited || checkbox.checked);
+            if (children) visit(children, inherited || (checkbox?.checked ?? false));
         });
     }
     visit(tree, false);

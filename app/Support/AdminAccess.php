@@ -148,7 +148,10 @@ readonly class AdminAccess
             }
         }
 
-        return ['route' => 'admin.dashboard', 'parameters' => []];
+        return [
+            'route'      => 'admin.dashboard',
+            'parameters' => [],
+        ];
     }
 
     /**
@@ -171,6 +174,10 @@ readonly class AdminAccess
             }
 
             if (str_starts_with($permission, $entry . '.')) {
+                return true;
+            }
+
+            if ($this->permissions->groupCovers($entry, $permission)) {
                 return true;
             }
         }

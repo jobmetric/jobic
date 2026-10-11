@@ -12,6 +12,7 @@ use App\Http\Requests\Roles\TableRequest;
 use App\Services\Roles\Roles;
 use App\Support\AdminAccess;
 use App\Support\Page;
+use App\Support\Permissions\PermissionTreePresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use JobMetric\Domi\Exceptions\SetPluginNotFoundException;
@@ -72,12 +73,13 @@ class RoleController extends Controller
      */
     public function create(): View
     {
-        $this->prepareForm();
+        $permissionTree = $this->prepareForm();
 
         return view('roles.form', [
-            'record'   => null,
-            'readonly' => false,
-            'parents'  => $this->roles->parentOptions(),
+            'record'         => null,
+            'readonly'       => false,
+            'parents'        => $this->roles->parentOptions(),
+            'permissionTree' => $permissionTree,
         ]);
     }
 
@@ -91,12 +93,13 @@ class RoleController extends Controller
      */
     public function edit(int $role): View
     {
-        $this->prepareForm();
+        $permissionTree = $this->prepareForm();
 
         return view('roles.form', [
-            'record'   => $this->roles->record($role),
-            'readonly' => false,
-            'parents'  => $this->roles->parentOptions($role),
+            'record'         => $this->roles->record($role),
+            'readonly'       => false,
+            'parents'        => $this->roles->parentOptions($role),
+            'permissionTree' => $permissionTree,
         ]);
     }
 
@@ -110,12 +113,13 @@ class RoleController extends Controller
      */
     public function show(int $role): View
     {
-        $this->prepareForm();
+        $permissionTree = $this->prepareForm();
 
         return view('roles.form', [
-            'record'   => $this->roles->record($role),
-            'readonly' => true,
-            'parents'  => $this->roles->parentOptions($role),
+            'record'         => $this->roles->record($role),
+            'readonly'       => true,
+            'parents'        => $this->roles->parentOptions($role),
+            'permissionTree' => $permissionTree,
         ]);
     }
 
@@ -182,7 +186,9 @@ class RoleController extends Controller
      */
     private function mutation(Response $result): JsonResponse
     {
-        return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
+        return response()
+            ->json($result, $result->status)
+            ->header('X-CSRF-TOKEN', csrf_token());
     }
 
     /**
@@ -220,12 +226,13 @@ class RoleController extends Controller
     /**
      * Publish the permission tree and registered rule-driver forms for role editing.
      *
-     * @return void
+     * @return array<int, array<string, mixed>>
      * @throws SetPluginNotFoundException
      */
-    private function prepareForm(): void
+    private function prepareForm(): array
     {
         $this->prepare();
+
         $drivers = [];
         foreach (RuleEvaluatorRegistry::values() as $name) {
             $drivers[$name] = $this->localizeDriverForm(RuleEvaluatorRegistry::formFor($name));
@@ -233,10 +240,14 @@ class RoleController extends Controller
             $drivers[$name]['description'] = trans('rolix::base.rule_evaluators.' . $name . '.description');
         }
 
+        $permissionTree = app(PermissionTreePresenter::class)->present(Permission::getPermissionTreeForType('system'));
+
         Page::addLocalize('roleForm', [
-            'permissions' => Permission::getPermissionTreeForType('system'),
+            'permissions' => $permissionTree,
             'drivers'     => $drivers,
         ]);
+
+        return $permissionTree;
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use Closure;
+use InvalidArgumentException;
 
 /**
  * Define an admin navigation item and its children through a fluent API.
@@ -86,11 +87,11 @@ final class AdminMenuItemBuilder
     /**
      * Set one or more permissions required to display the item.
      *
-     * @param string|array $permissions
+     * @param string|array|Closure $permissions
      *
      * @return self
      */
-    public function permission(string|array $permissions): self
+    public function permission(string|array|Closure $permissions): self
     {
         return $this->set('permission', $permissions);
     }
@@ -98,11 +99,11 @@ final class AdminMenuItemBuilder
     /**
      * Set one or more permissions required to display the item.
      *
-     * @param string|array $permissions
+     * @param string|array|Closure $permissions
      *
      * @return self
      */
-    public function permissions(string|array $permissions): self
+    public function permissions(string|array|Closure $permissions): self
     {
         return $this->set('permissions', $permissions);
     }
@@ -190,7 +191,7 @@ final class AdminMenuItemBuilder
     {
         $children = $this->definition['children'] ?? [];
         if ($children instanceof Closure) {
-            throw new \InvalidArgumentException('Static children cannot be added to an item with dynamic children.');
+            throw new InvalidArgumentException('Static children cannot be added to an item with dynamic children.');
         }
 
         return new self($key, $this, function (string $key, array $definition) use (&$children): void {

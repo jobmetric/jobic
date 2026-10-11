@@ -1,5 +1,6 @@
 @props([
     'label' => null,
+    'labelHint' => null,
     'for' => null,
     'hint' => null,
     'error' => null,
@@ -8,7 +9,9 @@
 
 @if($variant === 'crud')
     <label @if($for) for="{{ $for }}" @endif {{ $attributes->merge(['class' => 'crud-field']) }}>
-        @if($label !== null){{ $label }}@endif
+        @if($label !== null)
+            @if($labelHint)<span class="crud-field-label-row"><span>{{ $label }}</span><small>{{ $labelHint }}</small></span>@else{{ $label }}@endif
+        @endif
         {{ $slot }}
         @if($error)<small data-error-for="{{ $error }}" id="error-{{ $error }}"></small>@endif
         @if($hint)<small>{{ $hint }}</small>@endif
