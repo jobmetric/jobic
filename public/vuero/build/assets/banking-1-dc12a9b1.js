@@ -1,0 +1,1 @@
+import{i}from"./dashboard-runtime-a54286c2.js";import{i as a}from"./banking-38f188e9.js";import"./jquery-83fec99f.js";import"./icons-89082092.js";import"./preload-helper-cf779743.js";i("banking-1",a);

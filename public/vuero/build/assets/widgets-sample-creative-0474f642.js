@@ -1,0 +1,1 @@
+import{i}from"./dashboard-runtime-a54286c2.js";import{i as t}from"./widgets-b30dd1bd.js";import"./jquery-83fec99f.js";import"./icons-89082092.js";import"./preload-helper-cf779743.js";i("widgets-sample-creative",t);

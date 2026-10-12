@@ -12,29 +12,37 @@
   "_billboard-a11c6977.js": {
     "file": "assets/billboard-a11c6977.js"
   },
-  "_business-f614a499.js": {
-    "file": "assets/business-f614a499.js",
+  "_business-c1859a83.js": {
+    "file": "assets/business-c1859a83.js",
     "imports": [
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ]
   },
   "_chart-theme-40715f27.js": {
     "file": "assets/chart-theme-40715f27.js"
   },
-  "_dashboard-runtime-dd062dca.js": {
+  "_dashboard-runtime-a54286c2.js": {
     "css": [
       "assets/dashboard-runtime-079a4fb7.css"
     ],
     "dynamicImports": [
       "_apexcharts-e66b3859.js"
     ],
-    "file": "assets/dashboard-runtime-dd062dca.js",
+    "file": "assets/dashboard-runtime-a54286c2.js",
     "imports": [
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ]
+  },
+  "_editor-runtime-f99c53d0.js": {
+    "file": "assets/editor-runtime-f99c53d0.js",
+    "imports": [
+      "_preload-helper-cf779743.js",
+      "_icons-89082092.js"
+    ],
+    "isDynamicEntry": true
   },
   "_form-layout-runtime-df83fa2c.js": {
     "file": "assets/form-layout-runtime-df83fa2c.js",
@@ -59,7 +67,7 @@
   "_history-22ee44b9.js": {
     "file": "assets/history-22ee44b9.js"
   },
-  "_history-625c98c7.js": {
+  "_history-2adfd3f9.js": {
     "css": [
       "assets/history-27210dc7.css"
     ],
@@ -74,18 +82,18 @@
       "resources/js/media/previews/spreadsheet.js",
       "resources/js/media/previews/archive.js"
     ],
-    "file": "assets/history-625c98c7.js",
+    "file": "assets/history-2adfd3f9.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js",
       "_toast-18d1caa1.js",
-      "_shared-b85df7ba.js",
+      "_shared-d82fc4e0.js",
       "_history-22ee44b9.js"
     ]
   },
-  "_icons-6a8b83c0.js": {
-    "file": "assets/icons-6a8b83c0.js"
+  "_icons-89082092.js": {
+    "file": "assets/icons-89082092.js"
   },
   "_jquery-83fec99f.js": {
     "file": "assets/jquery-83fec99f.js"
@@ -108,7 +116,7 @@
       "_jquery-83fec99f.js"
     ]
   },
-  "_maps-0b171776.js": {
+  "_maps-809d6048.js": {
     "assets": [
       "assets/layers-1dbbe9d0.png",
       "assets/layers-2x-066daca8.png",
@@ -117,11 +125,11 @@
     "css": [
       "assets/maps-1fa85e19.css"
     ],
-    "file": "assets/maps-0b171776.js",
+    "file": "assets/maps-809d6048.js",
     "imports": [
       "_jquery-83fec99f.js",
       "_apexcharts-e66b3859.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ]
   },
   "_messaging-app-49c00096.js": {
@@ -161,52 +169,52 @@
       "_page-1cca34fb.js"
     ]
   },
-  "_settings-1a224dd5.js": {
-    "file": "assets/settings-1a224dd5.js",
+  "_settings-1f777051.js": {
+    "file": "assets/settings-1f777051.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ]
   },
-  "_shared-516377e4.js": {
+  "_shared-53f1d46b.js": {
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/shared-516377e4.js",
+    "file": "assets/shared-53f1d46b.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ]
   },
-  "_shared-8ac2d21d.js": {
-    "css": [
-      "assets/crud-fields-b6bc7524.css"
-    ],
-    "file": "assets/shared-8ac2d21d.js",
-    "imports": [
-      "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
-    ]
-  },
-  "_shared-b85df7ba.js": {
-    "css": [
-      "assets/crud-fields-b6bc7524.css"
-    ],
-    "file": "assets/shared-b85df7ba.js",
-    "imports": [
-      "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
-    ]
-  },
-  "_shared-dc8bd202.js": {
+  "_shared-75f73791.js": {
     "css": [
       "assets/shared-28074802.css",
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/shared-dc8bd202.js",
+    "file": "assets/shared-75f73791.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
+    ]
+  },
+  "_shared-d82fc4e0.js": {
+    "css": [
+      "assets/crud-fields-b6bc7524.css"
+    ],
+    "file": "assets/shared-d82fc4e0.js",
+    "imports": [
+      "_page-1cca34fb.js",
+      "_icons-89082092.js"
+    ]
+  },
+  "_shared-f9e63308.js": {
+    "css": [
+      "assets/crud-fields-b6bc7524.css"
+    ],
+    "file": "assets/shared-f9e63308.js",
+    "imports": [
+      "_page-1cca34fb.js",
+      "_icons-89082092.js"
     ]
   },
   "_toast-18d1caa1.js": {
@@ -334,12 +342,12 @@
     "css": [
       "assets/admin-shell-8567f706.css"
     ],
-    "file": "assets/shell-fb150380.js",
+    "file": "assets/shell-3e9b7d4e.js",
     "imports": [
       "_toast-18d1caa1.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/admin/shell.js"
@@ -352,10 +360,10 @@
     "css": [
       "assets/wizard-af53e2d6.css"
     ],
-    "file": "assets/wizard-f91dc40b.js",
+    "file": "assets/wizard-dd8eb477.js",
     "imports": [
       "_toast-18d1caa1.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_page-1cca34fb.js"
     ],
     "isEntry": true,
@@ -365,14 +373,14 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/form-c68a064e.js",
+    "file": "assets/form-4bd6f37d.js",
     "imports": [
-      "_shared-516377e4.js",
+      "_shared-f9e63308.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_history-22ee44b9.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/languages/form.js"
@@ -381,14 +389,14 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/index-c8fafa3b.js",
+    "file": "assets/index-1868ab68.js",
     "imports": [
-      "_shared-516377e4.js",
+      "_shared-f9e63308.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_selects-9c73cec7.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/languages/index.js"
@@ -399,10 +407,10 @@
     "src": "resources/js/media/previews/archive.js"
   },
   "resources/js/media/previews/audio.js": {
-    "file": "assets/audio-51074dfe.js",
+    "file": "assets/audio-d2756326.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/media/previews/audio.js"
@@ -423,11 +431,11 @@
     "src": "resources/js/media/previews/office.js"
   },
   "resources/js/media/previews/pdf.js": {
-    "file": "assets/pdf-3bfa7145.js",
+    "file": "assets/pdf-a4052674.js",
     "imports": [
       "_preload-helper-cf779743.js",
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/media/previews/pdf.js"
@@ -443,33 +451,33 @@
     "src": "resources/js/media/previews/text.js"
   },
   "resources/js/media/previews/video.js": {
-    "file": "assets/video-d98b9514.js",
+    "file": "assets/video-7271f590.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/media/previews/video.js"
   },
-  "resources/js/posts/editor-runtime.js": {
-    "file": "assets/editor-runtime-e916b08a.js",
-    "isDynamicEntry": true,
-    "src": "resources/js/posts/editor-runtime.js"
+  "resources/js/posts/form.css": {
+    "file": "assets/form-c47b254b.css",
+    "src": "resources/js/posts/form.css"
   },
   "resources/js/posts/form.js": {
     "css": [
+      "assets/form-c47b254b.css",
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/form-c02b526f.js",
+    "file": "assets/form-b2d5bba1.js",
     "imports": [
-      "resources/js/posts/editor-runtime.js",
+      "_editor-runtime-f99c53d0.js",
+      "_icons-89082092.js",
       "_toast-18d1caa1.js",
-      "_history-22ee44b9.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
-      "_shared-b85df7ba.js",
-      "_history-625c98c7.js",
-      "_icons-6a8b83c0.js",
+      "_history-22ee44b9.js",
+      "_settings-1f777051.js",
+      "_shared-d82fc4e0.js",
+      "_history-2adfd3f9.js",
       "_selects-9c73cec7.js",
       "_jquery-83fec99f.js",
       "_preload-helper-cf779743.js"
@@ -482,16 +490,16 @@
       "assets/crud-fields-b6bc7524.css"
     ],
     "dynamicImports": [
-      "resources/js/posts/editor-runtime.js"
+      "_editor-runtime-f99c53d0.js"
     ],
-    "file": "assets/index-4ade34f0.js",
+    "file": "assets/index-d7fea5c5.js",
     "imports": [
       "_preload-helper-cf779743.js",
       "_page-1cca34fb.js",
       "_toast-18d1caa1.js",
       "_selects-9c73cec7.js",
-      "_settings-1a224dd5.js",
-      "_icons-6a8b83c0.js"
+      "_settings-1f777051.js",
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/posts/index.js"
@@ -500,15 +508,15 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/form-8fd4fdb2.js",
+    "file": "assets/form-049814bb.js",
     "imports": [
-      "_shared-dc8bd202.js",
+      "_shared-75f73791.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_history-22ee44b9.js",
       "_selects-9c73cec7.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/roles/form.js"
@@ -517,22 +525,22 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/index-8fde8e48.js",
+    "file": "assets/index-2d4d50f4.js",
     "imports": [
-      "_shared-dc8bd202.js",
+      "_shared-75f73791.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_selects-9c73cec7.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/roles/index.js"
   },
   "resources/js/settings/social-networks.js": {
-    "file": "assets/social-networks-ada0ec46.js",
+    "file": "assets/social-networks-e917ddc4.js",
     "imports": [
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/settings/social-networks.js"
@@ -541,15 +549,15 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/form-ff9e99ac.js",
+    "file": "assets/form-7ff549d1.js",
     "imports": [
-      "_shared-b85df7ba.js",
+      "_shared-d82fc4e0.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_history-22ee44b9.js",
-      "_history-625c98c7.js",
-      "_icons-6a8b83c0.js",
+      "_history-2adfd3f9.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
@@ -559,14 +567,14 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/index-07ac911d.js",
+    "file": "assets/index-6bc250e6.js",
     "imports": [
-      "_shared-b85df7ba.js",
+      "_shared-d82fc4e0.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_selects-9c73cec7.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/taxonomies/index.js"
@@ -575,14 +583,14 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/form-a526f557.js",
+    "file": "assets/form-f6b61ea7.js",
     "imports": [
-      "_shared-8ac2d21d.js",
+      "_shared-53f1d46b.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_history-22ee44b9.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/users/form.js"
@@ -591,14 +599,14 @@
     "css": [
       "assets/crud-fields-b6bc7524.css"
     ],
-    "file": "assets/index-30ac6b81.js",
+    "file": "assets/index-f4d53a51.js",
     "imports": [
-      "_shared-8ac2d21d.js",
+      "_shared-53f1d46b.js",
       "_page-1cca34fb.js",
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_selects-9c73cec7.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/users/index.js"
@@ -622,59 +630,59 @@
     "src": "resources/js/vuero/pages/admin/dashboard.js"
   },
   "resources/js/vuero/pages/admin/dashboards/analytics.js": {
-    "file": "assets/analytics-e4cb0243.js",
+    "file": "assets/analytics-d0c2e707.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/analytics.js"
   },
   "resources/js/vuero/pages/admin/dashboards/banking-1.js": {
-    "file": "assets/banking-1-da579e2e.js",
+    "file": "assets/banking-1-dc12a9b1.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_banking-38f188e9.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/banking-1.js"
   },
   "resources/js/vuero/pages/admin/dashboards/banking-2.js": {
-    "file": "assets/banking-2-3ee2bf17.js",
+    "file": "assets/banking-2-d4a1bfef.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_banking-38f188e9.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/banking-2.js"
   },
   "resources/js/vuero/pages/admin/dashboards/banking-3.js": {
-    "file": "assets/banking-3-5ace5f7f.js",
+    "file": "assets/banking-3-b35e6f82.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/banking-3.js"
   },
   "resources/js/vuero/pages/admin/dashboards/charts-apex.js": {
-    "file": "assets/charts-apex-176074ca.js",
+    "file": "assets/charts-apex-ee585aeb.js",
     "imports": [
       "_jquery-83fec99f.js",
       "_apexcharts-e66b3859.js",
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_chart-theme-40715f27.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
@@ -688,154 +696,154 @@
     "css": [
       "assets/charts-billboardjs-d76b06ea.css"
     ],
-    "file": "assets/charts-billboardjs-cc2ce72a.js",
+    "file": "assets/charts-billboardjs-c43e5220.js",
     "imports": [
       "_jquery-83fec99f.js",
       "_billboard-a11c6977.js",
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_chart-theme-40715f27.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/charts-billboardjs.js"
   },
   "resources/js/vuero/pages/admin/dashboards/company.js": {
-    "file": "assets/company-0e62902c.js",
+    "file": "assets/company-b7b02860.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
-      "_business-f614a499.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_business-c1859a83.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/company.js"
   },
   "resources/js/vuero/pages/admin/dashboards/course.js": {
-    "file": "assets/course-7f2b89d9.js",
+    "file": "assets/course-95f6a994.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
-      "_business-f614a499.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_business-c1859a83.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/course.js"
   },
   "resources/js/vuero/pages/admin/dashboards/ecommerce-1.js": {
-    "file": "assets/ecommerce-1-ce4d4c97.js",
+    "file": "assets/ecommerce-1-64a8cd49.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/ecommerce-1.js"
   },
   "resources/js/vuero/pages/admin/dashboards/flights.js": {
-    "file": "assets/flights-83ce98ce.js",
+    "file": "assets/flights-1b05631c.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
-      "_business-f614a499.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_business-c1859a83.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/flights.js"
   },
   "resources/js/vuero/pages/admin/dashboards/food-delivery.js": {
-    "file": "assets/food-delivery-eec74db1.js",
+    "file": "assets/food-delivery-31ec41c0.js",
     "imports": [
       "_jquery-83fec99f.js",
-      "_dashboard-runtime-dd062dca.js",
-      "_icons-6a8b83c0.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/food-delivery.js"
   },
   "resources/js/vuero/pages/admin/dashboards/health.js": {
-    "file": "assets/health-f5465cc0.js",
+    "file": "assets/health-43b643a1.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_lifestyle-7f6fd125.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/health.js"
   },
   "resources/js/vuero/pages/admin/dashboards/hobbies.js": {
-    "file": "assets/hobbies-55b19592.js",
+    "file": "assets/hobbies-f8ffe4a1.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_lifestyle-7f6fd125.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/hobbies.js"
   },
   "resources/js/vuero/pages/admin/dashboards/human-resources.js": {
-    "file": "assets/human-resources-57ad84d3.js",
+    "file": "assets/human-resources-1afa3bb9.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
-      "_business-f614a499.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_business-c1859a83.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/human-resources.js"
   },
   "resources/js/vuero/pages/admin/dashboards/inbox.js": {
-    "file": "assets/inbox-beb26bc4.js",
+    "file": "assets/inbox-a27bea2b.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/inbox.js"
   },
   "resources/js/vuero/pages/admin/dashboards/influencer.js": {
-    "file": "assets/influencer-0107e8aa.js",
+    "file": "assets/influencer-51aef114.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_lifestyle-7f6fd125.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/influencer.js"
   },
   "resources/js/vuero/pages/admin/dashboards/jobs.js": {
-    "file": "assets/jobs-de7f1663.js",
+    "file": "assets/jobs-6739cbfa.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
-      "_business-f614a499.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_business-c1859a83.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/jobs.js"
   },
   "resources/js/vuero/pages/admin/dashboards/maps-1.js": {
-    "file": "assets/maps-1-30cc933e.js",
+    "file": "assets/maps-1-20985ba7.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
-      "_maps-0b171776.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_maps-809d6048.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js",
       "_apexcharts-e66b3859.js"
     ],
@@ -843,12 +851,12 @@
     "src": "resources/js/vuero/pages/admin/dashboards/maps-1.js"
   },
   "resources/js/vuero/pages/admin/dashboards/maps-2.js": {
-    "file": "assets/maps-2-ba3c9ddb.js",
+    "file": "assets/maps-2-2231f1d4.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
-      "_maps-0b171776.js",
+      "_dashboard-runtime-a54286c2.js",
+      "_maps-809d6048.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js",
       "_apexcharts-e66b3859.js"
     ],
@@ -856,140 +864,140 @@
     "src": "resources/js/vuero/pages/admin/dashboards/maps-2.js"
   },
   "resources/js/vuero/pages/admin/dashboards/messaging-v1.js": {
-    "file": "assets/messaging-v1-31b4f36b.js",
+    "file": "assets/messaging-v1-9be1dc58.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_messaging-app-49c00096.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/messaging-v1.js"
   },
   "resources/js/vuero/pages/admin/dashboards/messaging-v2.js": {
-    "file": "assets/messaging-v2-5b841ce2.js",
+    "file": "assets/messaging-v2-845a17d2.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_messaging-app-49c00096.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/messaging-v2.js"
   },
   "resources/js/vuero/pages/admin/dashboards/personal-1.js": {
-    "file": "assets/personal-1-a9159bc5.js",
+    "file": "assets/personal-1-5beabd3e.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/personal-1.js"
   },
   "resources/js/vuero/pages/admin/dashboards/personal-2.js": {
-    "file": "assets/personal-2-2702a756.js",
+    "file": "assets/personal-2-8e59979e.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/personal-2.js"
   },
   "resources/js/vuero/pages/admin/dashboards/personal-3.js": {
-    "file": "assets/personal-3-3a4d63ca.js",
+    "file": "assets/personal-3-31b0bdcd.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/personal-3.js"
   },
   "resources/js/vuero/pages/admin/dashboards/sales.js": {
-    "file": "assets/sales-02734812.js",
+    "file": "assets/sales-106ed745.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/sales.js"
   },
   "resources/js/vuero/pages/admin/dashboards/soccer.js": {
-    "file": "assets/soccer-c1664479.js",
+    "file": "assets/soccer-c33abcbb.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_lifestyle-7f6fd125.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/soccer.js"
   },
   "resources/js/vuero/pages/admin/dashboards/stocks.js": {
-    "file": "assets/stocks-30fb40c3.js",
+    "file": "assets/stocks-db0e9622.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/stocks.js"
   },
   "resources/js/vuero/pages/admin/dashboards/video.js": {
-    "file": "assets/video-44605361.js",
+    "file": "assets/video-8cd2a58a.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_lifestyle-7f6fd125.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/video.js"
   },
   "resources/js/vuero/pages/admin/dashboards/widgets-sample-creative.js": {
-    "file": "assets/widgets-sample-creative-3a6970f8.js",
+    "file": "assets/widgets-sample-creative-0474f642.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_widgets-b30dd1bd.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/widgets-sample-creative.js"
   },
   "resources/js/vuero/pages/admin/dashboards/widgets-sample-list.js": {
-    "file": "assets/widgets-sample-list-1ce61b3f.js",
+    "file": "assets/widgets-sample-list-6de0c781.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_widgets-b30dd1bd.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/dashboards/widgets-sample-list.js"
   },
   "resources/js/vuero/pages/admin/dashboards/widgets-sample-stats.js": {
-    "file": "assets/widgets-sample-stats-85b45fa2.js",
+    "file": "assets/widgets-sample-stats-0fddc33f.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_widgets-b30dd1bd.js",
       "_widget-charts-aab6c25a.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js",
       "_apexcharts-e66b3859.js",
       "_chart-theme-40715f27.js"
@@ -998,13 +1006,13 @@
     "src": "resources/js/vuero/pages/admin/dashboards/widgets-sample-stats.js"
   },
   "resources/js/vuero/pages/admin/dashboards/widgets-sample-ui.js": {
-    "file": "assets/widgets-sample-ui-1b3be3b1.js",
+    "file": "assets/widgets-sample-ui-3fafbf94.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_widgets-b30dd1bd.js",
       "_widget-charts-aab6c25a.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js",
       "_apexcharts-e66b3859.js",
       "_chart-theme-40715f27.js"
@@ -1013,12 +1021,12 @@
     "src": "resources/js/vuero/pages/admin/dashboards/widgets-sample-ui.js"
   },
   "resources/js/vuero/pages/admin/dashboards/writer.js": {
-    "file": "assets/writer-0247129f.js",
+    "file": "assets/writer-a93cccc6.js",
     "imports": [
-      "_dashboard-runtime-dd062dca.js",
+      "_dashboard-runtime-a54286c2.js",
       "_lifestyle-7f6fd125.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_preload-helper-cf779743.js"
     ],
     "isEntry": true,
@@ -1185,10 +1193,10 @@
     "src": "resources/js/vuero/pages/admin/layouts/grid-tile-v3.js"
   },
   "resources/js/vuero/pages/admin/layouts/kanban-board.js": {
-    "file": "assets/kanban-board-c3994a1a.js",
+    "file": "assets/kanban-board-8bcbf14d.js",
     "imports": [
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_projects-runtime-dd8b0642.js",
       "_form-layout-runtime-df83fa2c.js"
     ],
@@ -1352,10 +1360,10 @@
     "src": "resources/js/vuero/pages/admin/layouts/project-details.js"
   },
   "resources/js/vuero/pages/admin/layouts/projects-v1.js": {
-    "file": "assets/projects-v1-027cf34f.js",
+    "file": "assets/projects-v1-5ebd2596.js",
     "imports": [
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js",
+      "_icons-89082092.js",
       "_projects-runtime-dd8b0642.js",
       "_form-layout-runtime-df83fa2c.js"
     ],
@@ -1492,10 +1500,10 @@
     "src": "resources/js/vuero/pages/admin/starter.js"
   },
   "resources/js/vuero/pages/admin/wizard.js": {
-    "file": "assets/wizard-99362906.js",
+    "file": "assets/wizard-d200214f.js",
     "imports": [
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/admin/wizard.js"
@@ -1505,13 +1513,13 @@
       "assets/admin-shell-8567f706.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/login-289942c8.js",
+    "file": "assets/login-0d383b0a.js",
     "imports": [
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_page-1cca34fb.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/auth/login.js"
@@ -1521,13 +1529,13 @@
       "assets/admin-shell-8567f706.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/recovery-289942c8.js",
+    "file": "assets/recovery-0d383b0a.js",
     "imports": [
-      "_settings-1a224dd5.js",
+      "_settings-1f777051.js",
       "_toast-18d1caa1.js",
       "_page-1cca34fb.js",
       "_jquery-83fec99f.js",
-      "_icons-6a8b83c0.js"
+      "_icons-89082092.js"
     ],
     "isEntry": true,
     "src": "resources/js/vuero/pages/auth/recovery.js"
