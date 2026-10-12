@@ -1,0 +1,5 @@
+{
+    "key": "more",
+    "class": "App\\Editor\\Drivers\\More\\MoreDriver",
+    "view": "view.blade.php"
+}

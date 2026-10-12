@@ -1,0 +1,5 @@
+{
+    "key": "video",
+    "class": "App\\Editor\\Drivers\\Video\\VideoDriver",
+    "view": "view.blade.php"
+}

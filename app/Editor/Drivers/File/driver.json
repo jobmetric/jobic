@@ -1,0 +1,5 @@
+{
+    "key": "file",
+    "class": "App\\Editor\\Drivers\\File\\FileDriver",
+    "view": "view.blade.php"
+}

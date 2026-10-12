@@ -1,0 +1,5 @@
+{
+    "key": "code",
+    "class": "App\\Editor\\Drivers\\Code\\CodeDriver",
+    "view": "view.blade.php"
+}

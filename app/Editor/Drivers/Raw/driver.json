@@ -1,0 +1,5 @@
+{
+    "key": "raw",
+    "class": "App\\Editor\\Drivers\\Raw\\RawDriver",
+    "view": "view.blade.php"
+}

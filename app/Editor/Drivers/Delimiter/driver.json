@@ -1,0 +1,5 @@
+{
+    "key": "delimiter",
+    "class": "App\\Editor\\Drivers\\Delimiter\\DelimiterDriver",
+    "view": "view.blade.php"
+}

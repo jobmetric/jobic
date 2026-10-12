@@ -1,0 +1,5 @@
+{
+    "key": "tabs",
+    "class": "App\\Editor\\Drivers\\Tabs\\TabsDriver",
+    "view": "view.blade.php"
+}

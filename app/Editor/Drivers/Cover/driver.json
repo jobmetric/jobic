@@ -1,0 +1,5 @@
+{
+    "key": "cover",
+    "class": "App\\Editor\\Drivers\\Cover\\CoverDriver",
+    "view": "view.blade.php"
+}

@@ -1,0 +1,5 @@
+{
+    "key": "math",
+    "class": "App\\Editor\\Drivers\\Math\\MathDriver",
+    "view": "view.blade.php"
+}

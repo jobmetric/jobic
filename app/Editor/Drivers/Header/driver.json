@@ -1,0 +1,5 @@
+{
+    "key": "header",
+    "class": "App\\Editor\\Drivers\\Header\\HeaderDriver",
+    "view": "view.blade.php"
+}

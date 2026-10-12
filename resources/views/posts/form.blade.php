@@ -21,6 +21,7 @@
             $locale = $activeLocale;
             $language = $locales[$locale] ?? [];
             $translation = $record?->getTranslations($locale) ?? [];
+            $translation['content'] = app(\App\Services\Editor\EditorDocuments::class)->readForEditor($record, $locale) ?? '';
             $seoFields = ['meta_title', 'meta_description', 'meta_keywords'];
         @endphp
             <fieldset id="post-locale-{{ $locale }}" class="post-locale-panel crud-form-fields" data-locale-panel="{{ $locale }}" lang="{{ $locale }}" dir="{{ $language['direction'] ?? 'auto' }}">

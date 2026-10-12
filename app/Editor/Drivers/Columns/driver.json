@@ -1,0 +1,5 @@
+{
+    "key": "columns",
+    "class": "App\\Editor\\Drivers\\Columns\\ColumnsDriver",
+    "view": "view.blade.php"
+}

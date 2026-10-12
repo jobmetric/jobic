@@ -1,0 +1,5 @@
+{
+    "key": "image",
+    "class": "App\\Editor\\Drivers\\Image\\ImageDriver",
+    "view": "view.blade.php"
+}

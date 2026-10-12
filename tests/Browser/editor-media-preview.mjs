@@ -1,0 +1,73 @@
+import { chromium } from '@playwright/test';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {spawn} from 'node:child_process';
+import assert from 'node:assert/strict';
+
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'jobic-editor-preview-'));
+for (const part of ['storage/framework/views', 'storage/framework/sessions', 'storage/framework/cache', 'storage/logs', 'media']) fs.mkdirSync(path.join(directory, part), {recursive: true});
+fs.closeSync(fs.openSync(path.join(directory, 'database.sqlite'), 'w'));
+const port = 8901;
+const server = spawn('C:/laragon/bin/php/php-8.5.8-nts-Win32-vs17-x64/php.exe', ['-S', `127.0.0.1:${port}`, '-t', 'public', 'tests/Browser/media-router.php'], {env: {...process.env, JOBIC_MEDIA_SANDBOX: directory, APP_CONFIG_CACHE: path.join(directory, 'config.php'), APP_ENV: 'testing'}, stdio: ['ignore', 'pipe', 'pipe']});
+let log = ''; server.stderr.on('data', chunk => log += chunk);
+await new Promise(resolve => setTimeout(resolve, 1000));
+const browser = await chromium.launch();
+try {
+    const page = await browser.newPage({viewport: {width: 1440, height: 1000}});
+    page.setDefaultTimeout(45000);
+    page.on('pageerror', error => console.log('PAGE ERROR', error.message));
+    await page.goto(`http://127.0.0.1:${port}/admin/posts/post/create`);
+    const wav = Buffer.alloc(1644);
+    wav.write('RIFF', 0); wav.writeUInt32LE(1636, 4); wav.write('WAVEfmt ', 8); wav.writeUInt32LE(16, 16);
+    wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28);
+    wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(1600, 40);
+    await page.locator('[data-editor-fullscreen]').click();
+    await page.locator('[data-editor-sidebar] .editor-block-tile').filter({hasText: 'صوت'}).click();
+    await page.locator('[data-block-kind="audio"] .editor-media-choose').click();
+    await page.locator('[data-fm-loading]').waitFor({state: 'hidden'});
+    const upload = page.waitForResponse(response => response.url().includes('/media-manager/upload'));
+    await page.locator('[data-fm-file-input]').setInputFiles({name: 'sample.wav', mimeType: 'audio/wav', buffer: wav});
+    assert.equal((await upload).ok(), true);
+    await page.locator('[data-fm-item].is-file').first().click();
+    await page.locator('[data-fm-picker-confirm]').click();
+    const video = Buffer.from(await page.evaluate(async () => {
+        const canvas = document.createElement('canvas'); canvas.width = 160; canvas.height = 90;
+        const context = canvas.getContext('2d'); const stream = canvas.captureStream(10);
+        const recorder = new MediaRecorder(stream, {mimeType: 'video/webm'}); const chunks = [];
+        recorder.ondataavailable = event => chunks.push(event.data);
+        const done = new Promise(resolve => { recorder.onstop = resolve; }); recorder.start();
+        const paint = setInterval(() => { context.fillStyle = '#26ab91'; context.fillRect(0, 0, 160, 90); }, 50);
+        await new Promise(resolve => setTimeout(resolve, 600)); recorder.stop(); await done;
+        clearInterval(paint); stream.getTracks().forEach(track => track.stop());
+        return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
+    }));
+    await page.locator('[data-editor-sidebar] .editor-block-tile').filter({hasText: /^ویدئو$/}).click();
+    await page.locator('[data-block-kind="video"] .editor-media-choose').click();
+    await page.locator('[data-fm-loading]').waitFor({state: 'hidden'});
+    const videoUpload = page.waitForResponse(response => response.url().includes('/media-manager/upload'));
+    await page.locator('[data-fm-file-input]').setInputFiles({name: 'sample-video.webm', mimeType: 'video/webm', buffer: video});
+    assert.equal((await videoUpload).ok(), true);
+    await page.locator('[data-fm-item].is-file').filter({hasText: 'sample-video'}).click();
+    await page.locator('[data-fm-picker-confirm]').click();
+    const response = page.waitForResponse(response => response.url().includes('/editor-preview'));
+    await page.locator('[data-editor-preview]').click();
+    const result = await response;
+    assert.equal(result.ok(), true, await result.text());
+    const draft = JSON.parse(result.request().postDataJSON().content);
+    for (const type of ['audio', 'video']) assert.ok(draft.blocks.find(block => block.type === type).data.file.id);
+    const html = (await result.json()).html;
+    assert.ok(html.includes('<audio controls')); assert.ok(html.includes('<video controls'));
+    const player = page.frameLocator('.editor-preview-frame').locator('audio');
+    await player.waitFor();
+    await page.waitForFunction(() => document.querySelector('.editor-preview-frame')?.contentDocument?.querySelector('audio')?.readyState >= 2, null, {timeout: 15000});
+    assert.equal(await player.isVisible(), true);
+    await page.waitForFunction(() => document.querySelector('.editor-preview-frame')?.contentDocument?.querySelector('video')?.readyState >= 2, null, {timeout: 15000});
+    assert.equal(await page.frameLocator('.editor-preview-frame').locator('video').isVisible(), true);
+    console.log('Real file-manager audio and video preview passed.');
+} catch (error) {
+    console.log(log.slice(-2500));
+    throw error;
+} finally {
+    await browser.close(); server.kill();
+}

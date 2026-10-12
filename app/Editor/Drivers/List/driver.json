@@ -1,0 +1,5 @@
+{
+    "key": "list",
+    "class": "App\\Editor\\Drivers\\List\\ListDriver",
+    "view": "view.blade.php"
+}

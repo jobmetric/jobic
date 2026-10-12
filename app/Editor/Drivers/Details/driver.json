@@ -1,0 +1,5 @@
+{
+    "key": "details",
+    "class": "App\\Editor\\Drivers\\Details\\DetailsDriver",
+    "view": "view.blade.php"
+}

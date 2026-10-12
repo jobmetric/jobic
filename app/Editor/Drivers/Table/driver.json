@@ -1,0 +1,5 @@
+{
+    "key": "table",
+    "class": "App\\Editor\\Drivers\\Table\\TableDriver",
+    "view": "view.blade.php"
+}

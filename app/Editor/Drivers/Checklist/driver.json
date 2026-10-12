@@ -1,0 +1,5 @@
+{
+    "key": "checklist",
+    "class": "App\\Editor\\Drivers\\Checklist\\ChecklistDriver",
+    "view": "view.blade.php"
+}

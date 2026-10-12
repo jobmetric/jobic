@@ -1,0 +1,5 @@
+{
+    "key": "embed",
+    "class": "App\\Editor\\Drivers\\Embed\\EmbedDriver",
+    "view": "view.blade.php"
+}

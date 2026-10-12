@@ -1,0 +1,5 @@
+{
+    "key": "group",
+    "class": "App\\Editor\\Drivers\\Group\\GroupDriver",
+    "view": "view.blade.php"
+}

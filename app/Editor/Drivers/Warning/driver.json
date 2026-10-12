@@ -1,0 +1,5 @@
+{
+    "key": "warning",
+    "class": "App\\Editor\\Drivers\\Warning\\WarningDriver",
+    "view": "view.blade.php"
+}

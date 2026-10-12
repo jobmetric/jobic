@@ -1,0 +1,5 @@
+{
+    "key": "spacer",
+    "class": "App\\Editor\\Drivers\\Spacer\\SpacerDriver",
+    "view": "view.blade.php"
+}

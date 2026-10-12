@@ -1,0 +1,5 @@
+{
+    "key": "paragraph",
+    "class": "App\\Editor\\Drivers\\Paragraph\\ParagraphDriver",
+    "view": "view.blade.php"
+}

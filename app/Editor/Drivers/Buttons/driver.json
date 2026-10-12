@@ -1,0 +1,5 @@
+{
+    "key": "buttons",
+    "class": "App\\Editor\\Drivers\\Buttons\\ButtonsDriver",
+    "view": "view.blade.php"
+}

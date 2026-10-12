@@ -1,0 +1,5 @@
+{
+    "key": "audio",
+    "class": "App\\Editor\\Drivers\\Audio\\AudioDriver",
+    "view": "view.blade.php"
+}

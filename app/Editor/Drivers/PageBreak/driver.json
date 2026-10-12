@@ -1,0 +1,5 @@
+{
+    "key": "pageBreak",
+    "class": "App\\Editor\\Drivers\\PageBreak\\PageBreakDriver",
+    "view": "view.blade.php"
+}

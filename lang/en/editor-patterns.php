@@ -1,0 +1,76 @@
+<?php
+
+return [
+    'intro' => 'This editable sample provides a complete page structure. Replace headings, explanations and examples with your own subject and verified information, keep the relevant sections and review the content before publishing.',
+    'closing' => 'Before publishing, review headings, copy, sources and contact details. This draft is a starting point: adapt it to your voice, experience and audience.',
+    'article' => [
+        ['Why this matters', 'Understanding the problem comes before choosing a solution. This article separates general advice from practical actions and explains how to adapt them to your own situation.'],
+        ['The starting point', 'Define your goal, constraints and available resources. Recording your starting position makes it easier to identify what needs to change and assess the outcome.'],
+        ['Practical approaches', 'Break the work into manageable actions and begin with a low-cost experiment. Review feedback after each step and adjust the approach before committing further resources.'],
+        ['Common mistakes', 'Changing too many things at once and ignoring feedback makes results difficult to interpret. Test one change at a time and record the reasoning behind important decisions.'],
+        ['Summary and next steps', 'A useful approach combines understanding, a small trial and regular evaluation. Choose one action for the coming week and schedule a time to review what you learned.'],
+    ],
+    'faq' => [
+        ['Who is this for?', 'This page helps readers understand the process before getting started. The answers cover the basics, preparation and follow-up so you can make an informed decision.'],
+        ['Where should I begin?', 'Identify your main requirement and gather the relevant information. Follow the steps in order and ask for clarification whenever your circumstances differ from the examples.'],
+        ['What information is needed?', 'Prepare a short description of your needs, timing and expected outcome. Share sensitive information only through official channels and only when it is necessary.'],
+        ['What if something goes wrong?', 'Record the step where you became stuck and any message shown. Avoid repeatedly retrying a failing action; provide the relevant details when requesting support.'],
+        ['What if my question is not listed?', 'Send your question with a brief explanation of your circumstances. Keep follow-up questions in the same conversation so the context remains clear.'],
+    ],
+    'visual' => [
+        ['The story behind the images', 'This collection tells a story rather than simply displaying pictures. Introduce the subject and explain why these images were chosen so readers know what to look for.'],
+        ['The overall view', 'Start with an overview that establishes the setting and relationships. Choose your own images from the file manager and add captions that provide useful context.'],
+        ['Details worth noticing', 'Highlight details that may be missed at first glance. Explain the role of colour, texture, sequence or change and connect each observation to the main story.'],
+        ['Comparisons and observations', 'When images show different stages, explain the changes in sequence. Refer to visible evidence and distinguish personal interpretation from established information.'],
+        ['Closing the story', 'Summarise the main observation and invite readers to revisit the details. Add source credits and usage information where appropriate.'],
+    ],
+    'guide' => [
+        ['Define the outcome', 'Describe what you should be able to do by the end. Make the outcome measurable so progress can be checked at each stage.'],
+        ['Prepare', 'Gather the tools, information and time you need. Record the starting state and make sure experimental changes can be reversed.'],
+        ['Run a small trial', 'Try the process on a limited example. Compare the result with your expectations and investigate differences before expanding.'],
+        ['Complete and check', 'Repeat the successful process for the remaining work. Check quality and consistency at the end of each stage.'],
+        ['Troubleshoot and maintain', 'If something fails, work forward from the last successful step. Record useful decisions to make the next attempt more reliable.'],
+    ],
+    'comparison' => [
+        ['The decision', 'Compare options against the same objective. Define the audience, requirements and constraints before evaluating alternatives.'],
+        ['Option one: simplicity', 'Assess ease of adoption, training and maintenance. Describe limitations alongside advantages to avoid a one-sided comparison.'],
+        ['Option two: flexibility', 'Review customisation, expansion and resource requirements. Explain who benefits from the flexibility and when it adds unnecessary complexity.'],
+        ['Selection criteria', 'Use consistent criteria for time, cost, quality and support. Give priority to essential requirements and flag uncertain information.'],
+        ['Recommendations', 'Explain which circumstances favour each option rather than declaring a universal winner. Recommend a reversible trial before committing.'],
+    ],
+    'announcement' => [
+        ['Announcement summary', 'Introduce the change or event and explain why it matters to readers. Replace this sample with the specific announcement before publishing.'],
+        ['What changes?', 'Describe the previous and new arrangements. State the scope of the change and clarify what will remain the same.'],
+        ['Who is affected?', 'Identify affected groups and explain their circumstances separately. Describe any exceptions clearly.'],
+        ['Timing and actions', 'Enter the actual dates before publishing. Explain what readers need to do and what information they should prepare.'],
+        ['Support and updates', 'Provide an official contact route and explain where updates will appear. Keep common questions on this page for easy reference.'],
+    ],
+    'interview' => [
+        ['Introduce the conversation', 'Explain the topic and introduce the guest. Verify biographical details before publishing and avoid unsupported claims.'],
+        ['How did you start?', 'Sample answer: We began with a specific problem that had no ready solution. Early experiments helped us understand it and narrow our goal.'],
+        ['What was the main challenge?', 'Sample answer: Aligning expectations with available resources was difficult. Smaller milestones and regular conversations helped us find a workable approach.'],
+        ['What did you learn?', 'Sample answer: Test the central assumptions before making a major investment. Documenting failures is valuable because it prevents repeated mistakes.'],
+        ['Conversation summary', 'Review the main insights and verify quotations against the approved transcript. Add verified follow-up information where relevant.'],
+    ],
+    'case_study' => [
+        ['Project context', 'Introduce the project and scope of the study. Replace sample text with verified details and exclude confidential information.'],
+        ['Initial challenge', 'Describe the starting situation using evidence. Explain who was affected and what continuing without change would mean.'],
+        ['Chosen approach', 'Describe the alternatives and the reasoning behind the chosen method. Include constraints so the decision can be understood in context.'],
+        ['Execution and evaluation', 'Review the implementation and compare outcomes with the initial criteria. Use verified measurements and distinguish correlation from causation.'],
+        ['Lessons and next steps', 'Explain what worked and what needs improvement. Base recommendations on the evidence rather than the outcome you hoped for.'],
+    ],
+    'resources' => [
+        ['About this collection', 'This page organises resources for quick reference. Add actual titles and links and check access before publishing.'],
+        ['Getting started', 'Choose introductory resources with clear language and minimal prerequisites. Explain who each resource suits and what readers can learn.'],
+        ['Tools and examples', 'Choose practical examples relevant to the audience. Check limitations, licences, registration and payment requirements.'],
+        ['Further reading', 'List specialist resources with their prerequisites. Distinguish primary documentation from commentary and tutorials.'],
+        ['Keeping the list current', 'Schedule reviews and remove outdated resources. Provide a way to report broken links or suggest additions.'],
+    ],
+    'timeline' => [
+        ['Overview', 'Outline the journey from preparation to follow-up. Identify the owner, deliverable and completion criteria for each stage.'],
+        ['Discovery and planning', 'Gather requirements and identify dependencies. Make sure everyone understands the goal and scope before work begins.'],
+        ['Implementation', 'Work through activities in priority order while respecting dependencies. Review progress regularly and record changes with their reasons.'],
+        ['Review and handover', 'Check the result against the original requirements. Resolve gaps and provide usage and maintenance information.'],
+        ['Follow-up', 'Collect feedback from real use, prioritise improvements and assign ownership for the next review.'],
+    ],
+];

@@ -18,5 +18,7 @@ Route::get('/', fn () => auth()->check()
     : redirect()->route('login'))->name('home');
 
 require __DIR__.'/auth.php';
+Route::get('editor-assets/{key}/{kind}', \App\Http\Controllers\Editor\EditorAssetController::class)
+    ->where('key', '[a-z][a-zA-Z0-9_-]*')->where('kind', 'module|style')->name('editor.assets');
 require __DIR__.'/admin.php';
 require __DIR__.'/vuero.php';

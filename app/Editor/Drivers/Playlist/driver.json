@@ -1,0 +1,5 @@
+{
+    "key": "playlist",
+    "class": "App\\Editor\\Drivers\\Playlist\\PlaylistDriver",
+    "view": "view.blade.php"
+}

@@ -1,0 +1,5 @@
+{
+    "key": "quote",
+    "class": "App\\Editor\\Drivers\\Quote\\QuoteDriver",
+    "view": "view.blade.php"
+}

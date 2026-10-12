@@ -1,4 +1,5 @@
 import { createPostEditor } from './editor-runtime';
+import { bindEditorWorkbench } from './editor-workbench';
 import { announce } from '../common/toast';
 import { guardUnsaved } from '../common/unsaved';
 import { loadingButton } from '../common/page';
@@ -478,7 +479,7 @@ if (form) {
                 input.value = JSON.stringify(await api.saver.save());
                 input.dispatchEvent(new Event('input', {bubbles: true}));
             },
-        }).then((editor) => { if (editor) editors.set(locale, editor); }).catch(() => {
+        }).then((editor) => { if (editor) { editors.set(locale, editor); bindEditorWorkbench(holder, editor, editorConfig); } }).catch(() => {
             announce(editorConfig.messages.unavailable, true);
         }).finally(() => pendingEditors.delete(locale));
         pendingEditors.set(locale, ready);

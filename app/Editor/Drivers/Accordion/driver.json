@@ -1,0 +1,5 @@
+{
+    "key": "accordion",
+    "class": "App\\Editor\\Drivers\\Accordion\\AccordionDriver",
+    "view": "view.blade.php"
+}

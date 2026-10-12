@@ -1,0 +1,5 @@
+{
+    "key": "verse",
+    "class": "App\\Editor\\Drivers\\Verse\\VerseDriver",
+    "view": "view.blade.php"
+}

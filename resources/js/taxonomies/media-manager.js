@@ -31,6 +31,21 @@ export function bindMediaManager(form) {
     manager.setView(manager.view);
     manager.applyDetailsLayout();
     manager.updateUploadCount();
+    form.addEventListener('jobic:editor:pick-media', event => {
+        event.stopPropagation();
+        dialog.showModal();
+        if (toast) dialog.append(toast);
+        const closed = () => event.detail.resolve([]);
+        dialog.addEventListener('close', closed, {once: true});
+        manager.openPicker({
+            multiple: Boolean(event.detail.multiple), max: event.detail.multiple ? 100 : 1,
+            groups: event.detail.groups || [], selected: [],
+            onConfirm(items) {
+                dialog.removeEventListener('close', closed);
+                event.detail.resolve(items.map(item => ({id: Number(item.id), url: item.url || item.src, name: item.name || ''})));
+            },
+        });
+    });
     window.addEventListener('cms:presentation-refreshed', async () => {
         manager.updateDirectionLabels();
         if (dialog.open) await manager.load();

@@ -1,0 +1,5 @@
+{
+    "key": "preformatted",
+    "class": "App\\Editor\\Drivers\\Preformatted\\PreformattedDriver",
+    "view": "view.blade.php"
+}

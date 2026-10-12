@@ -1,0 +1,5 @@
+{
+    "key": "icon",
+    "class": "App\\Editor\\Drivers\\Icon\\IconDriver",
+    "view": "view.blade.php"
+}
