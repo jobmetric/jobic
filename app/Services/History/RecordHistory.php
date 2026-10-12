@@ -53,7 +53,8 @@ class RecordHistory
             'slug',
             'media',
         ],
-        'posts' => [
+        'posts'      => [
+            'editor_documents',
             'translation',
             'metadata',
             'taxonomies',

@@ -6,6 +6,7 @@ namespace App\Services\Posts;
 
 use App\Facades\Hooks;
 use App\Rules\EditorContentRule;
+use App\Services\Editor\EditorDocuments;
 use App\Services\History\RecordHistory;
 use App\Services\Taxonomies\TaxonomyEditLocks;
 use App\Support\EditorDriverRegistry;
@@ -44,6 +45,7 @@ final class Posts
                     ->where('type', $type)
                     ->lockForUpdate()
                     ->findOrFail($post->id);
+
                 if (PostTypeRegistry::for($type)
                     ->hasOptimisticLocking()) {
                     abort_unless(app(TaxonomyEditLocks::class)->canSave('posts:' . $type, (int) $post->id, (int) $actor?->getAuthIdentifier(), (string) ($data['_edit_lock'] ?? '')), 423, trans('posts.edit_lock_lost'));
@@ -59,6 +61,14 @@ final class Posts
             ]);
 
             $historyBefore = $this->historySnapshot($post);
+            $documents = app(EditorDocuments::class);
+
+            $documentsBefore = $post ? $documents->snapshot($post) : [];
+            $postBefore = $post?->snapshot();
+            $lastRevision = (int) $post?->revisions()
+                ->max('id');
+
+            $contentChanges = [];
             $isNew = $post === null;
             $translations = (array) ($data['translation'] ?? []);
             foreach ($translations as $locale => $fields) {
@@ -69,21 +79,26 @@ final class Posts
 
                     $content = is_string($value) ? json_decode($value, true) : $value;
                     if (is_array($content)) {
-                        $content = Hooks::filter('jobic.editor.content', $content, ['type' => $type, 'locale' => $locale, 'post_id' => $post?->id]);
+                        $content = Hooks::filter('jobic.editor.content', $content, [
+                            'type'    => $type,
+                            'locale'  => $locale,
+                            'post_id' => $post?->id,
+                        ]);
 
                         $validator = Validator::make([
                             'content' => $content,
                         ], [
-                            'content' => [new EditorContentRule(app(EditorDriverRegistry::class))],
+                            'content' => [new EditorContentRule(app(EditorDriverRegistry::class), $documents->read($post, $locale))],
                         ]);
 
                         if ($validator->fails()) {
                             throw ValidationException::withMessages($validator->errors()
                                 ->toArray());
                         }
-
-                        $translations[$locale]['content'] = json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                     }
+
+                    $contentChanges[$locale] = $documents->normalize($value === '' || $value === null ? null : $content, $documents->read($post, $locale));
+                    unset($translations[$locale]['content']);
                 }
             }
 
@@ -97,14 +112,36 @@ final class Posts
                 throw ValidationException::withMessages(['status' => [trans('posts.workflow_status')]]);
             }
 
-            $this->syncEditorMedia($post);
+            foreach ($contentChanges as $locale => $content) {
+                $documents->save($post, $locale, $content);
+            }
+
+            if (! $isNew) {
+                $revision = $post->revisions()
+                    ->where('id', '>', $lastRevision)
+                    ->latest('id')
+                    ->first();
+                if (! $revision && $documentsBefore !== $documents->snapshot($post)) {
+                    $revision = $post->revisions()
+                        ->create(['snapshot' => $postBefore]);
+                }
+
+                if ($revision) {
+                    $documents->capture($revision, $documentsBefore);
+                }
+            }
 
             app(RecordHistory::class)->record('posts:' . $type, (int) $post->id, (int) $actor?->getAuthIdentifier(), $isNew ? 'create' : 'update', $historyBefore, $this->historySnapshot($post));
 
             return $post;
         });
 
-        Hooks::notify('jobic.posts.saved', ['type' => $type, 'post_id' => $post->id, 'user_id' => $actor?->getAuthIdentifier(), 'fields' => array_keys($data)]);
+        Hooks::notify('jobic.posts.saved', [
+            'type'    => $type,
+            'post_id' => $post->id,
+            'user_id' => $actor?->getAuthIdentifier(),
+            'fields'  => array_keys($data),
+        ]);
 
         return Response::make(true, trans('posts.saved'), [
             'post' => $post,
@@ -112,7 +149,7 @@ final class Posts
     }
 
     /**
-     * Collect image references from the configured Editor.js content format.
+     * Refresh media references on the post's independent editor documents.
      *
      * @param Post $post
      *
@@ -121,28 +158,13 @@ final class Posts
      */
     public function syncEditorMedia(Post $post): void
     {
-        $mediaIds = [];
+        $documents = app(EditorDocuments::class);
+
         foreach (
-            $post->translations()
-                ->where('field', 'content')
-                ->pluck('value') as $content) {
-            $document = is_string($content) ? json_decode($content, true) : $content;
-
-            foreach ((array) ($document['blocks'] ?? []) as $block) {
-                if (! is_array($block) || ($block['type'] ?? null) !== 'image') {
-                    continue;
-                }
-
-                $id = $block['data']['file']['id'] ?? null;
-                if (is_numeric($id) && (int) $id > 0) {
-                    $mediaIds[] = (int) $id;
-                }
-            }
+            $documents->query($post)
+                ->get() as $document) {
+            $documents->syncMedia($document);
         }
-
-        $mediaIds = array_values(array_unique($mediaIds));
-
-        app(\JobMetric\Post\Post::class)->syncMedia($post, ['editor' => $mediaIds]);
     }
 
     /**
@@ -162,14 +184,17 @@ final class Posts
         $attributes = $snapshot['attributes'] ?? [];
 
         return [
-            'translation'    => $snapshot['translation'] ?? [],
-            'metadata'       => $snapshot['metadata'] ?? [],
-            'taxonomies'     => $snapshot['taxonomies'] ?? [],
-            'media'          => $snapshot['files'] ?? [],
-            'status'         => $attributes['status'] ?? null,
-            'published_at'   => $attributes['published_at'] ?? null,
-            'comment_status' => $attributes['comment_status'] ?? null,
-            'slug'           => $attributes['slug'] ?? null,
+            'translation'      => $snapshot['translation'] ?? [],
+            'editor_documents' => collect(app(EditorDocuments::class)->snapshot($post))
+                ->mapWithKeys(static fn (array $document): array => [$document['field'] . ':' . $document['locale'] => hash('sha256', json_encode($document['content'], JSON_THROW_ON_ERROR))])
+                ->all(),
+            'metadata'         => $snapshot['metadata'] ?? [],
+            'taxonomies'       => $snapshot['taxonomies'] ?? [],
+            'media'            => $snapshot['files'] ?? [],
+            'status'           => $attributes['status'] ?? null,
+            'published_at'     => $attributes['published_at'] ?? null,
+            'comment_status'   => $attributes['comment_status'] ?? null,
+            'slug'             => $attributes['slug'] ?? null,
         ];
     }
 }

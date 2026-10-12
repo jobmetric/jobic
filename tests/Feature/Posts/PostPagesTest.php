@@ -119,7 +119,7 @@ class PostPagesTest extends TestCase
             ->assertSee('data-revision-restore', false)
             ->assertDontSee('private-value')
             ->assertDontSee('hidden-value')
-            ->assertDontSee('"blocks"', false);
+            ->assertDontSee('متن نسخه');
     }
 
     public function test_empty_post_list_returns_an_empty_data_set_and_page_uses_its_own_create_label(): void
@@ -555,7 +555,8 @@ class PostPagesTest extends TestCase
         $id = (int) $created->json('data.id');
         $savedPost = Post::query()->findOrFail($id);
         $this->assertNotNull($savedPost->boundFlow());
-        $this->assertSame('Saved editor content', json_decode((string) $savedPost->getTranslation('content', 'en'), true)['blocks'][0]['data']['text']);
+        $this->assertNull($savedPost->getTranslation('content', 'en'));
+        $this->assertSame('Saved editor content', json_decode(app(\App\Services\Editor\EditorDocuments::class)->read($savedPost, 'en'), true)['blocks'][0]['data']['text']);
         $this->assertDatabaseHas(config('workflow.tables.flow_instance', 'flow_instances'), [
             'instanceable_type' => Post::class,
             'instanceable_id' => $id,
@@ -579,7 +580,7 @@ class PostPagesTest extends TestCase
         $this->assertSame('update', $history->json('data.entries.0.operation'));
         $this->assertArrayHasKey('translation', $history->json('data.entries.0.changes'));
         $this->assertSame('Updated post', Post::query()->findOrFail($id)->getTranslation('title', 'en'));
-        $this->assertSame('Updated editor content', json_decode((string) Post::query()->findOrFail($id)->getTranslation('content', 'en'), true)['blocks'][0]['data']['text']);
+        $this->assertSame('Updated editor content', json_decode(app(\App\Services\Editor\EditorDocuments::class)->read(Post::query()->findOrFail($id), 'en'), true)['blocks'][0]['data']['text']);
 
         $this->putJson(route('admin.posts.update', ['type' => 'post', 'post' => $id]).'?locale=en', [
             '_version' => \App\Support\RecordVersion::token(Post::query()->findOrFail($id), 'posts:post'),

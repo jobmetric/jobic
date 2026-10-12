@@ -1,5 +1,11 @@
 # CMS extension contract
 
+## Editor media selection
+
+`jobic.editor.document.saving` is a synchronous action after document/media validation and before persistence within the owning form transaction. Exceptions roll back owner, document and usage changes. `jobic.editor.document.saved` is an isolated notification deferred until the outer transaction commits. Both contain only `owner_type`, `owner_id`, `field`, `locale` and `user_id`; JSON content, URLs and file metadata are excluded. The owning route must authorize access before calling the document service.
+
+`jobic:editor:pick-media` is a bubbling browser `CustomEvent` dispatched from a mounted editor block inside the post form. Its detail contains `groups` (media group identifiers), `multiple` (boolean), and `resolve` (callback). The existing form media manager opens the authorized picker and resolves once with selected `{id, url, name}` objects; dismissal resolves with an empty array. This event does not persist content or grant permissions. Selection changes the local draft, and normal post validation and media synchronization apply on save. Dispatch only after the form media manager is bound; a caller outside that form must provide its own handler. Never put credentials, file bytes or server filesystem paths in event detail. See `docs/editor.md` for driver discovery and template registration.
+
 ## File manager
 
 Trusted frontend extensions can listen for `jobic:media-preview-registry` and use `event.detail.registerPreviewDriver`; late-loaded extensions can use `window.JobicMediaPreviews.register`. This event exposes registration functions only, not file data or credentials. See `docs/file-manager.md` for lazy loading, generation checks and teardown. Server-side preview extensions use the package `FilePreviewRegistry`, after the existing authorization/storage/size checks.

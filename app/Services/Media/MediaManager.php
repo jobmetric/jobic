@@ -38,7 +38,11 @@ class MediaManager
     {
         $data = dto($data, MediaManagerRequest::class);
         $files = app(FileManager::class);
-        $context = ['operation' => $operation, 'id' => $item?->id, 'user_id' => auth()->id()];
+        $context = [
+            'operation' => $operation,
+            'id'        => $item?->id,
+            'user_id'   => auth()->id(),
+        ];
         try {
             $required = match ($operation) {
                 'upload' => [
@@ -155,7 +159,10 @@ class MediaManager
         app(FileManager::class)->folder($parent);
 
         $query = Media::query()
-            ->withCount(['mediaRelations', 'children']);
+            ->withCount([
+                'mediaRelations',
+                'children',
+            ]);
 
         if (($data['scope'] ?? 'folder') !== 'global' || blank($data['search'] ?? null)) {
             $query->where('parent_id', $parent);
@@ -171,7 +178,11 @@ class MediaManager
                 $query->where('type', 'c')
                     ->orWhere(function ($query) use ($group): void {
                         $query->where('type', 'f');
-                        if (in_array($group, ['image', 'video', 'audio'], true)) {
+                        if (in_array($group, [
+                            'image',
+                            'video',
+                            'audio',
+                        ], true)) {
                             $query->where('mime_type', 'like', $group . '/%');
                         } else {
                             if ($group === 'archive') {
@@ -207,7 +218,10 @@ class MediaManager
                     ->orderBy('level')
                     ->get() as $path) {
                 if ($path->path) {
-                    $crumbs[] = ['id' => $path->path_id, 'name' => $path->path->name];
+                    $crumbs[] = [
+                        'id'   => $path->path_id,
+                        'name' => $path->path->name,
+                    ];
                 }
             }
         }
@@ -304,7 +318,31 @@ class MediaManager
                     if ($registry->has($record->type)) {
                         $permissions = app(TaxonomyPermissions::class)->for($record->type, $registry->for($record->type));
                         if (app(AdminAccess::class)->allows(auth()->user(), $permissions['manage'])) {
-                            $url = route('admin.taxonomies.edit', [$record->type, $record->id]);
+                            $url = route('admin.taxonomies.edit', [
+                                $record->type,
+                                $record->id,
+                            ]);
+                        }
+                    }
+                } else if ($relation->mediaable_type === (new \App\Models\EditorDocument)->getMorphClass()) {
+                    $document = \App\Models\EditorDocument::find($relation->mediaable_id);
+                    $owner = $document?->owner;
+                    if (! $owner) {
+                        return null;
+                    }
+                    $label = __('editor.document_usage', [
+                        'title'  => $owner instanceof \JobMetric\Post\Models\Post ? ($owner->getTranslation('title', $document->locale) ?: '#' . $owner->id) : '#' . $owner->getKey(),
+                        'locale' => $document->locale,
+                    ]);
+                    $url = null;
+                    if ($owner instanceof \JobMetric\Post\Models\Post && \JobMetric\Post\Facades\PostTypeRegistry::has($owner->type)) {
+                        $permission = \JobMetric\Post\Facades\PostTypeRegistry::for($owner->type)
+                            ->getManagePermission();
+                        if ($permission && app(AdminAccess::class)->allows(auth()->user(), $permission)) {
+                            $url = route('admin.posts.edit', [
+                                $owner->type,
+                                $owner->id,
+                            ]);
                         }
                     }
                 } else {
@@ -313,6 +351,7 @@ class MediaManager
                 }
 
                 $role = match ($relation->collection) {
+                    'editor' => __('editor.content_usage'),
                     'base' => __('taxonomies.media_base'),
                     'gallery', 'photos' => __('taxonomies.media_gallery'),
                     'seo_image' => __('taxonomies.media_seo_image'),

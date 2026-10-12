@@ -40,8 +40,32 @@ use JobMetric\Taxonomy\Models\Taxonomy;
 use JobMetric\Translation\Models\Translation;
 use Throwable;
 
+/** Serve registry-driven post management screens and authorized draft operations. */
 final class PostController extends Controller
 {
+    /**
+     * Render a validated editor draft without persisting the post.
+     *
+     * @param Request $request
+     * @param string $type
+     *
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function editorPreview(Request $request, string $type): JsonResponse
+    {
+        $data = $request->validate([
+            'content' => [
+                'required',
+                new EditorContentRule(app(EditorDriverRegistry::class)),
+            ],
+        ]);
+
+        return response()
+            ->json(['html' => app(\App\Support\EditorRenderer::class)->render(app(\App\Services\Editor\EditorDocuments::class)->normalize($data['content']), 0, true)])
+            ->header('Cache-Control', 'no-store, private');
+    }
+
     /**
      * Render the registry-driven post list and localized page options.
      *
@@ -132,6 +156,7 @@ final class PostController extends Controller
                 'locale' => '__LOCALE__',
             ]),
             'editor'             => [
+                'workbench' => trans('editor'),
                 'tools'     => Hooks::filter('jobic.editor.tools', Editor::clientTools(), [
                     'type'    => $type,
                     'post_id' => null,
@@ -170,7 +195,10 @@ final class PostController extends Controller
 
         $query = Post::query()
             ->where('type', $type)
-            ->with(['translations', 'files']);
+            ->with([
+                'translations',
+                'files',
+            ]);
 
         $total = (clone $query)->count();
         $filters = (array) $request->input('filters', []);
@@ -311,7 +339,10 @@ final class PostController extends Controller
     {
         return $this->form($type, Post::query()
             ->where('type', $type)
-            ->with(['translations', 'files'])
+            ->with([
+                'translations',
+                'files',
+            ])
             ->findOrFail($post));
     }
 
@@ -338,7 +369,7 @@ final class PostController extends Controller
         return response()->json([
             'ok'   => true,
             'data' => [
-                'fields'  => array_intersect_key($record->getTranslations($locale), array_flip($fields)),
+                'fields'  => array_intersect_key(array_replace($record->getTranslations($locale), ['content' => app(\App\Services\Editor\EditorDocuments::class)->readForEditor($record, $locale)]), array_flip($fields)),
                 'version' => PostTypeRegistry::for($type)
                     ->hasOptimisticLocking() ? RecordVersion::token($record, 'posts:' . $type) : null,
             ],
@@ -385,13 +416,17 @@ final class PostController extends Controller
 
             if (array_key_exists('content', $fields) && $fields['content'] !== null && $fields['content'] !== '') {
                 $document = is_string($fields['content']) ? json_decode($fields['content'], true) : $fields['content'];
-                $document = Hooks::filter('jobic.editor.content', $document, ['type' => $type, 'locale' => $locale, 'post_id' => $post]);
+                $document = Hooks::filter('jobic.editor.content', $document, [
+                    'type'    => $type,
+                    'locale'  => $locale,
+                    'post_id' => $post,
+                ]);
                 $validator = Validator::make([
                     'content' => $document,
                 ], [
                     'content' => [
                         'required',
-                        new EditorContentRule(app(EditorDriverRegistry::class)),
+                        new EditorContentRule(app(EditorDriverRegistry::class), app(\App\Services\Editor\EditorDocuments::class)->read($record, $locale)),
                     ],
                 ]);
 
@@ -405,7 +440,11 @@ final class PostController extends Controller
                 $fields['content'] = json_encode($document, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             }
 
-            $changed = array_filter($fields, static fn ($value, $field): bool => $record->getTranslation((string) $field, $locale) !== $value, ARRAY_FILTER_USE_BOTH);
+            $documents = app(\App\Services\Editor\EditorDocuments::class);
+            $changed = array_filter($fields, static fn (
+                $value,
+                $field
+            ): bool => ($field === 'content' ? $documents->read($record, $locale) : $record->getTranslation((string) $field, $locale)) !== $value, ARRAY_FILTER_USE_BOTH);
 
             if ($changed === []) {
                 return false;
@@ -415,10 +454,15 @@ final class PostController extends Controller
 
             $historyBefore = $this->historySnapshot($record);
             $before = $record->snapshot();
+            $documentsBefore = $documents->snapshot($record);
+            if (array_key_exists('content', $changed)) {
+                $documents->save($record, $locale, $changed['content']);
+                unset($changed['content']);
+            }
             $record->translate($locale, $changed);
-            $this->syncEditorMedia($record);
-            $record->revisions()
+            $revision = $record->revisions()
                 ->create(['snapshot' => $before]);
+            $documents->capture($revision, $documentsBefore);
 
             Post::withoutEvents(static fn () => $record->touch());
 
@@ -534,6 +578,10 @@ final class PostController extends Controller
         }
 
         Page::addLocalize('postEditor', [
+            'previewUrl'   => route('admin.posts.editor-preview', ['type' => $type]),
+            'templates'    => Editor::templates()
+                ->forType($type),
+            'workbench'    => trans('editor'),
             'tools'        => $editorConfig['tools'],
             'minHeight'    => $editorConfig['minHeight'],
             'uploadUrl'    => route('admin.media-manager.upload'),
@@ -646,7 +694,10 @@ final class PostController extends Controller
         if ($screen === 'list') {
             Page::addPlugin('datatable');
         } else {
-            Page::addPlugin(in_array(LocaleCatalog::calendar(), ['jalali', 'persian'], true) ? 'datepicker.jalali' : 'datepicker');
+            Page::addPlugin(in_array(LocaleCatalog::calendar(), [
+                'jalali',
+                'persian',
+            ], true) ? 'datepicker.jalali' : 'datepicker');
         }
 
         Page::addLocalize('posts', trans('posts'));
@@ -815,7 +866,11 @@ final class PostController extends Controller
                     $postType->type = $type;
                     $statusLabels = app(PostWorkflow::class)->allStatusOptions($postType, LocaleCatalog::resolve(app()->getLocale())) ?: trans('posts.statuses');
                 }
-                $filters[$field] = ['kind' => 'status', 'label' => 'posts.status', 'options' => $statusLabels];
+                $filters[$field] = [
+                    'kind'    => 'status',
+                    'label'   => 'posts.status',
+                    'options' => $statusLabels,
+                ];
 
                 continue;
             }
@@ -1145,7 +1200,10 @@ final class PostController extends Controller
                 ?->getAuthIdentifier(),
         ]);
 
-        return response()->json(['ok' => true, 'message' => trans('posts.deleted')]);
+        return response()->json([
+            'ok'      => true,
+            'message' => trans('posts.deleted'),
+        ]);
     }
 
     /**
@@ -1191,7 +1249,10 @@ final class PostController extends Controller
             ]);
         }
 
-        abort_if(in_array($data['operation'], ['activate', 'deactivate'], true) && ! PostTypeRegistry::for($type)
+        abort_if(in_array($data['operation'], [
+                'activate',
+                'deactivate',
+            ], true) && ! PostTypeRegistry::for($type)
                 ->hasChangeStatusInList(), 403);
 
         $records = Post::query()
@@ -1231,7 +1292,10 @@ final class PostController extends Controller
                     continue;
                 }
 
-                Hooks::action('jobic.posts.saving', [...$context, 'fields' => ['status']]);
+                Hooks::action('jobic.posts.saving', [
+                    ...$context,
+                    'fields' => ['status'],
+                ]);
 
                 app(PostWorkflow::class)->transition($record, $data['operation'] === 'activate' ? 'publish' : 'disabled', $request->user());
                 app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $context['user_id'], 'update', $before, $this->historySnapshot($record));
@@ -1249,7 +1313,10 @@ final class PostController extends Controller
             if ($data['operation'] === 'delete') {
                 Hooks::notify('jobic.posts.deleted', $context);
             } else {
-                Hooks::notify('jobic.posts.saved', [...$context, 'fields' => ['status']]);
+                Hooks::notify('jobic.posts.saved', [
+                    ...$context,
+                    'fields' => ['status'],
+                ]);
             }
         }
 
@@ -1301,7 +1368,21 @@ final class PostController extends Controller
 
         DB::transaction(function () use ($record, $revision, $type, $request): void {
             $before = $this->historySnapshot($record);
+            $documents = app(\App\Services\Editor\EditorDocuments::class);
+            $documentsBefore = $documents->snapshot($record);
+            $lastRevision = (int) $record->revisions()
+                ->max('id');
+            $targetRevision = $record->revisions()
+                ->findOrFail($revision);
             $record->restoreRevision($revision);
+            $documents->restore($record, $targetRevision);
+            $undo = $record->revisions()
+                ->where('id', '>', $lastRevision)
+                ->latest('id')
+                ->first();
+            if ($undo) {
+                $documents->capture($undo, $documentsBefore);
+            }
             app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $request->user()
                 ->getAuthIdentifier(), 'restore', $before, $this->historySnapshot($record->fresh()));
         });
@@ -1314,7 +1395,10 @@ final class PostController extends Controller
                 ?->getAuthIdentifier(),
         ]);
 
-        return response()->json(['ok' => true, 'message' => trans('posts.revision_restored')]);
+        return response()->json([
+            'ok'      => true,
+            'message' => trans('posts.revision_restored'),
+        ]);
     }
 
     /**

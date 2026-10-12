@@ -59,12 +59,37 @@ final class PostTranslationRequest extends FormRequest
 
         foreach ($fields as $field) {
             $rules['fields.' . $field] = match ($field) {
-                'title' => ['required', 'string', 'max:255'],
-                'meta_title' => ['nullable', 'string', 'max:255'],
-                'meta_description' => ['nullable', 'string', 'max:500'],
-                'meta_keywords' => ['nullable', 'string', 'max:1000'],
-                'content' => ['nullable', new EditorContentRule(app(EditorDriverRegistry::class))],
-                default => ['nullable', 'string', 'max:100000'],
+                'title' => [
+                    'required',
+                    'string',
+                    'max:255',
+                ],
+                'meta_title' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
+                'meta_description' => [
+                    'nullable',
+                    'string',
+                    'max:500',
+                ],
+                'meta_keywords' => [
+                    'nullable',
+                    'string',
+                    'max:1000',
+                ],
+                'content' => [
+                    'nullable',
+                    new EditorContentRule(app(EditorDriverRegistry::class), app(\App\Services\Editor\EditorDocuments::class)->read(\JobMetric\Post\Models\Post::query()
+                        ->where('type', (string) $this->route('type'))
+                        ->find($this->route('post')), (string) $this->route('locale'))),
+                ],
+                default => [
+                    'nullable',
+                    'string',
+                    'max:100000',
+                ],
             };
         }
 

@@ -27,6 +27,7 @@ Route::middleware([
         Route::get('/', 'index')->name('index');
         Route::get('data', 'data')->name('data');
         Route::get('create', 'create')->name('create');
+        Route::post('editor-preview', 'editorPreview')->middleware('throttle:30,1')->name('editor-preview');
         Route::post('bulk', 'bulk')->middleware('throttle:30,1')->name('bulk');
         Route::post('edit-locks/unlock', 'unlockEditLocks')->middleware('throttle:30,1')->name('edit-locks.unlock');
         Route::post('/', 'store')->middleware('throttle:30,1')->name('store');

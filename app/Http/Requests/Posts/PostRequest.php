@@ -56,7 +56,11 @@ final class PostRequest extends FormRequest
             if (preg_match('/^(\d{4})[-\/]([01]?\d)[-\/]([0-3]?\d)(?:[ T]([0-2]?\d):([0-5]\d))?$/', $publishedAt, $parts)) {
                 try {
                     $calendar = LocaleCatalog::calendar(LocaleCatalog::resolve(app()->getLocale()));
-                    [$year, $month, $day] = CalendarConverterFactory::make($calendar)
+                    [
+                        $year,
+                        $month,
+                        $day,
+                    ] = CalendarConverterFactory::make($calendar)
                         ->toGregorian((int) $parts[1], (int) $parts[2], (int) $parts[3]);
                     $publishedAt = sprintf('%04d-%02d-%02d %02d:%02d:00', $year, $month, $day, (int) ($parts[4] ?? 0), (int) ($parts[5] ?? 0));
                 } catch (\Throwable) {
@@ -85,14 +89,42 @@ final class PostRequest extends FormRequest
             ->where('type', $type)
             ->findOrFail((int) $this->route('post')) : new Post;
         $record->type = $type;
-        $allowedStatuses = app(PostWorkflow::class)->availableStatuses($record) ?: ['publish', 'future', 'draft', 'pending', 'private', 'archive', 'disabled'];
+        $allowedStatuses = app(PostWorkflow::class)->availableStatuses($record) ?: [
+            'publish',
+            'future',
+            'draft',
+            'pending',
+            'private',
+            'archive',
+            'disabled',
+        ];
         $rules = [
-            'status'         => ['required', 'string', Rule::in($allowedStatuses)],
-            'published_at'   => ['nullable', 'date'],
-            'comment_status' => ['sometimes', 'boolean'],
-            'password'       => ['nullable', 'string', 'max:255'],
-            'translation'    => ['required', 'array:' . $locale],
-            'taxonomies'     => ['sometimes', 'array:' . implode(',', array_keys($taxonomyTypes))],
+            'status'         => [
+                'required',
+                'string',
+                Rule::in($allowedStatuses),
+            ],
+            'published_at'   => [
+                'nullable',
+                'date',
+            ],
+            'comment_status' => [
+                'sometimes',
+                'boolean',
+            ],
+            'password'       => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'translation'    => [
+                'required',
+                'array:' . $locale,
+            ],
+            'taxonomies'     => [
+                'sometimes',
+                'array:' . implode(',', array_keys($taxonomyTypes)),
+            ],
         ];
         if ($this->route('post') && $builder->hasOptimisticLocking()) {
             $rules['_version'] = [
@@ -120,7 +152,12 @@ final class PostRequest extends FormRequest
         ];
         foreach ($translationFields as $field) {
             $required = $field === 'title';
-            $rules["translation.$locale.$field"] = $field === 'content' ? [($required ? 'required' : 'nullable'), new EditorContentRule(app(\App\Support\EditorDriverRegistry::class))] : [
+            $rules["translation.$locale.$field"] = $field === 'content' ? [
+                ($required ? 'required' : 'nullable'),
+                new EditorContentRule(app(\App\Support\EditorDriverRegistry::class), app(\App\Services\Editor\EditorDocuments::class)->read($this->route('post') ? Post::query()
+                    ->where('type', $type)
+                    ->find($this->route('post')) : null, $locale)),
+            ] : [
                 ($required ? 'required' : 'nullable'),
                 'string',
                 match ($field) {
@@ -146,9 +183,16 @@ final class PostRequest extends FormRequest
             ];
         }
         $mediaCollections = $builder->getMediaCollections();
-        $rules['media'] = ['sometimes', 'array:' . implode(',', array_keys($mediaCollections))];
+        $rules['media'] = [
+            'sometimes',
+            'array:' . implode(',', array_keys($mediaCollections)),
+        ];
         foreach ($mediaCollections as $collection => $definition) {
-            $rules["media.$collection"] = ['sometimes', 'array', ...(($definition['multiple'] ?? false) ? [] : ['max:1'])];
+            $rules["media.$collection"] = [
+                'sometimes',
+                'array',
+                ...(($definition['multiple'] ?? false) ? [] : ['max:1']),
+            ];
             $exists = Rule::exists(config('media.tables.media', 'media'), 'id')
                 ->where(function ($query) use ($definition): void {
                     $query->where('type', 'f');

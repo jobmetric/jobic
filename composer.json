@@ -13,6 +13,8 @@
         "ext-pdo": "*",
         "ext-redis": "*",
         "ext-zip": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*",
         "bacon/bacon-qr-code": "^3.0",
         "jobmetric/domi": "^1.14.2",
         "jobmetric/laravel-comment": "^1.1.1",
