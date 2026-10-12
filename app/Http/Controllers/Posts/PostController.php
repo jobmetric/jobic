@@ -616,6 +616,7 @@ final class PostController extends Controller
             'urlPrefix'          => $builder->getUrlPrefix($type),
             'hasUrl'             => $builder->hasUrl(),
             'hasComments'        => $builder->hasComments(),
+            'hasPassword'        => $builder->isPasswordEnabled(),
             'hasSeo'             => $builder->isSeoEnabled(),
             'activeLocale'       => $activeLocale,
             'record'             => $post,

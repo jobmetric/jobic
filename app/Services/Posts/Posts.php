@@ -103,6 +103,13 @@ final class Posts
             }
 
             $data['translation'] = $translations;
+            $clearPassword = (bool) ($data['clear_password'] ?? false);
+            unset($data['clear_password']);
+            if ($clearPassword) {
+                $data['password'] = null;
+            } elseif (($data['password'] ?? null) === null || $data['password'] === '') {
+                unset($data['password']);
+            }
 
             try {
                 $service = app(\JobMetric\Post\Post::class);

@@ -113,10 +113,11 @@ final class PostRequest extends FormRequest
                 'boolean',
             ],
             'password'       => [
-                'nullable',
+                $builder->isPasswordEnabled() ? 'nullable' : 'prohibited',
                 'string',
                 'max:255',
             ],
+            'clear_password' => [$builder->isPasswordEnabled() ? 'sometimes' : 'prohibited', 'boolean'],
             'translation'    => [
                 'required',
                 'array:' . $locale,

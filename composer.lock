@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e0c40caf503dc541b2c0acf15c892d1",
+    "content-hash": "1927ea15f8642d09e8d089026830a85a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2212,16 +2212,16 @@
         },
         {
             "name": "jobmetric/laravel-post",
-            "version": "v1.1.0",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-post.git",
-                "reference": "3c90e3eb98c58c0e47f1c9fcd4fd473d59b076e1"
+                "reference": "2e403f037d389311097b8ecacda37080c102252a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/3c90e3eb98c58c0e47f1c9fcd4fd473d59b076e1",
-                "reference": "3c90e3eb98c58c0e47f1c9fcd4fd473d59b076e1",
+                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/2e403f037d389311097b8ecacda37080c102252a",
+                "reference": "2e403f037d389311097b8ecacda37080c102252a",
                 "shasum": ""
             },
             "require": {
@@ -2281,7 +2281,7 @@
                 "issues": "https://github.com/jobmetric/laravel-post/issues",
                 "source": "https://github.com/jobmetric/laravel-post"
             },
-            "time": "2026-10-11T13:16:27+00:00"
+            "time": "2026-10-12T20:28:40+00:00"
         },
         {
             "name": "jobmetric/laravel-setting",
@@ -11179,15 +11179,17 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.3",
         "ext-pdo": "*",
         "ext-redis": "*",
-        "ext-zip": "*"
+        "ext-zip": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }

@@ -61,6 +61,17 @@
     @if($hasComments)
         <x-form.field variant="crud" :label="__('posts.comment_status')" for="post-comment-status" error="comment_status"><x-form.select id="post-comment-status" name="comment_status"><option value="1" @selected((bool) old('comment_status', $record?->comment_status ?? true))>{{ __('posts.comments_enabled') }}</option><option value="0" @selected(!(bool) old('comment_status', $record?->comment_status ?? true))>{{ __('posts.comments_disabled') }}</option></x-form.select><span data-error-for="comment_status" class="crud-field-error"></span></x-form.field>
     @endif
+    @if($hasPassword)
+        <x-form.field variant="crud" :label="__('posts.password')" for="post-password" error="password">
+            <x-form.password id="post-password" name="password" autocomplete="new-password" />
+            <p class="crud-hint">{{ $record?->password ? __('posts.password_keep_hint') : __('posts.password_hint') }}</p>
+            <span data-error-for="password" class="crud-field-error"></span>
+        </x-form.field>
+        @if($record?->password)
+            <label class="post-password-clear"><input type="checkbox" name="clear_password" value="1" @checked(old('clear_password'))><span>{{ __('posts.password_clear') }}</span></label>
+            <span data-error-for="clear_password" class="crud-field-error"></span>
+        @endif
+    @endif
     </fieldset>
     @php
         $visibleCustomFields = array_diff_key($customFields, ['seo_index' => true]);

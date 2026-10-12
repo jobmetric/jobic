@@ -24,7 +24,7 @@
         "jobmetric/laravel-language": "^2.5.1",
         "jobmetric/laravel-metadata": "^4.0.3",
         "jobmetric/laravel-package-core": "^1.38.1",
-        "jobmetric/laravel-post": "^1.1",
+        "jobmetric/laravel-post": "^1.1.1",
         "jobmetric/laravel-setting": "^2.1.2",
         "jobmetric/laravel-taxonomy": "^4.3",
         "jobmetric/laravel-translation": "^4.0.2",

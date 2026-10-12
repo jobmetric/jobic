@@ -39,6 +39,51 @@ class PostPagesTest extends TestCase
         }
     }
 
+    public function test_post_password_can_be_set_preserved_and_explicitly_removed(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+
+        foreach (['post', 'page'] as $type) {
+            $this->get(route('admin.posts.create', ['type' => $type]))
+                ->assertOk()
+                ->assertSee('name="password"', false);
+        }
+
+        $created = $this->postJson(route('admin.posts.store', ['type' => 'post']), [
+            'status' => 'draft',
+            'slug' => 'protected-post',
+            'password' => 'content-secret',
+            'translation' => ['en' => ['title' => 'Protected post']],
+        ])->assertOk();
+        $id = $created->json('data.id');
+
+        $post = Post::findOrFail($id);
+        $this->assertSame('content-secret', $post->password);
+
+        $editUrl = route('admin.posts.edit', ['type' => 'post', 'post' => $id]);
+        $form = $this->get($editUrl)->assertOk();
+        $form->assertSee('name="clear_password"', false)
+            ->assertDontSee('content-secret');
+
+        $updateUrl = route('admin.posts.update', ['type' => 'post', 'post' => $id]);
+        $payload = [
+            'status' => 'draft',
+            'slug' => 'protected-post',
+            'password' => '',
+            '_version' => $created->json('data.version'),
+            '_edit_lock' => $created->json('data.edit_lock'),
+            'translation' => ['en' => ['title' => 'Protected post']],
+        ];
+        $updated = $this->putJson($updateUrl, $payload)->assertOk();
+        $this->assertSame('content-secret', $post->fresh()->password);
+
+        $payload['_version'] = $updated->json('data.version');
+        $payload['clear_password'] = true;
+        $this->putJson($updateUrl, $payload)->assertOk();
+        $this->assertNull($post->fresh()->password);
+    }
+
     public function test_posts_and_pages_have_distinct_permissions_and_a_shared_level_two_unlock_permission(): void
     {
         $this->assertSame('admin.content.posts.view', PostTypeRegistry::for('post')->getViewPermission());
