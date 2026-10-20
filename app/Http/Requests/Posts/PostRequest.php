@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Posts;
 
 use App\Rules\EditorContentRule;
+use App\Services\Posts\PostLifecycleView;
 use App\Services\Posts\PostWorkflow;
 use App\Support\LocaleCatalog;
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,7 +15,9 @@ use JobMetric\MultiCalendar\Factory\CalendarConverterFactory;
 use JobMetric\MultiCalendar\Helpers\NumberTransliterator;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Post\Models\Post;
+use JobMetric\Post\Models\PostLocaleLock;
 use JobMetric\Url\Rules\SlugExistRule;
+use Throwable;
 
 final class PostRequest extends FormRequest
 {
@@ -63,7 +66,7 @@ final class PostRequest extends FormRequest
                     ] = CalendarConverterFactory::make($calendar)
                         ->toGregorian((int) $parts[1], (int) $parts[2], (int) $parts[3]);
                     $publishedAt = sprintf('%04d-%02d-%02d %02d:%02d:00', $year, $month, $day, (int) ($parts[4] ?? 0), (int) ($parts[5] ?? 0));
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     // Leave invalid input to the published_at validation rule.
                 }
             }
@@ -79,16 +82,20 @@ final class PostRequest extends FormRequest
     public function rules(): array
     {
         $type = (string) $this->route('type');
+
         $builder = PostTypeRegistry::for($type);
+
         $postType = new Post;
         $postType->type = $type;
         $taxonomyTypes = $postType->taxonomyAllowTypes();
         $locale = LocaleCatalog::resolve(app()->getLocale());
         $translationFields = $builder->getTranslationFields();
+
         $record = $this->route('post') ? Post::query()
             ->where('type', $type)
             ->findOrFail((int) $this->route('post')) : new Post;
         $record->type = $type;
+
         $allowedStatuses = app(PostWorkflow::class)->availableStatuses($record) ?: [
             'publish',
             'future',
@@ -98,35 +105,61 @@ final class PostRequest extends FormRequest
             'archive',
             'disabled',
         ];
+
+        $advancedWorkflow = app(PostLifecycleView::class)->activeDefinition($type) !== null;
+        $languageLocked = $advancedWorkflow && $record->exists && PostLocaleLock::query()
+                ->where('post_id', $record->id)
+                ->where('locale', $locale)
+                ->where('locked', true)
+                ->exists();
+
+        if ($advancedWorkflow) {
+            $allowedStatuses = [$record->exists ? (string) $record->status : 'editable'];
+        }
+
         $rules = [
-            'status'         => [
+            'status'              => [
                 'required',
                 'string',
                 Rule::in($allowedStatuses),
             ],
-            'published_at'   => [
+            'workflow_transition' => [
+                $advancedWorkflow && $record->exists ? 'sometimes' : 'prohibited',
+                'string',
+                'max:80',
+            ],
+            'workflow_due_at'     => [
+                $advancedWorkflow && $record->exists ? 'sometimes' : 'prohibited',
+                'date',
+                'after:now',
+            ],
+            'published_at'        => $advancedWorkflow ? ['prohibited'] : [
                 'nullable',
                 'date',
             ],
-            'comment_status' => [
+            'comment_status'      => [
                 'sometimes',
                 'boolean',
             ],
-            'password'       => [
+            'password'            => [
                 $builder->isPasswordEnabled() ? 'nullable' : 'prohibited',
                 'string',
                 'max:255',
             ],
-            'clear_password' => [$builder->isPasswordEnabled() ? 'sometimes' : 'prohibited', 'boolean'],
-            'translation'    => [
+            'clear_password'      => [
+                $builder->isPasswordEnabled() ? 'sometimes' : 'prohibited',
+                'boolean',
+            ],
+            'translation'         => $languageLocked ? ['prohibited'] : [
                 'required',
                 'array:' . $locale,
             ],
-            'taxonomies'     => [
+            'taxonomies'          => [
                 'sometimes',
                 'array:' . implode(',', array_keys($taxonomyTypes)),
             ],
         ];
+
         if ($this->route('post') && $builder->hasOptimisticLocking()) {
             $rules['_version'] = [
                 'required',
@@ -139,6 +172,7 @@ final class PostRequest extends FormRequest
                 'uuid',
             ];
         }
+
         if ($builder->hasUrl()) {
             $rules['slug'] = [
                 'required',
@@ -147,11 +181,15 @@ final class PostRequest extends FormRequest
                 new SlugExistRule(Post::class, $type, $this->route('post') ? (int) $this->route('post') : null),
             ];
         }
-        $rules["translation.$locale"] = [
-            'required',
-            'array:' . implode(',', $translationFields),
-        ];
-        foreach ($translationFields as $field) {
+
+        if (! $languageLocked) {
+            $rules["translation.$locale"] = [
+                'required',
+                'array:' . implode(',', $translationFields),
+            ];
+        }
+
+        foreach ($languageLocked ? [] : $translationFields as $field) {
             $required = $field === 'title';
             $rules["translation.$locale.$field"] = $field === 'content' ? [
                 ($required ? 'required' : 'nullable'),
@@ -169,6 +207,7 @@ final class PostRequest extends FormRequest
                 },
             ];
         }
+
         foreach ($taxonomyTypes as $collection => $definition) {
             $rules["taxonomies.$collection"] = [
                 'sometimes',
@@ -183,17 +222,21 @@ final class PostRequest extends FormRequest
                     ->where('status', true),
             ];
         }
+
         $mediaCollections = $builder->getMediaCollections();
+
         $rules['media'] = [
             'sometimes',
             'array:' . implode(',', array_keys($mediaCollections)),
         ];
+
         foreach ($mediaCollections as $collection => $definition) {
             $rules["media.$collection"] = [
                 'sometimes',
                 'array',
                 ...(($definition['multiple'] ?? false) ? [] : ['max:1']),
             ];
+
             $exists = Rule::exists(config('media.tables.media', 'media'), 'id')
                 ->where(function ($query) use ($definition): void {
                     $query->where('type', 'f');
@@ -207,6 +250,7 @@ final class PostRequest extends FormRequest
                         });
                     }
                 });
+
             $rules["media.$collection.*"] = [
                 'integer',
                 'distinct',

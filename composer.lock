@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1927ea15f8642d09e8d089026830a85a",
+    "content-hash": "b2e69ddc7b9d934957144725908bd276",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2212,17 +2212,11 @@
         },
         {
             "name": "jobmetric/laravel-post",
-            "version": "v1.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/jobmetric/laravel-post.git",
-                "reference": "2e403f037d389311097b8ecacda37080c102252a"
-            },
+            "version": "1.2.0",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/2e403f037d389311097b8ecacda37080c102252a",
-                "reference": "2e403f037d389311097b8ecacda37080c102252a",
-                "shasum": ""
+                "type": "path",
+                "url": "../maral/packages/laravel-post",
+                "reference": "2e403f037d389311097b8ecacda37080c102252a"
             },
             "require": {
                 "jobmetric/laravel-flow": "^2.4",
@@ -2255,7 +2249,11 @@
                     "JobMetric\\Post\\Factories\\": "database/factories/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "test": [
+                    "phpunit -c phpunit.xml"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -2277,11 +2275,14 @@
                 "post"
             ],
             "support": {
-                "forum": "https://twitter.com/jobmetric",
                 "issues": "https://github.com/jobmetric/laravel-post/issues",
+                "forum": "https://twitter.com/jobmetric",
                 "source": "https://github.com/jobmetric/laravel-post"
             },
-            "time": "2026-10-12T20:28:40+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "jobmetric/laravel-setting",

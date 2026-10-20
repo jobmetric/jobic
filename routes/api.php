@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApiTestController;
+use App\Http\Controllers\Api\PublishedContentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +21,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('test', [ApiTestController::class, 'index'])->name('test');
+Route::get('content/{type}/{post}', [PublishedContentController::class, 'show'])
+    ->whereNumber('post')->name('content.show');

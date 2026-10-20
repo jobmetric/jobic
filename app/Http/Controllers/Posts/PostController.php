@@ -12,16 +12,22 @@ use App\Http\Requests\Posts\PostRequest;
 use App\Http\Requests\Posts\PostTranslationRequest;
 use App\Http\Requests\Taxonomies\UnlockEditLocksRequest;
 use App\Rules\EditorContentRule;
+use App\Services\Editor\EditorDocuments;
 use App\Services\History\RecordHistory;
+use App\Services\Posts\PostLifecycleView;
 use App\Services\Posts\Posts;
 use App\Services\Posts\PostWorkflow;
 use App\Services\Taxonomies\TaxonomyEditLocks;
 use App\Support\AdminAccess;
 use App\Support\EditorDriverRegistry;
+use App\Support\EditorRenderer;
 use App\Support\LocaleCatalog;
 use App\Support\LocalizedDate;
 use App\Support\Page;
+use App\Support\PostWorkflowPermissions;
 use App\Support\RecordVersion;
+use Illuminate\Container\EntryNotFoundException;
+use Illuminate\Contracts\Container\CircularDependencyException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,10 +40,15 @@ use JobMetric\Media\Http\Resources\MediaResource;
 use JobMetric\Metadata\Models\Meta;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Post\Models\Post;
+use JobMetric\Post\Models\PostPublicationStream;
+use JobMetric\Post\Services\PostWorkflowDefinitions;
 use JobMetric\Post\Support\PostTypeBuilder;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 use JobMetric\Taxonomy\Models\Taxonomy;
 use JobMetric\Translation\Models\Translation;
+use JsonException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Throwable;
 
 /** Serve registry-driven post management screens and authorized draft operations. */
@@ -50,7 +61,12 @@ final class PostController extends Controller
      * @param string $type
      *
      * @return JsonResponse
-     * @throws ValidationException
+     * @throws Throwable
+     * @throws EntryNotFoundException
+     * @throws CircularDependencyException
+     * @throws JsonException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function editorPreview(Request $request, string $type): JsonResponse
     {
@@ -62,7 +78,7 @@ final class PostController extends Controller
         ]);
 
         return response()
-            ->json(['html' => app(\App\Support\EditorRenderer::class)->render(app(\App\Services\Editor\EditorDocuments::class)->normalize($data['content']), 0, true)])
+            ->json(['html' => app(EditorRenderer::class)->render(app(EditorDocuments::class)->normalize($data['content']), 0, true)])
             ->header('Cache-Control', 'no-store, private');
     }
 
@@ -77,12 +93,23 @@ final class PostController extends Controller
     public function index(string $type): View
     {
         $builder = PostTypeRegistry::for($type);
+        $workflowPermissions = app(PostWorkflowPermissions::class)->for($type);
 
         $this->preparePage('list');
 
         $postType = new Post;
         $postType->type = $type;
-        $statusLabels = app(PostWorkflow::class)->allStatusOptions($postType, LocaleCatalog::resolve(app()->getLocale())) ?: trans('posts.statuses');
+        $activeDefinition = app(PostLifecycleView::class)->activeDefinition($type);
+        $locale = LocaleCatalog::resolve(app()->getLocale());
+        $statusLabels = $activeDefinition ? collect([
+            'editable',
+            'publish',
+            'future',
+            'archive',
+            'disabled',
+        ])
+            ->mapWithKeys(static fn (string $status): array => [$status => __('posts.statuses.' . $status)])
+            ->all() : (app(PostWorkflow::class)->allStatusOptions($postType, $locale) ?: trans('posts.statuses'));
 
         $listFilters = $this->listFilters($builder, $type, $statusLabels);
 
@@ -100,7 +127,7 @@ final class PostController extends Controller
 
         $canUnlockEditLocks = $builder->hasOptimisticLocking() && app(AdminAccess::class)->allows(auth()->user(), (string) config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock'));
 
-        if ($builder->hasChangeStatusInList()) {
+        if ($builder->hasChangeStatusInList() && ! $activeDefinition) {
             array_unshift($operations, 'activate', 'deactivate');
         }
 
@@ -114,6 +141,8 @@ final class PostController extends Controller
 
         Page::addLocalize('postPage', [
             'type'               => $type,
+            'workflowUrl'        => (app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['manage']) || app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['view'])) ? route('admin.posts.workflow.index', ['type' => $type]) : null,
+            'workflowLabel'      => trans('workflow.title'),
             'dataUrl'            => route('admin.posts.data', [
                 'type' => $type,
             ]),
@@ -140,11 +169,8 @@ final class PostController extends Controller
             'help'               => Hooks::filter('jobic.posts.help.items', trans($type === 'page' ? 'posts.page_help_items' : 'posts.help_items'), $context),
             'helpIntro'          => Hooks::filter('jobic.posts.help.intro', trans($type === 'page' ? 'posts.page_help_intro' : 'posts.help_intro'), $context),
             'backUrl'            => $builder->getBackUrl(),
-            'translationFields'  => array_values(array_diff($builder->getTranslationFields(), [
-                'meta_title',
-                'meta_description',
-                'meta_keywords',
-            ])),
+            'translationFields'  => $builder->getTranslationFields(),
+            'hasSeo'             => $builder->isSeoEnabled(),
             'translationUrl'     => route('admin.posts.translation', [
                 'type'   => $type,
                 'post'   => '__ID__',
@@ -164,6 +190,18 @@ final class PostController extends Controller
                 'uploadUrl' => route('admin.media-manager.upload'),
                 'messages'  => trans('posts.editor'),
             ],
+        ]);
+
+        Page::addLocalize('postEditor', [
+            'previewUrl' => route('admin.posts.editor-preview', ['type' => $type]),
+            'templates'  => Editor::templates()
+                ->forType($type),
+            'workbench'  => trans('editor'),
+            'tools'      => Hooks::filter('jobic.editor.tools', Editor::clientTools(), [
+                'type'    => $type,
+                'post_id' => null,
+            ]),
+            'messages'   => trans('posts.editor'),
         ]);
 
         return view('posts.index', [
@@ -192,6 +230,7 @@ final class PostController extends Controller
     {
         $search = trim((string) $request->input('search.value', ''));
         $locale = LocaleCatalog::resolve(app()->getLocale());
+        $activeDefinition = app(PostLifecycleView::class)->activeDefinition($type);
 
         $query = Post::query()
             ->where('type', $type)
@@ -200,8 +239,12 @@ final class PostController extends Controller
                 'files',
             ]);
 
-        $total = (clone $query)->count();
         $filters = (array) $request->input('filters', []);
+        $requestedStatus = $filters['status'] ?? $request->input('status');
+        if ($activeDefinition && $requestedStatus !== 'archive') {
+            $query->where('status', '<>', 'archive');
+        }
+        $total = (clone $query)->count();
 
         foreach ($this->listFilters(PostTypeRegistry::for($type), $type, [], false) as $key => $filter) {
             $value = $filters[$key] ?? ($key === 'status' ? $request->input('status') : null);
@@ -261,7 +304,15 @@ final class PostController extends Controller
                 ->limit(1), $direction);
         } else {
             if ($sortColumn === 2) {
-                $query->orderBy('status', $direction);
+                if ($activeDefinition) {
+                    $query->orderBy(PostPublicationStream::query()
+                        ->select('status')
+                        ->whereColumn('post_id', (new Post)->qualifyColumn('id'))
+                        ->where('locale', $locale)
+                        ->limit(1), $direction);
+                } else {
+                    $query->orderBy('status', $direction);
+                }
             } else {
                 if ($sortColumn === 3) {
                     $query->orderBy('updated_at', $direction)
@@ -369,7 +420,7 @@ final class PostController extends Controller
         return response()->json([
             'ok'   => true,
             'data' => [
-                'fields'  => array_intersect_key(array_replace($record->getTranslations($locale), ['content' => app(\App\Services\Editor\EditorDocuments::class)->readForEditor($record, $locale)]), array_flip($fields)),
+                'fields'  => array_intersect_key(array_replace($record->getTranslations($locale), ['content' => app(EditorDocuments::class)->readForEditor($record, $locale)]), array_flip($fields)),
                 'version' => PostTypeRegistry::for($type)
                     ->hasOptimisticLocking() ? RecordVersion::token($record, 'posts:' . $type) : null,
             ],
@@ -403,11 +454,26 @@ final class PostController extends Controller
             'fields'  => array_keys($fields),
         ];
 
-        $changed = DB::transaction(function () use ($type, $post, $locale, &$fields, $context, $data): bool {
+        $actor = $request->user();
+        $changed = DB::transaction(function () use ($type, $post, $locale, &$fields, $context, $data, $actor): bool {
+            app(PostWorkflowDefinitions::class)->lock($type);
             $record = Post::query()
                 ->where('type', $type)
                 ->lockForUpdate()
                 ->findOrFail($post);
+
+            if (app(PostLifecycleView::class)->activeDefinition($type)) {
+                if ($record->status !== 'editable') {
+                    throw ValidationException::withMessages(['status' => [trans('post::lifecycle.not_editable')]]);
+                }
+                if (\JobMetric\Post\Models\PostLocaleLock::query()
+                    ->where('post_id', $record->id)
+                    ->where('locale', $locale)
+                    ->where('locked', true)
+                    ->exists()) {
+                    throw ValidationException::withMessages(['fields' => [trans('post::lifecycle.language_locked')]]);
+                }
+            }
 
             if (PostTypeRegistry::for($type)
                 ->hasOptimisticLocking()) {
@@ -426,7 +492,7 @@ final class PostController extends Controller
                 ], [
                     'content' => [
                         'required',
-                        new EditorContentRule(app(EditorDriverRegistry::class), app(\App\Services\Editor\EditorDocuments::class)->read($record, $locale)),
+                        new EditorContentRule(app(EditorDriverRegistry::class), app(EditorDocuments::class)->read($record, $locale)),
                     ],
                 ]);
 
@@ -440,7 +506,7 @@ final class PostController extends Controller
                 $fields['content'] = json_encode($document, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             }
 
-            $documents = app(\App\Services\Editor\EditorDocuments::class);
+            $documents = app(EditorDocuments::class);
             $changed = array_filter($fields, static fn (
                 $value,
                 $field
@@ -465,6 +531,8 @@ final class PostController extends Controller
             $documents->capture($revision, $documentsBefore);
 
             Post::withoutEvents(static fn () => $record->touch());
+
+            app(\App\Services\Posts\PostPublicationProjection::class)->capture($record, [$locale], $actor);
 
             app(RecordHistory::class)->record('posts:' . $type, $post, (int) $context['user_id'], 'update', $historyBefore, $this->historySnapshot($record->fresh()));
 
@@ -596,6 +664,8 @@ final class PostController extends Controller
             'calendar'     => LocaleCatalog::calendar($activeLocale),
             'formLabels'   => [
                 'save'             => trans('posts.save'),
+                'create'           => trans($type === 'page' ? 'posts.create_page' : 'posts.create'),
+                'edit'             => trans($type === 'page' ? 'posts.edit_page' : 'posts.edit'),
                 'cancel'           => trans('posts.cancel'),
                 'save_options'     => trans('posts.save_options'),
                 'save_close'       => trans('posts.save_close'),
@@ -620,6 +690,7 @@ final class PostController extends Controller
             'hasSeo'             => $builder->isSeoEnabled(),
             'activeLocale'       => $activeLocale,
             'record'             => $post,
+            'lifecycle'          => $post ? app(PostLifecycleView::class)->for($post, $activeLocale) : null,
             'editLock'           => $editLock,
             'editLockRenewUrl'   => $post ? route('admin.posts.edit-lock.renew', [
                 'type' => $type,
@@ -863,9 +934,22 @@ final class PostController extends Controller
         foreach ($builder->getFilterFields() as $field) {
             if ($field === 'status') {
                 if ($statusLabels === []) {
-                    $postType = new Post;
-                    $postType->type = $type;
-                    $statusLabels = app(PostWorkflow::class)->allStatusOptions($postType, LocaleCatalog::resolve(app()->getLocale())) ?: trans('posts.statuses');
+                    $definition = app(PostLifecycleView::class)->activeDefinition($type);
+                    if ($definition) {
+                        $statusLabels = collect([
+                            'editable',
+                            'publish',
+                            'future',
+                            'archive',
+                            'disabled',
+                        ])
+                            ->mapWithKeys(static fn (string $status): array => [$status => __('posts.statuses.' . $status)])
+                            ->all();
+                    } else {
+                        $postType = new Post;
+                        $postType->type = $type;
+                        $statusLabels = app(PostWorkflow::class)->allStatusOptions($postType, $locale) ?: trans('posts.statuses');
+                    }
                 }
                 $filters[$field] = [
                     'kind'    => 'status',
@@ -1117,6 +1201,20 @@ final class PostController extends Controller
             }
         }
 
+        $locale = LocaleCatalog::resolve((string) $request->query('locale', app()->getLocale()));
+        $lifecycle = app(PostLifecycleView::class)->for($post, $locale);
+        $workflowView = [
+            'type'         => $type,
+            'record'       => $post,
+            'activeLocale' => $locale,
+            'locales'      => LocaleCatalog::all(),
+            'lifecycle'    => $lifecycle,
+        ];
+        $canViewDiagram = $lifecycle && app(AdminAccess::class)->allowsAny($request->user(), array_intersect_key(app(PostWorkflowPermissions::class)->for($type), array_flip([
+                'view',
+                'manage',
+            ])));
+
         return response()
             ->json([
                 'ok'      => $result->ok,
@@ -1142,6 +1240,9 @@ final class PostController extends Controller
                         'type' => $type,
                         'post' => $post->id,
                     ]),
+                    'workflow_card_html'    => $lifecycle ? view('posts.partials.lifecycle-sidebar', $workflowView)->render() : null,
+                    'workflow_preview_html' => $canViewDiagram ? view('posts.partials.lifecycle-preview', $workflowView)->render() : null,
+                    'editable'              => ! $lifecycle || $post->status === 'editable',
                 ],
             ], $result->status)
             ->header('X-CSRF-TOKEN', csrf_token());
@@ -1185,7 +1286,13 @@ final class PostController extends Controller
         ]);
 
         DB::transaction(function () use ($record, $type, $request): void {
+            app(PostWorkflowDefinitions::class)->lock($type);
+            $record = Post::query()
+                ->where('type', $type)
+                ->lockForUpdate()
+                ->findOrFail($record->id);
             $before = $this->historySnapshot($record);
+            app(\App\Services\Posts\PostPublicationProjection::class)->withdrawAll($record, $request->user());
             $record->delete();
 
             app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $request->user()
@@ -1253,8 +1360,8 @@ final class PostController extends Controller
         abort_if(in_array($data['operation'], [
                 'activate',
                 'deactivate',
-            ], true) && ! PostTypeRegistry::for($type)
-                ->hasChangeStatusInList(), 403);
+            ], true) && (! PostTypeRegistry::for($type)
+                    ->hasChangeStatusInList() || app(PostLifecycleView::class)->activeDefinition($type) !== null), 403);
 
         $records = Post::query()
             ->where('type', $type)
@@ -1272,7 +1379,12 @@ final class PostController extends Controller
         }
 
         DB::transaction(function () use ($records, $data, $type, $request): void {
+            app(PostWorkflowDefinitions::class)->lock($type);
             foreach ($records as $record) {
+                $record = Post::query()
+                    ->where('type', $type)
+                    ->lockForUpdate()
+                    ->findOrFail($record->id);
                 $context = [
                     'type'    => $type,
                     'post_id' => $record->id,
@@ -1285,6 +1397,7 @@ final class PostController extends Controller
                 if ($data['operation'] === 'delete') {
                     Hooks::action('jobic.posts.deleting', $context);
 
+                    app(\App\Services\Posts\PostPublicationProjection::class)->withdrawAll($record, $request->user());
                     $record->delete();
 
                     app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $context['user_id'], 'delete', $before, []);
@@ -1299,6 +1412,13 @@ final class PostController extends Controller
                 ]);
 
                 app(PostWorkflow::class)->transition($record, $data['operation'] === 'activate' ? 'publish' : 'disabled', $request->user());
+                $locales = collect($record->snapshot()['translation'] ?? [])
+                    ->pluck('locale')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+                app(\App\Services\Posts\PostPublicationProjection::class)->capture($record->fresh(), $locales, $request->user());
                 app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $context['user_id'], 'update', $before, $this->historySnapshot($record));
             }
         });
@@ -1368,8 +1488,22 @@ final class PostController extends Controller
         ]);
 
         DB::transaction(function () use ($record, $revision, $type, $request): void {
+            app(PostWorkflowDefinitions::class)->lock($type);
+            $record = Post::query()
+                ->where('type', $type)
+                ->lockForUpdate()
+                ->findOrFail($record->id);
+            if (app(PostLifecycleView::class)->activeDefinition($type) && $record->status !== 'editable') {
+                abort(409, trans('posts.workflow_read_only'));
+            }
+            if (app(PostLifecycleView::class)->activeDefinition($type) && \JobMetric\Post\Models\PostLocaleLock::query()
+                    ->where('post_id', $record->id)
+                    ->where('locked', true)
+                    ->exists()) {
+                abort(409, trans('post::lifecycle.language_locked'));
+            }
             $before = $this->historySnapshot($record);
-            $documents = app(\App\Services\Editor\EditorDocuments::class);
+            $documents = app(EditorDocuments::class);
             $documentsBefore = $documents->snapshot($record);
             $lastRevision = (int) $record->revisions()
                 ->max('id');
@@ -1384,6 +1518,14 @@ final class PostController extends Controller
             if ($undo) {
                 $documents->capture($undo, $documentsBefore);
             }
+            $locales = collect($record->snapshot()['translation'] ?? [])
+                ->pluck('locale')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+            app(\App\Services\Posts\PostPublicationProjection::class)->capture($record->fresh(), $locales, $request->user(), null, false);
+            app(\JobMetric\Post\Services\PostLifecycle::class)->publishRestoration($record->fresh(), $request->user());
             app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $request->user()
                 ->getAuthIdentifier(), 'restore', $before, $this->historySnapshot($record->fresh()));
         });

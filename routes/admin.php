@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
 use App\Http\Controllers\Media\MediaManagerController;
 use App\Http\Controllers\Posts\PostController;
+use App\Http\Controllers\Posts\PostLifecycleController;
+use App\Http\Controllers\Posts\WorkflowController;
 use App\Http\Controllers\Roles\RoleController;
 use App\Http\Controllers\Settings\DynamicSettingController;
 use App\Http\Controllers\Settings\MailController;
@@ -24,6 +26,10 @@ Route::middleware([
     Route::get('/', DashboardController::class)->middleware(EnsurePermission::class.':admin.dashboard')->name('dashboard');
 
     Route::prefix('posts/{type}')->name('posts.')->controller(PostController::class)->middleware(EnsurePostPermission::class)->group(function (): void {
+        Route::get('workflow', [WorkflowController::class, 'index'])->name('workflow.index');
+        Route::post('workflow', [WorkflowController::class, 'save'])->middleware('throttle:30,1')->name('workflow.save');
+        Route::post('{post}/lifecycle', [PostLifecycleController::class, 'command'])
+            ->whereNumber('post')->middleware('throttle:30,1')->name('lifecycle.command');
         Route::get('/', 'index')->name('index');
         Route::get('data', 'data')->name('data');
         Route::get('create', 'create')->name('create');

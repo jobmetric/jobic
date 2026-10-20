@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Admin;
 
 use App\Support\AdminAccess;
+use App\Support\PostWorkflowPermissions;
 use Closure;
 use Illuminate\Http\Request;
 use JobMetric\Post\Facades\PostTypeRegistry;
@@ -43,14 +44,42 @@ final readonly class EnsurePostPermission
         $action = $request->route()
             ->getActionMethod();
 
-        if (in_array($action, ['unlockEditLock', 'unlockEditLocks'], true) || ($action === 'bulk' && $request->input('operation') === 'unlock')) {
-            $permission = (string) config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock');
+        if ($request->routeIs('admin.posts.workflow.*', 'admin.posts.lifecycle.*')) {
+            $keys = app(PostWorkflowPermissions::class)->for($type);
+
+            $mayManage = $this->access->allows($request->user(), $keys['manage']);
+            $mayView = $this->access->allows($request->user(), $keys['view']);
+
+            abort_unless($request->routeIs('admin.posts.workflow.index') ? ($mayView || $mayManage) : $mayManage, 403);
+
+            return $next($request);
+        }
+
+        if ($action === 'restoreRevision') {
+            $permission = app(PostWorkflowPermissions::class)->for($type)['restore'];
+
             abort_unless($this->access->allows($request->user(), $permission), 403);
 
             return $next($request);
         }
 
-        $read = $request->isMethod('GET') && in_array($action, ['index', 'data', 'show'], true);
+        if (in_array($action, [
+                'unlockEditLock',
+                'unlockEditLocks',
+            ], true) || ($action === 'bulk' && $request->input('operation') === 'unlock')) {
+
+            $permission = (string) config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock');
+
+            abort_unless($this->access->allows($request->user(), $permission), 403);
+
+            return $next($request);
+        }
+
+        $read = $request->isMethod('GET') && in_array($action, [
+                'index',
+                'data',
+                'show',
+            ], true);
         $namespace = $type === 'page' ? 'admin.content.pages' : 'admin.content.posts';
         $fallback = $namespace . ($read ? '.view' : '.manage');
         $typeBuilder = PostTypeRegistry::for($type);

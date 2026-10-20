@@ -91,6 +91,16 @@
             "php-http/discovery": true
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../maral/packages/laravel-post",
+            "options": {
+                "symlink": true,
+                "versions": {"jobmetric/laravel-post": "1.2.0"}
+            }
+        }
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true
 }

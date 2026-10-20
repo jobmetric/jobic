@@ -118,6 +118,8 @@ class PostPagesTest extends TestCase
         $this->assertFalse($permissions->has('admin.pages'));
         $this->assertTrue($permissions->has('admin.content.posts.view'));
         $this->assertTrue($permissions->has('admin.content.pages.view'));
+        $this->assertTrue($permissions->has('admin.content.posts.manage.restore'));
+        $this->assertTrue($permissions->has('admin.content.pages.manage.restore'));
     }
 
     public function test_posts_and_pages_use_the_shared_edit_lock_release_permission(): void
@@ -157,6 +159,10 @@ class PostPagesTest extends TestCase
         $this->get(route('admin.posts.edit', ['type' => 'post', 'post' => $post->id]))
             ->assertOk()
             ->assertSee('post-revisions__list', false)
+            ->assertSee('data-post-history-tabs', false)
+            ->assertSee('aria-controls="post-history-changes"', false)
+            ->assertSee('aria-controls="post-history-revisions"', false)
+            ->assertSee('id="post-history-revisions" role="tabpanel"', false)
             ->assertSee('crud-help-section post-revisions__item', false)
             ->assertSee('عنوان نسخه قدیمی')
             ->assertSee('خلاصه نسخه قدیمی')
@@ -237,6 +243,21 @@ class PostPagesTest extends TestCase
 
         $this->getJson(route('admin.posts.data', ['type' => 'post']).'?filters%5Btaxonomy.category%5D='.$termId)
             ->assertOk()->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.id', $matching->id);
+    }
+
+    public function test_english_post_filter_renders_a_taxonomy_name_that_matches_a_translation_group(): void
+    {
+        $this->withoutVite();
+        app()->setLocale('en');
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson(route('admin.taxonomies.store', ['type' => 'tag']), [
+            'translation' => ['en' => ['name' => 'Editor']], 'ordering' => 0, 'status' => 1,
+        ])->assertCreated();
+
+        $this->get(route('admin.posts.index', ['type' => 'post']))
+            ->assertOk()
+            ->assertSee('>Editor</option>', false);
     }
 
     public function test_external_post_type_can_register_a_custom_list_filter(): void
@@ -385,9 +406,10 @@ class PostPagesTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors(['operation', 'ids']);
     }
 
-    public function test_bulk_publish_runs_the_registered_post_flow(): void
+    public function test_bulk_publish_uses_simple_status_without_implicitly_binding_legacy_flow(): void
     {
         $this->actingAs(User::factory()->create());
+        app(PostFlowProvisioner::class)->ensureDefaults();
         $post = Post::query()->create(['type' => 'post', 'status' => 'draft']);
 
         $this->postJson(route('admin.posts.bulk', ['type' => 'post']), [
@@ -395,7 +417,7 @@ class PostPagesTest extends TestCase
         ])->assertOk();
 
         $this->assertSame('publish', $post->fresh()->status);
-        $this->assertDatabaseHas(config('workflow.tables.flow_instance', 'flow_instances'), [
+        $this->assertDatabaseMissing(config('workflow.tables.flow_instance', 'flow_instances'), [
             'instanceable_type' => Post::class,
             'instanceable_id' => $post->id,
         ]);
@@ -408,6 +430,7 @@ class PostPagesTest extends TestCase
 
     public function test_starter_workflow_provisioning_is_idempotent(): void
     {
+        app(PostFlowProvisioner::class)->ensureDefaults();
         $flow = Flow::query()->where('subject_type', Post::class)->where('subject_collection', 'post')->firstOrFail();
         $states = $flow->states()->count();
         $transitions = $flow->transitions()->count();
@@ -419,6 +442,16 @@ class PostPagesTest extends TestCase
         $this->assertSame($states, $flow->states()->count());
         $this->assertSame($transitions, $flow->transitions()->count());
         $this->assertSame('Custom review step', $pending->fresh()->getTranslation('name', 'en'));
+    }
+
+    public function test_builtin_types_do_not_bind_a_legacy_flow_without_explicit_opt_in(): void
+    {
+        app(PostFlowProvisioner::class)->ensureDefaults();
+        foreach (['post', 'page'] as $type) {
+            $record = Post::query()->create(['type' => $type, 'status' => 'draft']);
+            $this->assertNull($record->boundFlow());
+            $this->assertNull($record->pickFlow());
+        }
     }
 
     public function test_post_screens_use_the_shared_taxonomy_crud_structure(): void
@@ -506,6 +539,7 @@ class PostPagesTest extends TestCase
 
     public function test_registered_post_type_can_reuse_a_named_workflow(): void
     {
+        app(PostFlowProvisioner::class)->ensureDefaults();
         PostTypeRegistry::register('article')->translationFields(['title'])->workflow('post');
         $record = Post::query()->create(['type' => 'article', 'status' => 'draft']);
 
@@ -599,10 +633,10 @@ class PostPagesTest extends TestCase
         ])->assertOk();
         $id = (int) $created->json('data.id');
         $savedPost = Post::query()->findOrFail($id);
-        $this->assertNotNull($savedPost->boundFlow());
+        $this->assertNull($savedPost->boundFlow());
         $this->assertNull($savedPost->getTranslation('content', 'en'));
         $this->assertSame('Saved editor content', json_decode(app(\App\Services\Editor\EditorDocuments::class)->read($savedPost, 'en'), true)['blocks'][0]['data']['text']);
-        $this->assertDatabaseHas(config('workflow.tables.flow_instance', 'flow_instances'), [
+        $this->assertDatabaseMissing(config('workflow.tables.flow_instance', 'flow_instances'), [
             'instanceable_type' => Post::class,
             'instanceable_id' => $id,
         ]);
@@ -630,7 +664,7 @@ class PostPagesTest extends TestCase
         $this->putJson(route('admin.posts.update', ['type' => 'post', 'post' => $id]).'?locale=en', [
             '_version' => \App\Support\RecordVersion::token(Post::query()->findOrFail($id), 'posts:post'),
             '_edit_lock' => $created->json('data.edit_lock'),
-            'status' => 'pending',
+            'status' => 'invalid-status',
             'slug' => 'post-history-test',
             'translation' => ['en' => ['title' => 'Blocked transition']],
         ])->assertUnprocessable()->assertJsonValidationErrors('status');

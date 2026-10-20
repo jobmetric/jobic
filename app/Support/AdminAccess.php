@@ -127,7 +127,14 @@ readonly class AdminAccess
      */
     public function allowsAnyRegistered(?User $user, string $prefix): bool
     {
-        return $this->allowsAny($user, $this->permissions->beneath($prefix));
+        $permissions = $this->permissions->beneath($prefix);
+        if ($prefix === 'admin.settings') {
+            foreach (app(DynamicSettings::class)->descriptors() as $descriptor) {
+                $permissions[] = $descriptor['permission'];
+            }
+        }
+
+        return $this->allowsAny($user, array_values(array_unique($permissions)));
     }
 
     /**

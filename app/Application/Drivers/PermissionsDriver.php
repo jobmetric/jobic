@@ -6,8 +6,10 @@ namespace App\Application\Drivers;
 
 use App\Contracts\ApplicationDriver;
 use App\Support\Permissions\PermissionRegistry;
+use App\Support\PostWorkflowPermissions;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
+use JobMetric\Post\Facades\PostTypeRegistry;
 
 /**
  * Register the CMS permission catalog and its Rolix adapter.
@@ -40,7 +42,10 @@ class PermissionsDriver implements ApplicationDriver
         $unlockEditLockPermission = (string) config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock');
         $permissions->addPermission('admin', 'roles.permissions.admin')
             ->addPermission('admin.dashboard', 'roles.permissions.dashboard', 'admin.dashboard', order: 10)
-            ->addGroupPermission('admin.people', 'roles.permissions.users', ['admin.users', 'admin.roles'])
+            ->addGroupPermission('admin.people', 'roles.permissions.users', [
+                'admin.users',
+                'admin.roles',
+            ])
             ->addPermission('admin.users', 'roles.permissions.users')
             ->addPermission('admin.users.view', 'roles.permissions.users_view', 'admin.users.index', order: 20)
             ->addPermission('admin.users.manage', 'roles.permissions.users_manage', 'admin.users.index', order: 21)
@@ -56,10 +61,14 @@ class PermissionsDriver implements ApplicationDriver
             ->addPermission($unlockEditLockPermission, 'roles.permissions.edit_lock_unlock')
             ->addPermission('admin.content.posts', 'roles.permissions.posts')
             ->addPermission('admin.content.posts.view', 'roles.permissions.posts_view', 'admin.posts.index', ['type' => 'post'], 34)
+            ->addPermission('admin.content.posts.view.workflow', 'roles.permissions.posts_workflow_view', 'admin.posts.workflow.index', ['type' => 'post'], 35)
             ->addPermission('admin.content.posts.manage', 'roles.permissions.posts_manage', 'admin.posts.index', ['type' => 'post'], 35)
+            ->addPermission('admin.content.posts.manage.workflow', 'roles.permissions.posts_workflow', 'admin.posts.workflow.index', ['type' => 'post'], 36)
             ->addPermission('admin.content.pages', 'roles.permissions.pages')
             ->addPermission('admin.content.pages.view', 'roles.permissions.pages_view', 'admin.posts.index', ['type' => 'page'], 36)
+            ->addPermission('admin.content.pages.view.workflow', 'roles.permissions.pages_workflow_view', 'admin.posts.workflow.index', ['type' => 'page'], 37)
             ->addPermission('admin.content.pages.manage', 'roles.permissions.pages_manage', 'admin.posts.index', ['type' => 'page'], 37)
+            ->addPermission('admin.content.pages.manage.workflow', 'roles.permissions.pages_workflow', 'admin.posts.workflow.index', ['type' => 'page'], 38)
             ->addPermission('admin.content.taxonomy_category', 'roles.permissions.taxonomy_category')
             ->addPermission('admin.content.taxonomy_category.view', 'roles.permissions.taxonomy_category_view', 'admin.taxonomies.index', ['type' => 'category'], 38)
             ->addPermission('admin.content.taxonomy_category.manage', 'roles.permissions.taxonomy_category_manage', 'admin.taxonomies.index', ['type' => 'category'], 39)
@@ -76,5 +85,10 @@ class PermissionsDriver implements ApplicationDriver
             ->addPermission('admin.settings.cache', 'roles.permissions.settings_cache', 'admin.settings.cache.edit', order: 44)
             ->addPermission('admin.settings.languages', 'roles.permissions.settings_languages', 'admin.settings.languages.index', order: 45)
             ->addPermission('admin.settings.mail', 'roles.permissions.settings_mail', 'admin.settings.mail.edit', order: 46);
+
+        foreach (PostTypeRegistry::values() as $type) {
+            $app->make(PostWorkflowPermissions::class)
+                ->for($type);
+        }
     }
 }

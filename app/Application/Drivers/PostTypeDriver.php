@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Drivers;
 
 use App\Contracts\ApplicationDriver;
-use App\Services\Posts\PostFlowProvisioner;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Database\Events\MigrationsEnded;
-use Illuminate\Support\Facades\Event;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 
@@ -59,43 +56,50 @@ final class PostTypeDriver implements ApplicationDriver
             ->label('posts.types.post')
             ->description('posts.types.post_description')
             ->permission('admin.content.posts')
-            ->translationFields(['title', 'excerpt', 'content'])
+            ->translationFields([
+                'title',
+                'excerpt',
+                'content',
+            ])
             ->seo()
+            ->metadataFields(['jobic_demo_key'])
+            ->internalMetadata(['jobic_demo_key'])
             ->password()
             ->optimisticLocking()
             ->taxonomy('category', 'categories', true)
             ->taxonomy('tag', 'tags', true)
-            ->filters(['status', 'taxonomy.category', 'taxonomy.tag'])
+            ->filters([
+                'status',
+                'taxonomy.category',
+                'taxonomy.tag',
+            ])
             ->baseMedia()
             ->mediaCollection('gallery', true)
             ->changeStatusInList()
             ->optimisticLocking()
             ->help()
             ->url('blog')
-            ->comments()
-            ->workflow('post');
+            ->comments();
 
         PostTypeRegistry::register('page')
             ->label('posts.types.page')
             ->description('posts.types.page_description')
             ->permission('admin.content.pages')
-            ->translationFields(['title', 'excerpt', 'content'])
+            ->translationFields([
+                'title',
+                'excerpt',
+                'content',
+            ])
             ->seo()
+            ->metadataFields(['jobic_demo_key'])
+            ->internalMetadata(['jobic_demo_key'])
             ->password()
             ->baseMedia()
             ->changeStatusInList()
             ->optimisticLocking()
             ->help()
             ->url('')
-            ->filters(['status'])
-            ->workflow('page');
-
-        $app->booted(static function (): void {
-            app(PostFlowProvisioner::class)->ensureDefaults();
-        });
-        Event::listen(MigrationsEnded::class, static function (): void {
-            app(PostFlowProvisioner::class)->ensureDefaults();
-        });
+            ->filters(['status']);
 
     }
 }

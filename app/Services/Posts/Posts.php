@@ -12,6 +12,7 @@ use App\Services\Taxonomies\TaxonomyEditLocks;
 use App\Support\EditorDriverRegistry;
 use App\Support\RecordVersion;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +20,10 @@ use JobMetric\PackageCore\Output\Response;
 use JobMetric\Post\Exceptions\PostStatusTransitionNotAllowedException;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Post\Models\Post;
+use JobMetric\Post\Models\PostLocaleLock;
+use JobMetric\Post\Models\PostPublicationStream;
+use JobMetric\Post\Services\PostStreamWorkflow;
+use JobMetric\Post\Services\PostWorkflowDefinitions;
 use Throwable;
 
 /**
@@ -40,6 +45,7 @@ final class Posts
     public function save(string $type, array $data, ?Post $post, ?Authenticatable $actor): Response
     {
         $post = DB::transaction(function () use ($data, $type, $post, $actor): Post {
+            app(PostWorkflowDefinitions::class)->lock($type);
             if ($post) {
                 $post = Post::query()
                     ->where('type', $type)
@@ -61,6 +67,19 @@ final class Posts
             ]);
 
             $historyBefore = $this->historySnapshot($post);
+            if ($post && app(PostLifecycleView::class)->activeDefinition($type)) {
+                if ($post->status !== 'editable') {
+                    throw ValidationException::withMessages(['status' => [__('post::lifecycle.not_editable')]]);
+                }
+                foreach (array_keys((array) ($data['translation'] ?? [])) as $language) {
+                    if (PostLocaleLock::where('post_id', $post->id)
+                        ->where('locale', $language)
+                        ->where('locked', true)
+                        ->exists()) {
+                        throw ValidationException::withMessages(['translation.' . $language => [__('post::lifecycle.language_locked')]]);
+                    }
+                }
+            }
             $documents = app(EditorDocuments::class);
 
             $documentsBefore = $post ? $documents->snapshot($post) : [];
@@ -107,8 +126,10 @@ final class Posts
             unset($data['clear_password']);
             if ($clearPassword) {
                 $data['password'] = null;
-            } elseif (($data['password'] ?? null) === null || $data['password'] === '') {
-                unset($data['password']);
+            } else {
+                if (($data['password'] ?? null) === null || $data['password'] === '') {
+                    unset($data['password']);
+                }
             }
 
             try {
@@ -116,11 +137,28 @@ final class Posts
                 $result = $isNew ? $service->store($type, $data, $actor) : $service->update($type, (int) $post->id, $data, $actor);
                 $post = $result->data['post'];
             } catch (PostStatusTransitionNotAllowedException) {
-                throw ValidationException::withMessages(['status' => [trans('posts.workflow_status')]]);
+                throw ValidationException::withMessages([
+                    'status' => [trans('posts.workflow_status')],
+                ]);
             }
 
             foreach ($contentChanges as $locale => $content) {
                 $documents->save($post, $locale, $content);
+            }
+
+            app(PostPublicationProjection::class)->capture($post, array_values(array_unique([
+                ...array_keys($translations),
+                ...array_keys($contentChanges),
+            ])), $actor, (string) ($data['status'] ?? $post->status));
+            if (isset($data['workflow_transition'])) {
+                $stream = PostPublicationStream::where('post_id', $post->id)
+                    ->where('locale', PostPublicationStream::SHARED)
+                    ->firstOrFail();
+                try {
+                    app(PostStreamWorkflow::class)->transition($post, PostPublicationStream::SHARED, (string) $data['workflow_transition'], (int) $stream->draft_revision_id, (int) $stream->version, $actor, isset($data['workflow_due_at']) ? Carbon::parse($data['workflow_due_at']) : null);
+                } catch (PostStatusTransitionNotAllowedException) {
+                    throw ValidationException::withMessages(['workflow_transition' => [trans('posts.workflow_status')]]);
+                }
             }
 
             if (! $isNew) {
