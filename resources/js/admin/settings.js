@@ -27,7 +27,10 @@ export async function sendSettings(url, data) {
 // Copy server-rendered wording without replacing controls, event handlers or drafts.
 // Match static element structure; dynamic widgets and extension slots remain intact.
 export async function refreshPresentation(selector = '[data-cms-shell]') {
-    const response = await fetch(location.href, { headers: { Accept: 'text/html' }, credentials: 'same-origin', cache: 'no-store' });
+    const url = new URL(location.href);
+    const postLocale = document.querySelector('[data-post-form] [data-locale-panel]:not([hidden])')?.dataset.localePanel;
+    if (postLocale) url.searchParams.set('locale', postLocale);
+    const response = await fetch(url, { headers: { Accept: 'text/html' }, credentials: 'same-origin', cache: 'no-store' });
     if ((!response.ok && response.status !== 403) || response.redirected) return;
     const next = new DOMParser().parseFromString(await response.text(), 'text/html');
     document.documentElement.lang = next.documentElement.lang;
@@ -36,10 +39,15 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
     document.getElementById('jobic-page-data').textContent = next.getElementById('jobic-page-data')?.textContent || '{}';
     window.localize = JSON.parse(document.getElementById('jobic-page-data').textContent);
     function copy(current, incoming) {
+        if (current.nodeType === Node.ELEMENT_NODE && current.matches('.editor-block-search') && incoming.matches?.('[data-editor-search]')) {
+            const search = current.querySelector('[data-editor-search]');
+            if (search) copy(search, incoming);
+            return;
+        }
         if (current.nodeType !== incoming.nodeType) return;
         if (current.nodeType === Node.TEXT_NODE) { if (incoming.textContent.trim()) current.textContent = incoming.textContent; return; }
         if (current.nodeType !== Node.ELEMENT_NODE || current.tagName !== incoming.tagName) return;
-        if (current.matches('.select2-container, script, style, svg, [data-ui-toast], [data-settings-errors], [data-chart], .apexcharts-canvas')) return;
+        if (current.matches('.select2-container, script, style, svg, [data-ui-toast], [data-settings-errors], [data-chart], .apexcharts-canvas, [data-editor], [data-editor-blocks], [data-editor-settings]')) return;
         ['aria-label', 'title', 'placeholder', 'data-tooltip', 'data-saved', 'data-save-failed'].forEach((attribute) => {
             if (incoming.hasAttribute(attribute)) current.setAttribute(attribute, incoming.getAttribute(attribute));
         });
@@ -54,7 +62,7 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
             current.textContent = incoming.textContent;
             return;
         }
-        const children = [...current.childNodes].filter(node => !(node.nodeType === Node.ELEMENT_NODE && node.matches('.select2-container')));
+        const children = [...current.childNodes].filter(node => !(node.nodeType === Node.ELEMENT_NODE && node.matches('.select2-container, .editor-sidebar-resize')));
         const replacements = [...incoming.childNodes];
         if (children.length === replacements.length) children.forEach((child, index) => copy(child, replacements[index]));
     }

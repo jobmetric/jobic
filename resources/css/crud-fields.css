@@ -37,7 +37,8 @@
 .crud-translation-editor { display:grid; gap:18px; padding:22px; }
 .crud-translation-editor .crud-field { display:grid; gap:8px; }
 .crud-translation-editor textarea { min-height:120px; resize:vertical; }
-.crud-translation-editor small { color:#e34d65; }
+.crud-translation-editor [data-translation-error],
+.crud-translation-editor [data-error-for] { color:#e34d65; }
 .crud-media-preview { width:120px; height:120px; margin-bottom:10px; border-radius:12px; object-fit:cover; border:1px solid var(--border); }
 .crud-taxonomy-layout { display:grid; grid-template-columns:1fr; gap:24px; align-items:start; }
 .crud-taxonomy-layout.has-sidebar { grid-template-columns:minmax(0,2fr) minmax(280px,1fr); }
@@ -59,9 +60,13 @@
 .crud-row-translation-dialog .crud-translation-editor { padding:0 22px; }
 .crud-row-translation-dialog .crud-filter-fields { display:grid; align-content:start; grid-auto-rows:max-content; gap:18px; }
 .crud-row-translation-dialog .crud-filter-fields label { display:grid; gap:8px; }
-.crud-row-translation-dialog .crud-filter-fields input,.crud-row-translation-dialog .crud-filter-fields textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:9px; background:var(--surface); color:var(--text); padding:10px 12px; }
-.crud-row-translation-dialog .crud-filter-fields input { height:42px; min-height:42px; max-height:42px; }
-.crud-row-translation-dialog .crud-filter-fields textarea { min-height:130px; resize:vertical; }
+.crud-field > input.input,
+.crud-field > textarea.input { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:9px; background:var(--surface); color:var(--text); padding:8px 12px; font:inherit; transition:border-color .2s,box-shadow .2s,background .2s; }
+.crud-field > input.input { height:44px; min-height:44px; }
+.crud-field > textarea.input { min-height:110px; line-height:1.7; resize:vertical; }
+.crud-field > input.input:focus,
+.crud-field > textarea.input:focus { outline:0; border-color:var(--primary); background:var(--surface); box-shadow:0 0 0 3px var(--primary-soft); }
+.crud-field > .input[aria-invalid=true] { border-color:#e34d65; }
 .taxonomy-column-name { width:auto; min-width:260px; }
 .taxonomy-column-media { width:64px; min-width:64px; }
 .taxonomy-column-ordering { width:76px; min-width:76px; text-align:center!important; }

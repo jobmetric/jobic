@@ -59,6 +59,26 @@ final class EditorTemplateRegistry
                 continue;
             }
 
+            $factory = $template['document'];
+            $template['localized'] = [];
+            foreach (LocaleCatalog::codes() as $locale) {
+                $originalLocale = app()->getLocale();
+                try {
+                    app()->setLocale($locale);
+                    $document = $factory instanceof Closure ? $factory() : $factory;
+                    (new EditorContentRule(app(EditorDriverRegistry::class)))->validate('content', $document, static function (string $message): void {
+                        throw new InvalidArgumentException($message);
+                    });
+
+                    $template['localized'][$locale] = [
+                        'document' => $document,
+                        'preview'  => app(EditorRenderer::class)->render($document, 0, true),
+                    ];
+                } finally {
+                    app()->setLocale($originalLocale);
+                }
+            }
+
             if ($template['document'] instanceof Closure) {
                 $template['document'] = ($template['document'])();
             }

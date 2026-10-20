@@ -39,7 +39,9 @@
         </div>
         <footer class="post-revisions__actions">
             <small>{{ __('posts.revision_restore_hint') }}</small>
-            <button class="vuero-button" type="button" data-revision-restore data-url="{{ route('admin.posts.revisions.restore', ['type' => $type, 'post' => $record->id, 'revision' => $revision->id]) }}"><x-vuero.icon name="rotate" size="16" />{{ __('posts.restore_revision') }}</button>
+            @if(!($postReadOnly ?? false) && app(\App\Support\AdminAccess::class)->allows(auth()->user(), app(\App\Support\PostWorkflowPermissions::class)->for($type)['restore']))
+                <button class="vuero-button" type="button" data-revision-restore data-url="{{ route('admin.posts.revisions.restore', ['type' => $type, 'post' => $record->id, 'revision' => $revision->id]) }}"><x-vuero.icon name="rotate" size="16" />{{ __('posts.restore_revision') }}</button>
+            @endif
         </footer>
     </div>
 </details>

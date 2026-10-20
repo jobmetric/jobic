@@ -1,0 +1,4 @@
+<dialog id="post-workflow-preview-dialog" class="post-workflow-preview-dialog" data-post-workflow-preview-dialog aria-labelledby="post-workflow-preview-title">
+    <header class="post-workflow-preview-dialog__header"><div><span class="post-workflow-card__icon"><x-vuero.icon name="list-tree" size="19" /></span><h2 id="post-workflow-preview-title">{{ __('posts.lifecycle.view_diagram') }}</h2></div><button type="button" data-post-workflow-preview-close aria-label="{{ __('posts.dismiss') }}"><x-vuero.icon name="x" size="18" /></button></header>
+    <div class="post-workflow-preview-dialog__body"><p data-post-workflow-preview-loading role="status">{{ __('posts.lifecycle.loading_diagram') }}</p><iframe title="{{ __('posts.lifecycle.view_diagram') }}" data-post-workflow-preview-frame data-src="{{ route('admin.posts.workflow.index', ['type' => $type, 'post' => $record->id, 'preview' => 1]) }}"></iframe></div>
+</dialog>

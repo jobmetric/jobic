@@ -4,6 +4,7 @@ import { enhanceSelects } from '../common/selects';
 import { sendSettings } from '../admin/settings';
 import { loadingButton } from '../common/page';
 import { iconMarkup } from '../common/icons';
+import { bindMediaManager } from '../taxonomies/media-manager';
 import '../../css/crud.css';
 import '../../css/crud-fields.css';
 
@@ -12,6 +13,9 @@ Object.defineProperty(config, 'labels', {get: () => pageData().posts});
 Object.defineProperty(config, 'statuses', {get: () => pageData().postPage.statuses});
 Object.defineProperty(config, 'languages', {get: () => pageData().postPage.languages});
 Object.defineProperty(config, 'activeLocale', {get: () => pageData().postPage.activeLocale});
+for (const key of ['workflowLabel', 'helpTitle', 'helpIntro', 'help', 'editor']) {
+    Object.defineProperty(config, key, {get: () => pageData().postPage[key]});
+}
 const $ = window.jQuery;
 const table = $ ? $('#posts-table') : null;
 const selected = new Map();
@@ -137,6 +141,14 @@ if (table?.length && $.fn?.DataTable) {
     const createLabel = () => config.type === 'page' ? config.labels.create_page : config.labels.create;
     create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
     document.querySelector('[data-crud-toolbar]').append(create);
+    if (config.workflowUrl) {
+        const workflow = document.createElement('a');
+        workflow.href = config.workflowUrl;
+        workflow.className = 'vuero-button';
+        workflow.dataset.postWorkflowLink = '';
+        workflow.innerHTML = `${icon('list-tree')}${escape(config.workflowLabel)}`;
+        document.querySelector('[data-crud-toolbar]').append(workflow);
+    }
     const operations = document.createElement('details'); operations.className = 'crud-dropdown post-list-operations';
     const operationsToggle = document.createElement('summary'); operationsToggle.className = 'vuero-button'; operationsToggle.innerHTML = `${escape(config.labels.actions)}${icon('chevron-down')}`;
     const operationsMenu = document.createElement('div'); operationsMenu.className = 'crud-dropdown__menu';
@@ -146,11 +158,47 @@ if (table?.length && $.fn?.DataTable) {
     operations.append(operationsToggle, operationsMenu); document.querySelector('[data-crud-toolbar]').append(operations);
     window.addEventListener('cms:presentation-refreshed', () => {
         create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
+        const workflow = document.querySelector('[data-post-workflow-link]');
+        if (workflow) workflow.innerHTML = `${icon('list-tree')}${escape(config.workflowLabel)}`;
         operationsToggle.innerHTML = `${escape(config.labels.actions)}${icon('chevron-down')}`;
         operationsMenu.querySelectorAll('[data-post-action]').forEach((button) => {
             const action = button.dataset.postAction;
             button.textContent = config.labels[action] || action;
         });
+        const columnLabels = {
+            media: config.labels.media_column,
+            title: config.labels.title_field,
+            status: config.labels.status,
+            updated_at: config.labels.updated_at,
+            translations: config.labels.translations,
+            actions: config.labels.actions,
+        };
+        document.querySelectorAll('#posts-table thead th[data-column]').forEach((heading) => {
+            const label = columnLabels[heading.dataset.column];
+            if (label) heading.querySelector('[data-post-column-label]').textContent = label;
+        });
+        document.querySelector('#posts-table [data-select-all]')?.setAttribute('aria-label', config.labels.select_all);
+        const language = pageData().language?.datatable || {};
+        const settings = dataTable.settings()[0];
+        Object.assign(settings.oLanguage, language, {
+            sInfo: `${config.labels.page} _PAGE_ _PAGES_`,
+            sInfoEmpty: `${config.labels.page} 0 0`,
+            sLengthMenu: `${config.labels.length} _MENU_`,
+        });
+        settings.oLanguage.oPaginate = {...settings.oLanguage.oPaginate,
+            sPrevious: config.labels.previous, sNext: config.labels.next};
+        const lengthLabel = document.querySelector('#posts-table_length label');
+        if (lengthLabel) {
+            let first = true;
+            [...lengthLabel.childNodes].filter(node => node.nodeType === Node.TEXT_NODE).forEach(node => {
+                node.textContent = first ? `${config.labels.length} ` : '';
+                first = false;
+            });
+        }
+        const previous = document.querySelector('#posts-table_previous');
+        const next = document.querySelector('#posts-table_next');
+        if (previous) previous.textContent = config.labels.previous;
+        if (next) next.textContent = config.labels.next;
         dataTable.ajax.reload(null, false);
     });
 
@@ -235,6 +283,9 @@ if (table?.length && $.fn?.DataTable) {
                 },
             },
         ],
+        createdRow(row, data) {
+            row.classList.toggle('post-row--disabled', data.status === 'disabled');
+        },
         order: [[config.hasMedia ? 2 : 1, 'asc']],
         drawCallback() {
             const tableFooter = document.querySelector('#posts-table_wrapper .crud-table-footer');
@@ -248,17 +299,75 @@ if (table?.length && $.fn?.DataTable) {
 
     const translationDialog = document.querySelector('[data-post-translation-dialog]');
     const translationForm = translationDialog.querySelector('[data-post-translation-form]');
+    bindMediaManager(document.body);
     const translationFields = translationDialog.querySelector('[data-post-translation-fields]');
+    const translationTabs = translationDialog.querySelector('[data-post-translation-tabs]');
     const translationSubmit = translationForm.querySelector('button[type=submit]');
     let translationRecord = null;
     let translationLocale = null;
     let translationEditor = null;
+    let translationWorkbench = null;
+
+    const editorConfig = {...pageData().postEditor};
+    for (const key of ['messages', 'workbench', 'templates', 'tools']) {
+        Object.defineProperty(editorConfig, key, {get: () => pageData().postEditor[key]});
+    }
+
+    const refreshTranslationPresentation = () => {
+        if (!translationDialog.open || !translationRecord || !translationLocale) return;
+        const language = config.languages[translationLocale];
+        translationDialog.querySelector('[data-post-translation-title]').textContent = language?.name || translationLocale;
+        translationDialog.querySelector('[data-post-translation-subtitle]').textContent = config.labels.translation_for.replace(':item', translationRecord.title || `#${translationRecord.id}`);
+        translationSubmit.textContent = config.labels.save_translation;
+        translationDialog.querySelectorAll('[data-close-post-translation]').forEach(button => button.setAttribute('aria-label', config.labels.dismiss));
+        translationFields.querySelectorAll('[data-translation-field]').forEach(label => {
+            const field = label.dataset.translationField;
+            label.querySelector('[data-translation-label]').textContent = field === 'title' ? config.labels.title_field : (config.labels.fields?.[field] || config.labels[field] || field);
+            const hint = label.querySelector('[data-translation-hint]');
+            if (hint) hint.textContent = config.labels.seo_hints?.[field] || '';
+        });
+        translationTabs.querySelector('[data-post-translation-tab="content"]').textContent = config.labels.content_tab;
+        translationTabs.querySelector('[data-post-translation-tab="seo"]').textContent = config.labels.seo_tab;
+    };
+    window.addEventListener('cms:presentation-refreshed', refreshTranslationPresentation);
+    let translationEditorInterfaceLocale = document.documentElement.lang;
+    window.addEventListener('cms:presentation-refreshed', async () => {
+        if (translationEditorInterfaceLocale === document.documentElement.lang) return;
+        translationEditorInterfaceLocale = document.documentElement.lang;
+        if (!translationDialog.open || !translationEditor) return;
+        const holder = translationFields.querySelector('[data-editor]');
+        const input = translationFields.querySelector('[data-editor-content]');
+        if (!holder || !input) return;
+        const workbench = holder.closest('[data-editor-workbench]');
+        workbench.inert = true;
+        const locale = translationLocale;
+        const postId = translationRecord.id;
+        try {
+            input.value = JSON.stringify(await translationEditor.save());
+            translationWorkbench?.destroy();
+            translationEditor.destroy();
+            holder.replaceChildren();
+            const {createPostEditor} = await import('./editor-runtime');
+            const editor = await createPostEditor(holder, editorConfig, {
+                type: config.type, locale, postId,
+                data: JSON.parse(input.value), direction: config.languages[locale]?.direction,
+            });
+            if (!translationDialog.open || translationLocale !== locale || translationRecord?.id !== postId) { editor?.destroy(); return; }
+            if (!editor) return;
+            translationEditor = editor;
+            const {bindEditorWorkbench} = await import('./editor-workbench');
+            translationWorkbench = bindEditorWorkbench(holder, editor, editorConfig);
+        } catch { announce(editorConfig.messages.unavailable, true); }
+        finally { if (workbench.isConnected) workbench.inert = false; }
+    });
 
     function translationEndpoint(template) {
         return template.replace('__ID__', translationRecord.id).replace('__LOCALE__', encodeURIComponent(translationLocale));
     }
 
     translationDialog.addEventListener('close', () => {
+        translationWorkbench?.destroy();
+        translationWorkbench = null;
         translationEditor?.destroy();
         translationEditor = null;
         translationFields.replaceChildren();
@@ -266,6 +375,18 @@ if (table?.length && $.fn?.DataTable) {
         translationLocale = null;
     });
     translationDialog.querySelectorAll('[data-close-post-translation]').forEach((button) => button.addEventListener('click', () => translationDialog.close()));
+    translationTabs.addEventListener('click', event => {
+        const tab = event.target.closest('[data-post-translation-tab]');
+        if (!tab) return;
+        translationTabs.querySelectorAll('[data-post-translation-tab]').forEach(item => {
+            const active = item === tab;
+            item.classList.toggle('is-active', active);
+            item.setAttribute('aria-selected', String(active));
+        });
+        translationFields.querySelectorAll('[data-post-translation-panel]').forEach(panel => {
+            panel.hidden = panel.dataset.postTranslationPanel !== tab.dataset.postTranslationTab;
+        });
+    });
 
     async function openTranslation(id, locale) {
         const row = rows.find((item) => Number(item.id) === Number(id));
@@ -285,39 +406,67 @@ if (table?.length && $.fn?.DataTable) {
             if (!translationDialog.open || translationRecord?.id !== row.id || translationLocale !== locale) return;
             translationForm.dataset.version = result.data.version;
             translationFields.replaceChildren();
+            translationTabs.hidden = !config.hasSeo;
+            translationTabs.querySelector('[data-post-translation-tab="content"]').click();
+            const contentPanel = document.createElement('div');
+            contentPanel.dataset.postTranslationPanel = 'content';
+            translationFields.append(contentPanel);
+            const seoPanel = document.createElement('div');
+            seoPanel.dataset.postTranslationPanel = 'seo';
+            seoPanel.hidden = true;
+            if (config.hasSeo) translationFields.append(seoPanel);
             for (const field of config.translationFields) {
-                const label = document.createElement('label');
-                label.className = 'crud-field';
-                label.textContent = field === 'title' ? config.labels.title_field : (config.labels.fields[field] || config.labels[field] || field);
                 const value = result.data.fields[field] ?? '';
+                const panel = ['meta_title', 'meta_description', 'meta_keywords'].includes(field) ? seoPanel : contentPanel;
                 if (field === 'content') {
-                    const holder = document.createElement('div');
-                    holder.className = 'jobic-editor';
+                    const fragment = document.querySelector('[data-post-translation-workbench]').content.cloneNode(true);
+                    const workbench = fragment.querySelector('[data-editor-workbench]');
+                    const holder = workbench.querySelector('[data-editor]');
+                    holder.dataset.locale = locale;
                     holder.dir = language.direction || 'auto';
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'fields[content]';
+                    workbench.dir = language.direction || 'auto';
+                    holder.dataset.content = value;
+                    const input = workbench.querySelector('[data-editor-content]');
+                    input.dataset.editorContent = locale;
                     input.value = value;
-                    label.append(holder, input);
-                    translationFields.append(label);
+                    panel.append(fragment);
                     let initial;
                     try { initial = JSON.parse(value); } catch { initial = undefined; }
                     const {createPostEditor} = await import('./editor-runtime');
-                    const editor = await createPostEditor(holder, config.editor, {type: config.type, locale, postId: row.id, data: initial, direction: language.direction});
-                    if (!translationDialog.open) { editor?.destroy(); return; }
+                    const editor = await createPostEditor(holder, editorConfig, {type: config.type, locale, postId: row.id, data: initial, direction: language.direction});
+                    if (!translationDialog.open || translationRecord?.id !== row.id || translationLocale !== locale) { editor?.destroy(); return; }
                     translationEditor = editor;
-                } else {
-                    const input = document.createElement(field === 'excerpt' ? 'textarea' : 'input');
-                    input.className = 'input';
-                    input.name = `fields[${field}]`;
-                    input.value = value;
-                    if (field === 'title') input.required = true;
-                    label.append(input);
-                    translationFields.append(label);
+                    continue;
                 }
+                const label = document.createElement('label');
+                label.className = 'crud-field';
+                label.dataset.translationField = field;
+                const caption = document.createElement('span');
+                caption.dataset.translationLabel = '';
+                caption.textContent = field === 'title' ? config.labels.title_field : (config.labels.fields[field] || config.labels[field] || field);
+                label.append(caption);
+                const input = document.createElement(['excerpt', 'meta_description'].includes(field) ? 'textarea' : 'input');
+                input.className = 'input';
+                input.name = `fields[${field}]`;
+                input.value = value;
+                input.maxLength = {title: 255, meta_title: 255, meta_description: 500, meta_keywords: 1000}[field] || 10000;
+                if (field === 'title') { input.required = true; input.dataset.editorTitleInput = ''; }
+                label.append(input);
+                if (config.labels.seo_hints?.[field]) {
+                    const heading = document.createElement('span');
+                    heading.className = 'crud-field-label-row';
+                    const hint = document.createElement('small'); hint.dataset.translationHint = field;
+                    hint.textContent = config.labels.seo_hints[field];
+                    heading.append(caption, hint); label.prepend(heading);
+                }
+                panel.append(label);
                 const error = document.createElement('small');
                 error.dataset.translationError = field;
                 label.append(error);
+            }
+            if (translationEditor) {
+                const {bindEditorWorkbench} = await import('./editor-workbench');
+                translationWorkbench = bindEditorWorkbench(translationFields.querySelector('[data-editor]'), translationEditor, editorConfig);
             }
             translationFields.querySelector('input:not([type=hidden]),textarea')?.focus();
             translationSubmit.disabled = false;

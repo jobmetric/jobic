@@ -26,6 +26,7 @@
 .editor-workbench__tabs button.is-active { background:var(--surface); color:var(--primary); box-shadow:0 2px 5px #0000000d; }
 [data-editor-sidebar-toggle] { display:none; }
 .editor-workbench-dialog { width:min(680px,calc(100vw - 32px)); max-height:85dvh; color:var(--text); background:var(--surface); }
+.editor-workbench-dialog.is-nested::backdrop { background:transparent; backdrop-filter:none; }
 .editor-workbench-dialog .crud-dialog-body { overflow:auto; max-height:65dvh; }
 .editor-workbench-dialog header { display:flex; justify-content:space-between; align-items:center; }
 .editor-workbench-dialog [data-editor-search] { width:100%; margin-block-end:12px; }
@@ -56,6 +57,8 @@
 .editor-workbench__header > strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .editor-workbench__sidebar input { width:100%; margin-block:12px; }
 .editor-workbench.is-fullscreen { position:fixed; inset:0; z-index:500; margin:0; padding:20px; background:var(--surface); display:flex; flex-direction:column; }
+.editor-fullscreen-dialog { position:fixed; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; background:transparent; overflow:visible; }
+.editor-fullscreen-dialog::backdrop { background:transparent; }
 .editor-workbench.is-fullscreen .editor-workbench__layout { display:grid; grid-template-columns:minmax(0,1fr) 12px min(var(--editor-sidebar-width,300px),40%); gap:6px; flex:1; min-height:0; }
 .editor-sidebar-resize { display:none; }
 .editor-workbench.is-fullscreen .editor-sidebar-resize { display:block; cursor:col-resize; touch-action:none; position:relative; border-radius:6px; }

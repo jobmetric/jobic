@@ -17,6 +17,10 @@ $(() => {
     const $root = $('html');
     const $shell = $('[data-admin-shell]');
     const cmsPreferences = $shell.is('[data-cms-shell]') ? JSON.parse($shell.attr('data-preferences')) : null;
+    const $workflow = $('[data-workflow-designer]');
+    const workflowPreferences = $workflow.is('[data-workflow-preferences]')
+        ? JSON.parse($workflow.attr('data-workflow-preferences')) : null;
+    const themePreferences = cmsPreferences ?? workflowPreferences;
     const $circularMenu = $('[data-circular-menu]');
     const mobileQuery = window.matchMedia('(max-width: 820px)');
     let activeMobilePanel = String($('[data-sidebar-panel-target].is-active').first().data('sidebar-panel-target') || 'dashboard');
@@ -27,7 +31,9 @@ $(() => {
 
     $root.attr(
         'data-theme',
-        (cmsPreferences ? (cmsPreferences.theme === 'system' ? null : cmsPreferences.theme) : localStorage.getItem(themeStorageKey))
+        (themePreferences
+            ? (themePreferences.theme === 'system' ? null : themePreferences.theme)
+            : localStorage.getItem(themeStorageKey))
             || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
     );
 

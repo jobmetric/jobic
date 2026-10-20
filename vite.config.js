@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import vue from '@vitejs/plugin-vue';
 import { readdirSync } from 'node:fs';
 
 const dashboardScripts = readdirSync(new URL('./resources/js/vuero/pages/admin/dashboards', import.meta.url))
@@ -11,6 +12,7 @@ const layoutScripts = readdirSync(new URL('./resources/js/vuero/pages/admin/layo
 
 export default defineConfig({
     plugins: [
+        vue(),
         laravel({
             buildDirectory: 'vuero/build',
             input: [
@@ -28,6 +30,7 @@ export default defineConfig({
                 'resources/js/languages/form.js',
                 'resources/js/posts/index.js',
                 'resources/js/posts/form.js',
+                'resources/js/workflow/index.js',
                 'resources/js/taxonomies/form.js',
                 'resources/js/taxonomies/index.js',
                 'resources/js/users/index.js',

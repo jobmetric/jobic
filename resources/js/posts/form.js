@@ -14,10 +14,20 @@ import $ from '../vuero/admin/jquery';
 
 const editorConfig = pageData().postEditor;
 Object.defineProperty(editorConfig, 'messages', {get: () => pageData().postEditor.messages});
+Object.defineProperty(editorConfig, 'workbench', {get: () => pageData().postEditor.workbench});
+Object.defineProperty(editorConfig, 'templates', {get: () => pageData().postEditor.templates});
+Object.defineProperty(editorConfig, 'tools', {get: () => pageData().postEditor.tools});
 
 const form = document.querySelector('[data-post-form]');
 if (form) {
     form.noValidate = true;
+    if (form.dataset.formReadOnly === '1') {
+        form.addEventListener('submit', event => event.preventDefault(), true);
+        document.addEventListener('click', event => {
+            const button = event.target.closest('button[type="submit"]');
+            if (button && (form.contains(button) || button.form === form)) button.disabled = true;
+        }, true);
+    }
     enhanceSelects(form);
     let editLockTimer = null;
     let editLockListenersBound = false;
@@ -86,6 +96,34 @@ if (form) {
             });
         });
     });
+    const bindHistoryTabs = (container) => {
+        const tablist = container?.querySelector('[role="tablist"]');
+        if (!tablist) return;
+        const tabs = [...tablist.querySelectorAll('[data-post-history-tab]')];
+        const activate = (tab, focus = false) => {
+            tabs.forEach((item) => {
+                const active = item === tab;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-selected', String(active));
+                item.tabIndex = active ? 0 : -1;
+                const panel = container.querySelector(`#${CSS.escape(item.getAttribute('aria-controls'))}`);
+                if (panel) panel.hidden = !active;
+            });
+            if (focus) tab.focus();
+        };
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => activate(tab));
+            tab.addEventListener('keydown', (event) => {
+                const rtl = getComputedStyle(tablist).direction === 'rtl';
+                const offset = event.key === 'ArrowRight' ? (rtl ? -1 : 1) : event.key === 'ArrowLeft' ? (rtl ? 1 : -1) : 0;
+                const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : offset ? (index + offset + tabs.length) % tabs.length : null;
+                if (next === null) return;
+                event.preventDefault();
+                activate(tabs[next], true);
+            });
+        });
+    };
+    bindHistoryTabs(form.querySelector('[data-post-history-tabs]'));
     const dateInput = form.querySelector('[data-post-datepicker]');
     if (dateInput && typeof $.fn?.datetimepicker === 'function') {
         const jalaliCalendar = ['jalali', 'persian'].includes(dateInput.dataset.calendar);
@@ -448,7 +486,34 @@ if (form) {
     [['save-close', labels.save_close], ['save-new', labels.save_new]].forEach(([value, text]) => {
         const option = document.createElement('button'); option.type = 'submit'; option.name = 'intent'; option.value = value; option.textContent = text; menu.append(option);
     });
-    options.append(summary, menu); saveGroup.append(save, options); toolbar.append(cancel, saveGroup);
+    options.append(summary, menu); saveGroup.append(save, options);
+    const bindWorkflowPreview = dialog => {
+        if (!dialog || dialog.dataset.bound) return;
+        dialog.dataset.bound = '1';
+        dialog.querySelector('[data-post-workflow-preview-frame]')?.addEventListener('load', () => {
+            dialog.querySelector('[data-post-workflow-preview-loading]').hidden = true;
+        });
+        dialog.querySelector('[data-post-workflow-preview-close]')?.addEventListener('click', () => dialog.close());
+        dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+    };
+    bindWorkflowPreview(form.querySelector('[data-post-workflow-preview-dialog]'));
+    form.addEventListener('click', event => {
+        if (!event.target.closest('[data-post-workflow-preview-open]')) return;
+        const dialog = form.querySelector('[data-post-workflow-preview-dialog]');
+        const frame = dialog?.querySelector('[data-post-workflow-preview-frame]');
+        if (!dialog || !frame) return;
+        if (!frame.getAttribute('src')) frame.src = frame.dataset.src;
+        dialog.showModal();
+    });
+    form.addEventListener('click', event => {
+        if (event.target.closest('[data-post-workflow-details-open]')) {
+            event.target.closest('[data-post-lifecycle]')?.querySelector('[data-post-workflow-details-dialog]')?.showModal();
+        } else if (event.target.closest('[data-post-workflow-details-close]')) {
+            event.target.closest('[data-post-workflow-details-dialog]')?.close();
+        }
+    });
+    toolbar.append(cancel);
+    if (form.dataset.formReadOnly !== '1') toolbar.append(saveGroup);
     window.addEventListener('cms:presentation-refreshed', () => {
         cancel.textContent = labels.cancel;
         save.textContent = labels.save;
@@ -458,11 +523,70 @@ if (form) {
     });
     const editors = new Map();
     const pendingEditors = new Map();
+    const editorWorkbenches = new Map();
     const guard = guardUnsaved(form, () => showDialog({
         title: labels.unsaved_title,
         description: editorConfig.messages.unsaved,
         confirm: labels.leave,
     }));
+    let lifecycleBaseline = guard.snapshot();
+    let pendingWorkflowTransition = null;
+    form.addEventListener('click', async event => {
+        const button = event.target.closest('[data-lifecycle-operation]');
+        if (!button) return;
+        const panel = button.closest('[data-post-lifecycle]');
+        const stream = button.closest('[data-lifecycle-stream]');
+        const operation = button.dataset.lifecycleOperation;
+        if (operation === 'transition') {
+            const dueAt = button.dataset.requiresDue === '1'
+                ? button.parentElement.querySelector('[data-lifecycle-due-at]')?.value : null;
+            if (button.dataset.requiresDue === '1' && (!dueAt || Number.isNaN(new Date(dueAt).getTime()))) {
+                announce(pageData().posts.lifecycle.due_required, true);
+                return;
+            }
+            if (form.dataset.formReadOnly !== '1') {
+                pendingWorkflowTransition = {key: button.dataset.lifecycleTransition, dueAt};
+                form.requestSubmit();
+                return;
+            }
+        }
+        if (guard.snapshot() !== lifecycleBaseline) {
+            announce(pageData().posts.lifecycle.save_first, true);
+            return;
+        }
+        if (['publish', 'withdraw', 'reject', 'cancel_schedule'].includes(operation)
+            && !(await showDialog({title: pageData().posts.lifecycle[operation],
+                description: pageData().posts.lifecycle.confirm, confirm: pageData().posts.lifecycle.confirm_button}))) return;
+        const payload = {
+            operation, locale: stream.dataset.locale, version: Number(stream.dataset.version),
+            revision_id: button.dataset.lifecycleRevision || undefined,
+            transition: button.dataset.lifecycleTransition || undefined,
+            schedule_id: button.dataset.lifecycleSchedule || undefined,
+        };
+        if (operation === 'transition' && button.dataset.requiresDue === '1') {
+            payload.due_at = new Date(button.parentElement.querySelector('[data-lifecycle-due-at]').value).toISOString();
+        }
+        if (['schedule', 'resume'].includes(operation)) {
+            const dueAt = button.closest('[data-lifecycle-schedule-field]')?.querySelector('[data-lifecycle-due-at]')?.value;
+            const date = dueAt ? new Date(dueAt) : null;
+            if (!date || Number.isNaN(date.getTime())) { announce(pageData().posts.lifecycle.due_required, true); return; }
+            payload.due_at = date.toISOString();
+        }
+        button.disabled = true;
+        try {
+            const response = await fetch(panel.dataset.url, {method: 'POST', headers: {
+                'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': form.querySelector('[name=_token]').value,
+            }, body: JSON.stringify({...payload, _edit_lock: form.elements.namedItem('_edit_lock')?.value || undefined})});
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw new Error(Object.values(result.errors || {}).flat()[0] || result.message || pageData().posts.lifecycle.failed);
+            guard.leave();
+            location.reload();
+        } catch (error) {
+            announce(error.message || pageData().posts.lifecycle.failed, true);
+            button.disabled = false;
+        }
+    });
 
     const createEditor = async holder => {
         if (!holder) return;
@@ -479,13 +603,38 @@ if (form) {
                 input.value = JSON.stringify(await api.saver.save());
                 input.dispatchEvent(new Event('input', {bubbles: true}));
             },
-        }).then((editor) => { if (editor) { editors.set(locale, editor); bindEditorWorkbench(holder, editor, editorConfig); } }).catch(() => {
+        }).then((editor) => { if (editor) { editors.set(locale, editor); editorWorkbenches.set(locale, bindEditorWorkbench(holder, editor, editorConfig)); } }).catch(() => {
             announce(editorConfig.messages.unavailable, true);
         }).finally(() => pendingEditors.delete(locale));
         pendingEditors.set(locale, ready);
         return ready;
     };
     createEditor(form.querySelector('[data-locale-panel]:not([hidden]) [data-editor]'));
+    let editorInterfaceLocale = document.documentElement.lang;
+    window.addEventListener('cms:presentation-refreshed', async () => {
+        if (editorInterfaceLocale === document.documentElement.lang) return;
+        editorInterfaceLocale = document.documentElement.lang;
+        await Promise.all(pendingEditors.values());
+        for (const [locale, editor] of [...editors]) {
+            const holder = form.querySelector(`[data-editor][data-locale="${CSS.escape(locale)}"]`);
+            const input = form.querySelector(`[data-editor-content="${CSS.escape(locale)}"]`);
+            if (!holder || !input) continue;
+            const workbench = holder.closest('[data-editor-workbench]');
+            const wasInert = workbench.inert;
+            workbench.inert = true;
+            try {
+                input.value = JSON.stringify(await editor.save());
+                editorWorkbenches.get(locale)?.destroy();
+                editorWorkbenches.delete(locale);
+                editor.destroy();
+                editors.delete(locale);
+                holder.replaceChildren();
+                holder.dataset.content = input.value;
+                await createEditor(holder);
+            } catch { announce(editorConfig.messages.unavailable, true); }
+            finally { if (workbench.isConnected) workbench.inert = wasInert; }
+        }
+    });
 
     form.addEventListener('click', async event => {
         const button = event.target.closest('[data-revision-restore]');
@@ -523,10 +672,22 @@ if (form) {
         const restoreButtons = [...form.querySelectorAll('button[type=submit]')].map(loadingButton);
         saveGroup.setAttribute('inert', ''); form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
         try {
-            const result = await sendSettings(form.action, new FormData(form));
+            const payload = new FormData(form);
+            if (pendingWorkflowTransition) {
+                payload.set('workflow_transition', pendingWorkflowTransition.key);
+                if (pendingWorkflowTransition.dueAt) payload.set('workflow_due_at', new Date(pendingWorkflowTransition.dueAt).toISOString());
+            }
+            const result = await sendSettings(form.action, payload);
             announce(result.message);
             window.dispatchEvent(new CustomEvent('jobic:editor:after-save', {detail: {type: form.dataset.type, post: result.data, response: result}}));
             guard.saved(submitted);
+            lifecycleBaseline = submitted;
+            if (pendingWorkflowTransition) {
+                pendingWorkflowTransition = null;
+                guard.leave();
+                location.reload();
+                return;
+            }
             if (result.data?.update_url) {
                 if (!form.querySelector('[name=_method]')) form.insertAdjacentHTML('afterbegin', '<input type="hidden" name="_method" value="PUT">');
                 let versionInput = form.querySelector('[name=_version]');
@@ -546,7 +707,29 @@ if (form) {
                 form.dataset.editLockReleaseUrl = result.data.edit_lock_release_url || form.dataset.editLockReleaseUrl;
                 startEditLockRenewal();
                 form.action = `${result.data.update_url}?locale=${encodeURIComponent(editorConfig.activeLocale)}`;
-                if (result.data.edit_url) history.replaceState({}, '', `${result.data.edit_url}?locale=${encodeURIComponent(editorConfig.activeLocale)}`);
+                if (result.data.edit_url) {
+                    history.replaceState({}, '', `${result.data.edit_url}?locale=${encodeURIComponent(editorConfig.activeLocale)}`);
+                    const heading = form.querySelector('.crud-taxonomy-title h1');
+                    if (heading) heading.textContent = labels.edit;
+                    if (labels.create && document.title.includes(labels.create)) {
+                        document.title = document.title.replace(labels.create, labels.edit);
+                    }
+                }
+            }
+            if (result.data?.workflow_card_html) {
+                const fragment = document.createElement('template');
+                fragment.innerHTML = result.data.workflow_card_html.trim();
+                const card = fragment.content.firstElementChild;
+                const existing = form.querySelector('[data-post-lifecycle]');
+                if (existing) existing.replaceWith(card);
+                else form.querySelector('.crud-taxonomy-layout > aside')?.prepend(card);
+            }
+            if (result.data?.workflow_preview_html && !form.querySelector('[data-post-workflow-preview-dialog]')) {
+                const fragment = document.createElement('template');
+                fragment.innerHTML = result.data.workflow_preview_html.trim();
+                const dialog = fragment.content.firstElementChild;
+                form.append(dialog);
+                bindWorkflowPreview(dialog);
             }
             const historySection = form.querySelector('[data-record-history]');
             if (result.data?.update_url && historySection?.hidden) {
@@ -554,9 +737,10 @@ if (form) {
                 historyPanel = bindHistory(form, () => pageData().posts);
             } else if (result.data?.update_url && !historySection) {
                 const historyTemplate = form.querySelector('[data-record-history-template]');
-                const historyPanelElement = historyTemplate?.content.firstElementChild?.cloneNode(true);
-                if (historyPanelElement) {
-                    form.after(historyPanelElement);
+                const historyTabsElement = historyTemplate?.content.firstElementChild?.cloneNode(true);
+                if (historyTabsElement) {
+                    historyTemplate.before(historyTabsElement);
+                    bindHistoryTabs(historyTabsElement);
                     historyPanel = bindHistory(form, () => pageData().posts);
                 }
             }
@@ -575,6 +759,7 @@ if (form) {
             form.querySelector('[aria-invalid=true]')?.focus();
             if (error.status !== 422 || displayed === 0) announce(error.message || editorConfig.messages.failed, true);
         } finally {
+            pendingWorkflowTransition = null;
             restoreButtons.forEach(restore => restore()); saveGroup.removeAttribute('inert'); delete form.dataset.saving; form.removeAttribute('aria-busy');
         }
     });

@@ -1,6 +1,6 @@
 // Preserve edits across failed requests and AJAX preference changes.
 export function guardUnsaved(form, confirmLeave) {
-    const snapshot = () => JSON.stringify([...new FormData(form)].filter(([key]) => !['_token', '_method', '_version', 'intent'].includes(key)));
+    const snapshot = () => JSON.stringify([...new FormData(form)].filter(([key]) => !['_token', '_method', '_version', '_edit_lock', 'intent'].includes(key)));
     let baseline = snapshot();
     let leaving = false;
     let prompting = false;
