@@ -24,22 +24,10 @@ return new class extends Migration
             ], 'editor_documents_owner_field_locale_unique');
         });
 
-        Schema::create('editor_document_revisions', function (Blueprint $table): void {
-            $table->id();
-            $table->string('revision_type', 150);
-            $table->unsignedBigInteger('revision_id');
-            $table->json('documents');
-            $table->timestamps();
-            $table->unique([
-                'revision_type',
-                'revision_id',
-            ], 'editor_documents_revision_unique');
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('editor_document_revisions');
         Schema::dropIfExists('editor_documents');
     }
 };

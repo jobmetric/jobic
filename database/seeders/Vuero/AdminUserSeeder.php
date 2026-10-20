@@ -5,6 +5,8 @@ namespace Database\Seeders\Vuero;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use JobMetric\Rolix\Facades\Role as RoleService;
+use JobMetric\Rolix\Models\Role;
 
 class AdminUserSeeder extends Seeder
 {
@@ -13,7 +15,7 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->updateOrCreate(
+        $admin = User::query()->firstOrCreate(
             ['email' => 'admin@jobic.test'],
             [
                 'name' => 'Admin',
@@ -21,5 +23,23 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make('secret'),
             ],
         );
+
+        $superRole = Role::query()
+            ->where('type', 'system')
+            ->where('is_super', true)
+            ->first() ?? RoleService::store([
+                'type' => 'system',
+                'name' => 'System administrator',
+                'description' => 'Full CMS access for the installation administrator.',
+                'is_super' => true,
+                'is_default' => false,
+                'ordering' => 0,
+                'allow' => [],
+                'deny' => [],
+            ])->data;
+
+        if (! $admin->hasRole((int) $superRole->id)) {
+            $admin->assignRole((int) $superRole->id);
+        }
     }
 }

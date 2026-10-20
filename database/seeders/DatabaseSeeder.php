@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Database\Seeders\Vuero\AdminUserSeeder;
 use Illuminate\Database\Seeder;
-use JobMetric\Setting\Models\Setting;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,8 +12,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(InstallationSeeder::class);
         $this->call(AdminUserSeeder::class);
-
-        Setting::factory(10)->create();
     }
 }

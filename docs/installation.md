@@ -15,7 +15,7 @@ The first HTTP request creates a missing `.env`, generates a missing APP_KEY, an
 5. Site name, URL, and administrator credentials.
 6. Verify, migrate, seed production defaults, create administrator, link storage, finalize.
 
-SMTP can be configured later under **Settings → Email**. Blank password fields preserve stored credentials. The installer never writes an administrator password to `.env`; its temporary private state holds only a password hash. The production seeder intentionally contains no demo users or random settings.
+SMTP can be configured later under **Settings → Email**. Blank password fields preserve stored credentials. The installer never writes an administrator password to `.env`; its temporary private state holds only a password hash. The production seeder intentionally contains no demo users or random settings. For opt-in examples on a disposable development database, see [Database seeders](seeding.md).
 
 `INSTALLATION_STEP` identifies the last saved form, `INSTALLATION_TASK` the number of completed execution tasks, and `INSTALLATION_STATUS` is pending/configuring/running/failed/completed. `INSTALLATION` is the completion marker. Legacy installations without status are detected by the migrations and users tables plus at least one user. A failed database connection never proves the database empty. Existing accounts are not overwritten.
 

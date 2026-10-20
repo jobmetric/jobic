@@ -85,8 +85,10 @@ class Installation
         }
 
         try {
-            $schema = DB::connection()->getSchemaBuilder();
-            if ($schema->hasTable('migrations') && $schema->hasTable('users') && DB::table('users')->exists()) {
+            $schema = DB::connection()
+                ->getSchemaBuilder();
+            if ($schema->hasTable('migrations') && $schema->hasTable('users') && DB::table('users')
+                    ->exists()) {
                 $result = $this->state->locked(function (): bool {
                     if ($this->state->read() !== []) {
                         return false;
@@ -180,7 +182,11 @@ class Installation
         $environment = $owned ? $this->environment->read() : [];
 
         $values = [];
-        foreach ([2, 5] as $step) {
+        foreach (
+            [
+                2,
+                5,
+            ] as $step) {
             $values += Fields::values(Fields::fields($step), $environment);
         }
 
@@ -298,7 +304,10 @@ class Installation
             $this->assertStep($step);
             $values = $this->credentials(array_intersect_key($data, Fields::fields($step)));
             if ($step === 1) {
-                $values = ['APP_ENV' => 'production', 'APP_DEBUG' => false];
+                $values = [
+                    'APP_ENV'   => 'production',
+                    'APP_DEBUG' => false,
+                ];
             }
 
             if ($step === 1 && in_array(false, $this->requirements(), true)) {
@@ -471,7 +480,10 @@ class Installation
 
                     break;
                 case 1:
-                    if (Artisan::call('migrate', ['--database' => 'installation', '--force' => true]) !== 0) {
+                    if (Artisan::call('migrate', [
+                            '--database' => 'installation',
+                            '--force'    => true,
+                        ]) !== 0) {
                         throw new RuntimeException('Migration failed.');
                     }
 
@@ -487,7 +499,9 @@ class Installation
 
                     break;
                 case 3:
-                    $user = User::query()->where('email', $state['admin']['email'])->first();
+                    $user = User::query()
+                        ->where('email', $state['admin']['email'])
+                        ->first();
                     if ($user && ! hash_equals($user->getRawOriginal('password'), $state['admin']['password'])) {
                         throw new RuntimeException('Existing account cannot be overwritten.');
                     }
@@ -498,7 +512,8 @@ class Installation
                             'first_name' => $admin['name'],
                         ];
 
-                        $user = User::query()->create($admin);
+                        $user = User::query()
+                            ->create($admin);
                     }
 
                     $superRole = Role::query()
@@ -513,7 +528,6 @@ class Installation
                         'ordering'    => 0,
                         'allow'       => [],
                         'deny'        => [],
-                        'rules'       => [],
                     ])->data;
                     $user->syncRoles([(int) $superRole->id]);
 
@@ -695,7 +709,6 @@ class Installation
     {
         ksort($values);
 
-        return hash_hmac('sha256', json_encode(array_map(fn ($value
-        ) => (string) $value, $values), JSON_THROW_ON_ERROR), (string) config('app.key'));
+        return hash_hmac('sha256', json_encode(array_map(fn ($value) => (string) $value, $values), JSON_THROW_ON_ERROR), (string) config('app.key'));
     }
 }

@@ -1,0 +1,6 @@
+---
+description: One owning migration per table during development
+alwaysApply: true
+---
+
+Every table must have exactly one owning migration. Edit that file to change columns, indexes, or constraints; do not create alter-table migrations. Split migrations that create multiple tables. Put initial data in seeders rather than schema migrations. This applies to Jobic and its owned packages until the user explicitly revokes it. `migrate:fresh --seed` is permitted only after confirming the connection targets a disposable development database, never production, staging, or unverified valuable data.
