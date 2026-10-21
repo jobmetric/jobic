@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Languages;
 
+use App\Events\Language\LanguageActivateEvent;
+use App\Events\Language\LanguageDeactivateEvent;
+use App\Events\Language\LanguageDeleteEvent;
+use App\Events\Language\LanguageStoreEvent;
+use App\Events\Language\LanguageUpdateEvent;
 use App\Facades\Hooks;
 use App\Http\Requests\Languages\BulkRequest;
 use App\Http\Requests\Languages\HistoryRequest;
@@ -16,6 +21,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use JobMetric\EventSystem\Support\CommittedEventDispatcher;
 use JobMetric\Language\Facades\Language as LanguageService;
 use JobMetric\Language\Http\Resources\LanguageResource;
 use JobMetric\Language\Models\Language;
@@ -37,6 +43,7 @@ class Languages extends AbstractCrudService
      *
      * @param array<string, mixed> $input
      *
+     * @return Response
      * @throws ValidationException
      * @throws Throwable
      */
@@ -56,7 +63,11 @@ class Languages extends AbstractCrudService
                 ->count(),
         ];
 
-        foreach (['status', 'direction'] as $filter) {
+        foreach (
+            [
+                'status',
+                'direction',
+            ] as $filter) {
             if (isset($data[$filter]) && $data[$filter] !== '') {
                 $query->where($filter, $data[$filter]);
             }
@@ -98,7 +109,9 @@ class Languages extends AbstractCrudService
     /**
      * Find a registry record for editing or read-only presentation.
      *
+     * @param int $id
      *
+     * @return Language
      * @throws ModelNotFoundException
      */
     public function record(int $id): Language
@@ -111,7 +124,10 @@ class Languages extends AbstractCrudService
      * Validate and persist one language, notifying extensions after commit.
      *
      * @param array<string, mixed> $input
+     * @param int|null $id
+     * @param int $userId
      *
+     * @return Response
      * @throws Throwable
      */
     public function saveRecord(array $input, ?int $id, int $userId): Response
@@ -170,6 +186,20 @@ class Languages extends AbstractCrudService
 
             app(RecordHistory::class)->record('languages', $record->id, $context['user_id'], $context['operation'], $before, $record->toArray());
 
+            $eventBefore = array_diff_key($before, array_flip([
+                'created_at',
+                'updated_at',
+            ]));
+            $eventAfter = array_diff_key($record->fresh()
+                ->toArray(), array_flip([
+                'created_at',
+                'updated_at',
+            ]));
+            if (! $id || $eventBefore !== $eventAfter) {
+                $event = $id ? new LanguageUpdateEvent((int) $record->id, $context['user_id']) : new LanguageStoreEvent((int) $record->id, $context['user_id']);
+                app(CommittedEventDispatcher::class)->dispatch($event, $record->getConnectionName());
+            }
+
             $version = RecordVersion::token($record->fresh(), 'languages');
 
             return $record;
@@ -193,7 +223,9 @@ class Languages extends AbstractCrudService
      * Apply an all-or-nothing bulk mutation to explicitly selected records.
      *
      * @param array<string, mixed> $input
+     * @param int $userId
      *
+     * @return Response
      * @throws Throwable
      */
     public function bulk(array $input, int $userId): Response
@@ -227,6 +259,7 @@ class Languages extends AbstractCrudService
 
                 Hooks::action('jobic.settings.languages.' . ($data['operation'] === 'delete' ? 'deleting' : 'saving'), $context);
 
+                $changed = $data['operation'] === 'delete' || (bool) $record->status !== ($data['operation'] === 'activate');
                 $before = $record->toArray();
                 if ($data['operation'] === 'delete') {
                     LanguageService::delete($record->id);
@@ -240,6 +273,17 @@ class Languages extends AbstractCrudService
                     ->toArray();
 
                 app(RecordHistory::class)->record('languages', $record->id, $userId, $data['operation'], $before, $after);
+                $persisted = $data['operation'] === 'delete' ? ! Language::query()
+                    ->whereKey($record->id)
+                    ->exists() : (bool) $record->fresh()->status === ($data['operation'] === 'activate');
+                if ($changed && $persisted) {
+                    $eventClass = match ($data['operation']) {
+                        'delete' => LanguageDeleteEvent::class,
+                        'activate' => LanguageActivateEvent::class,
+                        'deactivate' => LanguageDeactivateEvent::class,
+                    };
+                    app(CommittedEventDispatcher::class)->dispatch(new $eventClass((int) $record->id, $userId), $record->getConnectionName());
+                }
                 $contexts[] = $context;
             }
 
@@ -257,7 +301,9 @@ class Languages extends AbstractCrudService
      * Validate and return the history of an existing language.
      *
      * @param array<string, mixed> $input
+     * @param int $id
      *
+     * @return Response
      * @throws Throwable
      */
     public function history(int $id, array $input): Response

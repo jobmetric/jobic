@@ -25,6 +25,8 @@ readonly class SystemSettings
      * @param Environment $environment
      * @param Connections $connections
      * @param MailSettings $mailSettings
+     *
+     * @return void
      */
     public function __construct(
         private Environment $environment,
@@ -79,9 +81,15 @@ readonly class SystemSettings
 
         if ($values['CACHE_STORE'] === 'redis') {
             $storedPassword = $this->environment->read()['REDIS_PASSWORD'] ?? '';
-            $storedPassword = in_array($storedPassword, ['null', '(null)'], true) ? '' : $storedPassword;
+            $storedPassword = in_array($storedPassword, [
+                'null',
+                '(null)',
+            ], true) ? '' : $storedPassword;
             $values['REDIS_PASSWORD'] = ($values['REDIS_PASSWORD'] ?? '') ?: $storedPassword;
-            $values += ['REDIS_CLIENT' => 'phpredis', 'REDIS_URL' => null];
+            $values += [
+                'REDIS_CLIENT' => 'phpredis',
+                'REDIS_URL'    => null,
+            ];
         }
 
         $context = [
@@ -105,8 +113,7 @@ readonly class SystemSettings
             } catch (Throwable) {
                 return Response::make(false, trans('system.redis_connection_failed'), null, 422);
             }
-        }
-        else {
+        } else {
             try {
                 $this->probeDirectory(storage_path('framework/cache/data'));
             } catch (Throwable) {
@@ -116,7 +123,12 @@ readonly class SystemSettings
 
         try {
             if ($save) {
+                $outcomeBefore = $this->environment->read();
                 $this->environment->write($values);
+                if ($outcomeBefore !== $this->environment->read()) {
+                    app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\Cache\CacheUpdateEvent($userId));
+                }
+
                 Hooks::notify('jobic.settings.cache.saved', $context);
             }
 

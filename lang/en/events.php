@@ -1,0 +1,43 @@
+<?php
+
+return [
+    'user' => [
+        'group' => 'Users',
+        'stored' => ['title' => 'User created', 'description' => 'A user account was created.'],
+        'updated' => ['title' => 'User updated', 'description' => 'A user account was changed.'],
+        'deleted' => ['title' => 'User deleted', 'description' => 'A user account was deleted.'],
+        'activated' => ['title' => 'User activated', 'description' => 'A user account was activated.'],
+        'deactivated' => ['title' => 'User deactivated', 'description' => 'A user account was deactivated.'],
+    ],
+    'role' => [
+        'group' => 'Roles',
+        'stored' => ['title' => 'Role created', 'description' => 'A role was created.'],
+        'updated' => ['title' => 'Role updated', 'description' => 'A role was updated.'],
+        'deleted' => ['title' => 'Role deleted', 'description' => 'A role was deleted.'],
+    ],
+    'language' => [
+        'group' => 'Languages',
+        'stored' => ['title' => 'Language created', 'description' => 'A language was created.'],
+        'updated' => ['title' => 'Language updated', 'description' => 'A language was updated.'],
+        'deleted' => ['title' => 'Language deleted', 'description' => 'A language was deleted.'],
+        'activated' => ['title' => 'Language activated', 'description' => 'A language was activated.'],
+        'deactivated' => ['title' => 'Language deactivated', 'description' => 'A language was deactivated.'],
+    ],
+    'general_updated' => ['group' => 'General', 'title' => 'General updated', 'description' => 'Successful business outcome: General updated.'],
+    'mail_updated' => ['group' => 'Mail', 'title' => 'Mail updated', 'description' => 'Successful business outcome: Mail updated.'],
+    'cache_updated' => ['group' => 'Cache', 'title' => 'Cache updated', 'description' => 'Successful business outcome: Cache updated.'],
+    'appearance_updated' => ['group' => 'Appearance', 'title' => 'Appearance updated', 'description' => 'Successful business outcome: Appearance updated.'],
+    'profile_updated' => ['group' => 'Profile', 'title' => 'Profile updated', 'description' => 'Successful business outcome: Profile updated.'],
+    'security_updated' => ['group' => 'Security', 'title' => 'Security updated', 'description' => 'Successful business outcome: Security updated.'],
+    'auth_logged_in' => ['group' => 'Auth', 'title' => 'Auth logged in', 'description' => 'Successful business outcome: Auth logged in.'],
+    'auth_logged_out' => ['group' => 'Auth', 'title' => 'Auth logged out', 'description' => 'Successful business outcome: Auth logged out.'],
+    'auth_reset_link_sent' => ['group' => 'Auth', 'title' => 'Auth reset link sent', 'description' => 'Successful business outcome: Auth reset link sent.'],
+    'auth_password_reset' => ['group' => 'Auth', 'title' => 'Auth password reset', 'description' => 'Successful business outcome: Auth password reset.'],
+    'auth_language_updated' => ['group' => 'Auth', 'title' => 'Auth language updated', 'description' => 'Successful business outcome: Auth language updated.'],
+    'two_factor_setup' => ['group' => 'TwoFactor', 'title' => 'TwoFactor setup', 'description' => 'Successful business outcome: TwoFactor setup.'],
+    'two_factor_enabled' => ['group' => 'TwoFactor', 'title' => 'TwoFactor enabled', 'description' => 'Successful business outcome: TwoFactor enabled.'],
+    'two_factor_disabled' => ['group' => 'TwoFactor', 'title' => 'TwoFactor disabled', 'description' => 'Successful business outcome: TwoFactor disabled.'],
+    'editor_document_stored' => ['group' => 'EditorDocument', 'title' => 'EditorDocument stored', 'description' => 'Successful business outcome: EditorDocument stored.'],
+    'editor_document_updated' => ['group' => 'EditorDocument', 'title' => 'EditorDocument updated', 'description' => 'Successful business outcome: EditorDocument updated.'],
+    'editor_document_deleted' => ['group' => 'EditorDocument', 'title' => 'EditorDocument deleted', 'description' => 'Successful business outcome: EditorDocument deleted.'],
+];

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
+use App\Events\Auth\AuthLanguageEvent;
 use App\Facades\Hooks;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LanguageRequest;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use JobMetric\EventSystem\Support\CommittedEventDispatcher;
 use JobMetric\PackageCore\Output\Response;
 use Throwable;
 
@@ -45,8 +47,13 @@ class Authentication
 
         Hooks::action('jobic.auth.language.saving', $context);
 
+        $outcomeLocale = session('auth_locale');
         session()->put('auth_locale', $data['locale']);
         app()->setLocale($data['locale']);
+
+        if ($outcomeLocale !== $data['locale']) {
+            app(CommittedEventDispatcher::class)->dispatch(new AuthLanguageEvent($data['locale']));
+        }
 
         Hooks::notify('jobic.auth.language.saved', $context);
 
@@ -82,11 +89,16 @@ class Authentication
             ]), null, 429);
         }
 
-        Auth::guard('web')->setRememberDuration(max(1, (int) config('auth.remember_days', 30)) * 24 * 60);
+        Auth::guard('web')
+            ->setRememberDuration(max(1, (int) config('auth.remember_days', 30)) * 24 * 60);
 
         session()->forget('auth.two_factor');
-        $credentials = ['email' => $validated['email'], 'password' => $validated['password']];
-        $provider = Auth::guard('web')->getProvider();
+        $credentials = [
+            'email'    => $validated['email'],
+            'password' => $validated['password'],
+        ];
+        $provider = Auth::guard('web')
+            ->getProvider();
         $user = $provider->retrieveByCredentials($credentials);
         if (! $user || ! $provider->validateCredentials($user, $credentials)) {
             RateLimiter::hit($throttleKey);
@@ -117,12 +129,19 @@ class Authentication
 
             return Response::make(true, __('two-factor.challenge_title'), ['two_factor' => true]);
         }
-        Auth::guard('web')->login($user, $remember);
+        Auth::guard('web')
+            ->login($user, $remember);
 
-        request()->session()->regenerate();
+        request()
+            ->session()
+            ->regenerate();
         $this->synchronizeAuthenticatedLocale($user);
 
         $this->recordLoginEvent($email, $user->id, $ip, $userAgent, true);
+
+        if (true) {
+            app(CommittedEventDispatcher::class)->dispatch(new \App\Events\Auth\AuthLoginEvent((int) $user->id), $user->getConnectionName());
+        }
 
         return Response::make(true, trans('auth.login_success'), $user);
     }
@@ -158,7 +177,9 @@ class Authentication
         RateLimiter::hit($key, 300);
 
         $user = DB::transaction(function () use ($pending, $values): ?User {
-            $user = User::query()->lockForUpdate()->find($pending['user_id']);
+            $user = User::query()
+                ->lockForUpdate()
+                ->find($pending['user_id']);
             if (! $user || ! $user->status || ! hash_equals($pending['password_hash'], hash('sha256', $user->password)) || ! hash_equals($pending['factor_hash'], hash('sha256', $user->two_factor_secret ?? '')) || ! app(TwoFactor::class)->consume($user, $values['code'])) {
                 return null;
             }
@@ -174,12 +195,17 @@ class Authentication
         session()->forget('auth.two_factor');
 
         // Persistent remember cookies would bypass the required second factor on a later login.
-        Auth::guard('web')->login($user, false);
+        Auth::guard('web')
+            ->login($user, false);
 
         session()->regenerate();
         $this->synchronizeAuthenticatedLocale($user);
 
         $this->recordLoginEvent($user->email, $user->id, (string) ($context['ip'] ?? ''), (string) ($context['user_agent'] ?? ''), true);
+
+        if (true) {
+            app(CommittedEventDispatcher::class)->dispatch(new \App\Events\Auth\AuthLoginEvent((int) $user->id), $user->getConnectionName());
+        }
 
         return Response::make(true, __('auth.login_success'));
     }
@@ -194,11 +220,18 @@ class Authentication
      */
     public function logout(array $context = []): Response
     {
-        Auth::guard('web')->logout();
+        $outcomeUserId = Auth::guard('web')
+            ->id();
+        Auth::guard('web')
+            ->logout();
 
         if (isset($context['session'])) {
             $context['session']->invalidate();
             $context['session']->regenerateToken();
+        }
+
+        if ($outcomeUserId !== null) {
+            app(CommittedEventDispatcher::class)->dispatch(new \App\Events\Auth\AuthLogoutEvent((int) $outcomeUserId));
         }
 
         return Response::make(true, trans('auth.logout_success'));
@@ -216,7 +249,8 @@ class Authentication
         $locale = LocaleCatalog::resolve(session('auth_locale', app()->getLocale()));
         $preferences = array_replace(config('admin.appearance'), $user->ui_preferences ?? [], ['locale' => $locale]);
 
-        $user->forceFill(['ui_preferences' => $preferences])->save();
+        $user->forceFill(['ui_preferences' => $preferences])
+            ->save();
         app()->setLocale($locale);
     }
 
@@ -249,7 +283,15 @@ class Authentication
 
         RateLimiter::hit($throttleKey);
 
-        Password::sendResetLink(['email' => $validated['email']]);
+        $outcomeResetStatus = Password::sendResetLink(['email' => $validated['email']]);
+        if ($outcomeResetStatus === Password::RESET_LINK_SENT) {
+            $outcomeUser = User::query()
+                ->where('email', $validated['email'])
+                ->first();
+            if ($outcomeUser) {
+                app(CommittedEventDispatcher::class)->dispatch(new \App\Events\Auth\AuthResetLinkEvent((int) $outcomeUser->id), $outcomeUser->getConnectionName());
+            }
+        }
 
         return Response::make(true, trans('auth.reset_link_sent'));
     }
@@ -269,7 +311,12 @@ class Authentication
         $status = Password::reset($validated, function (User $user, string $password): void {
             $user->forceFill([
                 'password' => $password,
-            ])->save();
+            ])
+                ->save();
+            if ($user->wasChanged('password')) {
+                app(CommittedEventDispatcher::class)->dispatch(new \App\Events\Auth\AuthPasswordResetEvent((int) $user->id), $user->getConnectionName());
+            }
+
         },);
 
         if ($status !== Password::PASSWORD_RESET) {
@@ -323,13 +370,14 @@ class Authentication
         string $userAgent,
         bool $successful
     ): void {
-        LoginEvent::query()->create([
-            'email'      => $email,
-            'user_id'    => $userId,
-            'ip_address' => $ip !== '' ? $ip : null,
-            'user_agent' => $userAgent !== '' ? Str::limit($userAgent, 500) : null,
-            'successful' => $successful,
-            'created_at' => now(),
-        ]);
+        LoginEvent::query()
+            ->create([
+                'email'      => $email,
+                'user_id'    => $userId,
+                'ip_address' => $ip !== '' ? $ip : null,
+                'user_agent' => $userAgent !== '' ? Str::limit($userAgent, 500) : null,
+                'successful' => $successful,
+                'created_at' => now(),
+            ]);
     }
 }

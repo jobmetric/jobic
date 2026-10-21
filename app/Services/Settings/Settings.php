@@ -59,7 +59,8 @@ readonly class Settings
      */
     public function page(string $section, int $userId): array
     {
-        $user = User::query()->findOrFail($userId);
+        $user = User::query()
+            ->findOrFail($userId);
         $values = $this->environment->read();
 
         return [
@@ -119,7 +120,12 @@ readonly class Settings
         Hooks::action('jobic.settings.general.saving', $context);
 
         try {
+            $outcomeBefore = $this->environment->read();
             $this->environment->write($values);
+            if ($outcomeBefore !== $this->environment->read()) {
+                app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\General\GeneralUpdateEvent($userId));
+            }
+
             config([
                 'app.name'     => $values['APP_NAME'],
                 'app.url'      => $values['APP_URL'],
@@ -168,24 +174,30 @@ readonly class Settings
             if ($hasUploadedImage) {
                 $storedPath = 'seo/open-graph/' . Str::uuid() . '.' . $uploadedImage->extension();
                 $contents = file_get_contents($uploadedPath);
-                if ($contents === false || ! Storage::disk('public')->put($storedPath, $contents)) {
+                if ($contents === false || ! Storage::disk('public')
+                        ->put($storedPath, $contents)) {
                     throw new RuntimeException('Open Graph image storage failed.');
                 }
                 $values['open_graph_image'] = $storedPath;
-            } else if ($removeImage) {
-                $values['open_graph_image'] = null;
             } else {
-                $values['open_graph_image'] = $currentImage;
+                if ($removeImage) {
+                    $values['open_graph_image'] = null;
+                } else {
+                    $values['open_graph_image'] = $currentImage;
+                }
             }
             unset($values['remove_open_graph_image']);
 
-            SettingStore::dispatchByForm('jobic_seo', collect($values)->mapWithKeys(fn (
+            SettingStore::dispatchByForm('jobic_seo', collect($values)
+                ->mapWithKeys(fn (
                     mixed $value,
                     string $key
-                ): array => ['jobic_seo_' . $key => $value])->all());
+                ): array => ['jobic_seo_' . $key => $value])
+                ->all());
         } catch (Throwable $exception) {
             if ($hasUploadedImage && filled($values['open_graph_image'] ?? null)) {
-                Storage::disk('public')->delete((string) $values['open_graph_image']);
+                Storage::disk('public')
+                    ->delete((string) $values['open_graph_image']);
             }
 
             Log::error('SEO settings persistence failed.', [
@@ -198,7 +210,8 @@ readonly class Settings
         }
 
         if (($removeImage || $hasUploadedImage) && filled($currentImage) && $currentImage !== $values['open_graph_image']) {
-            Storage::disk('public')->delete((string) $currentImage);
+            Storage::disk('public')
+                ->delete((string) $currentImage);
         }
 
         Hooks::notify('jobic.settings.seo.saved', $context);
@@ -226,11 +239,18 @@ readonly class Settings
             'user_id' => $userId,
             'fields'  => array_keys($values),
         ];
-        $user = User::query()->findOrFail($userId);
+        $user = User::query()
+            ->findOrFail($userId);
+        $outcomeBefore = \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas']);
 
         Hooks::action('jobic.settings.appearance.saving', $context);
 
-        $user->forceFill(['ui_preferences' => $values])->save();
+        $user->forceFill(['ui_preferences' => $values])
+            ->save();
+
+        if ($outcomeBefore !== \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas'])) {
+            app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\Appearance\AppearanceUpdateEvent($userId), $user->getConnectionName());
+        }
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
@@ -270,11 +290,16 @@ readonly class Settings
             $values['name'] = $displayName;
         }
 
-        if (User::query()->where('email', $values['email'])->whereKeyNot($userId)->exists()) {
+        if (User::query()
+            ->where('email', $values['email'])
+            ->whereKeyNot($userId)
+            ->exists()) {
             return Response::make(false, trans('admin.email_taken'), null, 422);
         }
 
-        $user = User::query()->findOrFail($userId);
+        $user = User::query()
+            ->findOrFail($userId);
+        $outcomeBefore = \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas']);
         if ($values['email'] !== $user->email) {
             $user->email_verified_at = null;
         }
@@ -286,7 +311,12 @@ readonly class Settings
             'name'          => $values['name'] ?? $user->name,
             'avatar_preset' => $values['avatar_preset'] ?? $user->avatar_preset,
             'metadata'      => $profileMetadata,
-        ])->save();
+        ])
+            ->save();
+
+        if ($outcomeBefore !== \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas'])) {
+            app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\Profile\ProfileUpdateEvent($userId), $user->getConnectionName());
+        }
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 
@@ -315,13 +345,20 @@ readonly class Settings
             'user_id' => $userId,
             'fields'  => ['avatar_preset'],
         ];
-        $user = User::query()->findOrFail($userId);
+        $user = User::query()
+            ->findOrFail($userId);
+        $outcomeBefore = \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas']);
 
         Hooks::action('jobic.settings.profile.saving', $context);
 
         $user->forceFill([
             'avatar_preset' => $values['avatar_preset'],
-        ])->save();
+        ])
+            ->save();
+
+        if ($outcomeBefore !== \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas'])) {
+            app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\Profile\ProfileUpdateEvent($userId), $user->getConnectionName());
+        }
 
         Hooks::notify('jobic.settings.profile.saved', $context);
 
@@ -351,14 +388,21 @@ readonly class Settings
             'user_id' => $userId,
             'fields'  => array_keys($values),
         ];
-        $user = User::query()->findOrFail($userId);
+        $user = User::query()
+            ->findOrFail($userId);
+        $outcomeBefore = \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas']);
 
         Hooks::action('jobic.settings.security.saving', $context);
 
         $user->forceFill([
             'password'       => $values['password'],
             'remember_token' => Str::random(60),
-        ])->save();
+        ])
+            ->save();
+
+        if ($outcomeBefore !== \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas'])) {
+            app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\Security\SecurityUpdateEvent($userId), $user->getConnectionName());
+        }
 
         Hooks::notify('jobic.settings.' . $context['section'] . '.saved', $context);
 

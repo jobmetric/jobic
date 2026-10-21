@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Editor;
 
+use App\Events\EditorDocument\EditorDocumentDeleteEvent;
 use App\Facades\Hooks;
 use App\Models\EditorDocument;
 use App\Models\EditorDocumentRevision;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use JobMetric\EventSystem\Support\CommittedEventDispatcher;
 use JobMetric\Media\Http\Resources\MediaResource;
 use JobMetric\Media\Models\Media;
 use JobMetric\Media\Models\MediaRelation;
@@ -137,7 +139,11 @@ final class EditorDocuments
      * @param mixed $original
      *
      * @return array<string, mixed>
+     * @throws CircularDependencyException
+     * @throws ContainerExceptionInterface
+     * @throws EntryNotFoundException
      * @throws JsonException
+     * @throws NotFoundExceptionInterface
      */
     public function normalize(mixed $content, mixed $original = null): array
     {
@@ -254,6 +260,10 @@ final class EditorDocuments
             Hooks::action('jobic.editor.document.saving', $context);
 
             $document->save();
+            if ($document->wasRecentlyCreated || $document->wasChanged('content')) {
+                $outcome = $document->wasRecentlyCreated ? new \App\Events\EditorDocument\EditorDocumentStoreEvent((int) $document->id) : new \App\Events\EditorDocument\EditorDocumentUpdateEvent((int) $document->id);
+                app(CommittedEventDispatcher::class)->dispatch($outcome, $document->getConnectionName());
+            }
 
             $this->syncMedia($document);
 
@@ -379,6 +389,10 @@ final class EditorDocuments
             ->where('revision_id', $revision->getKey())
             ->firstOrFail();
 
+        if ($this->snapshot($owner) === $snapshot->documents) {
+            return;
+        }
+
         $this->delete($owner);
 
         foreach ($snapshot->documents as $document) {
@@ -396,6 +410,12 @@ final class EditorDocuments
     public function delete(Model $owner): void
     {
         $this->query($owner)
-            ->get()->each->delete();
+            ->get()
+            ->each(function (EditorDocument $document): void {
+                $document->delete();
+                if (! $document->exists) {
+                    app(CommittedEventDispatcher::class)->dispatch(new EditorDocumentDeleteEvent((int) $document->id), $document->getConnectionName());
+                }
+            });
     }
 }

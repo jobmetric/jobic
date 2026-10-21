@@ -57,10 +57,14 @@ readonly class MailSettings
         $transport = null;
         try {
             $transport = new EsmtpTransport($values['MAIL_HOST'], (int) $values['MAIL_PORT'], $values['MAIL_SCHEME'] === 'smtps');
-            $transport->getStream()->setTimeout(5);
+            $transport->getStream()
+                ->setTimeout(5);
             $transport->setUsername($values['MAIL_USERNAME'] ?? '');
             $storedPassword = $this->environment->read()['MAIL_PASSWORD'] ?? '';
-            $storedPassword = in_array($storedPassword, ['null', '(null)'], true) ? '' : $storedPassword;
+            $storedPassword = in_array($storedPassword, [
+                'null',
+                '(null)',
+            ], true) ? '' : $storedPassword;
             $transport->setPassword(($values['MAIL_PASSWORD'] ?? '') ?: $storedPassword);
             $transport->start();
 
@@ -111,7 +115,11 @@ readonly class MailSettings
         Hooks::action('jobic.settings.mail.saving', $context);
 
         try {
+            $outcomeBefore = $this->environment->read();
             $this->environment->write($validated + ['MAIL_URL' => null]);
+            if ($outcomeBefore !== $this->environment->read()) {
+                app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\Mail\MailUpdateEvent($userId));
+            }
 
             Hooks::notify('jobic.settings.mail.saved', $context);
 

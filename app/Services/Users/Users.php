@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Users;
 
+use App\Events\User\UserActivateEvent;
+use App\Events\User\UserDeactivateEvent;
+use App\Events\User\UserDeleteEvent;
+use App\Events\User\UserStoreEvent;
+use App\Events\User\UserUpdateEvent;
 use App\Facades\Hooks;
 use App\Http\Requests\Users\BulkRequest;
 use App\Http\Requests\Users\HistoryRequest;
@@ -18,6 +23,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use JobMetric\EventSystem\Support\CommittedEventDispatcher;
 use JobMetric\PackageCore\Output\Response;
 use JobMetric\PackageCore\Services\AbstractCrudService;
 use JobMetric\Rolix\Facades\Role as RoleService;
@@ -39,12 +45,15 @@ class Users extends AbstractCrudService
      */
     public function roleOptions(): array
     {
-        return RoleService::flatTree('system')->map(fn ($role) => [
-            'id'         => (int) $role->id,
-            'name'       => (string) $role->name,
-            'path_label' => (string) $role->getAttribute('path_label'),
-            'depth'      => (int) $role->getAttribute('depth'),
-        ])->values()->all();
+        return RoleService::flatTree('system')
+            ->map(fn ($role) => [
+                'id'         => (int) $role->id,
+                'name'       => (string) $role->name,
+                'path_label' => (string) $role->getAttribute('path_label'),
+                'depth'      => (int) $role->getAttribute('depth'),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -63,9 +72,12 @@ class Users extends AbstractCrudService
         $total = (clone $query)->count();
         $stats = [
             $total,
-            (clone $query)->where('status', true)->count(),
-            (clone $query)->whereNotNull('email_verified_at')->count(),
-            (clone $query)->where('created_at', '>=', now()->subDays(30))->count(),
+            (clone $query)->where('status', true)
+                ->count(),
+            (clone $query)->whereNotNull('email_verified_at')
+                ->count(),
+            (clone $query)->where('created_at', '>=', now()->subDays(30))
+                ->count(),
         ];
 
         if (isset($data['status']) && $data['status'] !== '') {
@@ -82,8 +94,15 @@ class Users extends AbstractCrudService
         }
 
         $filtered = (clone $query)->count();
-        $columns = [1 => 'name', 2 => 'email', 3 => 'status', 4 => 'email_verified_at', 5 => 'created_at'];
-        $query->orderBy($columns[$data['order'][0]['column'] ?? 1], $data['order'][0]['dir'] ?? 'asc')->orderBy('id');
+        $columns = [
+            1 => 'name',
+            2 => 'email',
+            3 => 'status',
+            4 => 'email_verified_at',
+            5 => 'created_at',
+        ];
+        $query->orderBy($columns[$data['order'][0]['column'] ?? 1], $data['order'][0]['dir'] ?? 'asc')
+            ->orderBy('id');
 
         return Response::make(true, '', [
             'draw'            => (int) $data['draw'],
@@ -91,7 +110,8 @@ class Users extends AbstractCrudService
             'recordsFiltered' => $filtered,
             'data'            => UserResource::collection($query->offset((int) $data['start'])
                 ->limit((int) $data['length'])
-                ->get())->resolve(),
+                ->get())
+                ->resolve(),
             'stats'           => $stats,
         ]);
     }
@@ -106,7 +126,8 @@ class Users extends AbstractCrudService
      */
     public function record(int $id): User
     {
-        return User::query()->findOrFail($id);
+        return User::query()
+            ->findOrFail($id);
     }
 
     /**
@@ -132,7 +153,10 @@ class Users extends AbstractCrudService
         $version = null;
 
         $record = DB::transaction(function () use ($data, $id, $actorId, $context, &$version) {
-            $all = User::query()->orderBy('id')->lockForUpdate()->get();
+            $all = User::query()
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
 
             $record = $id ? $all->firstWhere('id', $id) : new User;
             if (! $record) {
@@ -187,8 +211,19 @@ class Users extends AbstractCrudService
                 throw ValidationException::withMessages(['email' => __('users.duplicate')]);
             }
 
-            $after = array_replace($record->toArray(), ['role_ids' => collect($roleIds)->sort()->values()->all()]);
+            $after = array_replace($record->toArray(), [
+                'role_ids' => collect($roleIds)
+                    ->sort()
+                    ->values()
+                    ->all(),
+            ]);
             app(RecordHistory::class)->record('users', (int) $record->id, $actorId, $context['operation'], $before, $after);
+
+            $changed = (! $id && $record->exists) || array_diff(array_keys($record->getChanges()), ['updated_at']) !== [] || ($before['role_ids'] ?? []) !== $after['role_ids'];
+            if ($changed) {
+                $event = $id ? new UserUpdateEvent((int) $record->id, $actorId) : new UserStoreEvent((int) $record->id, $actorId);
+                app(CommittedEventDispatcher::class)->dispatch($event, $record->getConnectionName());
+            }
 
             $version = RecordVersion::token($record->fresh(), 'users');
 
@@ -223,7 +258,10 @@ class Users extends AbstractCrudService
         $data = dto($input, BulkRequest::class);
 
         $contexts = DB::transaction(function () use ($data, $actorId) {
-            $all = User::query()->orderBy('id')->lockForUpdate()->get();
+            $all = User::query()
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
             $records = $all->whereIn('id', $data['ids']);
 
             if ($records->count() !== count($data['ids'])) {
@@ -242,20 +280,35 @@ class Users extends AbstractCrudService
 
             $contexts = [];
             foreach ($records as $record) {
-                $context = ['user_id' => $actorId, 'id' => $record->id, 'operation' => $data['operation']];
+                $context = [
+                    'user_id'   => $actorId,
+                    'id'        => $record->id,
+                    'operation' => $data['operation'],
+                ];
                 $deleting = $data['operation'] === 'delete';
 
                 Hooks::action('jobic.users.' . ($deleting ? 'deleting' : 'saving'), $context);
 
+                $changed = $deleting || (bool) $record->status !== ($data['operation'] === 'activate');
                 $before = $record->toArray();
                 if ($deleting) {
                     $record->delete();
                 } else {
-                    $record->forceFill(['status' => $data['operation'] === 'activate'])->save();
+                    $record->forceFill(['status' => $data['operation'] === 'activate'])
+                        ->save();
                 }
 
                 app(RecordHistory::class)->record('users', (int) $record->id, $actorId, $data['operation'], $before, $deleting ? [] : $record->fresh()
                     ->toArray());
+
+                if ($changed && ($deleting ? ! $record->exists : $record->wasChanged('status'))) {
+                    $eventClass = match ($data['operation']) {
+                        'delete' => UserDeleteEvent::class,
+                        'activate' => UserActivateEvent::class,
+                        'deactivate' => UserDeactivateEvent::class,
+                    };
+                    app(CommittedEventDispatcher::class)->dispatch(new $eventClass((int) $record->id, $actorId), $record->getConnectionName());
+                }
 
                 $contexts[] = $context;
             }

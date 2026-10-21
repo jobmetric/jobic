@@ -1,0 +1,240 @@
+{
+  "GeneralUpdateEvent": {
+    "group": "تنظیمات عمومی",
+    "verb": "ویرایش شد",
+    "translation": "general_updated",
+    "agg": "General",
+    "op": "updated",
+    "fields": [
+      [
+        "actorId",
+        "?int"
+      ]
+    ],
+    "key": "jobic.general.updated"
+  },
+  "MailUpdateEvent": {
+    "group": "تنظیمات ایمیل",
+    "verb": "ویرایش شد",
+    "translation": "mail_updated",
+    "agg": "Mail",
+    "op": "updated",
+    "fields": [
+      [
+        "actorId",
+        "?int"
+      ]
+    ],
+    "key": "jobic.mail.updated"
+  },
+  "CacheUpdateEvent": {
+    "group": "تنظیمات حافظهٔ نهان",
+    "verb": "ویرایش شد",
+    "translation": "cache_updated",
+    "agg": "Cache",
+    "op": "updated",
+    "fields": [
+      [
+        "actorId",
+        "?int"
+      ]
+    ],
+    "key": "jobic.cache.updated"
+  },
+  "AppearanceUpdateEvent": {
+    "group": "ظاهر حساب",
+    "verb": "ویرایش شد",
+    "translation": "appearance_updated",
+    "agg": "Appearance",
+    "op": "updated",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.appearance.updated"
+  },
+  "ProfileUpdateEvent": {
+    "group": "پروفایل",
+    "verb": "ویرایش شد",
+    "translation": "profile_updated",
+    "agg": "Profile",
+    "op": "updated",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.profile.updated"
+  },
+  "SecurityUpdateEvent": {
+    "group": "امنیت حساب",
+    "verb": "ویرایش شد",
+    "translation": "security_updated",
+    "agg": "Security",
+    "op": "updated",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.security.updated"
+  },
+  "AuthLoginEvent": {
+    "group": "ورود و خروج",
+    "verb": "وارد شد",
+    "translation": "auth_logged_in",
+    "agg": "Auth",
+    "op": "logged_in",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.auth.logged_in"
+  },
+  "AuthLogoutEvent": {
+    "group": "ورود و خروج",
+    "verb": "خارج شد",
+    "translation": "auth_logged_out",
+    "agg": "Auth",
+    "op": "logged_out",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.auth.logged_out"
+  },
+  "AuthResetLinkEvent": {
+    "group": "ورود و خروج",
+    "verb": "پیوند بازیابی ارسال شد",
+    "translation": "auth_reset_link_sent",
+    "agg": "Auth",
+    "op": "reset_link_sent",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.auth.reset_link_sent"
+  },
+  "AuthPasswordResetEvent": {
+    "group": "ورود و خروج",
+    "verb": "رمز عبور بازیابی شد",
+    "translation": "auth_password_reset",
+    "agg": "Auth",
+    "op": "password_reset",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.auth.password_reset"
+  },
+  "AuthLanguageEvent": {
+    "group": "ورود و خروج",
+    "verb": "زبان تغییر کرد",
+    "translation": "auth_language_updated",
+    "agg": "Auth",
+    "op": "language_updated",
+    "fields": [
+      [
+        "locale",
+        "string"
+      ]
+    ],
+    "key": "jobic.auth.language_updated"
+  },
+  "TwoFactorSetupEvent": {
+    "group": "تأیید دومرحله‌ای",
+    "verb": "راه‌اندازی شد",
+    "translation": "two_factor_setup",
+    "agg": "TwoFactor",
+    "op": "setup",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.two_factor.setup"
+  },
+  "TwoFactorEnableEvent": {
+    "group": "تأیید دومرحله‌ای",
+    "verb": "فعال شد",
+    "translation": "two_factor_enabled",
+    "agg": "TwoFactor",
+    "op": "enabled",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.two_factor.enabled"
+  },
+  "TwoFactorDisableEvent": {
+    "group": "تأیید دومرحله‌ای",
+    "verb": "غیرفعال شد",
+    "translation": "two_factor_disabled",
+    "agg": "TwoFactor",
+    "op": "disabled",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.two_factor.disabled"
+  },
+  "EditorDocumentStoreEvent": {
+    "group": "سند ویرایشگر",
+    "verb": "ایجاد شد",
+    "translation": "editor_document_stored",
+    "agg": "EditorDocument",
+    "op": "stored",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.editor_document.stored"
+  },
+  "EditorDocumentUpdateEvent": {
+    "group": "سند ویرایشگر",
+    "verb": "ویرایش شد",
+    "translation": "editor_document_updated",
+    "agg": "EditorDocument",
+    "op": "updated",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.editor_document.updated"
+  },
+  "EditorDocumentDeleteEvent": {
+    "group": "سند ویرایشگر",
+    "verb": "حذف شد",
+    "translation": "editor_document_deleted",
+    "agg": "EditorDocument",
+    "op": "deleted",
+    "fields": [
+      [
+        "id",
+        "int"
+      ]
+    ],
+    "key": "jobic.editor_document.deleted"
+  }
+}

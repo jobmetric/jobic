@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Roles;
 
+use App\Events\Role\RoleDeleteEvent;
+use App\Events\Role\RoleStoreEvent;
+use App\Events\Role\RoleUpdateEvent;
 use App\Facades\Hooks;
 use App\Http\Requests\Roles\BulkRequest;
 use App\Http\Requests\Roles\HistoryRequest;
@@ -14,6 +17,7 @@ use App\Support\RecordVersion;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use JobMetric\EventSystem\Support\CommittedEventDispatcher;
 use JobMetric\PackageCore\Output\Response;
 use JobMetric\PackageCore\Services\AbstractCrudService;
 use JobMetric\Rolix\Facades\Role as RoleService;
@@ -42,13 +46,17 @@ class Roles extends AbstractCrudService
     {
         $data = dto($input, TableRequest::class);
 
-        $query = Role::query()->where('type', 'system');
+        $query = Role::query()
+            ->where('type', 'system');
         $total = (clone $query)->count();
         $stats = [
             $total,
-            (clone $query)->where('is_default', true)->count(),
-            (clone $query)->where('is_super', true)->count(),
-            (clone $query)->whereNotNull('parent_id')->count(),
+            (clone $query)->where('is_default', true)
+                ->count(),
+            (clone $query)->where('is_super', true)
+                ->count(),
+            (clone $query)->whereNotNull('parent_id')
+                ->count(),
         ];
 
         $records = RoleService::flatTree('system');
@@ -61,8 +69,7 @@ class Roles extends AbstractCrudService
         });
 
         if ($term = mb_strtolower((string) ($data['search']['value'] ?? ''))) {
-            $records = $records->filter(static fn (Role $role
-            ) => str_contains(mb_strtolower((string) $role->name), $term) || str_contains(mb_strtolower((string) $role->description), $term));
+            $records = $records->filter(static fn (Role $role) => str_contains(mb_strtolower((string) $role->name), $term) || str_contains(mb_strtolower((string) $role->description), $term));
         }
 
         $filtered = $records->count();
@@ -70,7 +77,11 @@ class Roles extends AbstractCrudService
         $direction = $data['order'][0]['dir'] ?? 'asc';
 
         if ($column !== 1) {
-            $keys = [2 => 'is_default', 3 => 'is_super', 4 => 'ordering'];
+            $keys = [
+                2 => 'is_default',
+                3 => 'is_super',
+                4 => 'ordering',
+            ];
             $records = $records->sortBy($keys[$column] ?? 'ordering', SORT_REGULAR, $direction === 'desc');
         } else {
             if ($direction === 'desc') {
@@ -78,15 +89,18 @@ class Roles extends AbstractCrudService
             }
         }
 
-        $records = $records->slice((int) $data['start'], (int) $data['length'])->map(fn (Role $role) => [
-            'id'         => $role->id,
-            'name'       => $role->name,
-            'path_label' => $role->getAttribute('path_label'),
-            'depth'      => (int) $role->getAttribute('depth'),
-            'is_default' => (bool) $role->is_default,
-            'is_super'   => (bool) $role->is_super,
-            'ordering'   => $role->ordering,
-        ])->values()->all();
+        $records = $records->slice((int) $data['start'], (int) $data['length'])
+            ->map(fn (Role $role) => [
+                'id'         => $role->id,
+                'name'       => $role->name,
+                'path_label' => $role->getAttribute('path_label'),
+                'depth'      => (int) $role->getAttribute('depth'),
+                'is_default' => (bool) $role->is_default,
+                'is_super'   => (bool) $role->is_super,
+                'ordering'   => $role->ordering,
+            ])
+            ->values()
+            ->all();
 
         return Response::make(true, '', [
             'draw'            => (int) $data['draw'],
@@ -107,7 +121,10 @@ class Roles extends AbstractCrudService
      */
     public function record(int $id): Role
     {
-        return Role::query()->where('type', 'system')->with('rules')->findOrFail($id);
+        return Role::query()
+            ->where('type', 'system')
+            ->with('rules')
+            ->findOrFail($id);
     }
 
     /**
@@ -119,7 +136,11 @@ class Roles extends AbstractCrudService
      */
     public function parentOptions(?int $exceptId = null): array
     {
-        $excluded = $exceptId ? $this->record($exceptId)->descendants()->pluck('id')->push($exceptId)->all() : [];
+        $excluded = $exceptId ? $this->record($exceptId)
+            ->descendants()
+            ->pluck('id')
+            ->push($exceptId)
+            ->all() : [];
 
         return RoleService::flatTree('system')
             ->reject(fn (Role $role) => in_array($role->id, $excluded, true))
@@ -154,7 +175,10 @@ class Roles extends AbstractCrudService
         $version = null;
 
         $record = DB::transaction(function () use ($data, $id, $actorId, $context, &$version) {
-            $existing = $id ? Role::query()->where('type', 'system')->lockForUpdate()->find($id) : null;
+            $existing = $id ? Role::query()
+                ->where('type', 'system')
+                ->lockForUpdate()
+                ->find($id) : null;
             if ($id && ! $existing) {
                 throw (new ModelNotFoundException)->setModel(Role::class, [$id]);
             }
@@ -166,6 +190,7 @@ class Roles extends AbstractCrudService
             unset($data['_version']);
             $data['type'] = 'system';
             $data['rules'] ??= [];
+            $eventBefore = $existing ? $this->eventState($existing) : null;
             $before = $existing?->toArray() ?? [];
 
             Hooks::action('jobic.roles.saving', $context);
@@ -179,6 +204,10 @@ class Roles extends AbstractCrudService
             $saved = $result->data->resource;
             $saved = $saved->fresh(['rules']);
             app(RecordHistory::class)->record('roles', (int) $saved->id, $actorId, $context['operation'], $before, $saved->toArray());
+            if (! $id || $eventBefore !== $this->eventState($saved)) {
+                $event = $id ? new RoleUpdateEvent((int) $saved->id, $actorId) : new RoleStoreEvent((int) $saved->id, $actorId);
+                app(CommittedEventDispatcher::class)->dispatch($event, $saved->getConnectionName());
+            }
             $version = RecordVersion::token($saved, 'roles');
 
             return $saved;
@@ -248,6 +277,11 @@ class Roles extends AbstractCrudService
 
                 app(RecordHistory::class)->record('roles', (int) $record->id, $actorId, 'delete', $before, []);
 
+                if (! Role::query()
+                    ->whereKey($record->id)
+                    ->exists()) {
+                    app(CommittedEventDispatcher::class)->dispatch(new RoleDeleteEvent((int) $record->id, $actorId), $record->getConnectionName());
+                }
                 $contexts[] = $context;
             }
 
@@ -276,5 +310,26 @@ class Roles extends AbstractCrudService
         $this->record($id);
 
         return app(RecordHistory::class)->page('roles', $id, (int) ($data['page'] ?? 1));
+    }
+
+    /**
+     * Compare role meaning while excluding timestamps and generated rule identifiers.
+     *
+     * @param Role $role
+     *
+     * @return array<string, mixed>
+     */
+    private function eventState(Role $role): array
+    {
+        $state = $role->only($role->getFillable());
+        $state['rules'] = $role->rules()
+            ->get()
+            ->map(static fn ($rule) => [
+                'driver'  => $rule->driver,
+                'payload' => $rule->payload,
+            ])
+            ->all();
+
+        return $state;
     }
 }

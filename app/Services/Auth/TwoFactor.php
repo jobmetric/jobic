@@ -27,16 +27,23 @@ class TwoFactor
      * Validate an enrollment operation and persist it under an account lock.
      *
      * @param array<string, mixed> $data
+     * @param int $userId
      *
+     * @return Response
      * @throws Throwable
      */
     public function update(array $data, int $userId): Response
     {
         $values = dto($data, TwoFactorRequest::class);
 
-        $context = ['user_id' => $userId, 'operation' => $values['action']];
+        $context = [
+            'user_id'   => $userId,
+            'operation' => $values['action'],
+        ];
         $result = DB::transaction(function () use ($values, $userId, $context): array {
-            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $user = User::query()
+                ->lockForUpdate()
+                ->findOrFail($userId);
             $google = new Google2FA;
             $action = $values['action'];
             $codes = [];
@@ -47,7 +54,10 @@ class TwoFactor
                 }
 
                 $secret = $google->generateSecretKey();
-                $changes = ['two_factor_pending_secret' => $secret, 'two_factor_pending_at' => now()];
+                $changes = [
+                    'two_factor_pending_secret' => $secret,
+                    'two_factor_pending_at'     => now(),
+                ];
                 $uri = $google->getQRCodeUrl((string) config('app.name'), $user->email, $secret);
                 $writer = new Writer(new ImageRenderer(new RendererStyle(240), new SvgImageBackEnd));
                 $result = [
@@ -55,55 +65,63 @@ class TwoFactor
                     'secret' => $secret,
                     'qr'     => 'data:image/svg+xml;base64,' . base64_encode($writer->writeString($uri)),
                 ];
-            }
-            else if ($action === 'enable') {
-                if ($user->two_factor_enabled_at || ! $user->two_factor_pending_at || $user->two_factor_pending_at->lt(now()->subMinutes(10))) {
-                    throw ValidationException::withMessages(['code' => __('two-factor.expired')]);
-                }
+            } else {
+                if ($action === 'enable') {
+                    if ($user->two_factor_enabled_at || ! $user->two_factor_pending_at || $user->two_factor_pending_at->lt(now()->subMinutes(10))) {
+                        throw ValidationException::withMessages(['code' => __('two-factor.expired')]);
+                    }
 
-                $step = $google->verifyKeyNewer($user->two_factor_pending_secret, $values['code'], 0, 1);
-                if ($step === false) {
-                    throw ValidationException::withMessages(['code' => __('two-factor.invalid')]);
-                }
+                    $step = $google->verifyKeyNewer($user->two_factor_pending_secret, $values['code'], 0, 1);
+                    if ($step === false) {
+                        throw ValidationException::withMessages(['code' => __('two-factor.invalid')]);
+                    }
 
-                for ($i = 0 ; $i < 8 ; $i++) {
-                    $codes[] = bin2hex(random_bytes(8));
-                }
+                    for ($i = 0 ; $i < 8 ; $i++) {
+                        $codes[] = bin2hex(random_bytes(8));
+                    }
 
-                $changes = [
-                    'two_factor_secret'         => $user->two_factor_pending_secret,
-                    'two_factor_enabled_at'     => now(),
-                    'two_factor_last_step'      => $step,
-                    'two_factor_pending_secret' => null,
-                    'two_factor_pending_at'     => null,
-                    'two_factor_recovery_codes' => array_map(fn (string $code
-                    ): string => hash('sha256', $code), $codes),
-                    'remember_token'            => Str::random(60),
-                ];
-                $result = [
-                    'enabled'        => true,
-                    'recovery_codes' => $codes,
-                ];
-            }
-            else {
-                if (! $user->two_factor_enabled_at || ! $this->consume($user, $values['code'])) {
-                    throw ValidationException::withMessages(['code' => __('two-factor.invalid')]);
-                }
+                    $changes = [
+                        'two_factor_secret'         => $user->two_factor_pending_secret,
+                        'two_factor_enabled_at'     => now(),
+                        'two_factor_last_step'      => $step,
+                        'two_factor_pending_secret' => null,
+                        'two_factor_pending_at'     => null,
+                        'two_factor_recovery_codes' => array_map(fn (string $code): string => hash('sha256', $code), $codes),
+                        'remember_token'            => Str::random(60),
+                    ];
+                    $result = [
+                        'enabled'        => true,
+                        'recovery_codes' => $codes,
+                    ];
+                } else {
+                    if (! $user->two_factor_enabled_at || ! $this->consume($user, $values['code'])) {
+                        throw ValidationException::withMessages(['code' => __('two-factor.invalid')]);
+                    }
 
-                $changes = [
-                    'two_factor_secret'         => null,
-                    'two_factor_enabled_at'     => null,
-                    'two_factor_last_step'      => null,
-                    'two_factor_pending_secret' => null,
-                    'two_factor_pending_at'     => null,
-                    'two_factor_recovery_codes' => null,
-                    'remember_token'            => Str::random(60),
-                ];
-                $result = ['enabled' => false];
+                    $changes = [
+                        'two_factor_secret'         => null,
+                        'two_factor_enabled_at'     => null,
+                        'two_factor_last_step'      => null,
+                        'two_factor_pending_secret' => null,
+                        'two_factor_pending_at'     => null,
+                        'two_factor_recovery_codes' => null,
+                        'remember_token'            => Str::random(60),
+                    ];
+                    $result = ['enabled' => false];
+                }
             }
 
             Hooks::action('jobic.settings.two_factor.saving', $context);
-            $user->forceFill($changes)->save();
+            $user->forceFill($changes)
+                ->save();
+            $outcomeClass = match ($values['action']) {
+                'setup' => \App\Events\TwoFactor\TwoFactorSetupEvent::class,
+                'enable' => \App\Events\TwoFactor\TwoFactorEnableEvent::class,
+                'disable' => \App\Events\TwoFactor\TwoFactorDisableEvent::class,
+            };
+            if ($user->wasChanged(array_diff(array_keys($changes), ['updated_at']))) {
+                app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new $outcomeClass((int) $user->id), $user->getConnectionName());
+            }
 
             return $result;
         });
@@ -116,7 +134,10 @@ class TwoFactor
     /**
      * Consume an unused TOTP step or recovery code while the caller holds the account lock.
      *
+     * @param User $user
+     * @param string $code
      *
+     * @return bool
      * @throws Throwable
      */
     public function consume(User $user, string $code): bool
@@ -131,7 +152,8 @@ class TwoFactor
                 return false;
             }
 
-            $user->forceFill(['two_factor_last_step' => $step])->save();
+            $user->forceFill(['two_factor_last_step' => $step])
+                ->save();
 
             return true;
         }
@@ -144,7 +166,8 @@ class TwoFactor
         }
 
         unset($codes[$index]);
-        $user->forceFill(['two_factor_recovery_codes' => array_values($codes)])->save();
+        $user->forceFill(['two_factor_recovery_codes' => array_values($codes)])
+            ->save();
 
         return true;
     }

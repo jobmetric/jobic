@@ -117,7 +117,9 @@ class DynamicSettings
     {
         $stored = Setting::form($setting->formName());
         $values = [];
-        foreach ($builder->build()->getAllCustomFields() as $field) {
+        foreach (
+            $builder->build()
+                ->getAllCustomFields() as $field) {
             $name = $field->params['name'] ?? null;
             if (! is_string($name) || $field->type === 'password' || ($field->params['sensitive'] ?? false)) {
                 continue;
@@ -139,7 +141,9 @@ class DynamicSettings
     public function save(AbstractSetting $setting, FormBuilder $builder, array $data, int $userId): Response
     {
         $sensitive = [];
-        foreach ($builder->build()->getAllCustomFields() as $field) {
+        foreach (
+            $builder->build()
+                ->getAllCustomFields() as $field) {
             if ($field->type === 'password' || ($field->params['sensitive'] ?? false)) {
                 $sensitive[] = $field->params['name'] ?? '';
             }
@@ -160,10 +164,12 @@ class DynamicSettings
             if ($dispatch->getNumberOfParameters() >= 4) {
                 Setting::dispatch($setting::class, $data, true, $builder);
             } else {
-                Setting::dispatchByForm($setting->formName(), collect($data)->mapWithKeys(fn (
-                    mixed $value,
-                    string $key
-                ): array => [$setting->formName() . '_' . $key => $value])->all());
+                Setting::dispatchByForm($setting->formName(), collect($data)
+                    ->mapWithKeys(fn (
+                        mixed $value,
+                        string $key
+                    ): array => [$setting->formName() . '_' . $key => $value])
+                    ->all());
             }
         } catch (Throwable $exception) {
             Log::error('Dynamic settings persistence failed.', [
