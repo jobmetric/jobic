@@ -9,31 +9,38 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "bacon/bacon-qr-code": "^3.0",
+        "ext-dom": "*",
+        "ext-libxml": "*",
         "ext-pdo": "*",
         "ext-redis": "*",
         "ext-zip": "*",
-        "ext-dom": "*",
-        "ext-libxml": "*",
-        "bacon/bacon-qr-code": "^3.0",
         "jobmetric/domi": "^1.14.2",
-        "jobmetric/laravel-comment": "^1.1.1",
+        "jobmetric/laravel-comment": "^1.2.0",
         "jobmetric/laravel-custom-field": "^2.3.1",
         "jobmetric/laravel-env-modifier": "^2.2",
-        "jobmetric/laravel-flow": "^2.4.4",
-        "jobmetric/laravel-language": "^2.5.1",
-        "jobmetric/laravel-metadata": "^4.0.3",
-        "jobmetric/laravel-package-core": "^1.38.1",
-        "jobmetric/laravel-post": "^1.1.1",
-        "jobmetric/laravel-setting": "^2.1.2",
-        "jobmetric/laravel-taxonomy": "^4.3",
-        "jobmetric/laravel-translation": "^4.0.2",
-        "jobmetric/media": "^2.2.1",
-        "jobmetric/rolix": "^1.3.2",
+        "jobmetric/laravel-event-system": "^2.10.3",
+        "jobmetric/laravel-extension": "^2.2.0",
+        "jobmetric/laravel-flow": "^2.5.0",
+        "jobmetric/laravel-language": "^2.6.0",
+        "jobmetric/laravel-layout": "^2.1.0",
+        "jobmetric/laravel-like": "^1.6.0",
+        "jobmetric/laravel-membership": "^1.4.0",
+        "jobmetric/laravel-metadata": "^4.1.0",
+        "jobmetric/laravel-package-core": "^1.39.0",
+        "jobmetric/laravel-post": "^1.2.1",
+        "jobmetric/laravel-setting": "^2.2.0",
+        "jobmetric/laravel-star": "^1.2.0",
+        "jobmetric/laravel-taxonomy": "^4.4.0",
+        "jobmetric/laravel-translation": "^4.1.0",
+        "jobmetric/laravel-url": "^3.1.0",
+        "jobmetric/media": "^2.3.0",
+        "jobmetric/rolix": "^1.4.0",
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "lorisleiva/laravel-actions": "^2.9",
+        "php": "^8.3",
         "pragmarx/google2fa": "^9.0",
         "spatie/laravel-query-builder": "^6.3|^7.0",
         "tymon/jwt-auth": "^2.2"
@@ -91,16 +98,6 @@
             "php-http/discovery": true
         }
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../maral/packages/laravel-post",
-            "options": {
-                "symlink": true,
-                "versions": {"jobmetric/laravel-post": "1.2.0"}
-            }
-        }
-    ],
     "minimum-stability": "stable",
     "prefer-stable": true
 }

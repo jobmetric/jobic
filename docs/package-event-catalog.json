@@ -1,0 +1,2102 @@
+{
+  "laravel-comment": {
+    "JobMetric\\Comment\\Events\\Comment\\CommentStoreCommittedEvent": {
+      "aggregate": "Comment",
+      "operation": "Store",
+      "key": "comment.comment.stored.committed",
+      "translation": "comment_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Comment\\Events\\Comment\\CommentUpdateCommittedEvent": {
+      "aggregate": "Comment",
+      "operation": "Update",
+      "key": "comment.comment.updated.committed",
+      "translation": "comment_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Comment\\Events\\Comment\\CommentDeleteCommittedEvent": {
+      "aggregate": "Comment",
+      "operation": "Delete",
+      "key": "comment.comment.deleted.committed",
+      "translation": "comment_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Comment\\Events\\Comment\\CommentApproveCommittedEvent": {
+      "aggregate": "Comment",
+      "operation": "Approve",
+      "key": "comment.comment.approved.committed",
+      "translation": "comment_approved",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "approved",
+      "fa": "تأیید شد"
+    }
+  },
+  "laravel-like": {
+    "JobMetric\\Like\\Events\\Like\\LikeStoreCommittedEvent": {
+      "aggregate": "Like",
+      "operation": "Store",
+      "key": "like.like.stored.committed",
+      "translation": "like_stored",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "userId",
+          "int"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Like\\Events\\Like\\LikeUpdateCommittedEvent": {
+      "aggregate": "Like",
+      "operation": "Update",
+      "key": "like.like.updated.committed",
+      "translation": "like_updated",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "userId",
+          "int"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Like\\Events\\Like\\LikeDeleteCommittedEvent": {
+      "aggregate": "Like",
+      "operation": "Delete",
+      "key": "like.like.deleted.committed",
+      "translation": "like_deleted",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "userId",
+          "int"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    }
+  },
+  "laravel-star": {
+    "JobMetric\\Star\\Events\\Star\\StarStoreCommittedEvent": {
+      "aggregate": "Star",
+      "operation": "Store",
+      "key": "star.star.stored.committed",
+      "translation": "star_stored",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "userId",
+          "int"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Star\\Events\\Star\\StarUpdateCommittedEvent": {
+      "aggregate": "Star",
+      "operation": "Update",
+      "key": "star.star.updated.committed",
+      "translation": "star_updated",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "userId",
+          "int"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Star\\Events\\Star\\StarDeleteCommittedEvent": {
+      "aggregate": "Star",
+      "operation": "Delete",
+      "key": "star.star.deleted.committed",
+      "translation": "star_deleted",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "userId",
+          "int"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    }
+  },
+  "laravel-language": {
+    "JobMetric\\Language\\Events\\Language\\LanguageStoreCommittedEvent": {
+      "aggregate": "Language",
+      "operation": "Store",
+      "key": "language.language.stored.committed",
+      "translation": "language_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Language\\Events\\Language\\LanguageUpdateCommittedEvent": {
+      "aggregate": "Language",
+      "operation": "Update",
+      "key": "language.language.updated.committed",
+      "translation": "language_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Language\\Events\\Language\\LanguageDeleteCommittedEvent": {
+      "aggregate": "Language",
+      "operation": "Delete",
+      "key": "language.language.deleted.committed",
+      "translation": "language_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    }
+  },
+  "laravel-metadata": {
+    "JobMetric\\Metadata\\Events\\Metadata\\MetadataStoreCommittedEvent": {
+      "aggregate": "Metadata",
+      "operation": "Store",
+      "key": "metadata.metadata.stored.committed",
+      "translation": "metadata_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Metadata\\Events\\Metadata\\MetadataDeleteCommittedEvent": {
+      "aggregate": "Metadata",
+      "operation": "Delete",
+      "key": "metadata.metadata.deleted.committed",
+      "translation": "metadata_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    }
+  },
+  "laravel-event-system": {
+    "JobMetric\\EventSystem\\Events\\EventSystem\\EventSystemStoreCommittedEvent": {
+      "aggregate": "EventSystem",
+      "operation": "Store",
+      "key": "event-system.event_system.stored.committed",
+      "translation": "event_system_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\EventSystem\\Events\\EventSystem\\EventSystemDeleteCommittedEvent": {
+      "aggregate": "EventSystem",
+      "operation": "Delete",
+      "key": "event-system.event_system.deleted.committed",
+      "translation": "event_system_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\EventSystem\\Events\\EventSystem\\EventSystemUpdateCommittedEvent": {
+      "aggregate": "EventSystem",
+      "operation": "Update",
+      "key": "event-system.event_system.updated.committed",
+      "translation": "event_system_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    }
+  },
+  "laravel-flow": {
+    "JobMetric\\Flow\\Events\\Flow\\FlowStoreCommittedEvent": {
+      "aggregate": "Flow",
+      "operation": "Store",
+      "key": "flow.stored.committed",
+      "translation": "flow_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Flow\\Events\\Flow\\FlowUpdateCommittedEvent": {
+      "aggregate": "Flow",
+      "operation": "Update",
+      "key": "flow.updated.committed",
+      "translation": "flow_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Flow\\Events\\Flow\\FlowDeleteCommittedEvent": {
+      "aggregate": "Flow",
+      "operation": "Delete",
+      "key": "flow.deleted.committed",
+      "translation": "flow_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Flow\\Events\\Flow\\FlowRestoreCommittedEvent": {
+      "aggregate": "Flow",
+      "operation": "Restore",
+      "key": "flow.restored.committed",
+      "translation": "flow_restored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "restored",
+      "fa": "بازیابی شد"
+    },
+    "JobMetric\\Flow\\Events\\Flow\\FlowForceDeleteCommittedEvent": {
+      "aggregate": "Flow",
+      "operation": "ForceDelete",
+      "key": "flow.force_deleted.committed",
+      "translation": "flow_force_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "permanently deleted",
+      "fa": "برای همیشه حذف شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowState\\FlowStateStoreCommittedEvent": {
+      "aggregate": "FlowState",
+      "operation": "Store",
+      "key": "flow_state.stored.committed",
+      "translation": "flow_state_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowState\\FlowStateUpdateCommittedEvent": {
+      "aggregate": "FlowState",
+      "operation": "Update",
+      "key": "flow_state.updated.committed",
+      "translation": "flow_state_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowState\\FlowStateDeleteCommittedEvent": {
+      "aggregate": "FlowState",
+      "operation": "Delete",
+      "key": "flow_state.deleted.committed",
+      "translation": "flow_state_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowTask\\FlowTaskStoreCommittedEvent": {
+      "aggregate": "FlowTask",
+      "operation": "Store",
+      "key": "flow_task.stored.committed",
+      "translation": "flow_task_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowTask\\FlowTaskUpdateCommittedEvent": {
+      "aggregate": "FlowTask",
+      "operation": "Update",
+      "key": "flow_task.updated.committed",
+      "translation": "flow_task_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowTask\\FlowTaskDeleteCommittedEvent": {
+      "aggregate": "FlowTask",
+      "operation": "Delete",
+      "key": "flow_task.deleted.committed",
+      "translation": "flow_task_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowTransition\\FlowTransitionStoreCommittedEvent": {
+      "aggregate": "FlowTransition",
+      "operation": "Store",
+      "key": "flow_transition.stored.committed",
+      "translation": "flow_transition_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowTransition\\FlowTransitionUpdateCommittedEvent": {
+      "aggregate": "FlowTransition",
+      "operation": "Update",
+      "key": "flow_transition.updated.committed",
+      "translation": "flow_transition_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowTransition\\FlowTransitionDeleteCommittedEvent": {
+      "aggregate": "FlowTransition",
+      "operation": "Delete",
+      "key": "flow_transition.deleted.committed",
+      "translation": "flow_transition_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowTransition\\FlowTransitionExecuteCommittedEvent": {
+      "aggregate": "FlowTransition",
+      "operation": "Execute",
+      "key": "workflow.flow_transition.executed.committed",
+      "translation": "flow_transition_executed",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ],
+        [
+          "subjectType",
+          "string"
+        ],
+        [
+          "subjectId",
+          "int|string"
+        ]
+      ],
+      "title": "executed",
+      "fa": "اجرا شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowBinding\\FlowBindingAttachCommittedEvent": {
+      "aggregate": "FlowBinding",
+      "operation": "Attach",
+      "key": "workflow.flow_binding.attached.committed",
+      "translation": "flow_binding_attached",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "flowId",
+          "int"
+        ]
+      ],
+      "title": "attached",
+      "fa": "متصل شد"
+    },
+    "JobMetric\\Flow\\Events\\FlowBinding\\FlowBindingDetachCommittedEvent": {
+      "aggregate": "FlowBinding",
+      "operation": "Detach",
+      "key": "workflow.flow_binding.detached.committed",
+      "translation": "flow_binding_detached",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "flowId",
+          "int"
+        ]
+      ],
+      "title": "detached",
+      "fa": "جدا شد"
+    }
+  },
+  "laravel-layout": {
+    "JobMetric\\Layout\\Events\\Layout\\LayoutStoreCommittedEvent": {
+      "aggregate": "Layout",
+      "operation": "Store",
+      "key": "layout.stored.committed",
+      "translation": "layout_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Layout\\Events\\Layout\\LayoutUpdateCommittedEvent": {
+      "aggregate": "Layout",
+      "operation": "Update",
+      "key": "layout.updated.committed",
+      "translation": "layout_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Layout\\Events\\Layout\\LayoutDeleteCommittedEvent": {
+      "aggregate": "Layout",
+      "operation": "Delete",
+      "key": "layout.deleted.committed",
+      "translation": "layout_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Layout\\Events\\Layout\\LayoutRestoreCommittedEvent": {
+      "aggregate": "Layout",
+      "operation": "Restore",
+      "key": "layout.restored.committed",
+      "translation": "layout_restored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "restored",
+      "fa": "بازیابی شد"
+    },
+    "JobMetric\\Layout\\Events\\Layout\\LayoutForceDeleteCommittedEvent": {
+      "aggregate": "Layout",
+      "operation": "ForceDelete",
+      "key": "layout.force_deleted.committed",
+      "translation": "layout_force_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "permanently deleted",
+      "fa": "برای همیشه حذف شد"
+    },
+    "JobMetric\\Layout\\Events\\LayoutRelation\\LayoutRelationStoreCommittedEvent": {
+      "aggregate": "LayoutRelation",
+      "operation": "Store",
+      "key": "layout.layout_relation.stored.committed",
+      "translation": "layout_relation_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Layout\\Events\\LayoutRelation\\LayoutRelationDeleteCommittedEvent": {
+      "aggregate": "LayoutRelation",
+      "operation": "Delete",
+      "key": "layout.layout_relation.deleted.committed",
+      "translation": "layout_relation_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Layout\\Events\\LayoutPages\\LayoutPagesSyncCommittedEvent": {
+      "aggregate": "LayoutPages",
+      "operation": "Sync",
+      "key": "layout.layout_pages.synced.committed",
+      "translation": "layout_pages_synced",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "synchronized",
+      "fa": "همگام شد"
+    },
+    "JobMetric\\Layout\\Events\\LayoutPlugins\\LayoutPluginsSyncCommittedEvent": {
+      "aggregate": "LayoutPlugins",
+      "operation": "Sync",
+      "key": "layout.layout_plugins.synced.committed",
+      "translation": "layout_plugins_synced",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "synchronized",
+      "fa": "همگام شد"
+    }
+  },
+  "laravel-extension": {
+    "JobMetric\\Extension\\Events\\Extension\\ExtensionDeleteCommittedEvent": {
+      "aggregate": "Extension",
+      "operation": "Delete",
+      "key": "extension.deleted.committed",
+      "translation": "extension_deleted",
+      "fields": [
+        [
+          "namespace",
+          "string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Extension\\Events\\Plugin\\PluginStoreCommittedEvent": {
+      "aggregate": "Plugin",
+      "operation": "Store",
+      "key": "plugin.stored.committed",
+      "translation": "plugin_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Extension\\Events\\Plugin\\PluginUpdateCommittedEvent": {
+      "aggregate": "Plugin",
+      "operation": "Update",
+      "key": "plugin.updated.committed",
+      "translation": "plugin_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Extension\\Events\\Plugin\\PluginDeleteCommittedEvent": {
+      "aggregate": "Plugin",
+      "operation": "Delete",
+      "key": "plugin.deleted.committed",
+      "translation": "plugin_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Extension\\Events\\Extension\\ExtensionInstallCommittedEvent": {
+      "aggregate": "Extension",
+      "operation": "Install",
+      "key": "extension.installed.committed",
+      "translation": "extension_installed",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "installed",
+      "fa": "نصب شد"
+    },
+    "JobMetric\\Extension\\Events\\Extension\\ExtensionUninstallCommittedEvent": {
+      "aggregate": "Extension",
+      "operation": "Uninstall",
+      "key": "extension.uninstalled.committed",
+      "translation": "extension_uninstalled",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "uninstalled",
+      "fa": "حذف نصب شد"
+    }
+  },
+  "rolix": {
+    "JobMetric\\Rolix\\Events\\Membership\\MembershipStoreCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Store",
+      "key": "membership.stored.committed",
+      "translation": "membership_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Rolix\\Events\\Membership\\MembershipUpdateCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Update",
+      "key": "membership.updated.committed",
+      "translation": "membership_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Rolix\\Events\\Membership\\MembershipDeleteCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Delete",
+      "key": "membership.deleted.committed",
+      "translation": "membership_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Rolix\\Events\\Membership\\MembershipRestoreCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Restore",
+      "key": "membership.restored.committed",
+      "translation": "membership_restored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "restored",
+      "fa": "بازیابی شد"
+    },
+    "JobMetric\\Rolix\\Events\\Membership\\MembershipForceDeleteCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "ForceDelete",
+      "key": "membership.force_deleted.committed",
+      "translation": "membership_force_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "permanently deleted",
+      "fa": "برای همیشه حذف شد"
+    },
+    "JobMetric\\Rolix\\Events\\Role\\RoleStoreCommittedEvent": {
+      "aggregate": "Role",
+      "operation": "Store",
+      "key": "role.stored.committed",
+      "translation": "role_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Rolix\\Events\\Role\\RoleUpdateCommittedEvent": {
+      "aggregate": "Role",
+      "operation": "Update",
+      "key": "role.updated.committed",
+      "translation": "role_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Rolix\\Events\\Role\\RoleDeleteCommittedEvent": {
+      "aggregate": "Role",
+      "operation": "Delete",
+      "key": "role.deleted.committed",
+      "translation": "role_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Rolix\\Events\\RoleRules\\RoleRulesSyncCommittedEvent": {
+      "aggregate": "RoleRules",
+      "operation": "Sync",
+      "key": "rolix.role_rules.synced.committed",
+      "translation": "role_rules_synced",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "synchronized",
+      "fa": "همگام شد"
+    }
+  },
+  "laravel-membership": {
+    "JobMetric\\Membership\\Events\\Membership\\MembershipStoreCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Store",
+      "key": "membership.membership.stored.committed",
+      "translation": "membership_stored",
+      "fields": [
+        [
+          "personType",
+          "string"
+        ],
+        [
+          "personId",
+          "int"
+        ],
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "collection",
+          "?string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Membership\\Events\\Membership\\MembershipDeleteCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Delete",
+      "key": "membership.membership.deleted.committed",
+      "translation": "membership_deleted",
+      "fields": [
+        [
+          "personType",
+          "string"
+        ],
+        [
+          "personId",
+          "int"
+        ],
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "collection",
+          "?string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Membership\\Events\\Membership\\MembershipRenewCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Renew",
+      "key": "membership.membership.renewed.committed",
+      "translation": "membership_renewed",
+      "fields": [
+        [
+          "personType",
+          "string"
+        ],
+        [
+          "personId",
+          "int"
+        ],
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "collection",
+          "?string"
+        ]
+      ],
+      "title": "renewed",
+      "fa": "تمدید شد"
+    },
+    "JobMetric\\Membership\\Events\\Membership\\MembershipUpdateCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Update",
+      "key": "membership.membership.updated.committed",
+      "translation": "membership_updated",
+      "fields": [
+        [
+          "personType",
+          "string"
+        ],
+        [
+          "personId",
+          "int"
+        ],
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "collection",
+          "?string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Membership\\Events\\Membership\\MembershipExpireCommittedEvent": {
+      "aggregate": "Membership",
+      "operation": "Expire",
+      "key": "membership.membership.expired.committed",
+      "translation": "membership_expired",
+      "fields": [
+        [
+          "personType",
+          "string"
+        ],
+        [
+          "personId",
+          "int"
+        ],
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int"
+        ],
+        [
+          "collection",
+          "?string"
+        ]
+      ],
+      "title": "expired",
+      "fa": "منقضی شد"
+    }
+  },
+  "laravel-translation": {
+    "JobMetric\\Translation\\Events\\Translation\\TranslationStoreCommittedEvent": {
+      "aggregate": "Translation",
+      "operation": "Store",
+      "key": "translation.translation.stored.committed",
+      "translation": "translation_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Translation\\Events\\Translation\\TranslationDeleteCommittedEvent": {
+      "aggregate": "Translation",
+      "operation": "Delete",
+      "key": "translation.translation.deleted.committed",
+      "translation": "translation_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    }
+  },
+  "laravel-setting": {
+    "JobMetric\\Setting\\Events\\Setting\\SettingStoreCommittedEvent": {
+      "aggregate": "Setting",
+      "operation": "Store",
+      "key": "setting.setting.stored.committed",
+      "translation": "setting_stored",
+      "fields": [
+        [
+          "form",
+          "string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Setting\\Events\\Setting\\SettingUpdateCommittedEvent": {
+      "aggregate": "Setting",
+      "operation": "Update",
+      "key": "setting.setting.updated.committed",
+      "translation": "setting_updated",
+      "fields": [
+        [
+          "form",
+          "string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Setting\\Events\\Setting\\SettingDeleteCommittedEvent": {
+      "aggregate": "Setting",
+      "operation": "Delete",
+      "key": "setting.setting.deleted.committed",
+      "translation": "setting_deleted",
+      "fields": [
+        [
+          "form",
+          "string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    }
+  },
+  "laravel-url": {
+    "JobMetric\\Url\\Events\\Url\\UrlUpdateCommittedEvent": {
+      "aggregate": "Url",
+      "operation": "Update",
+      "key": "url.url.updated.committed",
+      "translation": "url_updated",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "version",
+          "int"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Url\\Events\\Slug\\SlugDeleteCommittedEvent": {
+      "aggregate": "Slug",
+      "operation": "Delete",
+      "key": "url.slug.deleted.committed",
+      "translation": "slug_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Url\\Events\\Url\\UrlStoreCommittedEvent": {
+      "aggregate": "Url",
+      "operation": "Store",
+      "key": "url.url.stored.committed",
+      "translation": "url_stored",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "version",
+          "int"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Url\\Events\\Slug\\SlugStoreCommittedEvent": {
+      "aggregate": "Slug",
+      "operation": "Store",
+      "key": "url.slug.stored.committed",
+      "translation": "slug_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Url\\Events\\Slug\\SlugUpdateCommittedEvent": {
+      "aggregate": "Slug",
+      "operation": "Update",
+      "key": "url.slug.updated.committed",
+      "translation": "slug_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    }
+  },
+  "laravel-taxonomy": {
+    "JobMetric\\Taxonomy\\Events\\Taxonomy\\TaxonomyStoreCommittedEvent": {
+      "aggregate": "Taxonomy",
+      "operation": "Store",
+      "key": "taxonomy.taxonomy.stored.committed",
+      "translation": "taxonomy_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Taxonomy\\Events\\Taxonomy\\TaxonomyUpdateCommittedEvent": {
+      "aggregate": "Taxonomy",
+      "operation": "Update",
+      "key": "taxonomy.taxonomy.updated.committed",
+      "translation": "taxonomy_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Taxonomy\\Events\\Taxonomy\\TaxonomyDeleteCommittedEvent": {
+      "aggregate": "Taxonomy",
+      "operation": "Delete",
+      "key": "taxonomy.taxonomy.deleted.committed",
+      "translation": "taxonomy_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Taxonomy\\Events\\Taxonomy\\TaxonomyMoveCommittedEvent": {
+      "aggregate": "Taxonomy",
+      "operation": "Move",
+      "key": "taxonomy.taxonomy.moved.committed",
+      "translation": "taxonomy_moved",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "moved",
+      "fa": "جابجا شد"
+    },
+    "JobMetric\\Taxonomy\\Events\\TaxonomyRelation\\TaxonomyRelationAttachCommittedEvent": {
+      "aggregate": "TaxonomyRelation",
+      "operation": "Attach",
+      "key": "taxonomy.taxonomy_relation.attached.committed",
+      "translation": "taxonomy_relation_attached",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "taxonomyId",
+          "int"
+        ]
+      ],
+      "title": "attached",
+      "fa": "متصل شد"
+    },
+    "JobMetric\\Taxonomy\\Events\\TaxonomyRelation\\TaxonomyRelationDetachCommittedEvent": {
+      "aggregate": "TaxonomyRelation",
+      "operation": "Detach",
+      "key": "taxonomy.taxonomy_relation.detached.committed",
+      "translation": "taxonomy_relation_detached",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "taxonomyId",
+          "int"
+        ]
+      ],
+      "title": "detached",
+      "fa": "جدا شد"
+    },
+    "JobMetric\\Taxonomy\\Events\\Taxonomy\\TaxonomyMergeCommittedEvent": {
+      "aggregate": "Taxonomy",
+      "operation": "Merge",
+      "key": "taxonomy.taxonomy.merged.committed",
+      "translation": "taxonomy_merged",
+      "fields": [
+        [
+          "sourceId",
+          "int"
+        ],
+        [
+          "targetId",
+          "int"
+        ]
+      ],
+      "title": "merged",
+      "fa": "ادغام شد"
+    }
+  },
+  "media": {
+    "JobMetric\\Media\\Events\\Media\\MediaUploadCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Upload",
+      "key": "media.media.uploaded.committed",
+      "translation": "media_uploaded",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "uploaded",
+      "fa": "بارگذاری شد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaRenameCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Rename",
+      "key": "media.media.renamed.committed",
+      "translation": "media_renamed",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "renamed",
+      "fa": "تغییر نام داد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaMoveCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Move",
+      "key": "media.media.moved.committed",
+      "translation": "media_moved",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "moved",
+      "fa": "جابجا شد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaCopyCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Copy",
+      "key": "media.media.copied.committed",
+      "translation": "media_copied",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "copied",
+      "fa": "کپی شد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaDeleteCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Delete",
+      "key": "media.media.deleted.committed",
+      "translation": "media_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaRestoreCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Restore",
+      "key": "media.media.restored.committed",
+      "translation": "media_restored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "restored",
+      "fa": "بازیابی شد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaForceDeleteCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "ForceDelete",
+      "key": "media.media.force_deleted.committed",
+      "translation": "media_force_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "permanently deleted",
+      "fa": "برای همیشه حذف شد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaCompressCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Compress",
+      "key": "media.media.compressed.committed",
+      "translation": "media_compressed",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "compressed",
+      "fa": "فشرده شد"
+    },
+    "JobMetric\\Media\\Events\\Media\\MediaExtractCommittedEvent": {
+      "aggregate": "Media",
+      "operation": "Extract",
+      "key": "media.media.extracted.committed",
+      "translation": "media_extracted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "extracted",
+      "fa": "استخراج شد"
+    },
+    "JobMetric\\Media\\Events\\Folder\\FolderStoreCommittedEvent": {
+      "aggregate": "Folder",
+      "operation": "Store",
+      "key": "media.folder.stored.committed",
+      "translation": "folder_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Media\\Events\\MediaRelation\\MediaRelationAttachCommittedEvent": {
+      "aggregate": "MediaRelation",
+      "operation": "Attach",
+      "key": "media.media_relation.attached.committed",
+      "translation": "media_relation_attached",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "mediaId",
+          "int"
+        ]
+      ],
+      "title": "attached",
+      "fa": "متصل شد"
+    },
+    "JobMetric\\Media\\Events\\MediaRelation\\MediaRelationDetachCommittedEvent": {
+      "aggregate": "MediaRelation",
+      "operation": "Detach",
+      "key": "media.media_relation.detached.committed",
+      "translation": "media_relation_detached",
+      "fields": [
+        [
+          "ownerType",
+          "string"
+        ],
+        [
+          "ownerId",
+          "int|string"
+        ],
+        [
+          "mediaId",
+          "int"
+        ]
+      ],
+      "title": "detached",
+      "fa": "جدا شد"
+    }
+  },
+  "laravel-post": {
+    "JobMetric\\Post\\Events\\Post\\PostStoreCommittedEvent": {
+      "aggregate": "Post",
+      "operation": "Store",
+      "key": "post.post.stored.committed",
+      "translation": "post_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Post\\Events\\Post\\PostUpdateCommittedEvent": {
+      "aggregate": "Post",
+      "operation": "Update",
+      "key": "post.post.updated.committed",
+      "translation": "post_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Post\\Events\\Post\\PostDeleteCommittedEvent": {
+      "aggregate": "Post",
+      "operation": "Delete",
+      "key": "post.post.deleted.committed",
+      "translation": "post_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "deleted",
+      "fa": "حذف شد"
+    },
+    "JobMetric\\Post\\Events\\Post\\PostRestoreCommittedEvent": {
+      "aggregate": "Post",
+      "operation": "Restore",
+      "key": "post.post.restored.committed",
+      "translation": "post_restored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "restored",
+      "fa": "بازیابی شد"
+    },
+    "JobMetric\\Post\\Events\\Post\\PostForceDeleteCommittedEvent": {
+      "aggregate": "Post",
+      "operation": "ForceDelete",
+      "key": "post.post.force_deleted.committed",
+      "translation": "post_force_deleted",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "permanently deleted",
+      "fa": "برای همیشه حذف شد"
+    },
+    "JobMetric\\Post\\Events\\PostMedia\\PostMediaSyncCommittedEvent": {
+      "aggregate": "PostMedia",
+      "operation": "Sync",
+      "key": "post.post_media.synced.committed",
+      "translation": "post_media_synced",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "synchronized",
+      "fa": "همگام شد"
+    },
+    "JobMetric\\Post\\Events\\PostTaxonomy\\PostTaxonomySyncCommittedEvent": {
+      "aggregate": "PostTaxonomy",
+      "operation": "Sync",
+      "key": "post.post_taxonomy.synced.committed",
+      "translation": "post_taxonomy_synced",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "synchronized",
+      "fa": "همگام شد"
+    },
+    "JobMetric\\Post\\Events\\PostRevision\\PostRevisionStoreCommittedEvent": {
+      "aggregate": "PostRevision",
+      "operation": "Store",
+      "key": "post.post_revision.stored.committed",
+      "translation": "post_revision_stored",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationSubmitCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Submit",
+      "key": "post.publication.submitted.committed",
+      "translation": "publication_submitted",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "submitted",
+      "fa": "ارسال شد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationApproveCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Approve",
+      "key": "post.publication.approved.committed",
+      "translation": "publication_approved",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "approved",
+      "fa": "تأیید شد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationRejectCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Reject",
+      "key": "post.publication.rejected.committed",
+      "translation": "publication_rejected",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "rejected",
+      "fa": "رد شد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationPublishCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Publish",
+      "key": "post.publication.published.committed",
+      "translation": "publication_published",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "published",
+      "fa": "منتشر شد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationRestoreCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Restore",
+      "key": "post.publication.restored.committed",
+      "translation": "publication_restored",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "restored",
+      "fa": "بازیابی شد"
+    },
+    "JobMetric\\Post\\Events\\Schedule\\SchedulePauseCommittedEvent": {
+      "aggregate": "Schedule",
+      "operation": "Pause",
+      "key": "post.schedule.paused.committed",
+      "translation": "schedule_paused",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "paused",
+      "fa": "متوقف شد"
+    },
+    "JobMetric\\Post\\Events\\Schedule\\ScheduleStoreCommittedEvent": {
+      "aggregate": "Schedule",
+      "operation": "Store",
+      "key": "post.schedule.stored.committed",
+      "translation": "schedule_stored",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Post\\Events\\Schedule\\ScheduleResumeCommittedEvent": {
+      "aggregate": "Schedule",
+      "operation": "Resume",
+      "key": "post.schedule.resumed.committed",
+      "translation": "schedule_resumed",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "resumed",
+      "fa": "از سر گرفته شد"
+    },
+    "JobMetric\\Post\\Events\\Schedule\\ScheduleExecuteCommittedEvent": {
+      "aggregate": "Schedule",
+      "operation": "Execute",
+      "key": "post.schedule.executed.committed",
+      "translation": "schedule_executed",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "executed",
+      "fa": "اجرا شد"
+    },
+    "JobMetric\\Post\\Events\\Schedule\\ScheduleCancelCommittedEvent": {
+      "aggregate": "Schedule",
+      "operation": "Cancel",
+      "key": "post.schedule.cancelled.committed",
+      "translation": "schedule_cancelled",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "cancelled",
+      "fa": "لغو شد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationWithdrawCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Withdraw",
+      "key": "post.publication.withdrawn.committed",
+      "translation": "publication_withdrawn",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "withdrawn",
+      "fa": "پس گرفته شد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationTransitionCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Transition",
+      "key": "post.publication.transitioned.committed",
+      "translation": "publication_transitioned",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "transitioned",
+      "fa": "تغییر وضعیت داد"
+    },
+    "JobMetric\\Post\\Events\\Publication\\PublicationUpdateCommittedEvent": {
+      "aggregate": "Publication",
+      "operation": "Update",
+      "key": "post.publication.updated.committed",
+      "translation": "publication_updated",
+      "fields": [
+        [
+          "postId",
+          "int"
+        ],
+        [
+          "streamId",
+          "int"
+        ],
+        [
+          "revisionId",
+          "?int"
+        ],
+        [
+          "actorId",
+          "int|string|null"
+        ],
+        [
+          "scheduleId",
+          "?int"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    },
+    "JobMetric\\Post\\Events\\Workflow\\WorkflowStoreCommittedEvent": {
+      "aggregate": "Workflow",
+      "operation": "Store",
+      "key": "post.workflow.stored.committed",
+      "translation": "workflow_stored",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "created",
+      "fa": "ایجاد شد"
+    },
+    "JobMetric\\Post\\Events\\Workflow\\WorkflowActivateCommittedEvent": {
+      "aggregate": "Workflow",
+      "operation": "Activate",
+      "key": "post.workflow.activated.committed",
+      "translation": "workflow_activated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "activated",
+      "fa": "فعال شد"
+    },
+    "JobMetric\\Post\\Events\\PostStatus\\PostStatusUpdateCommittedEvent": {
+      "aggregate": "PostStatus",
+      "operation": "Update",
+      "key": "post.post_status.updated.committed",
+      "translation": "post_status_updated",
+      "fields": [
+        [
+          "id",
+          "int|string"
+        ]
+      ],
+      "title": "updated",
+      "fa": "ویرایش شد"
+    }
+  }
+}
