@@ -117,7 +117,7 @@ readonly class Settings
             'fields'  => array_keys($values),
         ];
 
-        Hooks::action('jobic.settings.general.saving', $context);
+        Hooks::lifecycle('jobic.settings.general.saving', $context);
 
         try {
             $outcomeBefore = $this->environment->read();
@@ -168,7 +168,7 @@ readonly class Settings
             'fields'  => array_keys($values),
         ];
 
-        Hooks::action('jobic.settings.seo.saving', $context);
+        Hooks::lifecycle('jobic.settings.seo.saving', $context);
 
         try {
             if ($hasUploadedImage) {
@@ -243,7 +243,7 @@ readonly class Settings
             ->findOrFail($userId);
         $outcomeBefore = \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas']);
 
-        Hooks::action('jobic.settings.appearance.saving', $context);
+        Hooks::lifecycle('jobic.settings.appearance.saving', $context);
 
         $user->forceFill(['ui_preferences' => $values])
             ->save();
@@ -304,7 +304,7 @@ readonly class Settings
             $user->email_verified_at = null;
         }
 
-        Hooks::action('jobic.settings.profile.saving', $context);
+        Hooks::lifecycle('jobic.settings.profile.saving', $context);
 
         $user->fill([
             'email'         => $values['email'],
@@ -349,7 +349,7 @@ readonly class Settings
             ->findOrFail($userId);
         $outcomeBefore = \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas']);
 
-        Hooks::action('jobic.settings.profile.saving', $context);
+        Hooks::lifecycle('jobic.settings.profile.saving', $context);
 
         $user->forceFill([
             'avatar_preset' => $values['avatar_preset'],
@@ -392,7 +392,7 @@ readonly class Settings
             ->findOrFail($userId);
         $outcomeBefore = \JobMetric\EventSystem\Support\OutcomeState::capture($user, ['metas']);
 
-        Hooks::action('jobic.settings.security.saving', $context);
+        Hooks::lifecycle('jobic.settings.security.saving', $context);
 
         $user->forceFill([
             'password'       => $values['password'],

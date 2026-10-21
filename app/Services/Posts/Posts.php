@@ -59,7 +59,7 @@ final class Posts
                 }
             }
 
-            Hooks::action('jobic.posts.saving', [
+            Hooks::lifecycle('jobic.posts.saving', [
                 'type'    => $type,
                 'post_id' => $post?->id,
                 'user_id' => $actor?->getAuthIdentifier(),

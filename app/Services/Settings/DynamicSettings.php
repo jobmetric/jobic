@@ -157,7 +157,7 @@ class DynamicSettings
             'fields'      => array_values(array_diff(array_keys($data), $sensitive)),
         ];
 
-        Hooks::action('jobic.settings.dynamic.saving', $context);
+        Hooks::lifecycle('jobic.settings.dynamic.saving', $context);
 
         try {
             $dispatch = new ReflectionMethod(app('Setting'), 'dispatch');

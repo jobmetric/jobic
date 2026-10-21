@@ -111,7 +111,7 @@ class TwoFactor
                 }
             }
 
-            Hooks::action('jobic.settings.two_factor.saving', $context);
+            Hooks::lifecycle('jobic.settings.two_factor.saving', $context);
             $user->forceFill($changes)
                 ->save();
             $outcomeClass = match ($values['action']) {

@@ -15,6 +15,7 @@ use App\Rules\EditorContentRule;
 use App\Services\Editor\EditorDocuments;
 use App\Services\History\RecordHistory;
 use App\Services\Posts\PostLifecycleView;
+use App\Services\Posts\PostPublicationProjection;
 use App\Services\Posts\Posts;
 use App\Services\Posts\PostWorkflow;
 use App\Services\Taxonomies\TaxonomyEditLocks;
@@ -41,6 +42,7 @@ use JobMetric\Metadata\Models\Meta;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Post\Models\Post;
 use JobMetric\Post\Models\PostPublicationStream;
+use JobMetric\Post\Services\PostLifecycle;
 use JobMetric\Post\Services\PostWorkflowDefinitions;
 use JobMetric\Post\Support\PostTypeBuilder;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
@@ -516,7 +518,7 @@ final class PostController extends Controller
                 return false;
             }
 
-            Hooks::action('jobic.posts.saving', $context);
+            Hooks::lifecycle('jobic.posts.saving', $context);
 
             $historyBefore = $this->historySnapshot($record);
             $before = $record->snapshot();
@@ -532,7 +534,7 @@ final class PostController extends Controller
 
             Post::withoutEvents(static fn () => $record->touch());
 
-            app(\App\Services\Posts\PostPublicationProjection::class)->capture($record, [$locale], $actor);
+            app(PostPublicationProjection::class)->capture($record, [$locale], $actor);
 
             app(RecordHistory::class)->record('posts:' . $type, $post, (int) $context['user_id'], 'update', $historyBefore, $this->historySnapshot($record->fresh()));
 
@@ -1278,22 +1280,21 @@ final class PostController extends Controller
             ->where('type', $type)
             ->findOrFail($post);
 
-        Hooks::action('jobic.posts.deleting', [
-            'type'    => $type,
-            'post_id' => $record->id,
-            'user_id' => $request->user()
-                ?->getAuthIdentifier(),
-        ]);
-
         DB::transaction(function () use ($record, $type, $request): void {
+            Hooks::lifecycle('jobic.posts.deleting', [
+                'type'    => $type,
+                'post_id' => $record->id,
+                'user_id' => $request->user()
+                    ?->getAuthIdentifier(),
+            ]);
             app(PostWorkflowDefinitions::class)->lock($type);
             $record = Post::query()
                 ->where('type', $type)
                 ->lockForUpdate()
                 ->findOrFail($record->id);
             $before = $this->historySnapshot($record);
-            app(\App\Services\Posts\PostPublicationProjection::class)->withdrawAll($record, $request->user());
-            $record->delete();
+            app(PostPublicationProjection::class)->withdrawAll($record, $request->user());
+            app(\JobMetric\Post\Post::class)->delete($type, (int) $record->id);
 
             app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $request->user()
                 ->getAuthIdentifier(), 'delete', $before, []);
@@ -1395,10 +1396,10 @@ final class PostController extends Controller
                 $before = $this->historySnapshot($record);
 
                 if ($data['operation'] === 'delete') {
-                    Hooks::action('jobic.posts.deleting', $context);
+                    Hooks::lifecycle('jobic.posts.deleting', $context);
 
-                    app(\App\Services\Posts\PostPublicationProjection::class)->withdrawAll($record, $request->user());
-                    $record->delete();
+                    app(PostPublicationProjection::class)->withdrawAll($record, $request->user());
+                    app(\JobMetric\Post\Post::class)->delete($type, (int) $record->id);
 
                     app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $context['user_id'], 'delete', $before, []);
                     app(TaxonomyEditLocks::class)->forceRelease('posts:' . $type, (int) $record->id);
@@ -1406,7 +1407,7 @@ final class PostController extends Controller
                     continue;
                 }
 
-                Hooks::action('jobic.posts.saving', [
+                Hooks::lifecycle('jobic.posts.saving', [
                     ...$context,
                     'fields' => ['status'],
                 ]);
@@ -1418,7 +1419,7 @@ final class PostController extends Controller
                     ->unique()
                     ->values()
                     ->all();
-                app(\App\Services\Posts\PostPublicationProjection::class)->capture($record->fresh(), $locales, $request->user());
+                app(PostPublicationProjection::class)->capture($record->fresh(), $locales, $request->user());
                 app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $context['user_id'], 'update', $before, $this->historySnapshot($record));
             }
         });
@@ -1479,15 +1480,14 @@ final class PostController extends Controller
         $record->revisions()
             ->findOrFail($revision);
 
-        Hooks::action('jobic.posts.revision.restoring', [
-            'type'        => $type,
-            'post_id'     => $record->id,
-            'revision_id' => $revision,
-            'user_id'     => $request->user()
-                ?->getAuthIdentifier(),
-        ]);
-
         DB::transaction(function () use ($record, $revision, $type, $request): void {
+            Hooks::lifecycle('jobic.posts.revision.restoring', [
+                'type'        => $type,
+                'post_id'     => $record->id,
+                'revision_id' => $revision,
+                'user_id'     => $request->user()
+                    ?->getAuthIdentifier(),
+            ]);
             app(PostWorkflowDefinitions::class)->lock($type);
             $record = Post::query()
                 ->where('type', $type)
@@ -1524,8 +1524,8 @@ final class PostController extends Controller
                 ->unique()
                 ->values()
                 ->all();
-            app(\App\Services\Posts\PostPublicationProjection::class)->capture($record->fresh(), $locales, $request->user(), null, false);
-            app(\JobMetric\Post\Services\PostLifecycle::class)->publishRestoration($record->fresh(), $request->user());
+            app(PostPublicationProjection::class)->capture($record->fresh(), $locales, $request->user(), null, false);
+            app(PostLifecycle::class)->publishRestoration($record->fresh(), $request->user());
             app(RecordHistory::class)->record('posts:' . $type, (int) $record->id, (int) $request->user()
                 ->getAuthIdentifier(), 'restore', $before, $this->historySnapshot($record->fresh()));
         });

@@ -144,7 +144,7 @@ class WorkflowDesigner
         ];
 
         DB::transaction(function () use ($definitions, $type, $data, $actor, $context): void {
-            Hooks::action('jobic.posts.workflow.saving', $context);
+            Hooks::lifecycle('jobic.posts.workflow.saving', $context);
 
             if ($data['operation'] === 'draft') {
                 $definitions->saveDraft($type, $data['graph'], (bool) $data['enabled'], (int) $data['version'], $actor);

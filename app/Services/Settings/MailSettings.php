@@ -112,7 +112,7 @@ readonly class MailSettings
             'fields'  => array_keys($validated),
         ];
 
-        Hooks::action('jobic.settings.mail.saving', $context);
+        Hooks::lifecycle('jobic.settings.mail.saving', $context);
 
         try {
             $outcomeBefore = $this->environment->read();

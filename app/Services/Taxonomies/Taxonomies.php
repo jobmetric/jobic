@@ -57,15 +57,21 @@ class Taxonomies
             }
             if ($filter['kind'] === 'status' && array_key_exists((string) $value, $filter['options'])) {
                 $query->where('status', (string) $value);
-            } else if ($filter['kind'] === 'taxonomy' && array_key_exists((string) $value, $filter['options'])) {
-                $query->whereHas('taxonomies', fn ($taxonomy) => $taxonomy->whereKey((int) $value)
-                    ->where('type', $filter['type'])
-                    ->where(config('taxonomy.tables.taxonomy_relation', 'taxonomy_relations') . '.collection', $filter['collection']));
-            } else if ($filter['kind'] === 'metadata' && array_key_exists((string) $value, $filter['options'])) {
-                $query->whereHas('metas', fn ($meta) => $meta->where('key', $filter['field'])
-                    ->where('value', (string) $value));
-            } else if ($filter['kind'] === 'custom' && array_key_exists((string) $value, $filter['options'])) {
-                ($filter['apply'])($query, (string) $value, $input);
+            } else {
+                if ($filter['kind'] === 'taxonomy' && array_key_exists((string) $value, $filter['options'])) {
+                    $query->whereHas('taxonomies', fn ($taxonomy) => $taxonomy->whereKey((int) $value)
+                        ->where('type', $filter['type'])
+                        ->where(config('taxonomy.tables.taxonomy_relation', 'taxonomy_relations') . '.collection', $filter['collection']));
+                } else {
+                    if ($filter['kind'] === 'metadata' && array_key_exists((string) $value, $filter['options'])) {
+                        $query->whereHas('metas', fn ($meta) => $meta->where('key', $filter['field'])
+                            ->where('value', (string) $value));
+                    } else {
+                        if ($filter['kind'] === 'custom' && array_key_exists((string) $value, $filter['options'])) {
+                            ($filter['apply'])($query, (string) $value, $input);
+                        }
+                    }
+                }
             }
         }
 
@@ -87,7 +93,10 @@ class Taxonomies
             array_unshift($columns, 'media');
         }
         $requestedColumn = $columns[max(0, (int) ($input['order'][0]['column'] ?? 1) - 1)] ?? 'ordering';
-        $orderColumn = in_array($requestedColumn, ['ordering', 'status'], true) ? $requestedColumn : null;
+        $orderColumn = in_array($requestedColumn, [
+            'ordering',
+            'status',
+        ], true) ? $requestedColumn : null;
 
         $with = ['translations'];
         if ($builder->hasHierarchical()) {
@@ -152,7 +161,10 @@ class Taxonomies
                         ->isNotEmpty()) ? $this->mediaPreview($record) : null,
                 'ordering'     => $record->ordering,
                 'status'       => $record->status,
-            ], ['type' => $type, 'id' => $record->id]))
+            ], [
+                'type' => $type,
+                'id'   => $record->id,
+            ]))
             ->values();
 
         return Response::make(true, '', [
@@ -179,7 +191,10 @@ class Taxonomies
                 $filters[$field] = [
                     'kind'    => 'status',
                     'label'   => 'taxonomies.status',
-                    'options' => ['1' => 'taxonomies.active', '0' => 'taxonomies.inactive'],
+                    'options' => [
+                        '1' => 'taxonomies.active',
+                        '0' => 'taxonomies.inactive',
+                    ],
                 ];
                 continue;
             }
@@ -226,14 +241,24 @@ class Taxonomies
                     ->pluck('value')
                     ->mapWithKeys(fn ($value): array => [(string) $value => (string) $value])
                     ->all();
-                $filters[$field] = ['kind' => 'metadata', 'field' => $metadataKey, 'label' => $label, 'options' => $values];
+                $filters[$field] = [
+                    'kind'    => 'metadata',
+                    'field'   => $metadataKey,
+                    'label'   => $label,
+                    'options' => $values,
+                ];
             }
         }
         foreach ($builder->getCustomFilters() as $key => $filter) {
             if (! is_array($filter) || ! isset($filter['label'], $filter['options']) || ! is_array($filter['options'])) {
                 continue;
             }
-            $filters[$key] = ['kind' => 'custom', 'label' => $filter['label'], 'options' => $filter['options'], 'apply' => $filter['apply'] ?? null];
+            $filters[$key] = [
+                'kind'    => 'custom',
+                'label'   => $filter['label'],
+                'options' => $filter['options'],
+                'apply'   => $filter['apply'] ?? null,
+            ];
         }
 
         return $filters;
@@ -392,7 +417,10 @@ class Taxonomies
                 $valid = Media::query()
                     ->whereIn('id', $ids)
                     ->where('type', MediaTypeEnum::FILE())
-                    ->get(['id', 'mime_type']);
+                    ->get([
+                        'id',
+                        'mime_type',
+                    ]);
 
                 $validGroups = collect($definition['mime'])
                     ->filter()
@@ -451,7 +479,7 @@ class Taxonomies
 
             $before = $current ? $this->historySnapshot($current) : [];
 
-            Hooks::action('jobic.taxonomies.saving', $context);
+            Hooks::lifecycle('jobic.taxonomies.saving', $context);
 
             $result = $id ? Taxonomy::update($id, $payload) : Taxonomy::store($payload);
 
@@ -501,7 +529,7 @@ class Taxonomies
                     ]);
             }
 
-            Hooks::action('jobic.taxonomies.persisted', [
+            Hooks::lifecycle('jobic.taxonomies.persisted', [
                 ...$context,
                 'id'     => $savedId,
                 'record' => $saved,
@@ -521,7 +549,10 @@ class Taxonomies
 
         Hooks::notify('jobic.taxonomies.saved', array_replace($context, ['id' => $savedId]));
 
-        return Response::make(true, __('taxonomies.saved'), ['id' => $savedId, 'version' => $version], $id ? 200 : 201);
+        return Response::make(true, __('taxonomies.saved'), [
+            'id'      => $savedId,
+            'version' => $version,
+        ], $id ? 200 : 201);
     }
 
     /**
@@ -545,10 +576,12 @@ class Taxonomies
             'user_id'   => (int) auth()->id(),
         ];
 
-        Hooks::action('jobic.taxonomies.deleting', $context);
-
         DB::transaction(function () use ($record, $type, $before, $context): void {
-            Hooks::action('jobic.taxonomies.deleting-record', [...$context, 'record' => $record]);
+            Hooks::lifecycle('jobic.taxonomies.deleting', $context);
+            Hooks::lifecycle('jobic.taxonomies.deleting-record', [
+                ...$context,
+                'record' => $record,
+            ]);
             Taxonomy::delete($record->id);
 
             app(RecordHistory::class)->record('taxonomies:' . $type, $record->id, $context['user_id'], 'delete', $before, []);
@@ -739,7 +772,7 @@ class Taxonomies
 
         DB::transaction(function () use ($type, $record, $locale, $values, $context): void {
             $before = $this->historySnapshot($record);
-            Hooks::action('jobic.taxonomies.saving', $context);
+            Hooks::lifecycle('jobic.taxonomies.saving', $context);
             $record->translation = [$locale => $values];
             $record->save();
             $saved = $this->record($type, (int) $record->id);
@@ -748,7 +781,10 @@ class Taxonomies
 
         Hooks::notify('jobic.taxonomies.saved', $context);
 
-        return Response::make(true, __('taxonomies.translation_saved'), ['locale' => $locale, 'fields' => $values]);
+        return Response::make(true, __('taxonomies.translation_saved'), [
+            'locale' => $locale,
+            'fields' => $values,
+        ]);
     }
 
     /**

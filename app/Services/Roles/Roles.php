@@ -193,7 +193,7 @@ class Roles extends AbstractCrudService
             $eventBefore = $existing ? $this->eventState($existing) : null;
             $before = $existing?->toArray() ?? [];
 
-            Hooks::action('jobic.roles.saving', $context);
+            Hooks::lifecycle('jobic.roles.saving', $context);
 
             $result = $id ? RoleService::update($id, $data) : RoleService::store($data);
             if (! $result->ok) {
@@ -267,7 +267,7 @@ class Roles extends AbstractCrudService
                     'operation' => 'delete',
                 ];
 
-                Hooks::action('jobic.roles.deleting', $context);
+                Hooks::lifecycle('jobic.roles.deleting', $context);
 
                 $before = $record->toArray();
                 $result = RoleService::destroy((int) $record->id);

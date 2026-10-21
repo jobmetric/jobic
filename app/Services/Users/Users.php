@@ -198,7 +198,7 @@ class Users extends AbstractCrudService
                     ->all(),
             ]) : [];
 
-            Hooks::action('jobic.users.saving', $context);
+            Hooks::lifecycle('jobic.users.saving', $context);
 
             try {
                 $record->fill($data);
@@ -287,7 +287,7 @@ class Users extends AbstractCrudService
                 ];
                 $deleting = $data['operation'] === 'delete';
 
-                Hooks::action('jobic.users.' . ($deleting ? 'deleting' : 'saving'), $context);
+                Hooks::lifecycle('jobic.users.' . ($deleting ? 'deleting' : 'saving'), $context);
 
                 $changed = $deleting || (bool) $record->status !== ($data['operation'] === 'activate');
                 $before = $record->toArray();

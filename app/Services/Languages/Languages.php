@@ -173,7 +173,7 @@ class Languages extends AbstractCrudService
 
             $before = $record->exists ? $record->toArray() : [];
 
-            Hooks::action('jobic.settings.languages.saving', $context);
+            Hooks::lifecycle('jobic.settings.languages.saving', $context);
 
             try {
                 $result = $id ? LanguageService::update($id, $data) : LanguageService::store($data);
@@ -257,7 +257,7 @@ class Languages extends AbstractCrudService
                     'operation' => $data['operation'],
                 ];
 
-                Hooks::action('jobic.settings.languages.' . ($data['operation'] === 'delete' ? 'deleting' : 'saving'), $context);
+                Hooks::lifecycle('jobic.settings.languages.' . ($data['operation'] === 'delete' ? 'deleting' : 'saving'), $context);
 
                 $changed = $data['operation'] === 'delete' || (bool) $record->status !== ($data['operation'] === 'activate');
                 $before = $record->toArray();

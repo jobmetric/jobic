@@ -104,7 +104,7 @@ readonly class SystemSettings
                 return Response::make(false, trans('system.redis_in_use'), null, 422);
             }
 
-            Hooks::action('jobic.settings.cache.saving', $context);
+            Hooks::lifecycle('jobic.settings.cache.saving', $context);
         }
 
         if ($values['CACHE_STORE'] === 'redis') {

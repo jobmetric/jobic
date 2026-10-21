@@ -57,6 +57,21 @@ class Hooks
     }
 
     /**
+     * Dispatch a synchronous domain boundary followed by its legacy callbacks.
+     *
+     * @param string $name
+     * @param array<string, mixed> $context
+     *
+     * @return void
+     * @throws \Throwable When a domain listener or compatibility callback vetoes the operation.
+     */
+    public function lifecycle(string $name, array $context = []): void
+    {
+        event(LifecycleEvents::make($name, $context));
+        $this->action($name, $context);
+    }
+
+    /**
      * Post-save observers cannot turn a committed save into an apparent failure.
      *
      * @param string $name

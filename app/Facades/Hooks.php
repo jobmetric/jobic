@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @method static void addAction(string $name, callable $callback, int $priority = 10)
  * @method static void addFilter(string $name, callable $callback, int $priority = 10)
+ * @method static void lifecycle(string $name, array $context = [])
  * @method static void action(string $name, array $context = [])
  * @method static void notify(string $name, array $context = [])
  * @method static mixed filter(string $name, mixed $value, array $context = [])

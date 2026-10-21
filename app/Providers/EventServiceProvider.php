@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Listeners\SynchronizeUserNameFromMetadata;
+use App\Support\LifecycleEvents;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\ServiceProvider;
 use JobMetric\EventSystem\Support\EventRegistry;
@@ -69,6 +70,10 @@ class EventServiceProvider extends ServiceProvider
                 \App\Events\EditorDocument\EditorDocumentUpdateEvent::class,
                 \App\Events\EditorDocument\EditorDocumentDeleteEvent::class,
             ] as $event) {
+            $registry->register($event);
+        }
+
+        foreach (LifecycleEvents::CLASSES as $event) {
             $registry->register($event);
         }
 

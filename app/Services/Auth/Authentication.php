@@ -45,7 +45,7 @@ class Authentication
         $data = dto($data, LanguageRequest::class);
         $context = ['locale' => $data['locale']];
 
-        Hooks::action('jobic.auth.language.saving', $context);
+        Hooks::lifecycle('jobic.auth.language.saving', $context);
 
         $outcomeLocale = session('auth_locale');
         session()->put('auth_locale', $data['locale']);

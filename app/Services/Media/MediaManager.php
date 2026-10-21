@@ -70,7 +70,7 @@ class MediaManager
                 }
             }
 
-            Hooks::action('jobic.media.saving', $context);
+            Hooks::lifecycle('jobic.media.saving', $context);
 
             $parent = (int) ($data['parent_id'] ?? 0) ?: null;
             $destination = (int) ($data['destination_id'] ?? 0) ?: null;
@@ -324,30 +324,32 @@ class MediaManager
                             ]);
                         }
                     }
-                } else if ($relation->mediaable_type === (new \App\Models\EditorDocument)->getMorphClass()) {
-                    $document = \App\Models\EditorDocument::find($relation->mediaable_id);
-                    $owner = $document?->owner;
-                    if (! $owner) {
-                        return null;
-                    }
-                    $label = __('editor.document_usage', [
-                        'title'  => $owner instanceof \JobMetric\Post\Models\Post ? ($owner->getTranslation('title', $document->locale) ?: '#' . $owner->id) : '#' . $owner->getKey(),
-                        'locale' => $document->locale,
-                    ]);
-                    $url = null;
-                    if ($owner instanceof \JobMetric\Post\Models\Post && \JobMetric\Post\Facades\PostTypeRegistry::has($owner->type)) {
-                        $permission = \JobMetric\Post\Facades\PostTypeRegistry::for($owner->type)
-                            ->getManagePermission();
-                        if ($permission && app(AdminAccess::class)->allows(auth()->user(), $permission)) {
-                            $url = route('admin.posts.edit', [
-                                $owner->type,
-                                $owner->id,
-                            ]);
-                        }
-                    }
                 } else {
-                    $label = __('media-manager.content') . ' #' . $relation->mediaable_id;
-                    $url = null;
+                    if ($relation->mediaable_type === (new \App\Models\EditorDocument)->getMorphClass()) {
+                        $document = \App\Models\EditorDocument::find($relation->mediaable_id);
+                        $owner = $document?->owner;
+                        if (! $owner) {
+                            return null;
+                        }
+                        $label = __('editor.document_usage', [
+                            'title'  => $owner instanceof \JobMetric\Post\Models\Post ? ($owner->getTranslation('title', $document->locale) ?: '#' . $owner->id) : '#' . $owner->getKey(),
+                            'locale' => $document->locale,
+                        ]);
+                        $url = null;
+                        if ($owner instanceof \JobMetric\Post\Models\Post && \JobMetric\Post\Facades\PostTypeRegistry::has($owner->type)) {
+                            $permission = \JobMetric\Post\Facades\PostTypeRegistry::for($owner->type)
+                                ->getManagePermission();
+                            if ($permission && app(AdminAccess::class)->allows(auth()->user(), $permission)) {
+                                $url = route('admin.posts.edit', [
+                                    $owner->type,
+                                    $owner->id,
+                                ]);
+                            }
+                        }
+                    } else {
+                        $label = __('media-manager.content') . ' #' . $relation->mediaable_id;
+                        $url = null;
+                    }
                 }
 
                 $role = match ($relation->collection) {

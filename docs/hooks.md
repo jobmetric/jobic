@@ -247,3 +247,53 @@ app(\App\Support\SocialNetworks\SocialNetworkRegistry::class)->register(
 ## Account authenticator
 
 `jobic.settings.two_factor.saving` (action) and `jobic.settings.two_factor.saved` (notification) receive only `user_id` and `operation` (`setup`, `enable`, or `disable`). TwoFactor::update validates the DTO and current password, then checks enrollment expiry and the verification code before `saving`. The pre-hook runs inside the account-row transaction and may veto: credential consumption and all account changes roll back. `saved` runs after commit; observer errors are isolated by Hooks::notify. Neither invalid input nor failed persistence emits `saved`. No password, setup key, QR payload, authenticator code, recovery code, or raw request is exposed. For example, observe `jobic.settings.two_factor.saved` and count `$context['operation']` without recording credentials. Existing settings content slots surround the section; the login challenge reuses common.auth-recovery and its empty-context form slots.
+
+## Automation outcome companions
+
+User, role and language services also schedule independent DomainEvent outcomes from inside their persistence transactions. These are registered in EventRegistry and delivered after the owning connection's outer commit. They do not replace or relay the hooks above. Only actual business state changes schedule outcomes; existing hook invocation rules remain intact. Payloads contain only affected-record and actor identifiers. See [events.md](events.md) for keys, timing, failure semantics, tests and remaining rollout coverage.
+
+The completed outcome catalog also covers account settings, authentication, second-factor enrollment and editor documents. These events are emitted by their owning services and are not adapters over Hooks::notify. Environment-backed general/mail/cache outcomes compare private parsed configuration and expose only the nullable actor ID; profile/appearance/security and second-factor outcomes expose only the account ID; editor outcomes expose only the document ID. Package-owned settings, posts, publication/workflow, taxonomy/menu and media results are published by their owning package operations. See `docs/events.md`, `docs/application-event-catalog.json` and `docs/package-event-catalog.json` for the full audit and exact schemas. No new pre-save hook, filter or view slot is introduced by this rollout.
+
+
+## Class based synchronous lifecycle events
+
+Business action boundaries now dispatch immutable classes implementing `JobMetric\EventSystem\Contracts\DomainEvent` directly through `Hooks::lifecycle()` in the shared Hooks registry. The explicit 26-key catalog is `App\Support\LifecycleEvents::CLASSES`; each class is registered in EventRegistry and has English/Persian metadata. Existing hook entries above retain their contexts and timing except that single post deletion, revision restoration and taxonomy deletion now run their before hooks inside their owning database transaction.
+
+Delivery order is synchronous Laravel class/interface listeners, then the original action callbacks in priority/registration order. Each path is invoked once per boundary. Exceptions propagate and stop the command; within an owning transaction database writes roll back. Returning false is not a veto: throw an exception to reject an operation. Register a consumer through either the typed listener or the legacy hook; registering the same consumer through both intentionally invokes it twice. Queued listeners cannot veto synchronous persistence.
+
+Typed payload context contains only scalar technical scope/identifiers: `id`, `post_id`, `revision_id`, `user_id`, `owner_id`, `owner_type`, `type`, `locale`, `field`, `section`, `operation`, `application`, `key`, `form_name`. Models, input arrays, field values and unrecognized keys are excluded. Legacy hooks retain their documented original context for compatibility, including taxonomy driver persistence data; that context must never be forwarded to Automation.
+
+Saving/deleting/restoring definitions carry `phase:before`; taxonomy persisted carries `phase:persisted` and still executes before commit. All carry `lifecycle`, `synchronous`, and `automation:disabled`. Future Automation must exclude definitions tagged `automation:disabled`; use the committed outcome events described in `docs/events.md`. Filesystem/environment side effects retain their existing rollback limitations.
+
+`jobic.taxonomies.preparing` remains a presentation action. Filters, view slots and post-commit notification hooks retain their existing APIs. Post-commit outcomes continue through the existing committed DomainEvents; this bridge does not redispatch them.
+
+### Lifecycle catalog
+
+| Hook and event key | Event class | Phase |
+| --- | --- | --- |
+| `jobic.users.saving` | `App\Events\User\UserSavingEvent` | Before persistence |
+| `jobic.users.deleting` | `App\Events\User\UserDeletingEvent` | Before persistence |
+| `jobic.roles.saving` | `App\Events\Role\RoleSavingEvent` | Before persistence |
+| `jobic.roles.deleting` | `App\Events\Role\RoleDeletingEvent` | Before persistence |
+| `jobic.settings.languages.saving` | `App\Events\Language\LanguageSavingEvent` | Before persistence |
+| `jobic.settings.languages.deleting` | `App\Events\Language\LanguageDeletingEvent` | Before persistence |
+| `jobic.media.saving` | `App\Events\Media\MediaSavingEvent` | Before persistence |
+| `jobic.taxonomies.saving` | `App\Events\Taxonomy\TaxonomySavingEvent` | Before persistence |
+| `jobic.taxonomies.persisted` | `App\Events\Taxonomy\TaxonomyPersistedEvent` | Persisted, before commit |
+| `jobic.taxonomies.deleting` | `App\Events\Taxonomy\TaxonomyDeletingEvent` | Before persistence |
+| `jobic.taxonomies.deleting-record` | `App\Events\Taxonomy\TaxonomyDeletingRecordEvent` | Before persistence |
+| `jobic.posts.saving` | `App\Events\Post\PostSavingEvent` | Before persistence |
+| `jobic.posts.deleting` | `App\Events\Post\PostDeletingEvent` | Before persistence |
+| `jobic.posts.revision.restoring` | `App\Events\PostRevision\PostRevisionRestoringEvent` | Before persistence |
+| `jobic.posts.workflow.saving` | `App\Events\Workflow\WorkflowSavingEvent` | Before persistence |
+| `jobic.editor.document.saving` | `App\Events\EditorDocument\EditorDocumentSavingEvent` | Before persistence |
+| `jobic.settings.general.saving` | `App\Events\General\GeneralSavingEvent` | Before persistence |
+| `jobic.settings.seo.saving` | `App\Events\Seo\SeoSavingEvent` | Before persistence |
+| `jobic.settings.appearance.saving` | `App\Events\Appearance\AppearanceSavingEvent` | Before persistence |
+| `jobic.settings.profile.saving` | `App\Events\Profile\ProfileSavingEvent` | Before persistence |
+| `jobic.settings.security.saving` | `App\Events\Security\SecuritySavingEvent` | Before persistence |
+| `jobic.settings.mail.saving` | `App\Events\Mail\MailSavingEvent` | Before persistence |
+| `jobic.settings.cache.saving` | `App\Events\Cache\CacheSavingEvent` | Before persistence |
+| `jobic.settings.dynamic.saving` | `App\Events\DynamicSetting\DynamicSettingSavingEvent` | Before persistence |
+| `jobic.auth.language.saving` | `App\Events\Auth\AuthLanguageSavingEvent` | Before persistence |
+| `jobic.settings.two_factor.saving` | `App\Events\TwoFactor\TwoFactorSavingEvent` | Before persistence |

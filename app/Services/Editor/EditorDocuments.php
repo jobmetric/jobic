@@ -257,7 +257,7 @@ final class EditorDocuments
                 'user_id'    => auth()->id(),
             ];
 
-            Hooks::action('jobic.editor.document.saving', $context);
+            Hooks::lifecycle('jobic.editor.document.saving', $context);
 
             $document->save();
             if ($document->wasRecentlyCreated || $document->wasChanged('content')) {
