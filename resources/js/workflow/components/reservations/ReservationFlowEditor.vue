@@ -1804,6 +1804,7 @@ defineExpose({
                             :class="{
                                 'is-start': node.kind === 'start',
                                 'is-terminal': node.is_terminal,
+                                'is-menu-less-state': node.kind === 'state' && !node.is_terminal && !canShowStateMenu(node),
                                 'is-selected': isNodeSelected(node),
                                 'is-reconnect-hover': (isNodeNearReconnectCursor(node) && (reconnectDrag || reconnectArmedEnd))
                                     || (creationDrag && node.kind === 'state' && isNodeNearCreationCursor(node)),
@@ -2279,6 +2280,15 @@ html[data-theme='dark'] .rf-editor__node.is-start .rf-editor__node-title { color
     gap: 0.15rem;
     min-width: 0;
     flex: 1;
+}
+
+.rf-editor__node.is-menu-less-state .rf-editor__node-inner {
+    justify-content: center;
+}
+
+.rf-editor__node.is-menu-less-state .rf-editor__node-content {
+    align-items: center;
+    text-align: center;
 }
 
 .rf-editor__node-title {
