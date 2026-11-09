@@ -79,6 +79,7 @@ const dragStartPosition = ref(null);
 const canvasWrapRef = ref(null);
 const canvasRef = ref(null);
 const reconnectDrag = ref(null);
+const routeDrag = ref(null);
 const reconnectCursor = ref(null);
 const reconnectArmedEnd = ref(null);
 const creationDrag = ref(null);
@@ -478,6 +479,34 @@ function onTransitionContextMenu(event, edge) {
     selectTransition(edge);
     closeStateMenu();
     canvasMenu.value = { kind: 'transition', x: Math.min(event.clientX, window.innerWidth - 215), y: Math.min(event.clientY, window.innerHeight - 90), isStart: Boolean(edge.is_start_edge) };
+}
+
+function onRoutePointerDown(event, edge) {
+    if (!props.editable || event.button !== 0 || edge.is_start_edge
+        || String(edge.from) === String(edge.to) || reconnectDrag.value) return;
+    const point = clientToCanvas(event.clientX, event.clientY);
+    if (!point || !Array.isArray(edge.points)) return;
+    let nearest = null;
+    for (let index = 1; index < edge.points.length; index += 1) {
+        const from = edge.points[index - 1];
+        const to = edge.points[index];
+        const horizontal = Math.abs(to.y - from.y) < 0.5;
+        const distance = horizontal
+            ? Math.abs(point.y - from.y) + Math.max(Math.min(from.x, to.x) - point.x, 0, point.x - Math.max(from.x, to.x))
+            : Math.abs(point.x - from.x) + Math.max(Math.min(from.y, to.y) - point.y, 0, point.y - Math.max(from.y, to.y));
+        if (!nearest || distance < nearest.distance) nearest = {distance, axis: horizontal ? 'y' : 'x'};
+    }
+    if (!nearest) return;
+    event.preventDefault();
+    event.stopPropagation();
+    selectTransition(edge);
+    routeDrag.value = {
+        transitionId: edge.id,
+        pointerId: event.pointerId,
+        axis: nearest.axis,
+        start: nearest.axis === 'x' ? point.x : point.y,
+        initial: Number(edge.anchors?.[nearest.axis === 'x' ? 'route_offset_x' : 'route_offset_y'] ?? 0),
+    };
 }
 
 function onCanvasContextMenu(event) {
@@ -1244,6 +1273,19 @@ function onNodeKeydown(event, node) {
 
 function onWindowPointerMove(event) {
     shiftHeld.value = event.shiftKey;
+    if (routeDrag.value && event.pointerId === routeDrag.value.pointerId) {
+        const point = clientToCanvas(event.clientX, event.clientY);
+        if (point) {
+            const key = routeDrag.value.axis === 'x' ? 'route_offset_x' : 'route_offset_y';
+            const coordinate = routeDrag.value.axis === 'x' ? point.x : point.y;
+            const offset = Math.round(Math.max(-1000, Math.min(1000,
+                routeDrag.value.initial + coordinate - routeDrag.value.start)));
+            const edge = props.transitions.find((row) => row.id === routeDrag.value.transitionId);
+            if (edge) emit('update-transition', {transitionId: edge.id,
+                anchors: {...(edge.anchors ?? {}), [key]: offset}});
+        }
+        return;
+    }
     if (creationDrag.value) {
         if (event.pointerId === creationDrag.value.pointerId) {
             creationCursor.value = clientToCanvas(event.clientX, event.clientY);
@@ -1391,10 +1433,15 @@ function onWindowBlur() {
     hoveredEdgeId.value = null;
     cancelCreation();
     cancelNodeDrag();
+    routeDrag.value = null;
     panDrag.value = null;
 }
 
 function onWindowPointerUp(event) {
+    if (routeDrag.value?.pointerId === event.pointerId) {
+        routeDrag.value = null;
+        return;
+    }
     if (dragState.value && event.pointerId !== dragState.value.pointerId) return;
     if (edgePanFrame !== null) cancelAnimationFrame(edgePanFrame);
     edgePanFrame = null;
@@ -1688,6 +1735,8 @@ defineExpose({
                             />
                             <g v-for="edge in layout.edges" :key="`edge-${edge.id}`">
                                 <path :d="edge.hitPath" class="rf-editor__edge-hit"
+                                    :class="{'is-draggable': editable && !edge.is_start_edge}"
+                                    @pointerdown="onRoutePointerDown($event, edge)"
                                     @pointerenter="hoveredEdgeId = edge.id"
                                     @pointerleave="hoveredEdgeId = null"
                                     @click.stop="selectTransition(edge)"
@@ -2056,8 +2105,9 @@ defineExpose({
     stroke: transparent;
     stroke-width: 16;
     pointer-events: stroke;
-    cursor: pointer;
+    cursor: grab;
 }
+.rf-editor__edge-hit:active { cursor: grabbing; }
 
 .rf-editor__edge {
     fill: none;

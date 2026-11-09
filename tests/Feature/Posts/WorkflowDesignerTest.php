@@ -357,7 +357,8 @@ class WorkflowDesignerTest extends TestCase
             'transitions' => [[
                 'id' => 'edge-123', 'from' => 'draft', 'to' => 'state-123',
                 'slug' => 'transition_123', 'label' => 'ارسال برای بازبینی',
-                'anchors' => ['from_side' => 'bottom', 'to_side' => 'right'],
+                'anchors' => ['from_side' => 'bottom', 'to_side' => 'right',
+                    'route_offset_x' => 74, 'route_offset_y' => -32],
                 'tasks' => [[
                     'driver' => \JobMetric\Post\Tasks\RequireExcerpt::class,
                     'config' => ['min_characters' => 35], 'status' => true,
@@ -374,6 +375,7 @@ class WorkflowDesignerTest extends TestCase
         $page = $this->get(route('admin.posts.workflow.index', ['type' => 'post']))->assertOk();
         $this->assertStringContainsString('transition_123', $page->getContent());
         $this->assertSame($graph, PostWorkflowDefinition::query()->firstOrFail()->graph);
+
     }
 
     public function test_persian_designer_copy_describes_content_instead_of_reservations(): void

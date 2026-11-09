@@ -225,7 +225,9 @@ async function saveDraft() {
     const transitionSnapshot = (edge) => ({
         id: String(edge.id), from: String(edge.from), to: String(edge.to), slug: edge.slug, label: edge.label,
         anchors: { ...(edge.anchors?.from_side ? {from_side: edge.anchors.from_side} : {}),
-            ...(edge.anchors?.to_side ? {to_side: edge.anchors.to_side} : {}) },
+            ...(edge.anchors?.to_side ? {to_side: edge.anchors.to_side} : {}),
+            ...(Number.isFinite(Number(edge.anchors?.route_offset_x)) ? {route_offset_x: Number(edge.anchors.route_offset_x)} : {}),
+            ...(Number.isFinite(Number(edge.anchors?.route_offset_y)) ? {route_offset_y: Number(edge.anchors.route_offset_y)} : {}) },
         tasks: (edge.tasks ?? []).map((task) => ({
             driver: task.driver, config: Array.isArray(task.config) && task.config.length === 0 ? {} : (task.config ?? {}),
             status: task.status ?? true,

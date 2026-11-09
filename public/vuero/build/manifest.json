@@ -1598,14 +1598,14 @@
     "src": "resources/js/vuero/pages/utility-status.js"
   },
   "resources/js/workflow/index.css": {
-    "file": "assets/index-925acb6e.css",
+    "file": "assets/index-ae28e39b.css",
     "src": "resources/js/workflow/index.css"
   },
   "resources/js/workflow/index.js": {
     "css": [
-      "assets/index-925acb6e.css"
+      "assets/index-ae28e39b.css"
     ],
-    "file": "assets/index-52053e88.js",
+    "file": "assets/index-f2316ba0.js",
     "imports": [
       "_page-1cca34fb.js",
       "_toast-18d1caa1.js",

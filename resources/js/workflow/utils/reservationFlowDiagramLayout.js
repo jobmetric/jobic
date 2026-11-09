@@ -291,11 +291,23 @@ function buildRoutePoints(exit, entry, fromSide, toSide, lane = null) {
     );
 
     if (oppositeVertical && alignedX) {
+        if (Math.abs(laneX) > 0.5) {
+            points.push(
+                {x: shiftX(exit.x), y: exit.y},
+                {x: shiftX(entry.x), y: entry.y},
+            );
+        }
         points.push(entry);
         return points;
     }
 
     if (oppositeHorizontal && alignedY) {
+        if (Math.abs(laneY) > 0.5) {
+            points.push(
+                {x: exit.x, y: shiftY(exit.y)},
+                {x: entry.x, y: shiftY(entry.y)},
+            );
+        }
         points.push(entry);
         return points;
     }
@@ -1020,6 +1032,19 @@ function buildTransitionEdges(transitions, nodeMeta, startNode, anchorCache) {
     assignEdgeLanes(planned);
 
     planned.forEach((row) => {
+        if (row.source === row.target) return;
+        const routeX = Number(row.transition.anchors?.route_offset_x ?? 0);
+        const routeY = Number(row.transition.anchors?.route_offset_y ?? 0);
+        if (Number.isFinite(routeX) || Number.isFinite(routeY)) {
+            row.lane = {
+                ...(row.lane ?? {}),
+                x: (row.lane?.x ?? 0) + (Number.isFinite(routeX) ? routeX : 0),
+                y: (row.lane?.y ?? 0) + (Number.isFinite(routeY) ? routeY : 0),
+            };
+        }
+    });
+
+    planned.forEach((row) => {
         const sourceKey = row.source.kind === 'start' ? 'start' : `state-${row.source.stateId}`;
         const targetKey = `state-${row.target.stateId}`;
         const fromTotal = fromTotals.get(`${sourceKey}:${row.sides.from}`) ?? 1;
@@ -1047,6 +1072,7 @@ function buildTransitionEdges(transitions, nodeMeta, startNode, anchorCache) {
             labelY: geometry.labelY,
             start: geometry.start,
             end: geometry.end,
+            points: geometry.points,
             bounds: geometry.bounds ?? null,
         });
     });

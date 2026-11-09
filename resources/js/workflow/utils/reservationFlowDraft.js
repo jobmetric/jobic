@@ -95,6 +95,10 @@ function normalizeTransition(transition) {
             ? {
                 from_side: transition.anchors.from_side,
                 to_side: transition.anchors.to_side,
+                ...(Number.isFinite(Number(transition.anchors.route_offset_x))
+                    ? {route_offset_x: Number(transition.anchors.route_offset_x)} : {}),
+                ...(Number.isFinite(Number(transition.anchors.route_offset_y))
+                    ? {route_offset_y: Number(transition.anchors.route_offset_y)} : {}),
             }
             : null,
         is_start_edge: Boolean(transition.is_start_edge),
