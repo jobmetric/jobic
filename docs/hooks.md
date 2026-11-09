@@ -1,5 +1,7 @@
 # CMS extension contract
 
+Workflow state `view_roles` is part of the validated definition graph. It limits administration reads of posts currently in that shared state to users with at least one selected system role; an empty list retains the post-type access rule alone. The existing `jobic.posts.workflow.saving` action runs after graph and role validation, before persistence, and may veto by throwing. The existing `jobic.posts.workflow.saved` notification runs after commit with isolated listener failures. Their context remains limited to type, operation, and user ID; graph data and role assignments are not sent to hooks.
+
 ## Editor media selection
 
 `jobic.editor.document.saving` is a synchronous action after document/media validation and before persistence within the owning form transaction. Exceptions roll back owner, document and usage changes. `jobic.editor.document.saved` is an isolated notification deferred until the outer transaction commits. Both contain only `owner_type`, `owner_id`, `field`, `locale` and `user_id`; JSON content, URLs and file metadata are excluded. The owning route must authorize access before calling the document service.

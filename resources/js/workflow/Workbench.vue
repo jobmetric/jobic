@@ -82,6 +82,7 @@ const graph = computed(() => ({
         content_status: state.content_status ?? (options.statusChoices?.[state.status] ? state.status : 'editable'),
         is_start: Boolean(state.is_start), is_terminal: Boolean(state.is_terminal),
         allows_approval: Boolean(state.allows_approval),
+        view_roles: (state.view_roles ?? []).map(Number),
     })),
     transitions: transitions.value.map((edge) => ({
         ...edge,
@@ -301,7 +302,7 @@ onBeforeUnmount(() => {
             :start-position="startPosition"
             :current-status="options.currentStatus || ''"
             :available-statuses="statusChoices"
-            :available-task-drivers="availableDrivers" :editable="options.editable" :saving="busy"
+            :available-task-drivers="availableDrivers" :available-roles="options.viewRoles || []" :editable="options.editable" :saving="busy"
             :hide-inspector="Boolean(options.previewOnly)" :hide-mini-map="Boolean(options.previewOnly)"
             @add-state="stateModal = true" @add-transition="onAddTransition"
             @update-state="updateState" @delete-state="({stateId}) => {states = states.filter((state) => state.id !== stateId); transitions = transitions.filter((edge) => edge.from !== stateId && edge.to !== stateId)}"

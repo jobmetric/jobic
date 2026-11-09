@@ -6,8 +6,10 @@ namespace App\Http\Middleware\Admin;
 
 use App\Support\AdminAccess;
 use App\Support\PostWorkflowPermissions;
+use App\Services\Posts\PostStateAccess;
 use Closure;
 use Illuminate\Http\Request;
+use JobMetric\Post\Models\Post;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -52,6 +54,8 @@ final readonly class EnsurePostPermission
 
             abort_unless($request->routeIs('admin.posts.workflow.index') ? ($mayView || $mayManage) : $mayManage, 403);
 
+            $this->authorizeRecord($request, $type);
+
             return $next($request);
         }
 
@@ -59,6 +63,8 @@ final readonly class EnsurePostPermission
             $permission = app(PostWorkflowPermissions::class)->for($type)['restore'];
 
             abort_unless($this->access->allows($request->user(), $permission), 403);
+
+            $this->authorizeRecord($request, $type);
 
             return $next($request);
         }
@@ -71,6 +77,8 @@ final readonly class EnsurePostPermission
             $permission = (string) config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock');
 
             abort_unless($this->access->allows($request->user(), $permission), 403);
+
+            $this->authorizeRecord($request, $type);
 
             return $next($request);
         }
@@ -87,6 +95,38 @@ final readonly class EnsurePostPermission
 
         abort_unless($this->access->allows($request->user(), $permission ?? $fallback), 403);
 
+        $this->authorizeRecord($request, $type);
+
         return $next($request);
+    }
+
+    /**
+     * Enforce the current workflow state's allowed roles on record routes.
+     *
+     * @param Request $request
+     * @param string $type
+     *
+     * @return void
+     */
+    private function authorizeRecord(Request $request, string $type): void
+    {
+        if ($request->routeIs('admin.posts.bulk', 'admin.posts.edit-locks.unlock')) {
+            $ids = $request->input('ids');
+            if (is_array($ids) && $ids !== [] && count($ids) <= 100 && collect($ids)->every(static fn ($value): bool => is_scalar($value) && ctype_digit((string) $value))) {
+                $visible = app(PostStateAccess::class)->scopeVisible(Post::query()->where('type', $type)->whereIn('id', $ids), $type, $request->user())->count();
+                abort_unless($visible === count(array_unique($ids)), 403);
+            }
+        }
+
+        $id = $request->route('post');
+        if ($id === null) {
+            $id = $request->routeIs('admin.posts.workflow.index') ? $request->query('post') : null;
+        }
+        if (! is_scalar($id) || ! ctype_digit((string) $id)) {
+            return;
+        }
+
+        $record = Post::query()->where('type', $type)->findOrFail((int) $id);
+        abort_unless(app(PostStateAccess::class)->allows($record, $request->user()), 403);
     }
 }

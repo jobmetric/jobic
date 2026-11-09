@@ -2,6 +2,7 @@
 
 return [
     'title' => 'Content workflow', 'saved' => 'Workflow saved.', 'back' => 'Back to list',
+    'invalid_state_roles' => 'Select valid system roles for this state.',
     'preview_diagram_title' => 'Workflow diagram', 'preview_current_stage' => 'Current stage',
     'save_draft' => 'Save draft', 'review' => 'Review and activate', 'enabled' => 'Advanced workflow',
     'mapping_title' => 'Review state mapping', 'mapping_hint' => 'Only working stages change. Live versions and scheduled actions are preserved.',

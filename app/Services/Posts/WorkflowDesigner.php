@@ -10,6 +10,7 @@ use App\Support\LocaleCatalog;
 use App\Support\Permissions\PermissionRegistry;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use JobMetric\Flow\Support\FlowTaskRegistry;
 use JobMetric\PackageCore\Output\Response;
 use JobMetric\Post\Contracts\WorkflowTaskConfiguration;
@@ -17,6 +18,7 @@ use JobMetric\Post\Models\PostPublicationStream;
 use JobMetric\Post\Models\PostWorkflowDefinition;
 use JobMetric\Post\Services\PostWorkflowDefinitions;
 use JobMetric\Post\Support\WorkflowGraph;
+use JobMetric\Rolix\Models\Role;
 use Throwable;
 
 /** Adapt the package workflow aggregate to Jobic hooks and designer presentation. */
@@ -108,6 +110,7 @@ class WorkflowDesigner
                     'transitions' => [],
                 ],
             'drivers'       => [['tasks' => $tasks]],
+            'permissions'   => $permissions,
         ];
     }
 
@@ -125,6 +128,8 @@ class WorkflowDesigner
     {
         $data = dto($data, WorkflowRequest::class);
         if ($data['operation'] === 'simulate') {
+            $data['graph'] = app(WorkflowGraph::class)->validate($data['graph'], false);
+            $this->validateStateRoles($data['graph']);
             return Response::make(true, '', app(WorkflowSimulation::class)->inspect($data['graph'], $data['scenario'], $actor));
         }
 
@@ -135,6 +140,10 @@ class WorkflowDesigner
 
         if ($data['operation'] === 'draft') {
             $data['graph'] = app(WorkflowGraph::class)->validate($data['graph'], false);
+            $this->validateStateRoles($data['graph']);
+        } elseif ($data['operation'] === 'activate') {
+            $definition = PostWorkflowDefinition::query()->findOrFail((int) $data['definition_id']);
+            $this->validateStateRoles($definition->graph);
         }
 
         $context = [
@@ -156,5 +165,28 @@ class WorkflowDesigner
         });
 
         return Response::make(true, __('workflow.saved'), $this->read($type));
+    }
+
+    /**
+     * Reject state role IDs that do not identify system roles.
+     *
+     * @param array<string, mixed> $graph
+     *
+     * @return void
+     * @throws ValidationException
+     */
+    private function validateStateRoles(array $graph): void
+    {
+        foreach ($graph['states'] ?? [] as $index => $state) {
+            $roleIds = $state['view_roles'] ?? [];
+            if ($roleIds === []) {
+                continue;
+            }
+            $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
+            $validCount = Role::query()->where('type', 'system')->whereIn('id', $roleIds)->count();
+            if ($validCount !== count($roleIds)) {
+                throw ValidationException::withMessages(['graph.states.'.$index.'.view_roles' => [__('workflow.invalid_state_roles')]]);
+            }
+        }
     }
 }

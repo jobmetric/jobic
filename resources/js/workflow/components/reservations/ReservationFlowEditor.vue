@@ -30,6 +30,7 @@ const props = defineProps({
     states: { type: Array, default: () => [] },
     transitions: { type: Array, default: () => [] },
     availableStatuses: { type: Array, default: () => [] },
+    availableRoles: { type: Array, default: () => [] },
     availableTaskDrivers: { type: Array, default: () => [] },
     editable: { type: Boolean, default: false },
     saving: { type: Boolean, default: false },
@@ -97,7 +98,7 @@ const ZOOM_MAX = 1.6;
 const ZOOM_STEP = 0.1;
 const RECONNECT_NODE_PROXIMITY = 80;
 
-const editStateForm = ref({ name: '', content_status: 'editable', is_terminal: false, allows_approval: false });
+const editStateForm = ref({ name: '', content_status: 'editable', view_roles: [], is_terminal: false, allows_approval: false });
 const stateInspectorTab = ref('details');
 const stateMenu = ref({ open: false, anchor: null, node: null });
 const canvasMenu = ref(null);
@@ -217,13 +218,14 @@ function stateInspectorForm(state) {
     return {
         name: state?.name ?? '',
         content_status: state?.content_status ?? (props.availableStatuses.some((choice) => choice.value === state?.status) ? state.status : 'editable'),
+        view_roles: (state?.view_roles ?? []).map(Number),
         is_terminal: Boolean(state?.is_terminal),
         allows_approval: Boolean(state?.allows_approval),
     };
 }
 
 function resetInspectorForms() {
-    editStateForm.value = { name: '', content_status: 'editable', is_terminal: false, allows_approval: false };
+    editStateForm.value = { name: '', content_status: 'editable', view_roles: [], is_terminal: false, allows_approval: false };
     editTransitionForm.value = { label: '' };
 }
 
@@ -1467,6 +1469,7 @@ function submitEditState() {
         name: editStateForm.value.name.trim(),
         status: selectedState.value.status,
         content_status: editStateForm.value.content_status,
+        view_roles: editStateForm.value.view_roles.map(Number),
         is_terminal: editStateForm.value.is_terminal,
         allows_approval: editStateForm.value.allows_approval,
     });
@@ -1921,6 +1924,7 @@ defineExpose({
                     :state-name="stateName"
                     :form="editStateForm"
                     :available-statuses="availableStatuses"
+                    :available-roles="availableRoles"
                     :editable="editable"
                     :saving="saving"
                     :active-tab="stateInspectorTab"

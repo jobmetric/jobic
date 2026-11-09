@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import Workbench from './Workbench.vue';
 import { mountWorkflowIcons } from './icons.js';
 import { pageData } from '../common/page.js';
+import '../common/selects.js';
 
 const root = document.querySelector('[data-workflow-designer]');
 if (root) {

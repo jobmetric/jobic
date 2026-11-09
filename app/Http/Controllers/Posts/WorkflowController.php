@@ -49,6 +49,12 @@ class WorkflowController extends Controller
 
         $previewOnly = $record !== null && $request->query('preview') === '1';
         $initial = $designer->read($type);
+        $systemRoles = Role::query()
+            ->where('type', 'system')
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(static fn (Role $role): array => ['id' => (int) $role->id, 'name' => $role->name])
+            ->all();
         if ($previewOnly) {
             $definition = app(PostLifecycleView::class)->activeDefinition($type);
             abort_unless($definition, 404);
@@ -63,6 +69,7 @@ class WorkflowController extends Controller
 
         Page::addLocalize('workflow', [
             'initial'           => $initial,
+            'viewRoles'         => $systemRoles,
             'copy'              => array_merge(trans('workflow_canvas'), trans('workflow')),
             'previewOnly'       => $previewOnly,
             'editable'          => ! $previewOnly && app(AdminAccess::class)->allows($request->user(), $permission['manage']),
@@ -82,19 +89,7 @@ class WorkflowController extends Controller
             ])
                 ->mapWithKeys(static fn (string $status): array => [$status => __('posts.statuses.' . $status)])
                 ->all(),
-            'simulationRoles'   => Role::query()
-                ->where('type', 'system')
-                ->orderBy('name')
-                ->limit(200)
-                ->get([
-                    'id',
-                    'name',
-                ])
-                ->map(fn (Role $role): array => [
-                    'id'   => $role->id,
-                    'name' => $role->name,
-                ])
-                ->all(),
+            'simulationRoles'   => $systemRoles,
             'simulationLocales' => collect(LocaleCatalog::all())
                 ->map(fn (array $locale, string $code): array => [
                     'code' => $code,

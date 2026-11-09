@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 import { reservationFlowNodeBadgeLabel, reservationFlowNodeTheme } from '../../../utils/reservationFlowNodeTheme.js';
 import ReservationFlowIdentityBadge from './ReservationFlowIdentityBadge.vue';
@@ -12,6 +12,7 @@ const props = defineProps({
     stateName: { type: Function, required: true },
     form: { type: Object, required: true },
     availableStatuses: { type: Array, default: () => [] },
+    availableRoles: { type: Array, default: () => [] },
     editable: { type: Boolean, default: false },
     saving: { type: Boolean, default: false },
     activeTab: { type: String, default: 'details' },
@@ -27,6 +28,8 @@ const emit = defineEmits([
 ]);
 
 const localTab = ref(props.activeTab);
+const roleSelect = ref(null);
+const selectedRoleId = ref('');
 
 watch(() => props.activeTab, (tab) => {
     if (tab) {
@@ -46,6 +49,31 @@ const tabs = computed(() => [
     { id: 'incoming', label: props.copy.reservation_flow_inspector_tab_incoming, count: props.incoming.length },
     { id: 'outgoing', label: props.copy.reservation_flow_inspector_tab_outgoing, count: props.outgoing.length },
 ]);
+
+const selectedRoles = computed(() => {
+    const selectedIds = new Set((props.form.view_roles ?? []).map(Number));
+    return props.availableRoles.filter((role) => selectedIds.has(Number(role.id)));
+});
+const selectableRoles = computed(() => {
+    const selectedIds = new Set((props.form.view_roles ?? []).map(Number));
+    return props.availableRoles.filter((role) => !selectedIds.has(Number(role.id)));
+});
+
+async function addSelectedRole() {
+    const roleId = Number(selectedRoleId.value);
+    if (!Number.isInteger(roleId) || roleId < 1 || (props.form.view_roles ?? []).map(Number).includes(roleId)) {
+        return;
+    }
+
+    props.form.view_roles = [...(props.form.view_roles ?? []).map(Number), roleId];
+    selectedRoleId.value = '';
+    await nextTick();
+    roleSelect.value?.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function removeRole(roleId) {
+    props.form.view_roles = (props.form.view_roles ?? []).map(Number).filter((id) => id !== Number(roleId));
+}
 
 function transitionFromLabel(transition) {
     if (transition.is_start_edge || transition.from == null) {
@@ -123,6 +151,25 @@ function addOutgoingTransition() {
                     <span class="rf-field__label">{{ copy.status_choice_label }}</span>
                     <select v-model="form.content_status" class="rf-field__input rf-inspector-input" :disabled="!editable"><option v-for="choice in availableStatuses" :key="choice.value" :value="choice.value">{{ choice.label }}</option></select>
                     <span class="rf-field__hint">{{ copy.content_status_hint }}</span>
+                </label>
+                <label class="rf-field">
+                    <span class="rf-field__label">{{ copy.state_view_roles }}</span>
+                    <select ref="roleSelect" v-model="selectedRoleId" class="rf-field__input rf-inspector-input rf-inspector-role-picker"
+                        :data-placeholder="copy.state_view_roles_placeholder" :disabled="!editable" @change="addSelectedRole">
+                        <option value=""></option>
+                        <option v-for="role in selectableRoles" :key="role.id" :value="role.id">{{ role.name }}</option>
+                    </select>
+                    <ul v-if="selectedRoles.length" class="rf-selected-roles" :aria-label="copy.state_view_roles">
+                        <li v-for="role in selectedRoles" :key="role.id" class="rf-selected-role">
+                            <span class="rf-selected-role__icon"><i class="ki-filled ki-shield-tick" aria-hidden="true" /></span>
+                            <span class="rf-selected-role__name">{{ role.name }}</span>
+                            <button type="button" class="rf-selected-role__remove" :disabled="!editable || saving"
+                                :aria-label="copy.state_view_role_remove.replace(':role', role.name)" @click="removeRole(role.id)">
+                                <i class="ki-filled ki-cross" aria-hidden="true" />
+                            </button>
+                        </li>
+                    </ul>
+                    <span class="rf-field__hint">{{ copy.state_view_roles_hint }}</span>
                 </label>
                 <label class="rf-field rf-field--checkbox">
                     <input v-model="form.is_terminal" type="checkbox" class="kt-checkbox" :disabled="!editable" />
@@ -402,6 +449,114 @@ function addOutgoingTransition() {
 
 .rf-field__input {
     width: 100%;
+}
+
+.rf-state-inspector .rf-inspector-role-picker + .select2-container {
+    width: 100% !important;
+    min-width: 0;
+}
+
+.rf-state-inspector .rf-inspector-role-picker + .select2-container .select2-selection--single {
+    display: flex;
+    height: 42px;
+    align-items: center;
+    box-sizing: border-box;
+    border: 1px solid var(--rf-border, #dbe2ea);
+    border-radius: 9px;
+    background: var(--rf-panel, #fff);
+    color: var(--rf-text, #172b4d);
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.rf-state-inspector .rf-inspector-role-picker + .select2-container--focus .select2-selection--single {
+    border-color: #2eae98;
+    box-shadow: 0 0 0 3px rgb(46 174 152 / 13%);
+}
+
+.rf-state-inspector .rf-inspector-role-picker + .select2-container .select2-selection__rendered {
+    width: 100%;
+    padding-inline: 12px 32px;
+    color: var(--rf-text, #172b4d);
+    line-height: 40px;
+}
+
+.rf-state-inspector .rf-inspector-role-picker + .select2-container .select2-selection__arrow {
+    top: 50%;
+    inset-inline-end: 8px;
+    inset-inline-start: auto;
+    transform: translateY(-50%);
+}
+
+.rf-state-inspector .rf-inspector-role-picker + .select2-container .select2-selection__placeholder {
+    color: var(--rf-muted, #94a3b8);
+}
+
+.rf-state-inspector .rf-inspector-role-picker + .select2-container--disabled {
+    cursor: not-allowed;
+    opacity: .65;
+}
+
+.rf-selected-roles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 8px;
+    margin: 9px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rf-selected-role {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border: 1px solid color-mix(in srgb, #2eae98 22%, var(--rf-border, #dbe2ea));
+    border-radius: 9px;
+    background: color-mix(in srgb, #2eae98 6%, var(--rf-panel, #fff));
+    color: var(--rf-text, #172b4d);
+}
+
+.rf-selected-role__icon {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    place-items: center;
+    border-radius: 7px;
+    background: color-mix(in srgb, #2eae98 14%, var(--rf-panel, #fff));
+    color: #218d7d;
+}
+
+.rf-selected-role__name {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow-wrap: anywhere;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.rf-selected-role__remove {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    place-items: center;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--rf-muted, #64748b);
+    cursor: pointer;
+}
+
+.rf-selected-role__remove:hover:not(:disabled) {
+    background: #fee2e2;
+    color: #b42318;
+}
+
+.rf-selected-role__remove:disabled {
+    cursor: not-allowed;
+    opacity: .55;
 }
 
 .rf-field--checkbox {

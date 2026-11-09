@@ -7,11 +7,13 @@ namespace App\Services\Posts;
 use App\Support\AdminAccess;
 use App\Support\PostWorkflowPermissions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use JobMetric\Post\Models\Post;
 use JobMetric\Post\Models\PostLocaleLock;
 use JobMetric\Post\Models\PostPublicationStream;
 use JobMetric\Post\Models\PostScheduledAction;
 use JobMetric\Post\Models\PostWorkflowDefinition;
+use JobMetric\Post\Tasks\RequirePermission;
 
 /** Assemble each active language's immutable versions for the editing form. */
 final readonly class PostLifecycleView
@@ -50,6 +52,19 @@ final readonly class PostLifecycleView
         $state = $states->firstWhere('status', $stream?->status);
         $transitions = $stream ? collect($definition->graph['transitions'])
             ->filter(fn (array $transition): bool => ($states->get($transition['from'])['status'] ?? null) === $stream->status)
+            ->filter(function (array $transition) use ($stream): bool {
+                foreach ($transition['tasks'] ?? [] as $task) {
+                    if ($task['driver'] !== RequirePermission::class || ($task['status'] ?? true) === false) {
+                        continue;
+                    }
+                    $permission = $task['config']['permission'] ?? null;
+                    if (! is_string($permission) || ! Gate::forUser(request()->user())->allows($permission, $stream)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
             ->values()
             ->all() : [];
 

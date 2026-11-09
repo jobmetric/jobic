@@ -11,6 +11,7 @@ use App\Services\Taxonomies\TaxonomyEditLocks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
+use JobMetric\Flow\Exceptions\TaskRestrictionException;
 use JobMetric\Post\Exceptions\PostStatusTransitionNotAllowedException;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Post\Models\Post;
@@ -67,6 +68,12 @@ final class PostLifecycleController extends Controller
             };
         } catch (PostStatusTransitionNotAllowedException) {
             throw ValidationException::withMessages(['transition' => [trans('posts.workflow_status')]]);
+        } catch (TaskRestrictionException $exception) {
+            if ($exception->getMessage() === trans('post::lifecycle.permission_denied')) {
+                abort(403, $exception->getMessage());
+            }
+
+            throw ValidationException::withMessages(['transition' => [$exception->getMessage()]]);
         }
 
         return response()->json([

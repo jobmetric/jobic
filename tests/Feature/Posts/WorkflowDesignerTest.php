@@ -25,6 +25,125 @@ class WorkflowDesignerTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_state_roles_are_validated_saved_and_enforced_on_admin_reads(): void
+    {
+        $this->withoutVite();
+        $administrator = User::factory()->create();
+        $this->actingAs($administrator);
+        $post = Post::query()->create(['type' => 'post', 'status' => 'draft']);
+        app(PostLifecycle::class)->saveDraft($post, PostPublicationStream::SHARED, [
+            'languages' => ['en' => ['title' => 'Restricted post']], 'shared' => [],
+        ]);
+        $accessRole = Role::query()->create(['type' => 'system', 'name' => 'Post reviewers',
+            'allow' => [], 'deny' => [], 'is_super' => false, 'ordering' => 3]);
+        $url = route('admin.posts.workflow.save', ['type' => 'post']);
+        $graph = ['states' => [
+            ['id' => 'draft', 'name' => 'Draft', 'status' => 'draft', 'is_start' => true,
+                'is_terminal' => false, 'view_roles' => [(int) $accessRole->id]],
+            ['id' => 'review', 'name' => 'Review', 'status' => 'review', 'is_start' => false,
+                'is_terminal' => true],
+        ], 'transitions' => [[
+            'id' => 'send-for-review', 'from' => 'draft', 'to' => 'review', 'slug' => 'send-for-review',
+            'label' => 'Send for review', 'tasks' => [],
+        ]]];
+
+        $invalid = $graph;
+        $invalid['states'][0]['view_roles'] = [999999];
+        $this->postJson($url, ['operation' => 'draft', 'version' => 0, 'enabled' => true,
+            'graph' => $invalid])->assertUnprocessable()->assertJsonValidationErrors('graph.states.0.view_roles');
+        $this->postJson($url, ['operation' => 'simulate', 'graph' => $invalid,
+            'scenario' => ['state_id' => 'draft', 'locale' => 'en']])
+            ->assertUnprocessable()->assertJsonValidationErrors('graph.states.0.view_roles');
+
+        $draft = $this->postJson($url, ['operation' => 'draft', 'version' => 0, 'enabled' => true,
+            'graph' => $graph])->assertOk();
+        $this->assertSame([(int) $accessRole->id], app(WorkflowDesigner::class)->read('post')['graph']['states'][0]['view_roles']);
+        $preview = $this->postJson($url, ['operation' => 'preview', 'definition_id' => $draft->json('data.definition_id')])->assertOk();
+        $this->postJson($url, ['operation' => 'activate', 'definition_id' => $draft->json('data.definition_id'),
+            'fingerprint' => $preview->json('data.fingerprint'), 'mapping' => ['draft' => 'draft'],
+            'confirmed' => 1])->assertOk();
+        $this->assertSame([(int) $accessRole->id], app(\App\Services\Posts\PostLifecycleView::class)
+            ->activeDefinition('post')->graph['states'][0]['view_roles']);
+
+        $this->actingAs($administrator);
+        $this->get(route('admin.posts.edit', ['type' => 'post', 'post' => $post->id]))->assertForbidden();
+
+        $role = Role::query()->create(['type' => 'system', 'name' => 'Post editor',
+            'allow' => ['admin.content.posts.manage', 'admin.content.posts.view'],
+            'deny' => [], 'is_super' => false, 'ordering' => 4]);
+        $editor = User::factory()->create();
+        $editor->assignRole((int) $role->id);
+        $this->actingAs($editor);
+        $this->getJson(route('admin.posts.data', ['type' => 'post']))
+            ->assertOk()->assertJsonPath('data.recordsTotal', 0);
+        $this->get(route('admin.posts.edit', ['type' => 'post', 'post' => $post->id]))->assertForbidden();
+        $this->getJson(route('admin.posts.history', ['type' => 'post', 'post' => $post->id]))->assertForbidden();
+        $this->getJson(route('admin.posts.translation', ['type' => 'post', 'post' => $post->id, 'locale' => 'en']))->assertForbidden();
+        $this->deleteJson(route('admin.posts.destroy', ['type' => 'post', 'post' => $post->id]))->assertForbidden();
+        $this->postJson(route('admin.posts.bulk', ['type' => 'post']), [
+            'operation' => 'delete', 'ids' => [$post->id],
+        ])->assertForbidden();
+
+        $editor->assignRole((int) $accessRole->id);
+        $this->actingAs($editor->fresh());
+        $this->getJson(route('admin.posts.data', ['type' => 'post']))
+            ->assertOk()->assertJsonPath('data.recordsTotal', 1);
+        $this->get(route('admin.posts.edit', ['type' => 'post', 'post' => $post->id]))->assertOk();
+
+        PostPublicationStream::query()
+            ->where('post_id', $post->id)
+            ->where('locale', PostPublicationStream::SHARED)
+            ->update(['status' => 'review']);
+        $basicEditor = User::factory()->create();
+        $basicEditor->assignRole((int) $role->id);
+        $this->actingAs($basicEditor);
+        $this->getJson(route('admin.posts.data', ['type' => 'post']))
+            ->assertOk()->assertJsonPath('data.recordsTotal', 1);
+    }
+
+    public function test_permission_task_hides_transition_button_and_still_rejects_direct_command(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+        $post = Post::query()->create(['type' => 'post', 'status' => 'draft']);
+        app(PostLifecycle::class)->saveDraft($post, PostPublicationStream::SHARED, [
+            'languages' => ['en' => ['title' => 'Transition test']], 'shared' => [],
+        ]);
+        $url = route('admin.posts.workflow.save', ['type' => 'post']);
+        $graph = ['states' => [
+            ['id' => 'draft', 'name' => 'Draft', 'status' => 'draft', 'is_start' => true, 'is_terminal' => false],
+            ['id' => 'review', 'name' => 'Review', 'status' => 'review', 'is_start' => false, 'is_terminal' => true],
+        ], 'transitions' => [[
+            'id' => 'send', 'from' => 'draft', 'to' => 'review', 'slug' => 'send', 'label' => 'Send',
+            'tasks' => [['driver' => RequirePermission::class,
+                'config' => ['permission' => 'admin.settings.general'], 'status' => true]],
+        ]]];
+        $draft = $this->postJson($url, ['operation' => 'draft', 'version' => 0, 'enabled' => true,
+            'graph' => $graph])->assertOk();
+        $preview = $this->postJson($url, ['operation' => 'preview', 'definition_id' => $draft->json('data.definition_id')])->assertOk();
+        $this->postJson($url, ['operation' => 'activate', 'definition_id' => $draft->json('data.definition_id'),
+            'fingerprint' => $preview->json('data.fingerprint'), 'mapping' => ['draft' => 'draft'],
+            'confirmed' => 1])->assertOk();
+
+        $role = Role::query()->create(['type' => 'system', 'name' => 'Transition viewer',
+            'allow' => ['admin.content.posts.manage', 'admin.content.posts.view'],
+            'deny' => [], 'is_super' => false, 'ordering' => 5]);
+        $editor = User::factory()->create();
+        $editor->assignRole((int) $role->id);
+        $this->actingAs($editor);
+        $this->get(route('admin.posts.edit', ['type' => 'post', 'post' => $post->id]))
+            ->assertOk()->assertDontSee('data-lifecycle-transition="send"', false);
+
+        $stream = PostPublicationStream::query()->where('post_id', $post->id)
+            ->where('locale', PostPublicationStream::SHARED)->firstOrFail();
+        $lease = app(TaxonomyEditLocks::class)->inspect('posts:post', (int) $post->id);
+        $this->postJson(route('admin.posts.lifecycle.command', ['type' => 'post', 'post' => $post->id]), [
+            'operation' => 'transition', 'locale' => '*', 'transition' => 'send',
+            'revision_id' => $stream->draft_revision_id, 'version' => $stream->version,
+            '_edit_lock' => $lease['token'],
+        ])->assertForbidden();
+    }
+
     public function test_task_configuration_offers_registered_languages_and_permissions(): void
     {
         $tasks = collect(app(WorkflowDesigner::class)->read('post')['drivers'][0]['tasks'])->keyBy('class');

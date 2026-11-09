@@ -15,6 +15,7 @@ use App\Rules\EditorContentRule;
 use App\Services\Editor\EditorDocuments;
 use App\Services\History\RecordHistory;
 use App\Services\Posts\PostLifecycleView;
+use App\Services\Posts\PostStateAccess;
 use App\Services\Posts\PostPublicationProjection;
 use App\Services\Posts\Posts;
 use App\Services\Posts\PostWorkflow;
@@ -240,6 +241,7 @@ final class PostController extends Controller
                 'translations',
                 'files',
             ]);
+        app(PostStateAccess::class)->scopeVisible($query, $type, $request->user());
 
         $filters = (array) $request->input('filters', []);
         $requestedStatus = $filters['status'] ?? $request->input('status');
@@ -1336,6 +1338,7 @@ final class PostController extends Controller
                 ->all();
 
             abort_unless(count($existing) === count($data['ids']), 404);
+            abort_unless(app(PostStateAccess::class)->scopeVisible(Post::query()->where('type', $type)->whereIn('id', $data['ids']), $type, $request->user())->count() === count($data['ids']), 403);
 
             $locks = app(TaxonomyEditLocks::class);
 
@@ -1374,6 +1377,8 @@ final class PostController extends Controller
                 'ids' => [trans('posts.selection_invalid')],
             ]);
         }
+
+        abort_unless($records->every(fn (Post $record): bool => app(PostStateAccess::class)->allows($record, $request->user())), 403);
 
         foreach ($records as $record) {
             $this->assertEditLockAvailable($type, (int) $record->id, (int) $request->user()->id);
