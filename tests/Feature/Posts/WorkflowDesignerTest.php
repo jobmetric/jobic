@@ -101,7 +101,7 @@ class WorkflowDesignerTest extends TestCase
             ->assertOk()->assertJsonPath('data.recordsTotal', 1);
     }
 
-    public function test_permission_task_hides_transition_button_and_still_rejects_direct_command(): void
+    public function test_role_task_hides_transition_button_and_still_checks_direct_commands(): void
     {
         $this->withoutVite();
         $this->actingAs(User::factory()->create());
@@ -109,6 +109,8 @@ class WorkflowDesignerTest extends TestCase
         app(PostLifecycle::class)->saveDraft($post, PostPublicationStream::SHARED, [
             'languages' => ['en' => ['title' => 'Transition test']], 'shared' => [],
         ]);
+        $transitionRole = Role::query()->create(['type' => 'system', 'name' => 'Transition reviewer',
+            'allow' => [], 'deny' => [], 'is_super' => false, 'ordering' => 5]);
         $url = route('admin.posts.workflow.save', ['type' => 'post']);
         $graph = ['states' => [
             ['id' => 'draft', 'name' => 'Draft', 'status' => 'draft', 'is_start' => true, 'is_terminal' => false],
@@ -116,7 +118,7 @@ class WorkflowDesignerTest extends TestCase
         ], 'transitions' => [[
             'id' => 'send', 'from' => 'draft', 'to' => 'review', 'slug' => 'send', 'label' => 'Send',
             'tasks' => [['driver' => RequirePermission::class,
-                'config' => ['permission' => 'admin.settings.general'], 'status' => true]],
+                'config' => ['roles' => [(int) $transitionRole->id]], 'status' => true]],
         ]]];
         $draft = $this->postJson($url, ['operation' => 'draft', 'version' => 0, 'enabled' => true,
             'graph' => $graph])->assertOk();
@@ -125,9 +127,9 @@ class WorkflowDesignerTest extends TestCase
             'fingerprint' => $preview->json('data.fingerprint'), 'mapping' => ['draft' => 'draft'],
             'confirmed' => 1])->assertOk();
 
-        $role = Role::query()->create(['type' => 'system', 'name' => 'Transition viewer',
+        $role = Role::query()->create(['type' => 'system', 'name' => 'Post editor',
             'allow' => ['admin.content.posts.manage', 'admin.content.posts.view'],
-            'deny' => [], 'is_super' => false, 'ordering' => 5]);
+            'deny' => [], 'is_super' => false, 'ordering' => 6]);
         $editor = User::factory()->create();
         $editor->assignRole((int) $role->id);
         $this->actingAs($editor);
@@ -142,20 +144,35 @@ class WorkflowDesignerTest extends TestCase
             'revision_id' => $stream->draft_revision_id, 'version' => $stream->version,
             '_edit_lock' => $lease['token'],
         ])->assertForbidden();
+
+        $editor->assignRole((int) $transitionRole->id);
+        $this->actingAs($editor->fresh());
+        $this->get(route('admin.posts.edit', ['type' => 'post', 'post' => $post->id]))
+            ->assertOk()->assertSee('data-lifecycle-transition="send"', false);
+        $stream = PostPublicationStream::query()->where('post_id', $post->id)
+            ->where('locale', PostPublicationStream::SHARED)->firstOrFail();
+        $lease = app(TaxonomyEditLocks::class)->inspect('posts:post', (int) $post->id);
+        $this->postJson(route('admin.posts.lifecycle.command', ['type' => 'post', 'post' => $post->id]), [
+            'operation' => 'transition', 'locale' => '*', 'transition' => 'send',
+            'revision_id' => $stream->draft_revision_id, 'version' => $stream->version,
+            '_edit_lock' => $lease['token'],
+        ])->assertOk();
     }
 
-    public function test_task_configuration_offers_registered_languages_and_permissions(): void
+    public function test_task_configuration_offers_registered_languages_and_system_roles(): void
     {
+        $role = Role::query()->create(['type' => 'system', 'name' => 'Workflow reviewer',
+            'allow' => [], 'deny' => [], 'is_super' => false, 'ordering' => 7]);
         $tasks = collect(app(WorkflowDesigner::class)->read('post')['drivers'][0]['tasks'])->keyBy('class');
 
         $languages = $tasks->get(LockPostLanguage::class)['fields']['locale'];
-        $permissions = $tasks->get(RequirePermission::class)['fields']['permission'];
+        $roles = $tasks->get(RequirePermission::class)['fields']['roles'];
 
         $this->assertSame('select', $languages['type']);
         $this->assertArrayHasKey('fa', $languages['options']);
         $this->assertArrayHasKey('en', $languages['options']);
-        $this->assertSame('select', $permissions['type']);
-        $this->assertArrayHasKey('admin.content.posts.manage', $permissions['options']);
+        $this->assertSame('multiselect', $roles['type']);
+        $this->assertSame('Workflow reviewer', $roles['options'][(string) $role->id]);
     }
 
     public function test_simulation_inspects_an_unsaved_graph_without_running_actions_or_writing_a_definition(): void
@@ -227,7 +244,7 @@ class WorkflowDesignerTest extends TestCase
         ], 'transitions' => [[
             'id' => 'submit', 'from' => 'draft', 'to' => 'review', 'slug' => 'submit', 'label' => 'Submit',
             'tasks' => [['driver' => RequirePermission::class,
-                'config' => ['permission' => 'admin.posts.review'], 'status' => true]],
+                'config' => ['roles' => [(int) $reviewer->id]], 'status' => true]],
         ]]];
         $url = route('admin.posts.workflow.save', ['type' => 'post']);
 

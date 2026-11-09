@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3919dd35d87d1908cd51825d704a9929",
+    "content-hash": "77c6da216b0d66aea13de235fde0fdb2",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2215,16 +2215,16 @@
         },
         {
             "name": "jobmetric/laravel-post",
-            "version": "v1.2.3",
+            "version": "v1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-post.git",
-                "reference": "24c216b68134e9f09ab49380ad87dc5fc87f17c5"
+                "reference": "8a0a95c8721bc5e2b33546b6d9af880850a9aa00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/24c216b68134e9f09ab49380ad87dc5fc87f17c5",
-                "reference": "24c216b68134e9f09ab49380ad87dc5fc87f17c5",
+                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/8a0a95c8721bc5e2b33546b6d9af880850a9aa00",
+                "reference": "8a0a95c8721bc5e2b33546b6d9af880850a9aa00",
                 "shasum": ""
             },
             "require": {
@@ -2236,6 +2236,7 @@
                 "jobmetric/laravel-translation": "^4.0.2",
                 "jobmetric/laravel-url": "^3.0.1",
                 "jobmetric/media": "^2.2.1",
+                "jobmetric/rolix": "^1.4",
                 "laravel/framework": ">=9.19",
                 "php": ">=8.2"
             },
@@ -2285,7 +2286,7 @@
                 "issues": "https://github.com/jobmetric/laravel-post/issues",
                 "source": "https://github.com/jobmetric/laravel-post"
             },
-            "time": "2026-11-09T15:56:26+00:00"
+            "time": "2026-11-09T16:32:22+00:00"
         },
         {
             "name": "jobmetric/laravel-setting",

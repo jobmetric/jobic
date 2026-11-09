@@ -22,7 +22,7 @@ Taxonomy presentation must work against the stable version in `composer.lock`, n
 | `jobmetric/rolix` | `../maral/packages/rolix` | `1.3.0` | Hierarchical system roles, permission catalogs, memberships, focused localized form-driven rule evaluators, and PHP 8 named-context flattening |
 | `jobmetric/laravel-post` | `../maral/packages/laravel-post` | `1.1.1` | Equivalent `hasPassword()` / `password()` post type capabilities and capability-aware password validation |
 
-Workflow state administration visibility requires `jobmetric/laravel-post` 1.2.3 (`24c216b`). Its graph validator preserves optional `view_roles` arrays containing distinct positive role IDs; Jobic checks each ID against system roles and applies the active state's roles to administration routes and lists. The release was made from an isolated worktree, preserving unrelated changes in the package's main checkout.
+Workflow state administration visibility and transition restrictions use system role IDs through `jobmetric/laravel-post` 1.2.4 (`8a0a95c`). Its graph validator preserves optional `view_roles` arrays containing distinct positive role IDs; Jobic applies the active state's roles to administration routes and lists, and the transition task checks selected role membership at display and execution time. Existing permission-based transition definitions remain executable until they are replaced with roles. Releases were made from an isolated worktree, preserving unrelated changes in the package's main checkout.
 
 The application keeps its documented Domi view override for CMS presentation. That supported view customization is separate from repairing package PHP source.
 

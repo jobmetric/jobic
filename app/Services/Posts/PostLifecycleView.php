@@ -57,8 +57,15 @@ final readonly class PostLifecycleView
                     if ($task['driver'] !== RequirePermission::class || ($task['status'] ?? true) === false) {
                         continue;
                     }
-                    $permission = $task['config']['permission'] ?? null;
-                    if (! is_string($permission) || ! Gate::forUser(request()->user())->allows($permission, $stream)) {
+                    $roleIds = $task['config']['roles'] ?? [];
+                    if (is_array($roleIds) && $roleIds !== []) {
+                        $allowed = app(PostStateAccess::class)->hasAnySystemRole(request()->user(), $roleIds);
+                    } else {
+                        $permission = $task['config']['permission'] ?? null;
+                        $allowed = is_string($permission) && $permission !== ''
+                            && Gate::forUser(request()->user())->allows($permission, $stream);
+                    }
+                    if (! $allowed) {
                         return false;
                     }
                 }

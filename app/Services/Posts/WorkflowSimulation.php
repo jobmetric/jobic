@@ -115,20 +115,22 @@ final class WorkflowSimulation
         }
 
         if ($driver === RequirePermission::class) {
-            $permission = (string) ($config['permission'] ?? '');
-            $allowed = $role ? $this->rolePermission($role, $permission) : ($permission !== '' && Gate::forUser($actor)
-                    ->allows($permission, new PostPublicationStream));
-
-            if ($allowed === null) {
-                return compact('title') + [
-                        'status'  => 'unknown',
-                        'message' => __('workflow.simulation_role_conditional'),
-                    ];
+            $roleIds = is_array($config['roles'] ?? null) ? array_map('intval', $config['roles']) : [];
+            if ($roleIds !== []) {
+                $actorRoleIds = $role ? collect([$role])->merge($role->ancestors())->pluck('id')->map(static fn ($id): int => (int) $id)->all()
+                    : app(PostStateAccess::class)->effectiveSystemRoleIdsFor($actor);
+                $allowed = array_intersect($roleIds, $actorRoleIds) !== [];
+                $message = trans('post::lifecycle.role_denied');
+            } else {
+                $permission = $config['permission'] ?? null;
+                $allowed = is_string($permission) && $permission !== ''
+                    && Gate::forUser($actor)->allows($permission, new PostPublicationStream);
+                $message = trans('post::lifecycle.permission_denied');
             }
 
             return compact('title') + [
                     'status'  => $allowed ? 'passed' : 'blocked',
-                    'message' => $allowed ? __('workflow.simulation_check_passed') : trans('post::lifecycle.permission_denied'),
+                    'message' => $allowed ? __('workflow.simulation_check_passed') : $message,
                 ];
         }
 
@@ -155,32 +157,4 @@ final class WorkflowSimulation
             ];
     }
 
-    private function rolePermission(Role $role, string $permission): ?bool
-    {
-        $roles = collect([$role])->merge($role->ancestors());
-        if ($roles->contains(fn (Role $item): bool => $item->rules()
-            ->exists())) {
-            return null;
-        }
-
-        if ($roles->contains(fn (Role $item): bool => (bool) $item->is_super)) {
-            return true;
-        }
-
-        $matches = static function (array $entries) use ($permission): bool {
-            foreach ($entries as $entry) {
-                if ($entry === '*' || $entry === $permission || (str_ends_with($entry, '.*') && str_starts_with($permission, substr($entry, 0, -1)))) {
-                    return true;
-                }
-            }
-
-            return false;
-        };
-
-        if ($roles->contains(fn (Role $item): bool => $matches($item->deny ?? []))) {
-            return false;
-        }
-
-        return $roles->contains(fn (Role $item): bool => $matches($item->allow ?? []));
-    }
 }

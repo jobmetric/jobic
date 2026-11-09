@@ -11,7 +11,7 @@ use JobMetric\Post\Models\PostPublicationStream;
 use JobMetric\Rolix\Models\Role;
 use JobMetric\Rolix\Models\RolePath;
 
-/** Apply active workflow state role restrictions to administration reads. */
+/** Apply workflow role restrictions to administration reads and transition actions. */
 final readonly class PostStateAccess
 {
     /**
@@ -34,6 +34,24 @@ final readonly class PostStateAccess
             ->where('locale', PostPublicationStream::SHARED)
             ->whereIn('status', $restricted)
             ->exists();
+    }
+
+    /**
+     * Check whether the actor has any selected system role, including inherited parent roles.
+     *
+     * @param User|null $actor
+     * @param array<int, int|string> $roleIds
+     *
+     * @return bool
+     */
+    public function hasAnySystemRole(?User $actor, array $roleIds): bool
+    {
+        $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
+        if ($actor === null || $roleIds === []) {
+            return false;
+        }
+
+        return array_intersect($roleIds, $this->effectiveSystemRoleIdsFor($actor)) !== [];
     }
 
     /**
@@ -78,11 +96,10 @@ final readonly class PostStateAccess
             return [];
         }
 
-        $roleIds = $this->effectiveSystemRoleIds($actor);
         $restricted = [];
         foreach ($definition->graph['states'] ?? [] as $state) {
             $allowedRoles = array_map('intval', $state['view_roles'] ?? []);
-            if ($allowedRoles !== [] && array_intersect($allowedRoles, $roleIds) === []) {
+            if ($allowedRoles !== [] && ! $this->hasAnySystemRole($actor, $allowedRoles)) {
                 $restricted[] = (string) $state['status'];
             }
         }
@@ -93,16 +110,12 @@ final readonly class PostStateAccess
     /**
      * Resolve the actor's assigned system roles and their inherited parent roles.
      *
-     * @param User|null $actor
+     * @param User $actor
      *
      * @return list<int>
      */
-    private function effectiveSystemRoleIds(?User $actor): array
+    public function effectiveSystemRoleIdsFor(User $actor): array
     {
-        if ($actor === null) {
-            return [];
-        }
-
         $assignedIds = $actor->memberships()
             ->whereNull('memberable_type')
             ->whereNull('memberable_id')

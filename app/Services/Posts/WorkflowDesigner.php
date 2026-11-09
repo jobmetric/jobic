@@ -7,7 +7,6 @@ namespace App\Services\Posts;
 use App\Facades\Hooks;
 use App\Http\Requests\Posts\WorkflowRequest;
 use App\Support\LocaleCatalog;
-use App\Support\Permissions\PermissionRegistry;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -48,9 +47,8 @@ class WorkflowDesigner
             ])
             ->all();
 
-        $permissions = collect(app(PermissionRegistry::class)->labels())
-            ->mapWithKeys(static fn (string $label, string $key): array => [$key => __($label)])
-            ->all();
+        $roles = Role::query()->where('type', 'system')->orderBy('name')->get(['id', 'name'])
+            ->mapWithKeys(static fn (Role $role): array => [(string) $role->id => $role->name])->all();
 
         /** @var FlowTaskRegistry $registry */
         $registry = app('FlowTaskRegistry');
@@ -74,9 +72,8 @@ class WorkflowDesigner
                     $fields['locale']['options'] = $locales;
                 }
 
-                if (isset($fields['permission'])) {
-                    $fields['permission']['type'] = 'select';
-                    $fields['permission']['options'] = $permissions;
+                if (isset($fields['roles'])) {
+                    $fields['roles']['options'] = $roles;
                 }
 
                 $tasks[] = [
@@ -110,7 +107,6 @@ class WorkflowDesigner
                     'transitions' => [],
                 ],
             'drivers'       => [['tasks' => $tasks]],
-            'permissions'   => $permissions,
         ];
     }
 

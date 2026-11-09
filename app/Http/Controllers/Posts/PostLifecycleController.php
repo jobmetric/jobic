@@ -69,7 +69,10 @@ final class PostLifecycleController extends Controller
         } catch (PostStatusTransitionNotAllowedException) {
             throw ValidationException::withMessages(['transition' => [trans('posts.workflow_status')]]);
         } catch (TaskRestrictionException $exception) {
-            if ($exception->getMessage() === trans('post::lifecycle.permission_denied')) {
+            if (in_array($exception->getMessage(), [
+                trans('post::lifecycle.permission_denied'),
+                trans('post::lifecycle.role_denied'),
+            ], true)) {
                 abort(403, $exception->getMessage());
             }
 

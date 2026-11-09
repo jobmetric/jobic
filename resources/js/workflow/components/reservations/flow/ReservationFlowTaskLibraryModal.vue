@@ -36,6 +36,8 @@ const searchQuery = ref('');
 const activeCategory = ref('all');
 const selectedDriverId = ref('');
 const configDraft = ref({});
+const multiSelections = ref({});
+const multiOptionSelects = ref({});
 const configError = ref('');
 const submitting = ref(false);
 const searchInputRef = ref(null);
@@ -118,6 +120,8 @@ function resetForOpen() {
     activeCategory.value = 'all';
     configError.value = '';
     submitting.value = false;
+    multiSelections.value = {};
+    multiOptionSelects.value = {};
 
     if (isEditMode.value && props.editTask) {
         const driverId = props.editTask.driver ?? props.editTask.driver_key ?? '';
@@ -171,6 +175,7 @@ function goToConfigStep() {
 
     if (!isEditMode.value) {
         configDraft.value = defaultConfigForDriver(selectedDriver.value);
+        multiSelections.value = {};
     }
 
     configError.value = '';
@@ -190,13 +195,51 @@ function backToLibrary() {
 
 function validateConfig() {
     for (const [key, field] of Object.entries(selectedDriver.value?.fields ?? {})) {
-        if (field.required && !String(configDraft.value[key] ?? '').trim()) {
+        const value = configDraft.value[key];
+        const missing = field.type === 'multiselect'
+            ? !Array.isArray(value) || value.length === 0
+            : !String(value ?? '').trim();
+        if (field.required && missing) {
             configError.value = field.label;
             return false;
         }
     }
     configError.value = '';
     return true;
+}
+
+function selectedMultiOptions(key, field) {
+    const selected = new Set((Array.isArray(configDraft.value[key]) ? configDraft.value[key] : []).map(String));
+    return Object.entries(field.options ?? {}).filter(([value]) => selected.has(String(value)));
+}
+
+function availableMultiOptions(key, field) {
+    const selected = new Set((Array.isArray(configDraft.value[key]) ? configDraft.value[key] : []).map(String));
+    return Object.entries(field.options ?? {}).filter(([value]) => !selected.has(String(value)));
+}
+
+function setMultiOptionSelect(key, element) {
+    if (element) multiOptionSelects.value[key] = element;
+}
+
+async function addMultiOption(key) {
+    const selectedValue = String(multiSelections.value[key] ?? '');
+    if (!selectedValue) return;
+
+    const values = Array.isArray(configDraft.value[key]) ? configDraft.value[key] : [];
+    if (!values.some((value) => String(value) === selectedValue)) {
+        const value = /^\d+$/.test(selectedValue) ? Number(selectedValue) : selectedValue;
+        configDraft.value[key] = [...values, value];
+    }
+
+    multiSelections.value[key] = '';
+    await nextTick();
+    multiOptionSelects.value[key]?.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function removeMultiOption(key, selectedValue) {
+    const values = Array.isArray(configDraft.value[key]) ? configDraft.value[key] : [];
+    configDraft.value[key] = values.filter((value) => String(value) !== String(selectedValue));
 }
 
 async function submit() {
@@ -621,7 +664,26 @@ onBeforeUnmount(() => {
                                 <template v-if="Object.keys(selectedDriver?.fields ?? {}).length">
                                     <label v-for="(field, key) in selectedDriver.fields" :key="key" class="rf-field">
                                         <span class="rf-field__label">{{ field.label }}<span v-if="field.required" aria-hidden="true"> *</span></span>
-                                        <select v-if="field.options" v-model="configDraft[key]" class="kt-input rf-field__input" :disabled="submitting || saving">
+                                        <template v-if="field.type === 'multiselect'">
+                                            <select :ref="(element) => setMultiOptionSelect(key, element)" v-model="multiSelections[key]"
+                                                class="kt-input rf-field__input rf-task-role-picker" :data-placeholder="copy.choose"
+                                                :disabled="submitting || saving" @change="addMultiOption(key)">
+                                                <option value=""></option>
+                                                <option v-for="[value, label] in availableMultiOptions(key, field)" :key="value" :value="value">{{ label }}</option>
+                                            </select>
+                                            <ul v-if="selectedMultiOptions(key, field).length" class="rf-task-role-list" :aria-label="field.label">
+                                                <li v-for="[value, label] in selectedMultiOptions(key, field)" :key="value" class="rf-task-role-item">
+                                                    <span class="rf-task-role-item__icon"><i class="ki-filled ki-shield-tick" aria-hidden="true" /></span>
+                                                    <span class="rf-task-role-item__name">{{ label }}</span>
+                                                    <button type="button" class="rf-task-role-item__remove" :disabled="submitting || saving"
+                                                        :aria-label="copy.state_view_role_remove.replace(':role', label)"
+                                                        @click="removeMultiOption(key, value)">
+                                                        <i class="ki-filled ki-cross" aria-hidden="true" />
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </template>
+                                        <select v-else-if="field.options" v-model="configDraft[key]" class="kt-input rf-field__input" :disabled="submitting || saving">
                                             <option value="" disabled>{{ copy.choose }}</option>
                                             <option v-for="(label, value) in field.options" :key="value" :value="value">{{ label }}</option>
                                         </select>
@@ -1157,6 +1219,18 @@ onBeforeUnmount(() => {
 .rf-task-library__config-body .rf-field__label { margin-bottom:9px; color:var(--task-modal-text); font-size:13px; font-weight:700; }
 .rf-task-library__config-body .rf-field__input { padding-inline:12px; }
 .rf-task-library__config-body .rf-field__input:focus { outline:none; border-color:var(--task-modal-primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--task-modal-primary) 15%,transparent); }
+.rf-task-library__config-body .rf-task-role-picker + .select2-container { display:block; width:100%!important; min-width:0; }
+.rf-task-library__config-body .rf-task-role-picker + .select2-container .select2-selection--single { display:flex; height:42px; align-items:center; border:1px solid var(--task-modal-border); border-radius:9px; background:var(--task-modal-bg); color:var(--task-modal-text); }
+.rf-task-library__config-body .rf-task-role-picker + .select2-container--focus .select2-selection--single { border-color:var(--task-modal-primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--task-modal-primary) 15%,transparent); }
+.rf-task-library__config-body .rf-task-role-picker + .select2-container .select2-selection__rendered { width:100%; padding-inline:12px 30px; color:var(--task-modal-text); line-height:40px; }
+.rf-task-library__config-body .rf-task-role-picker + .select2-container .select2-selection__placeholder { color:var(--task-modal-secondary); }
+.rf-task-role-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr)); gap:8px; margin:9px 0 0; padding:0; list-style:none; }
+.rf-task-role-item { display:flex; min-width:0; align-items:center; gap:8px; padding:7px 9px; border:1px solid color-mix(in srgb,var(--task-modal-primary) 22%,var(--task-modal-border)); border-radius:9px; background:color-mix(in srgb,var(--task-modal-primary) 6%,var(--task-modal-bg)); color:var(--task-modal-text); }
+.rf-task-role-item__icon { display:grid; width:27px; height:27px; flex:0 0 27px; place-items:center; border-radius:7px; background:color-mix(in srgb,var(--task-modal-primary) 14%,var(--task-modal-bg)); color:var(--task-modal-primary); }
+.rf-task-role-item__name { min-width:0; flex:1 1 auto; overflow-wrap:anywhere; font-size:12px; font-weight:600; }
+.rf-task-role-item__remove { display:grid; width:27px; height:27px; flex:0 0 27px; place-items:center; border:0; border-radius:7px; background:transparent; color:var(--task-modal-secondary); cursor:pointer; }
+.rf-task-role-item__remove:hover:not(:disabled) { background:#fee2e2; color:#b42318; }
+.rf-task-role-item__remove:disabled { cursor:not-allowed; opacity:.55; }
 
 .rf-task-library__config-empty {
     font-size: 0.875rem;
