@@ -14,6 +14,8 @@ final class LifecycleEvents
 {
     /** @var array<string, class-string<DomainEvent>> */
     public const CLASSES = [
+        'jobic.posts.kanban.settings.saving' => \App\Events\Kanban\KanbanSettingsSavingEvent::class,
+        'jobic.posts.kanban.moving' => \App\Events\Kanban\KanbanMovingEvent::class,
         'jobic.users.saving' => \App\Events\User\UserSavingEvent::class,
         'jobic.users.deleting' => \App\Events\User\UserDeletingEvent::class,
         'jobic.roles.saving' => \App\Events\Role\RoleSavingEvent::class,

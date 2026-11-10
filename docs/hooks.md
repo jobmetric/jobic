@@ -299,3 +299,13 @@ Saving/deleting/restoring definitions carry `phase:before`; taxonomy persisted c
 | `jobic.settings.dynamic.saving` | `App\Events\DynamicSetting\DynamicSettingSavingEvent` | Before persistence |
 | `jobic.auth.language.saving` | `App\Events\Auth\AuthLanguageSavingEvent` | Before persistence |
 | `jobic.settings.two_factor.saving` | `App\Events\TwoFactor\TwoFactorSavingEvent` | Before persistence |
+
+## Content Kanban
+
+- `jobic.admin.posts.kanban.before` and `jobic.admin.posts.kanban.after` are view slots around the board mount, with `type` context. Their trusted views follow the normal rendering failure semantics and must escape output.
+- `jobic.posts.kanban.settings.saving` is a synchronous lifecycle action after command validation and user-row locking, before preference persistence. `jobic.posts.kanban.settings.saved` is an isolated notification after the outer transaction commits. Context is exactly `type` and authenticated `user_id`; preference values and raw requests are excluded. A saving listener may veto and rolls back the preference write; saved listener errors are logged without undoing a committed save.
+- `jobic.posts.kanban.moving` is a synchronous lifecycle action after permissions, stream/revision/definition and column-version checks, before transition execution or rank persistence. `jobic.posts.kanban.moved` is an isolated notification after the outer transaction commits. Context is exactly `type`, `post_id`, `user_id`, and `operation` (`move` or `reorder`). Content, role assignments, dates, cursors and edit tokens are excluded. Vetoes or transition failures roll back status and rank together and never emit moved; post-commit listener errors are isolated.
+
+Listeners use the existing priority ordering and equal-priority registration order. The settings-saving and moving boundaries are registered typed lifecycle events and are excluded from automation triggers. No saving, moving or saved hook is invoked during destination previews. See `docs/kanban.md` for the HTTP, pagination, embedding and custom condition contracts.
+
+`jobic:workflow:toast` is a same-origin browser notification used by embedded Kanban editors to forward messages to the parent workspace's shared toast. Its detail is `{message: string, error: boolean}`. The parent displays the string through `textContent`; the event performs no HTTP request or persistence and grants no access. A local toast is used when the parent workspace is unavailable. The shared toast uses a manual browser popover where supported so notifications remain visible above workspace dialogs; normal administration toasts retain their existing transport and appearance.

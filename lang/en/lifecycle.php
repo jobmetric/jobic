@@ -27,4 +27,6 @@ return [
     'jobic_settings_dynamic_saving' => ['group' => 'Operation lifecycle', 'title' => 'Before saving extension settings', 'description' => 'Synchronous operation boundary; listener exceptions veto the operation. Not an automation trigger.'],
     'jobic_auth_language_saving' => ['group' => 'Operation lifecycle', 'title' => 'Before saving guest language', 'description' => 'Synchronous operation boundary; listener exceptions veto the operation. Not an automation trigger.'],
     'jobic_settings_two_factor_saving' => ['group' => 'Operation lifecycle', 'title' => 'Before saving two-factor settings', 'description' => 'Synchronous operation boundary; listener exceptions veto the operation. Not an automation trigger.'],
+    'jobic_posts_kanban_settings_saving' => ['group' => 'Content Kanban', 'title' => 'Kanban settings saving', 'description' => 'Synchronous validation boundary before persistence; listeners may veto.'],
+    'jobic_posts_kanban_moving' => ['group' => 'Content Kanban', 'title' => 'Kanban card moving', 'description' => 'Synchronous validation boundary before persistence; listeners may veto.'],
 ];

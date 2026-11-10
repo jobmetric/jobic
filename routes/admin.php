@@ -26,6 +26,10 @@ Route::middleware([
     Route::get('/', DashboardController::class)->middleware(EnsurePermission::class.':admin.dashboard')->name('dashboard');
 
     Route::prefix('posts/{type}')->name('posts.')->controller(PostController::class)->middleware(EnsurePostPermission::class)->group(function (): void {
+        Route::get('kanban', [\App\Http\Controllers\Posts\KanbanController::class, 'index'])->name('kanban.index');
+        Route::get('kanban/data', [\App\Http\Controllers\Posts\KanbanController::class, 'data'])->name('kanban.data');
+        Route::get('kanban/{post}', [\App\Http\Controllers\Posts\KanbanController::class, 'details'])->whereNumber('post')->name('kanban.details');
+        Route::post('kanban/command', [\App\Http\Controllers\Posts\KanbanController::class, 'command'])->middleware('throttle:60,1')->name('kanban.command');
         Route::get('workflow', [WorkflowController::class, 'index'])->name('workflow.index');
         Route::post('workflow', [WorkflowController::class, 'save'])->middleware('throttle:30,1')->name('workflow.save');
         Route::post('{post}/lifecycle', [PostLifecycleController::class, 'command'])

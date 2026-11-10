@@ -272,6 +272,7 @@ function selectTransition(edge) {
     inspectorMode.value = 'transition';
     editTransitionForm.value = {
         label: edge.label ?? '',
+        roles: [...(edge.roles ?? [])].map(Number),
     };
 }
 
@@ -1546,6 +1547,7 @@ function submitEditTransition() {
     emit('update-transition', {
         transitionId: selectedTransition.value.id,
         label: editTransitionForm.value.label.trim(),
+        roles: (editTransitionForm.value.roles ?? []).map(Number),
         slug: selectedTransition.value.slug,
     });
     emit('save-graph');
@@ -1586,6 +1588,7 @@ watch(selectedTransition, (transition) => {
 
     editTransitionForm.value = {
         label: transition.label ?? transition.name ?? '',
+        roles: [...(transition.roles ?? [])].map(Number),
     };
 });
 
@@ -1951,6 +1954,7 @@ defineExpose({
                     :copy="copy"
                     :transition="selectedTransition"
                     :form="editTransitionForm"
+                    :available-roles="availableRoles"
                     :available-task-drivers="availableTaskDrivers"
                     :editable="editable"
                     :saving="saving"

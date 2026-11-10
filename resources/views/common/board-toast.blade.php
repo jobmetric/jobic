@@ -1,0 +1,1 @@
+<div class="ui-toast cms-toast" role="status" aria-live="polite" data-ui-toast hidden><span data-ui-toast-message></span><button type="button" data-toast-dismiss aria-label="{{ __('admin.close') }}"><x-vuero.icon name="x" /></button></div>

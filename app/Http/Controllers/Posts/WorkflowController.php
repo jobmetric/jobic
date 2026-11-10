@@ -70,7 +70,7 @@ class WorkflowController extends Controller
         Page::addLocalize('workflow', [
             'initial'           => $initial,
             'viewRoles'         => $systemRoles,
-            'copy'              => array_merge(trans('workflow_canvas'), trans('workflow')),
+            'copy'              => array_merge(trans('workflow_canvas'), trans('workflow'), array_intersect_key(trans('kanban'), array_flip(['transition_roles', 'transition_roles_hint', 'legacy_roles', 'select_role', 'remove_role']))),
             'previewOnly'       => $previewOnly,
             'editable'          => ! $previewOnly && app(AdminAccess::class)->allows($request->user(), $permission['manage']),
             'url'               => route('admin.posts.workflow.save', ['type' => $type]),

@@ -8,8 +8,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use JobMetric\Post\Models\Post;
 use JobMetric\Post\Models\PostPublicationStream;
-use JobMetric\Rolix\Models\Role;
-use JobMetric\Rolix\Models\RolePath;
 
 /** Apply workflow role restrictions to administration reads and transition actions. */
 final readonly class PostStateAccess
@@ -116,19 +114,6 @@ final readonly class PostStateAccess
      */
     public function effectiveSystemRoleIdsFor(User $actor): array
     {
-        $assignedIds = $actor->memberships()
-            ->whereNull('memberable_type')
-            ->whereNull('memberable_id')
-            ->where(fn ($query) => $query->whereNull('expired_at')->orWhere('expired_at', '>', now()))
-            ->pluck('role_id');
-        $roleIds = Role::query()->where('type', 'system')->whereIn('id', $assignedIds)
-            ->pluck('id')->map(static fn ($id): int => (int) $id);
-        $parentIds = RolePath::query()
-            ->whereIn('role_id', $roleIds)
-            ->where('level', '>', 0)
-            ->pluck('path_id')
-            ->map(static fn ($id): int => (int) $id);
-
-        return $roleIds->merge($parentIds)->unique()->values()->all();
+        return app(\JobMetric\Post\Services\WorkflowTransitionAccess::class)->roleIds($actor);
     }
 }

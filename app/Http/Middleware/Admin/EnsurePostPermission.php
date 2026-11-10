@@ -43,6 +43,18 @@ final readonly class EnsurePostPermission
 
         abort_unless(PostTypeRegistry::has($type), 404);
 
+        if ($request->routeIs('admin.posts.kanban.*')) {
+            $builder = PostTypeRegistry::for($type);
+            abort_unless($builder->hasKanban(), 404);
+            $fallback = $type === 'page' ? 'admin.content.pages.view' : 'admin.content.posts.view';
+            abort_unless($this->access->allows($request->user(), $builder->getViewPermission() ?? $fallback), 403);
+            if ($request->isMethod('POST') && $request->input('operation') !== 'settings') {
+                abort_unless($this->access->allows($request->user(), app(PostWorkflowPermissions::class)->for($type)['manage']), 403);
+            }
+            $this->authorizeRecord($request, $type);
+            return $next($request);
+        }
+
         $action = $request->route()
             ->getActionMethod();
 

@@ -1,1 +1,0 @@
-import{i}from"./dashboard-runtime-a54286c2.js";import{i as o}from"./business-c1859a83.js";import"./jquery-83fec99f.js";import"./icons-89082092.js";import"./preload-helper-cf779743.js";i("jobs",o("jobs"));

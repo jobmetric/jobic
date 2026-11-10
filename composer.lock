@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "77c6da216b0d66aea13de235fde0fdb2",
+    "content-hash": "ddbfff28941bb84dd7ca1bf5ed27c677",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2215,16 +2215,16 @@
         },
         {
             "name": "jobmetric/laravel-post",
-            "version": "v1.2.5",
+            "version": "v1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-post.git",
-                "reference": "f0d26f21cb3335ad5695342c7d5e4ab39a194c93"
+                "reference": "445b585772c5a78569e97fe80c8828ddeea8afd0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/f0d26f21cb3335ad5695342c7d5e4ab39a194c93",
-                "reference": "f0d26f21cb3335ad5695342c7d5e4ab39a194c93",
+                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/445b585772c5a78569e97fe80c8828ddeea8afd0",
+                "reference": "445b585772c5a78569e97fe80c8828ddeea8afd0",
                 "shasum": ""
             },
             "require": {
@@ -2286,7 +2286,7 @@
                 "issues": "https://github.com/jobmetric/laravel-post/issues",
                 "source": "https://github.com/jobmetric/laravel-post"
             },
-            "time": "2026-11-09T17:05:25+00:00"
+            "time": "2026-11-10T01:39:50+00:00"
         },
         {
             "name": "jobmetric/laravel-setting",
@@ -11191,12 +11191,12 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
+        "php": "^8.3",
         "ext-dom": "*",
         "ext-libxml": "*",
         "ext-pdo": "*",
         "ext-redis": "*",
-        "ext-zip": "*",
-        "php": "^8.3"
+        "ext-zip": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"

@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import RolePicker from '../../RolePicker.vue';
 
 import ReservationFlowTasksPanel from '../ReservationFlowTasksPanel.vue';
 import ReservationFlowIdentityBadge from './ReservationFlowIdentityBadge.vue';
@@ -8,6 +9,7 @@ const props = defineProps({
     copy: { type: Object, required: true },
     transition: { type: Object, required: true },
     form: { type: Object, required: true },
+    availableRoles: {type: Array, default: () => []},
     availableTaskDrivers: { type: Array, default: () => [] },
     editable: { type: Boolean, default: false },
     saving: { type: Boolean, default: false },
@@ -95,6 +97,12 @@ function portLabel(side) {
                     <span class="rf-field__label">{{ copy.reservation_flow_transition_button_label }}</span>
                     <input v-model="form.label" class="kt-input rf-field__input" :disabled="!editable" />
                 </label>
+                <div v-if="!transition.is_start_edge" class="rf-field">
+                    <span class="rf-field__label">{{ copy.transition_roles }}</span>
+                    <RolePicker v-model="form.roles" :roles="availableRoles" :disabled="!editable" :copy="copy" />
+                    <span class="rf-field__hint">{{ copy.transition_roles_hint }}</span>
+                    <p v-if="transition.tasks?.some(task => task.driver?.endsWith('RequirePermission'))" class="rf-field__hint">{{ copy.legacy_roles }}</p>
+                </div>
                 <p v-if="editable" class="rf-field__hint">{{ copy.reservation_flow_inspector_draft_hint }}</p>
             </div>
 

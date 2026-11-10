@@ -57,7 +57,7 @@ if (form) {
             window.addEventListener('pagehide', (event) => {
                 if (event.persisted) return;
                 window.clearInterval(editLockTimer);
-                if (!token.value || !form.dataset.editLockReleaseUrl) return;
+                if (!token.value || !form.dataset.editLockReleaseUrl || (editorConfig.embedded && !editorConfig.embeddedLeaseOwned)) return;
                 const data = new URLSearchParams();
                 data.set('_token', document.querySelector('meta[name="csrf-token"]')?.content || '');
                 data.set('_edit_lock', token.value);
@@ -487,6 +487,7 @@ if (form) {
         const option = document.createElement('button'); option.type = 'submit'; option.name = 'intent'; option.value = value; option.textContent = text; menu.append(option);
     });
     options.append(summary, menu); saveGroup.append(save, options);
+    if (editorConfig.embedded) { options.hidden = true; cancel.hidden = true; }
     const bindWorkflowPreview = dialog => {
         if (!dialog || dialog.dataset.bound) return;
         dialog.dataset.bound = '1';
@@ -529,6 +530,40 @@ if (form) {
         description: editorConfig.messages.unsaved,
         confirm: labels.leave,
     }));
+    const releaseEmbeddedLease = async () => {
+        if (!editorConfig.embedded) return;
+        const token = form.elements.namedItem('_edit_lock');
+        if (editorConfig.embeddedLeaseOwned && token?.value && form.dataset.editLockReleaseUrl) {
+            const data = new FormData(); data.set('_edit_lock', token.value);
+            try { await sendSettings(form.dataset.editLockReleaseUrl, data); }
+            catch (error) { if (![403, 423].includes(error.status)) throw error; }
+            token.value = '';
+        }
+        if (editLockTimer) window.clearInterval(editLockTimer);
+        editLockTimer = null;
+        guard.leave();
+    };
+    if (editorConfig.embedded) {
+        window.kanbanEditor = {
+            canClose: async () => {
+                if (form.dataset.saving) return false;
+                if (guard.dirty() && !(await showDialog({title: labels.unsaved_title, description: editorConfig.messages.unsaved, confirm: labels.leave}))) return false;
+                try { await releaseEmbeddedLease(); return true; }
+                catch (error) { announce(error.message, true); return false; }
+            },
+        };
+        document.addEventListener('click', event => {
+            const link = event.target.closest('a[href]');
+            if (!link || !['http:', 'https:'].includes(new URL(link.href, location.href).protocol)) return;
+            if (link.hasAttribute('download') || link.target === '_blank') return;
+            event.preventDefault(); event.stopImmediatePropagation();
+        }, true);
+    }
+    const boardChanged = async () => {
+        if (!editorConfig.embedded) return;
+        try { await releaseEmbeddedLease(); } catch {}
+        window.parent.dispatchEvent(new CustomEvent('jobic:kanban:changed'));
+    };
     let lifecycleBaseline = guard.snapshot();
     let pendingWorkflowTransition = null;
     form.addEventListener('click', async event => {
@@ -581,6 +616,7 @@ if (form) {
             const result = await response.json();
             if (!response.ok || !result.ok) throw new Error(Object.values(result.errors || {}).flat()[0] || result.message || pageData().posts.lifecycle.failed);
             guard.leave();
+            if (editorConfig.embedded) { boardChanged(); return; }
             location.reload();
         } catch (error) {
             announce(error.message || pageData().posts.lifecycle.failed, true);
@@ -648,6 +684,7 @@ if (form) {
             const result = await response.json();
             if (!response.ok || !result.ok) throw new Error(result.message || editorConfig.messages.failed);
             announce(result.message);
+            if (editorConfig.embedded) { boardChanged(); return; }
             window.location.reload();
         } catch (error) {
             announce(error.message || editorConfig.messages.failed, true);
@@ -681,11 +718,13 @@ if (form) {
             announce(result.message);
             window.dispatchEvent(new CustomEvent('jobic:editor:after-save', {detail: {type: form.dataset.type, post: result.data, response: result}}));
             guard.saved(submitted);
+            if (editorConfig.embedded && !pendingWorkflowTransition) window.parent.dispatchEvent(new CustomEvent('jobic:kanban:saved'));
             lifecycleBaseline = submitted;
             if (pendingWorkflowTransition) {
                 pendingWorkflowTransition = null;
                 guard.leave();
-                location.reload();
+                if (editorConfig.embedded) { boardChanged(); return; }
+            location.reload();
                 return;
             }
             if (result.data?.update_url) {
@@ -708,7 +747,7 @@ if (form) {
                 startEditLockRenewal();
                 form.action = `${result.data.update_url}?locale=${encodeURIComponent(editorConfig.activeLocale)}`;
                 if (result.data.edit_url) {
-                    history.replaceState({}, '', `${result.data.edit_url}?locale=${encodeURIComponent(editorConfig.activeLocale)}`);
+                    history.replaceState({}, '', `${result.data.edit_url}?locale=${encodeURIComponent(editorConfig.activeLocale)}${editorConfig.embedded ? '&embedded=kanban' : ''}`);
                     const heading = form.querySelector('.crud-taxonomy-title h1');
                     if (heading) heading.textContent = labels.edit;
                     if (labels.create && document.title.includes(labels.create)) {

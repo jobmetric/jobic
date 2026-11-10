@@ -55,8 +55,15 @@ final class WorkflowSimulation
             ->where('from', $stateId)
             ->map(function (array $edge) use ($states, $scenario, $actor, $role): array {
                 $checks = [];
+                $roleIds = $role ? collect([$role])->merge($role->ancestors())->pluck('id')->map(fn ($id) => (int) $id)->all()
+                    : app(\JobMetric\Post\Services\WorkflowTransitionAccess::class)->roleIds($actor);
+                if (! empty($edge['roles'])) {
+                    $allowed = array_intersect(array_map('intval', $edge['roles']), $roleIds) !== [];
+                    $checks[] = ['title' => __('kanban.transition_roles'), 'status' => $allowed ? 'passed' : 'blocked',
+                        'message' => $allowed ? __('workflow.simulation_check_passed') : trans('post::lifecycle.role_denied')];
+                }
                 foreach ($edge['tasks'] as $task) {
-                    if (($task['status'] ?? true) === false) {
+                    if (! ($task['status'] ?? true)) {
                         continue;
                     }
                     $checks[] = $this->check($task, $scenario, $actor, $role);

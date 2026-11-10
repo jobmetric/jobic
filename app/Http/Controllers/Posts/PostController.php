@@ -146,6 +146,8 @@ final class PostController extends Controller
             'type'               => $type,
             'workflowUrl'        => (app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['manage']) || app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['view'])) ? route('admin.posts.workflow.index', ['type' => $type]) : null,
             'workflowLabel'      => trans('workflow.title'),
+            'kanbanUrl'          => $builder->hasKanban() ? route('admin.posts.kanban.index', ['type' => $type]) : null,
+            'kanbanLabel'        => trans('kanban.title'),
             'dataUrl'            => route('admin.posts.data', [
                 'type' => $type,
             ]),
@@ -573,11 +575,15 @@ final class PostController extends Controller
 
         $builder = PostTypeRegistry::for($type);
 
+        $embedded = request()->query('embedded') === 'kanban' && $builder->hasKanban();
+        $embeddedLeaseOwned = false;
         $editLock = null;
 
         if ($post && $builder->hasOptimisticLocking()) {
+            $previousLease = app(TaxonomyEditLocks::class)->inspect('posts:' . $type, (int) $post->id);
             $lease = app(TaxonomyEditLocks::class)->acquire('posts:' . $type, (int) $post->id, request()->user());
             if (! $lease['acquired']) {
+                abort_if($embedded, 423, __('kanban.locked'));
                 $lock = $lease['lock'] ?? [];
 
                 return redirect()
@@ -588,12 +594,13 @@ final class PostController extends Controller
                     ]));
             }
             $editLock = $lease['lock'];
+            $embeddedLeaseOwned = $embedded && $previousLease === null;
         }
 
         $postType = new Post;
         $postType->type = $type;
         $taxonomyTypes = $postType->taxonomyAllowTypes();
-        $activeLocale = LocaleCatalog::resolve(app()->getLocale());
+        $activeLocale = LocaleCatalog::resolve($embedded ? (string) request()->query('locale', app()->getLocale()) : app()->getLocale());
 
         $editorConfig = Hooks::filter('jobic.editor.config', [
             'tools'     => Hooks::filter('jobic.editor.tools', Editor::clientTools(), [
@@ -650,6 +657,8 @@ final class PostController extends Controller
         }
 
         Page::addLocalize('postEditor', [
+            'embedded'     => $embedded,
+            'embeddedLeaseOwned' => $embeddedLeaseOwned,
             'previewUrl'   => route('admin.posts.editor-preview', ['type' => $type]),
             'templates'    => Editor::templates()
                 ->forType($type),
@@ -684,6 +693,7 @@ final class PostController extends Controller
 
         return view('posts.form', [
             'type'               => $type,
+            'embedded'           => $embedded ?? false,
             'typeLabel'          => $builder->getLabel() ?: $type,
             'description'        => $builder->getDescription(),
             'backUrl'            => $builder->getBackUrl(),

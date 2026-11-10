@@ -1,4 +1,4 @@
-@extends('common.admin')
+@extends(($embedded ?? false) ? 'common.embedded' : 'common.admin')
 @section('title', __('posts.'.($record ? ($type === 'page' ? 'edit_page' : 'edit') : ($type === 'page' ? 'create_page' : 'create'))))
 @section('content')
 @push('styles') @vite('resources/css/posts.css', 'vuero/build') @endpush

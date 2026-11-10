@@ -60,3 +60,5 @@ The event-system package includes commit/rollback and listener tests. PackageCor
 ## Final acceptance
 
 The final installed stable dependency set passed the complete Jobic suite: **376 tests, 5,997 assertions**. This run used the normal vendor autoloader without a local package bootstrap. Composer validation and Laravel package discovery passed. All 18 release versions and archive commit references match their immutable source tags; no local path repository or path dependency remains. The package-focused SQLite suite additionally passed 46 tests with 134 assertions (one existing PHP deprecation in the post test fixtures).
+
+Kanban adds the synchronous, non-automation boundaries `jobic.posts.kanban.settings.saving` and `jobic.posts.kanban.moving`, registered through LifecycleEvents and translated discovery metadata. They contain only type, user ID and (for movement) post ID and operation. Their hook notifications run only after the outer transaction commits, as documented in docs/hooks.md.

@@ -21,5 +21,5 @@ export function guardUnsaved(form, confirmLeave) {
         try { if (await confirmLeave()) { leaving = true; location.assign(url.href); } }
         finally { prompting = false; }
     });
-    return { snapshot, saved: value => { baseline = value; }, leave: () => { leaving = true; } };
+    return { snapshot, dirty, saved: value => { baseline = value; }, leave: () => { leaving = true; } };
 }

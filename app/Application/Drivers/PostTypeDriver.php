@@ -52,7 +52,10 @@ final class PostTypeDriver implements ApplicationDriver
                 ->filters(['status']);
         }
 
+        \JobMetric\Post\Models\PostPublicationStream::updated([\App\Services\Posts\Kanban::class, 'streamChanged']);
+
         PostTypeRegistry::register('post')
+            ->kanban()
             ->label('posts.types.post')
             ->description('posts.types.post_description')
             ->permission('admin.content.posts')

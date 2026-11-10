@@ -156,6 +156,9 @@ final class Posts
                     ->firstOrFail();
                 try {
                     app(PostStreamWorkflow::class)->transition($post, PostPublicationStream::SHARED, (string) $data['workflow_transition'], (int) $stream->draft_revision_id, (int) $stream->version, $actor, isset($data['workflow_due_at']) ? Carbon::parse($data['workflow_due_at']) : null);
+                } catch (\JobMetric\Flow\Exceptions\TaskRestrictionException $error) {
+                    abort_if(in_array($error->getMessage(), [trans('post::lifecycle.role_denied'), trans('post::lifecycle.permission_denied')], true), 403, $error->getMessage());
+                    throw ValidationException::withMessages(['workflow_transition' => [$error->getMessage()]]);
                 } catch (PostStatusTransitionNotAllowedException) {
                     throw ValidationException::withMessages(['workflow_transition' => [trans('posts.workflow_status')]]);
                 }

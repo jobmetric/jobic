@@ -54,7 +54,7 @@ class WorkflowDesigner
         $registry = app('FlowTaskRegistry');
         foreach ($registry->forSubject(PostPublicationStream::class) as $category => $drivers) {
             foreach ($drivers as $class => $driver) {
-                if (! $driver instanceof WorkflowTaskConfiguration) {
+                if ($class === \JobMetric\Post\Tasks\RequirePermission::class || ! $driver instanceof WorkflowTaskConfiguration) {
                     continue;
                 }
 
@@ -92,7 +92,7 @@ class WorkflowDesigner
             'definition_id' => $definition?->id,
             'state'         => $definition?->state,
             'enabled'       => $definition?->enabled ?? false,
-            'graph'         => $definition?->graph ?? [
+            'graph'         => $definition ? app(\JobMetric\Post\Services\WorkflowTransitionAccess::class)->normalize($definition->graph) : [
                     'states'      => [
                         [
                             'id'              => 'draft',

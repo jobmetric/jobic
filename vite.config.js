@@ -31,6 +31,7 @@ export default defineConfig({
                 'resources/js/posts/index.js',
                 'resources/js/posts/form.js',
                 'resources/js/workflow/index.js',
+                'resources/js/kanban/index.js',
                 'resources/js/taxonomies/form.js',
                 'resources/js/taxonomies/index.js',
                 'resources/js/users/index.js',

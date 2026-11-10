@@ -11,6 +11,9 @@ import { useReservationFlowConfirm } from './composables/useReservationFlowConfi
 import { RESERVATION_FLOW_CONFIRM_KEY } from './composables/reservationFlowConfirmKey.js';
 import { pageData } from '../common/page.js';
 import { announce } from '../common/toast.js';
+import WorkflowPageHeader from './components/WorkflowPageHeader.vue';
+import WorkflowSettingsDialog from './components/WorkflowSettingsDialog.vue';
+import WorkflowToast from './components/WorkflowToast.vue';
 
 const options = pageData().workflow;
 const copy = options.copy;
@@ -224,6 +227,7 @@ async function saveDraft() {
     const savedStates = (result.graph?.states ?? []).map((state) => String(state.id)).sort();
     const transitionSnapshot = (edge) => ({
         id: String(edge.id), from: String(edge.from), to: String(edge.to), slug: edge.slug, label: edge.label,
+        roles: (edge.roles ?? []).map(Number),
         anchors: { ...(edge.anchors?.from_side ? {from_side: edge.anchors.from_side} : {}),
             ...(edge.anchors?.to_side ? {to_side: edge.anchors.to_side} : {}),
             ...(Number.isFinite(Number(edge.anchors?.route_offset_x)) ? {route_offset_x: Number(edge.anchors.route_offset_x)} : {}),
@@ -282,23 +286,21 @@ onBeforeUnmount(() => {
 
 <template>
     <section class="rf-page rf-shell" :class="{'rf-page--preview': options.previewOnly}" @contextmenu.prevent>
-        <header class="rf-header">
-            <div class="rf-header__left">
-                <a v-if="!options.previewOnly" class="rf-header__back" :href="options.backUrl" :aria-label="copy.back" :title="copy.back"><i class="ki-filled ki-left" aria-hidden="true" /></a>
-                <div class="rf-header__titles"><h1 class="rf-header__title">{{ options.previewOnly ? copy.preview_diagram_title : copy.reservation_flow_page_title }} · {{ options.typeLabel }}</h1></div>
-                <span v-if="options.previewOnly && previewStage" class="rf-preview-stage"><i class="ki-filled ki-geolocation" aria-hidden="true" />{{ copy.preview_current_stage }}: {{ previewStage }}</span>
-            </div>
-            <div v-if="!options.previewOnly" class="rf-header__center">
+        <WorkflowPageHeader :title="`${options.previewOnly ? copy.preview_diagram_title : copy.reservation_flow_page_title} · ${options.typeLabel}`"
+            :back-url="options.previewOnly ? null : options.backUrl" :back-label="copy.back"
+            :settings-label="options.previewOnly ? '' : copy.advanced_settings" :busy="busy" @settings="settingsOpen = true">
+            <template v-if="!options.previewOnly" #center>
                 <button type="button" class="rf-btn rf-btn--secondary rf-btn--compact" :disabled="!options.editable || busy" @click="stateModal = true"><i class="ki-filled ki-plus" aria-hidden="true" />{{ copy.reservation_flow_add_state }}</button>
                 <button type="button" class="rf-btn rf-btn--secondary rf-btn--compact" :disabled="!options.editable || busy" @click="onAddTransition()"><i class="ki-filled ki-arrow-right-left" aria-hidden="true" />{{ copy.reservation_flow_add_transition }}</button>
-            </div>
-            <div v-if="!options.previewOnly" class="rf-header__right">
+            </template>
+            <template v-if="!options.previewOnly" #before-settings>
                 <button type="button" class="rf-btn rf-btn--secondary rf-btn--compact" :disabled="busy" @click="simulationOpen = true"><i class="ki-filled ki-flash" aria-hidden="true" />{{ copy.simulation_open }}</button>
-                <button type="button" class="rf-btn rf-btn--compact rf-settings-trigger" :aria-label="copy.advanced_settings" :title="copy.advanced_settings" @click="settingsOpen = true"><i class="ki-filled ki-setting-2" aria-hidden="true" /></button>
+            </template>
+            <template v-if="!options.previewOnly" #actions>
                 <button type="button" class="rf-btn rf-btn--primary rf-btn--compact" :disabled="!options.editable || busy || !dirty" @click="saveDraft">{{ busy ? copy.saving : copy.save_draft }}</button>
                 <button v-if="definitionState === 'draft'" type="button" class="rf-btn rf-btn--secondary rf-btn--compact" :disabled="!options.editable || busy || dirty" @click="preview">{{ copy.review }}</button>
-            </div>
-        </header>
+            </template>
+        </WorkflowPageHeader>
         <p v-if="error" class="rf-error" role="alert">{{ error }}</p>
         <ReservationFlowEditor :copy="copy" :states="states" :transitions="visualTransitions"
             :start-position="startPosition"
@@ -315,13 +317,11 @@ onBeforeUnmount(() => {
             @update-transition="updateTransition" @delete-transition="({transitionId}) => {transitions = transitions.filter((edge) => edge.id !== transitionId)}"
             @reconnect-transition="reconnectTransition" @add-task="modifyTask" @update-task="updateTask" @delete-task="removeTask"
             @state-menu-edit="({stateId}) => {}" @state-menu-add-transition="({stateId}) => onAddTransition({from: stateId})" />
-        <div v-if="settingsOpen" class="rf-mapping rf-settings-backdrop" role="presentation" @click.self="settingsOpen = false">
-            <section class="rf-settings-dialog" role="dialog" aria-modal="true" :aria-label="copy.advanced_settings">
-                <header class="rf-settings-dialog__head"><span class="rf-settings-dialog__icon"><i class="ki-filled ki-setting-2" aria-hidden="true" /></span><div><h2>{{ copy.advanced_settings }}</h2><p>{{ copy.advanced_settings_intro }}</p></div><button type="button" class="rf-mapping__close" :aria-label="copy.cancel" @click="settingsOpen = false"><i class="ki-filled ki-cross" aria-hidden="true" /></button></header>
-                <div class="rf-settings-dialog__body"><p>{{ copy.advanced_settings_explanation }}</p><div class="rf-settings-dialog__option"><div><strong>{{ copy.enabled }}</strong><small>{{ copy.enabled_hint }}</small></div><label class="rf-settings-switch"><input v-model="enabled" type="checkbox" role="switch" :disabled="!options.editable || busy" :aria-label="copy.enabled" /><span /></label></div><p class="rf-settings-dialog__note"><i class="ki-filled ki-information-2" aria-hidden="true" />{{ copy.advanced_settings_activation }}</p></div>
-                <footer class="rf-settings-dialog__foot"><button type="button" class="rf-btn rf-btn--primary" @click="settingsOpen = false">{{ copy.advanced_settings_done }}</button></footer>
-            </section>
-        </div>
+        <WorkflowSettingsDialog :open="settingsOpen" :title="copy.advanced_settings" :intro="copy.advanced_settings_intro"
+            :close-label="copy.cancel" :busy="busy" @close="settingsOpen = false">
+            <p>{{ copy.advanced_settings_explanation }}</p><div class="rf-settings-dialog__option"><div><strong>{{ copy.enabled }}</strong><small>{{ copy.enabled_hint }}</small></div><label class="rf-settings-switch"><input v-model="enabled" type="checkbox" role="switch" :disabled="!options.editable || busy" :aria-label="copy.enabled" /><span /></label></div><p class="rf-settings-dialog__note"><i class="ki-filled ki-information-2" aria-hidden="true" />{{ copy.advanced_settings_activation }}</p>
+            <template #footer><button type="button" class="rf-btn rf-btn--primary" @click="settingsOpen = false">{{ copy.advanced_settings_done }}</button></template>
+        </WorkflowSettingsDialog>
         <div v-if="review" class="rf-mapping" role="dialog" aria-modal="true" :aria-label="copy.mapping_title" @click.self="review = null">
             <div class="rf-mapping__panel">
                 <header class="rf-mapping__header">
@@ -363,6 +363,7 @@ onBeforeUnmount(() => {
         <WorkflowSimulationModal :open="simulationOpen" :copy="copy" :states="states"
             :roles="options.simulationRoles" :locales="options.simulationLocales" :status-choices="options.statusChoices" :run="runSimulation"
             @close="simulationOpen = false" />
+        <WorkflowToast :close-label="copy.cancel" />
     </section>
 </template>
 
@@ -372,34 +373,12 @@ body.workflow-icons-active i.ki-filled { display:inline-flex; align-items:center
 body.workflow-icons-active i.ki-filled .ui-icon { display:block; }
 .cms-page--workflow { margin:0; overflow:hidden; }
 [data-workflow-designer], .rf-page { width:100%; height:100dvh; min-height:0; }
-.rf-page { --rf-surface:#fff; --rf-canvas:#f8fafb; --rf-panel:#fff; --rf-border:#e4e8ee; --rf-text:#1f2d48; --rf-muted:#72809a; display:flex; flex-direction:column; background:var(--rf-surface); color:var(--rf-text); }
 .rf-shell { border:0; border-radius:0; overflow:hidden; }
 .rf-page > .rf-editor { flex:1; min-height:0; }
-.rf-header__back { display:inline-flex; align-items:center; justify-content:center; flex:0 0 35px; width:35px; height:35px; border:1px solid var(--rf-border); border-radius:10px; background:var(--rf-panel); }
-[dir=rtl] .rf-header__back .ki-left { transform:scaleX(-1); }
-.rf-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding:16px 22px; border-bottom:1px solid var(--rf-border); background:var(--rf-panel); }
-.rf-header__left,.rf-header__right,.rf-header__center { display:flex; align-items:center; gap:12px; }
-.rf-header__titles { display:flex; flex-direction:column; gap:3px; }.rf-header__title { font-size:17px; font-weight:700; margin:0; }
 .rf-page--preview .rf-header { min-height:56px; }
 .rf-preview-stage { display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border:1px solid var(--rf-border); border-radius:8px; color:#29ab91; background:var(--rf-panel); font-size:12px; font-weight:700; }
-.rf-header__back { color:#29ab91; }.rf-header__back:hover { background:#e9f7f3; }
-.rf-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--rf-border); border-radius:10px; padding:9px 14px; background:var(--rf-panel); color:var(--rf-text); cursor:pointer; }
-.rf-btn--compact { padding:7px 11px; font-size:12px; min-height:35px; }
-.rf-header .rf-btn { font-weight:700; }
-.rf-btn--compact i { color:#2eae98; }
-.rf-btn--primary { background:#2eae98; color:#fff; border-color:#2eae98; }.rf-btn:disabled { opacity:.5; cursor:not-allowed; }
 .rf-toggle { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--rf-text); cursor:help; }.rf-toggle i { color:var(--rf-muted); }
-.rf-settings-trigger { width:35px; min-width:35px; padding:0; }.rf-settings-trigger i { color:#2eae98; }
 .rf-mapping__actions { justify-content:flex-end; }
-.rf-settings-dialog { width:min(540px,100%); overflow:hidden; border:1px solid var(--rf-border); border-radius:18px; background:var(--rf-panel); color:var(--rf-text); box-shadow:0 24px 64px rgb(0 0 0 / 25%); }
-.rf-settings-dialog__head { display:flex; align-items:flex-start; gap:12px; padding:22px 24px; border-bottom:1px solid var(--rf-border); }
-.rf-settings-dialog__head h2 { margin:0; font-size:18px; }.rf-settings-dialog__head p { margin:5px 0 0; color:var(--rf-muted); font-size:12px; line-height:1.7; }
-.rf-settings-dialog__icon { display:grid; place-items:center; flex:0 0 40px; height:40px; border-radius:11px; background:var(--primary-soft,#e7f7f2); color:#2eae98; font-size:19px; }
-.rf-settings-dialog__body { padding:22px 24px; }.rf-settings-dialog__body > p { margin:0 0 18px; font-size:13px; line-height:1.85; }
-.rf-settings-dialog__option { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:16px; border:1px solid var(--rf-border); border-radius:12px; background:var(--rf-canvas); }
-.rf-settings-dialog__option strong,.rf-settings-dialog__option small { display:block; }.rf-settings-dialog__option small { margin-top:5px; color:var(--rf-muted); line-height:1.7; }
-.rf-settings-switch { position:relative; flex:0 0 42px; height:24px; cursor:pointer; }.rf-settings-switch input { position:absolute; opacity:0; }.rf-settings-switch span { display:block; width:42px; height:24px; border-radius:30px; background:var(--rf-border); transition:background .2s; }.rf-settings-switch span::after { content:''; position:absolute; top:3px; inset-inline-start:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgb(0 0 0 / 20%); transition:transform .2s; }.rf-settings-switch input:checked + span { background:#2eae98; }.rf-settings-switch input:checked + span::after { transform:translateX(18px); }[dir=rtl] .rf-settings-switch input:checked + span::after { transform:translateX(-18px); }.rf-settings-switch input:focus-visible + span { outline:2px solid #2eae98; outline-offset:3px; }
-.rf-settings-dialog__note { display:flex; gap:8px; margin-top:18px !important; color:var(--rf-muted); }.rf-settings-dialog__note i { color:#2eae98; }.rf-settings-dialog__foot { display:flex; justify-content:flex-end; padding:14px 24px; border-top:1px solid var(--rf-border); }
 .rf-error { color:#d23f4f; padding:10px 20px; }
 .rf-mapping { position:fixed; z-index:1000; inset:0; background:rgb(15 23 42 / 65%); display:grid; place-items:center; padding:20px; backdrop-filter:blur(5px); }
 .rf-mapping__panel { --rf-map-surface:#fff; --rf-map-soft:#f7f9fb; --rf-map-border:#e4e8ee; --rf-map-text:#1f2d48; --rf-map-muted:#72809a; display:flex; flex-direction:column; width:min(860px,100%); max-height:min(88vh,850px); overflow:hidden; background:var(--rf-map-surface); color:var(--rf-map-text); border:1px solid var(--rf-map-border); border-radius:20px; box-shadow:0 26px 80px rgb(0 0 0 / 25%); }
@@ -422,9 +401,6 @@ body.workflow-icons-active i.ki-filled .ui-icon { display:block; }
 .rf-mapping__empty { margin:0; padding:24px; text-align:center; border:1px dashed var(--rf-map-border); border-radius:12px; color:var(--rf-map-muted); font-size:13px; }
 .rf-mapping__actions { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 26px; border-top:1px solid var(--rf-map-border); }
 .rf-mapping__actions .rf-btn--secondary { color:var(--rf-map-text); background:var(--rf-map-surface); border-color:var(--rf-map-border); }
-html[data-theme=dark] .rf-page { --rf-surface:var(--surface); --rf-canvas:var(--page); --rf-panel:var(--surface); --rf-border:var(--border); --rf-text:var(--text); --rf-muted:var(--text-soft); color-scheme:dark; }
-html[data-theme=dark] .rf-header__back:hover { background:var(--surface-soft); }
-html[data-theme=dark] .rf-btn--primary { background:#2eae98; color:#fff; border-color:#2eae98; }
 html[data-theme=dark] .rf-mapping__panel { --rf-map-surface:var(--surface); --rf-map-soft:var(--surface-soft); --rf-map-border:var(--border); --rf-map-text:var(--text); --rf-map-muted:var(--text-soft); color-scheme:dark; }
 html[data-theme=dark] .rf-mapping__icon,html[data-theme=dark] .rf-mapping__arrow { background:var(--primary-soft); color:var(--primary); }
 /* The designer is outside the admin shell, so its canvas and inspector must carry their own theme. */

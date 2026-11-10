@@ -166,13 +166,12 @@ class WorkflowDesignerTest extends TestCase
         $tasks = collect(app(WorkflowDesigner::class)->read('post')['drivers'][0]['tasks'])->keyBy('class');
 
         $languages = $tasks->get(LockPostLanguage::class)['fields']['locale'];
-        $roles = $tasks->get(RequirePermission::class)['fields']['roles'];
+        $this->assertFalse($tasks->has(RequirePermission::class));
 
         $this->assertSame('select', $languages['type']);
         $this->assertArrayHasKey('fa', $languages['options']);
         $this->assertArrayHasKey('en', $languages['options']);
-        $this->assertSame('multiselect', $roles['type']);
-        $this->assertSame('Workflow reviewer', $roles['options'][(string) $role->id]);
+
     }
 
     public function test_simulation_inspects_an_unsaved_graph_without_running_actions_or_writing_a_definition(): void

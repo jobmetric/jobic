@@ -53,8 +53,9 @@ final readonly class PostLifecycleView
         $transitions = $stream ? collect($definition->graph['transitions'])
             ->filter(fn (array $transition): bool => ($states->get($transition['from'])['status'] ?? null) === $stream->status)
             ->filter(function (array $transition) use ($stream): bool {
+                if (! app(\JobMetric\Post\Services\WorkflowTransitionAccess::class)->allows($transition, request()->user())) return false;
                 foreach ($transition['tasks'] ?? [] as $task) {
-                    if ($task['driver'] !== RequirePermission::class || ($task['status'] ?? true) === false) {
+                    if ($task['driver'] !== RequirePermission::class || ! ($task['status'] ?? true)) {
                         continue;
                     }
                     $roleIds = $task['config']['roles'] ?? [];

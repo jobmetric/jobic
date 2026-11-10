@@ -141,6 +141,12 @@ if (table?.length && $.fn?.DataTable) {
     const createLabel = () => config.type === 'page' ? config.labels.create_page : config.labels.create;
     create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
     document.querySelector('[data-crud-toolbar]').append(create);
+    if (config.kanbanUrl) {
+        const board = document.createElement('a');
+        board.href = config.kanbanUrl; board.className = 'vuero-button'; board.dataset.postKanbanLink = '';
+        board.innerHTML = `${icon('kanban')}${escape(config.kanbanLabel)}`;
+        document.querySelector('[data-crud-toolbar]').append(board);
+    }
     if (config.workflowUrl) {
         const workflow = document.createElement('a');
         workflow.href = config.workflowUrl;
@@ -158,6 +164,8 @@ if (table?.length && $.fn?.DataTable) {
     operations.append(operationsToggle, operationsMenu); document.querySelector('[data-crud-toolbar]').append(operations);
     window.addEventListener('cms:presentation-refreshed', () => {
         create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
+        const kanban = document.querySelector('[data-post-kanban-link]');
+        if (kanban) kanban.innerHTML = `${icon('kanban')}${escape(config.kanbanLabel)}`;
         const workflow = document.querySelector('[data-post-workflow-link]');
         if (workflow) workflow.innerHTML = `${icon('list-tree')}${escape(config.workflowLabel)}`;
         operationsToggle.innerHTML = `${escape(config.labels.actions)}${icon('chevron-down')}`;
