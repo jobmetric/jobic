@@ -12,6 +12,7 @@ const selectionButton = document.querySelector("[data-show-selected]");
 const selectAll = document.querySelector("[data-select-all]");
 function selection() {
     selectionButton.hidden = selected.size === 0;
+    document.querySelector('[data-crud-action="delete"]')?.toggleAttribute("hidden",selected.size===0);
     selectionButton.innerHTML = `${icon("check")}${escape(copy().selected.replace(":count", selected.size))}`;
     const checks = [...document.querySelectorAll("[data-row-id]")];
     checks.forEach((node) => { node.checked = selected.has(Number(node.dataset.rowId)); });

@@ -12,6 +12,8 @@ test('post list and form use the shared CRUD layout without browser errors', asy
     await expect(operations.locator('summary')).toBeVisible();
     await expect(operations.locator('[data-post-action]').first()).toHaveAttribute('data-crud-action', 'delete');
     await expect(operations.locator('[data-post-action="help"]')).toHaveCount(1);
+    await expect(operations.locator('[data-post-kanban-link]')).toHaveCount(1);
+    await expect(page.locator('[data-crud-toolbar] > [data-post-default-kanban-link]')).toHaveAttribute('href', /kanban\/default$/);
     await expect(operations.locator('[data-post-action] svg')).toHaveCount(0);
     await expect(page.locator('[data-table-loading]')).toBeHidden();
 
@@ -49,8 +51,8 @@ test('switching the interface language updates post list and form without losing
     const initialLocale = await page.locator('html').getAttribute('lang');
     const targetLocale = initialLocale === 'fa' ? 'en' : 'fa';
     const copy = targetLocale === 'fa'
-        ? {create: 'افزودن نوشته', workflow: 'گردش‌کار محتوا', length: 'تعداد در صفحه', media: 'تصویر', title: 'عنوان', status: 'وضعیت', updated_at: 'آخرین ویرایش', translations: 'ترجمه‌ها', actions: 'عملیات'}
-        : {create: 'Add post', workflow: 'Content workflow', length: 'Per page', media: 'Image', title: 'Title', status: 'Status', updated_at: 'Last updated', translations: 'Translations', actions: 'Actions'};
+        ? {create: 'افزودن نوشته', workflow: 'تنظیمات گردش کار', length: 'تعداد در صفحه', media: 'تصویر', title: 'عنوان', status: 'وضعیت', updated_at: 'آخرین ویرایش', translations: 'ترجمه‌ها', actions: 'عملیات'}
+        : {create: 'Add post', workflow: 'Workflow settings', length: 'Per page', media: 'Image', title: 'Title', status: 'Status', updated_at: 'Last updated', translations: 'Translations', actions: 'Actions'};
 
     try {
         await switchTo(targetLocale);

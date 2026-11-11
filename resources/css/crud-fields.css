@@ -110,3 +110,14 @@ html[dir=rtl] .taxonomy-table .role-path-separator .ui-icon { transform:rotate(1
 
 .crud-taxonomy-dates span { margin-inline-end:auto; }
 .crud-taxonomy-dates strong { white-space:nowrap; }
+
+.crud-dropdown__menu > .crud-dropdown-divider { display:block; width:100%; margin:5px 0; border:0; border-block-start:1px solid var(--border); }
+
+.post-list-operations .crud-dropdown__menu [data-crud-action=help] { border-block-start:0; margin-block-start:0; }
+#board-table .board-column-name { width:65%; white-space:normal; overflow-wrap:anywhere; }
+#board-table .board-column-updated { width:20%; }
+#board-table .board-column-actions { width:112px; min-width:96px; }
+#board-table .board-column-selection { width:36px; }
+
+.crud-dropdown__menu > [hidden] { display:none!important; }
+.post-list-operations .crud-dropdown__menu > [data-post-action=delete][hidden] + .crud-dropdown-divider { display:none; }

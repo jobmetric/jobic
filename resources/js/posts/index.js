@@ -1,3 +1,4 @@
+import { mountPostListToolbar } from './toolbar';
 import { pageData } from '../common/page';
 import { announce } from '../common/toast';
 import { enhanceSelects } from '../common/selects';
@@ -13,7 +14,7 @@ Object.defineProperty(config, 'labels', {get: () => pageData().posts});
 Object.defineProperty(config, 'statuses', {get: () => pageData().postPage.statuses});
 Object.defineProperty(config, 'languages', {get: () => pageData().postPage.languages});
 Object.defineProperty(config, 'activeLocale', {get: () => pageData().postPage.activeLocale});
-for (const key of ['workflowLabel', 'helpTitle', 'helpIntro', 'help', 'editor']) {
+for (const key of ['workflowLabel', 'kanbanLabel', 'defaultKanbanLabel', 'helpTitle', 'helpIntro', 'help', 'editor']) {
     Object.defineProperty(config, key, {get: () => pageData().postPage[key]});
 }
 const $ = window.jQuery;
@@ -121,6 +122,7 @@ if (table?.length && $.fn?.DataTable) {
 
     function updateSelection() {
         selectionButton.hidden = selected.size === 0;
+        document.querySelector('[data-post-action=delete]')?.toggleAttribute('hidden',selected.size===0);
         selectionButton.innerHTML = `${icon('check')}${escape(config.labels.selected.replace(':count', selected.size))}`;
         const visible = [...document.querySelectorAll('[data-post-row]')];
         visible.forEach((checkbox) => { checkbox.checked = selected.has(Number(checkbox.dataset.postRow)); });
@@ -134,45 +136,9 @@ if (table?.length && $.fn?.DataTable) {
         if (row) selected.set(id, {id, title: row.title, editLocked: Boolean(row.edit_lock)});
     }
 
-    const create = document.createElement('a');
-    create.href = config.createUrl;
-    create.className = 'vuero-button is-primary';
-    create.dataset.crudAction = 'create';
-    const createLabel = () => config.type === 'page' ? config.labels.create_page : config.labels.create;
-    create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
-    document.querySelector('[data-crud-toolbar]').append(create);
-    if (config.kanbanUrl) {
-        const board = document.createElement('a');
-        board.href = config.kanbanUrl; board.className = 'vuero-button'; board.dataset.postKanbanLink = '';
-        board.innerHTML = `${icon('kanban')}${escape(config.kanbanLabel)}`;
-        document.querySelector('[data-crud-toolbar]').append(board);
-    }
-    if (config.workflowUrl) {
-        const workflow = document.createElement('a');
-        workflow.href = config.workflowUrl;
-        workflow.className = 'vuero-button';
-        workflow.dataset.postWorkflowLink = '';
-        workflow.innerHTML = `${icon('list-tree')}${escape(config.workflowLabel)}`;
-        document.querySelector('[data-crud-toolbar]').append(workflow);
-    }
-    const operations = document.createElement('details'); operations.className = 'crud-dropdown post-list-operations';
-    const operationsToggle = document.createElement('summary'); operationsToggle.className = 'vuero-button'; operationsToggle.innerHTML = `${escape(config.labels.actions)}${icon('chevron-down')}`;
-    const operationsMenu = document.createElement('div'); operationsMenu.className = 'crud-dropdown__menu';
-    (config.operations || ['delete']).forEach((action) => {
-        const button = document.createElement('button'); button.type = 'button'; button.dataset.postAction = action; button.dataset.crudAction = action; button.textContent = config.labels[action] || action; operationsMenu.append(button);
-    });
-    operations.append(operationsToggle, operationsMenu); document.querySelector('[data-crud-toolbar]').append(operations);
+    mountPostListToolbar(document.querySelector('[data-crud-toolbar]'), () => ({...pageData().postPage, labels: pageData().posts}));
     window.addEventListener('cms:presentation-refreshed', () => {
-        create.innerHTML = `${icon('plus')}${escape(createLabel())}`;
-        const kanban = document.querySelector('[data-post-kanban-link]');
-        if (kanban) kanban.innerHTML = `${icon('kanban')}${escape(config.kanbanLabel)}`;
-        const workflow = document.querySelector('[data-post-workflow-link]');
-        if (workflow) workflow.innerHTML = `${icon('list-tree')}${escape(config.workflowLabel)}`;
-        operationsToggle.innerHTML = `${escape(config.labels.actions)}${icon('chevron-down')}`;
-        operationsMenu.querySelectorAll('[data-post-action]').forEach((button) => {
-            const action = button.dataset.postAction;
-            button.textContent = config.labels[action] || action;
-        });
+        updateSelection();
         const columnLabels = {
             media: config.labels.media_column,
             title: config.labels.title_field,
@@ -285,7 +251,7 @@ if (table?.length && $.fn?.DataTable) {
                 render: (row) => {
                     const lock = row.edit_lock;
                     const lockHint = lock ? config.labels.edit_lock_owner.replace(':user', lock.user_name).replace(':time', lock.locked_at) : '';
-                    const lockButton = lock ? `<button type="button" class="crud-icon-button taxonomy-edit-lock" aria-label="${escape(lockHint)}" data-tooltip="${escape(lockHint)}" ${config.canUnlockEditLocks && !lock.owned ? `data-unlock-post-lock="${Number(row.id)}"` : 'aria-disabled="true"'}>${icon('lock')}</button>` : '';
+                    const lockButton = lock && !lock.owned ? `<button type="button" class="crud-icon-button taxonomy-edit-lock" aria-label="${escape(lockHint)}" data-tooltip="${escape(lockHint)}" ${config.canUnlockEditLocks && !lock.owned ? `data-unlock-post-lock="${Number(row.id)}"` : 'aria-disabled="true"'}>${icon('lock')}</button>` : '';
                     const edit = lock && !lock.owned ? '' : `<a class="crud-icon-button" href="${escape(row.edit_url)}" aria-label="${escape(config.labels.edit)}" data-tooltip="${escape(config.labels.edit)}">${icon('edit')}</a>`;
                     return `<div class="crud-row-actions">${lockButton}${edit}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(config.labels.actions)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu"><button type="button" data-post-delete="${Number(row.id)}" data-url="${escape(row.delete_url)}">${icon('trash')}${escape(config.labels.delete)}</button></div></details></div>`;
                 },

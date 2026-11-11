@@ -30,7 +30,7 @@ export async function refreshPresentation(selector = '[data-cms-shell]') {
     const url = new URL(location.href);
     const postLocale = document.querySelector('[data-post-form] [data-locale-panel]:not([hidden])')?.dataset.localePanel;
     if (postLocale) url.searchParams.set('locale', postLocale);
-    const response = await fetch(url, { headers: { Accept: 'text/html' }, credentials: 'same-origin', cache: 'no-store' });
+    const response = await fetch(url, { headers: { Accept: 'text/html', 'X-Jobic-Presentation': '1' }, credentials: 'same-origin', cache: 'no-store' });
     if ((!response.ok && response.status !== 403) || response.redirected) return;
     const next = new DOMParser().parseFromString(await response.text(), 'text/html');
     document.documentElement.lang = next.documentElement.lang;

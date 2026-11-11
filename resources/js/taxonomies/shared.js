@@ -5,7 +5,7 @@ import '../../css/crud-fields.css';
 export const copy = () => pageData().taxonomies;
 export function escape(value) { const span = document.createElement('span'); span.textContent = String(value ?? ''); return span.innerHTML; }
 export function icon(name) { return iconMarkup(name, 18); }
-function button(key, type = 'button') { const node = document.createElement('button'); node.type = type; node.dataset.crudAction = key; node.textContent = copy()[key] ?? key; if (type === 'submit') { node.name = 'intent'; node.value = key; } return node; }
+function button(key, type = 'button') { const node = document.createElement('button'); node.type = type; node.dataset.crudAction = key; if(key==='delete'&&type==='button')node.hidden=true; node.textContent = copy()[key] ?? key; if (type === 'submit') { node.name = 'intent'; node.value = key; } return node; }
 function dropdown(label, items, submit = false) { const details = document.createElement('details'); details.className = 'crud-dropdown'; const toggle = document.createElement('summary'); toggle.className = 'vuero-button'; toggle.setAttribute('aria-label', copy()[label]); toggle.innerHTML = `${submit ? '' : escape(copy()[label])}${icon('chevron-down')}`; const menu = document.createElement('div'); menu.className = 'crud-dropdown__menu'; items.forEach(item => menu.append(button(typeof item === 'string' ? item : item.key, submit ? 'submit' : 'button'))); details.append(toggle, menu); return details; }
 export function toolbar(kind) {
     const root = document.querySelector('[data-crud-toolbar]'); root.replaceChildren(); const page = pageData().taxonomyPage;

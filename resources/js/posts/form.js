@@ -1,6 +1,7 @@
 import { createPostEditor } from './editor-runtime';
 import { bindEditorWorkbench } from './editor-workbench';
 import { announce } from '../common/toast';
+import { editorContentSnapshot } from './form-snapshot';
 import { guardUnsaved } from '../common/unsaved';
 import { loadingButton } from '../common/page';
 import { sendSettings } from '../admin/settings';
@@ -529,7 +530,7 @@ if (form) {
         title: labels.unsaved_title,
         description: editorConfig.messages.unsaved,
         confirm: labels.leave,
-    }));
+    }), {normalizeValue:(name,value)=>[...form.querySelectorAll('[data-editor-content]')].some(input=>input.name===name)?editorContentSnapshot(value):value});
     const releaseEmbeddedLease = async () => {
         if (!editorConfig.embedded) return;
         const token = form.elements.namedItem('_edit_lock');
