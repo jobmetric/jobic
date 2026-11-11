@@ -35,6 +35,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/installation.php'));
         },
     )
+    ->withBroadcasting(__DIR__.'/../routes/channels.php', ['middleware'=>['web','auth']])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));

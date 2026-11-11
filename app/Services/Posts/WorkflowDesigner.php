@@ -157,6 +157,7 @@ class WorkflowDesigner
                 $definitions->activate($type, (int) $data['definition_id'], $data['fingerprint'], $data['mapping'] ?? [], $actor);
             }
 
+            if ($data['operation'] === 'activate') app(\App\Support\KanbanRealtime::class)->changed($type);
             DB::afterCommit(static fn () => Hooks::notify('jobic.posts.workflow.saved', $context));
         });
 

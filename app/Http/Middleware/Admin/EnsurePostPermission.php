@@ -32,7 +32,7 @@ final readonly class EnsurePostPermission
      * Enforce the permission registered for the requested post type.
      *
      * @param Request $request
-     * @param Closure(Request): Response $next
+     * @param Closure $next
      *
      * @return Response
      * @throws HttpException
@@ -48,6 +48,14 @@ final readonly class EnsurePostPermission
             abort_unless($builder->hasKanban(), 404);
             $fallback = $type === 'page' ? 'admin.content.pages.view' : 'admin.content.posts.view';
             abort_unless($this->access->allows($request->user(), $builder->getViewPermission() ?? $fallback), 403);
+            $custom = $request->route('board') !== null;
+            $management = $request->routeIs('admin.posts.kanban.boards.*');
+            if ($custom || $management) abort_unless($builder->hasMultipleKanban(),404);
+            if ($management) {
+                if (!$request->routeIs('admin.posts.kanban.boards.data')) abort_unless(app(\App\Services\Posts\ContentBoards::class)->mayManage($type,$request->user()),403);
+                return $next($request);
+            }
+            if ($custom) app(\App\Services\Posts\ContentBoards::class)->accessible($type,(int)$request->route('board'),$request->user());
             if ($request->isMethod('POST') && $request->input('operation') !== 'settings') {
                 abort_unless($this->access->allows($request->user(), app(PostWorkflowPermissions::class)->for($type)['manage']), 403);
             }

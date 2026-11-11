@@ -57,10 +57,240 @@ class KanbanTest extends TestCase
             'transition' => 'send', 'column_version' => 0, 'source_column_version' => 0];
     }
 
+    private function customBoard(array $changes=[]): \App\Models\ContentBoard
+    {
+        return \App\Models\ContentBoard::create($changes+['type'=>'post','name'=>'Editorial','roles'=>[],'users'=>[],'states'=>['draft','review'],'filters'=>[],'version'=>1]);
+    }
+
+    private function customRead(\App\Models\ContentBoard $board, array $query=[])
+    {
+        return $this->getJson(route('admin.posts.kanban.board.data',['type'=>'post','board'=>$board->id]+$query+['board_version'=>$board->version]));
+    }
+
+    public function test_simple_and_multiple_modes_have_separate_entrypoints_and_preserve_data(): void
+    {
+        $this->setupBoard(); $board=$this->customBoard();
+        $this->get(route('admin.posts.kanban.index',['type'=>'post']))->assertOk()->assertSee('data-board-directory',false);
+        $builder=\JobMetric\Post\Facades\PostTypeRegistry::for('post');
+        $builder->multipleKanban(false);
+        $this->get(route('admin.posts.kanban.index',['type'=>'post']))->assertOk()->assertSee('data-kanban-root',false);
+        $this->customRead($board)->assertNotFound();
+        $this->getJson(route('admin.posts.kanban.boards.data',['type'=>'post']))->assertNotFound();
+        $this->assertDatabaseHas('content_boards',['id'=>$board->id]);
+        $builder->multipleKanban(); $this->customRead($board)->assertOk();
+    }
+
+    public function test_board_audience_is_role_or_user_and_never_overridden_by_management(): void
+    {
+        $this->setupBoard();$actor=auth()->user();$other=User::factory()->create();
+        $board=$this->customBoard(['users'=>[$other->id]]);
+        $this->customRead($board)->assertForbidden();
+        $this->get(route('admin.posts.kanban.board',['type'=>'post','board'=>$board->id]))->assertForbidden();
+        $this->getJson(route('admin.posts.kanban.boards.data',['type'=>'post']))->assertJsonCount(1,'data.items')->assertJsonPath('data.items.0.url',null);
+        $this->getJson(route('admin.posts.kanban.boards.manage',['type'=>'post']))->assertOk()->assertJsonCount(1,'data.items');
+        $role=Role::create(['type'=>'system','name'=>'Editorial audience']);
+        $actor->assignRole((int)$role->id);$board->update(['roles'=>[$role->id]]);
+        $this->customRead($board->fresh())->assertOk();
+    }
+
+    public function test_author_filter_applies_to_counts_pagination_details_and_commands(): void
+    {
+        $definition=$this->setupBoard();$author=auth()->user();$first=$this->postItem('Included');
+        $other=User::factory()->create();$this->actingAs($other);$excluded=$this->postItem('Excluded');$this->actingAs($author);
+        $board=$this->customBoard(['filters'=>[['driver'=>'author','config'=>['ids'=>[$author->id]]]]]);
+        $this->customRead($board)->assertOk()->assertJsonPath('data.columns.0.count',1)->assertJsonPath('data.columns.0.items.0.id',$first->id);
+        $this->getJson(route('admin.posts.kanban.board.details',['type'=>'post','board'=>$board->id,'post'=>$excluded->id,'board_version'=>1]))->assertNotFound();
+        $this->postJson(route('admin.posts.kanban.board.command',['type'=>'post','board'=>$board->id]),$this->payload($excluded,$definition)+['board_version'=>1])->assertNotFound();
+    }
+
+    public function test_custom_order_is_independent_of_other_boards_and_default(): void
+    {
+        $definition=$this->setupBoard();$first=$this->postItem('First');$second=$this->postItem('Second');
+        $one=$this->customBoard();$two=$this->customBoard(['name'=>'Other']);
+        $url=route('admin.posts.kanban.board.command',['type'=>'post','board'=>$one->id]);
+        $payload=$this->payload($second,$definition,'reorder')+['board_version'=>1,'before_id'=>$first->id];
+        $this->postJson($url,$payload)->assertOk();
+        $this->customRead($one)->assertJsonPath('data.columns.0.items.0.id',$second->id);
+        $this->customRead($two)->assertJsonPath('data.columns.0.items.0.id',$first->id);
+        $this->readBoard()->assertJsonPath('data.columns.0.items.0.id',$first->id);
+        $this->postJson($url,$payload)->assertConflict();
+    }
+
+    public function test_board_configuration_versions_bind_commands_and_cursors(): void
+    {
+        $definition=$this->setupBoard();for($i=0;$i<6;$i++)$post=$this->postItem();
+        $one=$this->customBoard();$two=$this->customBoard();
+        $cursor=$this->customRead($one)->assertOk()->json('data.columns.0.cursor');
+        $this->customRead($two,['state'=>'draft','cursor'=>$cursor])->assertUnprocessable();
+        $one->update(['version'=>2]);
+        $this->customRead($one,['board_version'=>1])->assertConflict();
+        $this->customRead($one,['state'=>'draft','cursor'=>$cursor])->assertConflict();
+        $this->postJson(route('admin.posts.kanban.board.command',['type'=>'post','board'=>$one->id]),$this->payload($post,$definition)+['board_version'=>1])->assertConflict();
+    }
+
+    public function test_board_settings_and_deletion_are_validated_and_versioned(): void
+    {
+        $this->setupBoard();
+        $data=['name'=>'Team board','roles'=>[],'users'=>[],'states'=>['review','draft'],'filters'=>[],'version'=>0];
+        $url=route('admin.posts.kanban.boards.store',['type'=>'post']);
+        $result=$this->postJson($url,$data)->assertOk();$id=$result->json('data.board.id');
+        $this->assertDatabaseHas('content_boards',['id'=>$id,'version'=>1]);
+        $this->putJson($url.'/'.$id,$data)->assertConflict();
+        $this->putJson($url.'/'.$id,array_replace($data,['version'=>1,'states'=>['missing']]))->assertUnprocessable();
+        $this->putJson($url.'/'.$id,array_replace($data,['version'=>1,'filters'=>[['driver'=>'missing','config'=>['ids'=>[1]]]]]))->assertUnprocessable();
+        $this->deleteJson($url.'/'.$id,['version'=>2])->assertConflict();
+        $this->deleteJson($url.'/'.$id,['version'=>1])->assertOk();
+        $this->assertDatabaseMissing('content_boards',['id'=>$id]);
+    }
+
+    public function test_missing_filter_driver_and_removed_state_fail_closed(): void
+    {
+        $this->setupBoard();$this->postItem();
+        $board=$this->customBoard(['filters'=>[['driver'=>'removed','config'=>[]]]]);
+        $this->customRead($board)->assertUnprocessable();
+        $board->update(['filters'=>[],'states'=>['removed']]);
+        $this->customRead($board)->assertUnprocessable();
+    }
+
+    public function test_custom_preferences_are_isolated_from_default_and_other_boards(): void
+    {
+        $this->setupBoard();$one=$this->customBoard();$two=$this->customBoard();
+        $this->postJson(route('admin.posts.kanban.board.command',['type'=>'post','board'=>$one->id]),['operation'=>'settings','board_version'=>1,'page_size'=>20])->assertOk();
+        $preferences=auth()->user()->fresh()->ui_preferences;
+        $this->assertSame(20,$preferences['kanban']['post:board:'.$one->id]['page_size']);
+        $this->assertArrayNotHasKey('post',$preferences['kanban']);
+        $this->assertArrayNotHasKey('post:board:'.$two->id,$preferences['kanban']);
+    }
+
+    public function test_custom_transfer_updates_shared_state_and_other_board_ranks(): void
+    {
+        $definition=$this->setupBoard();$post=$this->postItem();$one=$this->customBoard();$two=$this->customBoard();
+        $this->postJson(route('admin.posts.kanban.board.command',['type'=>'post','board'=>$one->id]),$this->payload($post,$definition)+['board_version'=>1])->assertOk();
+        foreach([$one,$two] as $board)$this->customRead($board)->assertJsonPath('data.columns.0.count',0)->assertJsonPath('data.columns.1.items.0.id',$post->id);
+        $this->readBoard()->assertJsonPath('data.columns.1.items.0.id',$post->id);
+    }
+
+    public function test_taxonomy_and_author_drivers_intersect_and_reject_wrong_collections(): void
+    {
+        $this->setupBoard();$actor=auth()->user();$one=$this->postItem('Matching');$two=$this->postItem('No term');
+        $term=\JobMetric\Taxonomy\Models\Taxonomy::create(['type'=>'category','status'=>true,'ordering'=>0]);
+        $term->translate('en',['name'=>'News']);
+        $one->taxonomies()->attach($term->id,['collection'=>'categories']);
+        $board=$this->customBoard(['filters'=>[['driver'=>'author','config'=>['ids'=>[$actor->id]]],['driver'=>'taxonomy','config'=>['collection'=>'categories','ids'=>[$term->id]]]]]);
+        $this->customRead($board)->assertOk()->assertJsonPath('data.columns.0.count',1)->assertJsonPath('data.columns.0.items.0.id',$one->id);
+        $board->update(['filters'=>[['driver'=>'taxonomy','config'=>['collection'=>'tags','ids'=>[$term->id]]]]]);
+        $this->customRead($board)->assertUnprocessable();
+    }
+
+    public function test_viewers_cannot_manage_boards_or_inherit_management_from_board_audience(): void
+    {
+        $this->setupBoard();$reader=User::factory()->create();$role=Role::create(['type'=>'system','name'=>'Board reader','allow'=>['admin.content.posts.view'],'deny'=>[]]);
+        $reader->assignRole((int)$role->id);$this->actingAs($reader);$board=$this->customBoard(['roles'=>[$role->id]]);
+        $this->customRead($board)->assertOk();
+        $this->getJson(route('admin.posts.kanban.boards.manage',['type'=>'post']))->assertForbidden();
+        $this->postJson(route('admin.posts.kanban.boards.store',['type'=>'post']),[])->assertForbidden();
+        $this->getJson(route('admin.posts.kanban.boards.history',['type'=>'post','board'=>$board->id]))->assertForbidden();
+    }
+
+    public function test_board_hooks_are_ordered_secret_free_and_veto_persistence(): void
+    {
+        $this->setupBoard();$order=[];
+        Hooks::addAction('jobic.posts.kanban.boards.saving',function($context)use(&$order):void{
+            $order[]='first';$this->assertSame(['type','id','user_id','operation'],array_keys($context));$this->assertArrayNotHasKey('filters',$context);
+        },5);
+        Hooks::addAction('jobic.posts.kanban.boards.saving',function()use(&$order):void{$order[]='second';throw \Illuminate\Validation\ValidationException::withMessages(['name'=>'Vetoed']);},10);
+        Hooks::addAction('jobic.posts.kanban.boards.saved',function()use(&$order):void{$order[]='saved';});
+        $this->postJson(route('admin.posts.kanban.boards.store',['type'=>'post']),['name'=>'Private','version'=>0,'roles'=>[],'users'=>[],'states'=>['draft'],'filters'=>[],'token'=>'excluded'])->assertUnprocessable();
+        $this->assertSame(['first','second'],$order);$this->assertDatabaseCount('content_boards',0);
+    }
+
+    public function test_bulk_delete_is_atomic_and_board_history_uses_shared_storage(): void
+    {
+        $this->setupBoard();$data=['name'=>'Audited','version'=>0,'roles'=>[],'users'=>[],'states'=>['draft'],'filters'=>[]];
+        $created=$this->postJson(route('admin.posts.kanban.boards.store',['type'=>'post']),$data)->assertOk()->json('data.board');
+        $one=\App\Models\ContentBoard::findOrFail($created['id']);$two=$this->customBoard();
+        $this->getJson(route('admin.posts.kanban.boards.history',['type'=>'post','board'=>$one->id]))->assertOk()->assertJsonPath('data.entries.0.operation','create');
+        $url=route('admin.posts.kanban.boards.bulk',['type'=>'post']);
+        $this->postJson($url,['items'=>[['id'=>$one->id,'version'=>1],['id'=>$two->id,'version'=>2]]])->assertConflict();
+        $this->assertDatabaseCount('content_boards',2);
+        $this->postJson($url,['items'=>[['id'=>$one->id,'version'=>1],['id'=>$two->id,'version'=>1]]])->assertOk();
+        $this->assertDatabaseCount('content_boards',0);$this->assertDatabaseHas('record_changes',['resource'=>'content_boards','record_id'=>$one->id,'operation'=>'delete']);
+    }
+
+    public function test_custom_column_subset_limits_destinations_and_forged_drops(): void
+    {
+        $definition=$this->setupBoard();$post=$this->postItem();$board=$this->customBoard(['states'=>['draft']]);
+        $this->customRead($board)->assertOk()->assertJsonCount(1,'data.columns');
+        $this->getJson(route('admin.posts.kanban.board.details',['type'=>'post','board'=>$board->id,'post'=>$post->id,'board_version'=>1]))->assertOk()->assertJsonCount(0,'data.destinations');
+        $this->postJson(route('admin.posts.kanban.board.command',['type'=>'post','board'=>$board->id]),$this->payload($post,$definition)+['board_version'=>1])->assertUnprocessable();
+    }
+
+    public function test_board_forms_have_independent_authorized_routes_and_role_style_tabs(): void
+    {
+        $this->setupBoard();$board=$this->customBoard();
+        $this->get(route('admin.posts.kanban.index',['type'=>'post']))->assertOk()->assertSee('crud-title-back',false)->assertSee('data-board-default',false)->assertDontSee('data-board-manage',false)->assertDontSee('data-board-form',false);
+        $this->get(route('admin.posts.kanban.boards.create',['type'=>'post']))->assertOk()->assertSee('data-board-form',false)->assertSee('role-form-tabs',false)->assertSee('kanbanBoardForm')->assertSee('data-board-state-available',false)->assertDontSee('data-board-tab="3"',false)->assertDontSee('data-board-directory',false);
+        $this->get(route('admin.posts.kanban.boards.edit',['type'=>'post','board'=>$board->id]))->assertOk()->assertSee('Editorial');
+        $reader=User::factory()->create();$role=Role::create(['type'=>'system','name'=>'Form reader','allow'=>['admin.content.posts.view'],'deny'=>[]]);$reader->assignRole($role->id);$this->actingAs($reader);
+        $this->get(route('admin.posts.kanban.boards.create',['type'=>'post']))->assertForbidden();
+        $this->get(route('admin.posts.kanban.boards.edit',['type'=>'post','board'=>$board->id]))->assertForbidden();
+    }
+
+    public function test_post_list_exposes_distinct_board_management_default_and_workflow_actions(): void
+    {
+        $this->setupBoard();
+        $html=$this->get(route('admin.posts.index',['type'=>'post']))->assertOk()->getContent();
+        preg_match('/id="jobic-page-data">(.*?)<\/script>/s',$html,$registry);
+        $page=json_decode($registry[1],true)['postPage'];
+        $this->assertSame(__('kanban.manage_boards'),$page['kanbanLabel']);
+        $this->assertSame(__('kanban.workflow_settings'),$page['workflowLabel']);
+        $this->assertSame(__('kanban.board_link'),$page['defaultKanbanLabel']);
+        $this->assertSame(route('admin.posts.kanban.default',['type'=>'post']),$page['defaultKanbanUrl']);
+        \JobMetric\Post\Facades\PostTypeRegistry::for('post')->multipleKanban(false);
+        $html=$this->get(route('admin.posts.index',['type'=>'post']))->assertOk()->getContent();
+        preg_match('/id="jobic-page-data">(.*?)<\/script>/s',$html,$registry);
+        $page=json_decode($registry[1],true)['postPage'];
+        $this->assertNull($page['kanbanUrl']);
+        $this->assertNotNull($page['defaultKanbanUrl']);
+    }
+
+    public function test_late_release_from_previous_document_does_not_lock_out_the_same_owner(): void
+    {
+        $this->setupBoard();$post=$this->postItem();$owner=auth()->user();$other=User::factory()->create();$locks=app(TaxonomyEditLocks::class);
+        $url=route('admin.posts.edit',['type'=>'post','post'=>$post->id]);
+        $html=$this->get($url)->assertOk()->getContent();preg_match('/name="_edit_lock" value="([^"]+)"/',$html,$firstMatch);$first=['token'=>$firstMatch[1]];
+        $html=$this->get($url)->assertOk()->getContent();preg_match('/name="_edit_lock" value="([^"]+)"/',$html,$secondMatch);$second=['token'=>$secondMatch[1]];
+        $this->assertNotSame($first['token'],$second['token']);$this->assertArrayNotHasKey('holders',$second);
+        $this->assertFalse($locks->acquireDocument('posts:post',$post->id,$other)['acquired']);
+        $this->postJson(route('admin.posts.edit-lock.release',['type'=>'post','post'=>$post->id]),['_edit_lock'=>$first['token']])->assertOk();
+        $this->assertTrue($locks->canSave('posts:post',$post->id,$owner->id,$second['token']));
+        $this->assertTrue($locks->refresh('posts:post',$post->id,$owner->id,$second['token']));
+        $this->assertFalse($locks->canSave('posts:post',$post->id,$owner->id,$first['token']));
+        $this->assertFalse($locks->release('posts:post',$post->id,$other->id,$second['token']));
+        $this->assertFalse($locks->acquire('posts:post',$post->id,$other)['acquired']);
+        $locks->release('posts:post',$post->id,$owner->id,$second['token']);
+        $this->assertTrue($locks->acquire('posts:post',$post->id,$other)['acquired']);
+    }
+
+    public function test_directory_filters_combine_fields_before_counts_and_pagination(): void
+    {
+        $this->setupBoard();$role=Role::create(['type'=>'system','name'=>'Filter audience']);$owner=auth()->user();
+        $this->customBoard(['name'=>'Open board','states'=>['draft']]);
+        $selected=$this->customBoard(['name'=>'Filtered board','roles'=>[$role->id],'users'=>[$owner->id],'states'=>['review'],'filters'=>[['driver'=>'author','config'=>['ids'=>[$owner->id]]]]]);
+        $this->customBoard(['name'=>'Other restricted','roles'=>[$role->id],'states'=>['draft']]);
+        $url=route('admin.posts.kanban.boards.data',['type'=>'post','audience'=>'restricted','has_filters'=>'1','states'=>['review'],'roles'=>[$role->id],'users'=>[$owner->id],'length'=>1]);
+        $this->getJson($url)->assertOk()->assertJsonPath('data.total',3)->assertJsonPath('data.filtered',1)->assertJsonPath('data.items.0.id',$selected->id)->assertJsonPath('data.stats.0',3);
+        $this->getJson(route('admin.posts.kanban.boards.data',['type'=>'post','audience'=>'open']))->assertOk()->assertJsonCount(1,'data.items');
+        $reader=User::factory()->create();$readerRole=Role::create(['type'=>'system','name'=>'Directory reader','allow'=>['admin.content.posts.view'],'deny'=>[]]);$reader->assignRole($readerRole->id);$this->actingAs($reader);
+        $this->getJson(route('admin.posts.kanban.boards.data',['type'=>'post','states'=>['review']]))->assertOk()->assertJsonCount(0,'data.items');
+        $this->getJson(route('admin.posts.kanban.boards.data',['type'=>'post','roles'=>[$role->id]]))->assertForbidden();
+        $this->getJson(route('admin.posts.kanban.boards.data',['type'=>'post','states'=>'draft']))->assertUnprocessable();
+    }
+
     public function test_capability_is_explicit_and_page_has_no_administration_navigation(): void
     {
         $this->setupBoard();
-        $this->get(route('admin.posts.kanban.index', ['type' => 'post']))->assertOk()->assertSee('data-kanban-root', false)->assertDontSee('data-admin-shell', false);
+        $this->get(route('admin.posts.kanban.default', ['type' => 'post']))->assertOk()->assertSee('data-kanban-root', false)->assertDontSee('data-admin-shell', false);
         $this->get(route('admin.posts.kanban.index', ['type' => 'page']))->assertNotFound();
         $this->get(route('admin.posts.index', ['type' => 'post']))->assertOk()->assertSee('kanbanUrl');
     }
@@ -87,7 +317,7 @@ class KanbanTest extends TestCase
         $this->assertSame(10, $actor->fresh()->ui_preferences['kanban']['post']['page_size']);
         $this->assertSame('dark', $actor->fresh()->ui_preferences['theme']);
         $this->actingAs(User::factory()->create());
-        $html = $this->get(route('admin.posts.kanban.index', ['type' => 'post']))->assertOk()->getContent();
+        $html = $this->get(route('admin.posts.kanban.default', ['type' => 'post']))->assertOk()->getContent();
         preg_match('/id="jobic-page-data">(.*?)<\/script>/s', $html, $registry);
         $this->assertSame(5, (int) json_decode($registry[1], true)['kanban']['pageSize']);
     }
@@ -141,7 +371,7 @@ class KanbanTest extends TestCase
         $role = Role::create(['type' => 'system', 'name' => 'Private review', 'allow' => [], 'deny' => [], 'is_super' => false]);
         $definition = $this->setupBoard([], [], [(int) $role->id]); $post = $this->postItem();
         $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), $this->payload($post, $definition))->assertOk();
-        $this->readBoard()->assertOk()->assertJsonPath('data.columns.1.restricted', true)->assertJsonPath('data.columns.1.count', null)->assertJsonCount(0, 'data.columns.1.items')->assertJsonPath('data.columns.0.count', 0);
+        $this->readBoard()->assertOk()->assertJsonPath('data.summary.total',0)->assertJsonPath('data.columns.1.restricted', true)->assertJsonPath('data.columns.1.count', null)->assertJsonCount(0, 'data.columns.1.items')->assertJsonPath('data.columns.0.count', 0);
         $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $post->id]))->assertForbidden();
     }
 
@@ -180,7 +410,7 @@ class KanbanTest extends TestCase
         $this->assertTrue(json_decode($registry[1], true)['postEditor']['embeddedLeaseOwned']);
         $html = $this->get($url)->assertOk()->getContent();
         preg_match('/id="jobic-page-data">(.*?)<\/script>/s', $html, $registry);
-        $this->assertFalse(json_decode($registry[1], true)['postEditor']['embeddedLeaseOwned']);
+        $this->assertTrue(json_decode($registry[1], true)['postEditor']['embeddedLeaseOwned']);
     }
     public function test_unknown_custom_conditions_are_not_instantiated_or_executed_during_preview(): void
     {
@@ -271,6 +501,131 @@ class KanbanTest extends TestCase
         $this->assertStringStartsWith('2030-12-01T12:34:00', $iso);
         app()->setLocale('fa');
         $this->assertStringStartsWith('2026-03-21T12:34:00', \App\Support\CalendarInput::parse('۱۴۰۵/۰۱/۰۱ ۱۲:۳۴'));
+    }
+
+    public function test_workspace_search_grouping_avatars_and_view_bound_cursors(): void
+    {
+        $this->setupBoard();
+        $actor=auth()->user();$actor->update(['avatar_preset'=>1]);
+        for($i=0;$i<7;$i++)$this->postItem('Needle '.$i);
+        $this->postItem('Other article');
+        $this->readBoard(['search'=>'Needle'])->assertOk()->assertJsonPath('data.summary.total',7)->assertJsonCount(5,'data.columns.0.items');
+        $first=$this->readBoard(['search'=>'Needle','group_by'=>'author'])->assertOk()->assertJsonPath('data.lanes.0.id',(string)$actor->id)->json('data.columns.0');
+        $this->assertSame($actor->avatarUrl(),$first['items'][0]['avatar_url']);
+        $this->assertSame(0,$first['items'][0]['age_days']);
+        $this->readBoard(['search'=>'Needle','group_by'=>'author','state'=>'draft','lane'=>(string)$actor->id,'cursor'=>$first['cursor']])->assertOk()->assertJsonCount(2,'data.columns.0.items');
+        $this->readBoard(['search'=>'Other','group_by'=>'author','state'=>'draft','lane'=>(string)$actor->id,'cursor'=>$first['cursor']])->assertStatus(422);
+        $this->readBoard(['summary'=>'stale'])->assertOk()->assertJsonPath('data.summary.total',8)->assertJsonPath('data.summary.stale',0)->assertJsonCount(0,'data.columns.0.items');
+    }
+
+    public function test_workspace_personal_fields_and_capacity_version_validation(): void
+    {
+        $this->setupBoard();$url=route('admin.posts.kanban.command',['type'=>'post']);
+        $this->postJson($url,['operation'=>'settings','page_size'=>10,'density'=>'compact','card_fields'=>[],'group_by'=>'author'])->assertOk();
+        $this->assertSame([],auth()->user()->fresh()->ui_preferences['kanban']['post']['card_fields']);
+        $payload=['operation'=>'limits','options_version'=>0,'stale_days'=>3,'limits'=>[['state'=>'review','limit'=>1,'mode'=>'enforce']]];
+        $this->postJson($url,$payload)->assertOk()->assertJsonPath('data.options.version',1);
+        $this->postJson($url,$payload)->assertStatus(409);
+        $payload['options_version']=1;$payload['limits'][0]['state']='missing';
+        $this->postJson($url,$payload)->assertUnprocessable()->assertJsonValidationErrors('limits');
+        $this->readBoard()->assertOk()->assertJsonPath('data.options.stale_days',3);
+    }
+
+    public function test_bulk_moves_report_individual_results_and_enforce_capacity_atomically(): void
+    {
+        $definition=$this->setupBoard();$first=$this->postItem();$second=$this->postItem();
+        $url=route('admin.posts.kanban.command',['type'=>'post']);
+        $this->postJson($url,['operation'=>'limits','options_version'=>0,'stale_days'=>7,'limits'=>[['state'=>'review','limit'=>1,'mode'=>'enforce']]])->assertOk();
+        $a=$this->payload($first,$definition);$b=$this->payload($second,$definition);unset($a['operation'],$b['operation']);
+        $result=$this->postJson($url,['operation'=>'bulk','items'=>[$a,$b]])->assertOk()->assertJsonPath('data.results.0.ok',true)->assertJsonPath('data.results.1.ok',false);
+        $this->assertSame(422,$result->json('data.results.1.status'));
+        $this->assertSame('review',$first->publicationStreams()->where('locale','*')->value('status'));
+        $this->assertSame('draft',$second->publicationStreams()->where('locale','*')->value('status'));
+        $this->readBoard()->assertOk()->assertJsonPath('data.columns.1.capacity_count',1);
+    }
+
+    public function test_capacity_hooks_are_ordered_safe_and_can_veto_persistence(): void
+    {
+        $this->setupBoard();$order=[];
+        Hooks::addAction('jobic.posts.kanban.limits.saving',function($context)use(&$order):void{$order[]='first';$this->assertSame(['type','id','user_id','operation'],array_keys($context));$this->assertDatabaseCount('kanban_workspace_options',0);},5);
+        Hooks::addAction('jobic.posts.kanban.limits.saving',function()use(&$order):void{$order[]='veto';throw \Illuminate\Validation\ValidationException::withMessages(['limits'=>'Vetoed']);},10);
+        Hooks::addAction('jobic.posts.kanban.limits.saved',function()use(&$order):void{$order[]='saved';});
+        $this->postJson(route('admin.posts.kanban.command',['type'=>'post']),['operation'=>'limits','options_version'=>0,'stale_days'=>7,'limits'=>[],'password'=>'excluded'])->assertUnprocessable();
+        $this->assertSame(['first','veto'],$order);$this->assertDatabaseCount('kanban_workspace_options',0);
+    }
+
+    public function test_reverb_channel_requires_registered_type_and_content_access(): void
+    {
+        $this->setupBoard();
+        config(['broadcasting.default'=>'reverb','broadcasting.connections.reverb.key'=>'public-test-key','broadcasting.connections.reverb.secret'=>'test-secret','broadcasting.connections.reverb.app_id'=>'test-id']);
+        app(\Illuminate\Contracts\Broadcasting\Factory::class)->purge();
+        require base_path('routes/channels.php');
+        $this->actingAs(auth()->user()->fresh());
+        $payload=['socket_id'=>'123.456','channel_name'=>'private-jobic.kanban.post'];
+        $this->postJson('/broadcasting/auth',$payload)->assertOk()->assertJsonStructure(['auth']);
+        $this->postJson('/broadcasting/auth',$payload+[])->assertOk();
+        $this->postJson('/broadcasting/auth',array_replace($payload,['channel_name'=>'private-jobic.kanban.page']))->assertForbidden();
+        $role=Role::create(['name'=>'Denied board','type'=>'system','allow'=>[],'deny'=>['admin.content.posts.view'],'is_super'=>false]);
+        $reader=User::factory()->create();$reader->assignRole($role->id);$this->actingAs($reader);
+        $this->postJson('/broadcasting/auth',$payload)->assertForbidden();
+        $event=new \App\Events\Kanban\KanbanInvalidated('post');
+        $this->assertSame([],$event->broadcastWith());
+        $this->assertSame('private-jobic.kanban.post',$event->broadcastOn()[0]->name);
+        $client=app(\App\Support\KanbanRealtime::class)->client('post');
+        $this->assertArrayNotHasKey('secret',$client);$this->assertNotContains('test-secret',$client);
+    }
+
+    public function test_reverb_notifications_wait_for_commit_discard_rollbacks_and_isolate_failures(): void
+    {
+        $this->setupBoard();config(['broadcasting.default'=>'reverb']);
+        \Illuminate\Support\Facades\Event::fake([\App\Events\Kanban\KanbanInvalidated::class]);
+        $service=app(\App\Support\KanbanRealtime::class);
+        DB::transaction(function()use($service):void{$service->changed('post');$service->changed('post');\Illuminate\Support\Facades\Event::assertNotDispatched(\App\Events\Kanban\KanbanInvalidated::class);});
+        \Illuminate\Support\Facades\Event::assertDispatchedTimes(\App\Events\Kanban\KanbanInvalidated::class,1);
+        try{DB::transaction(function()use($service):void{$service->changed('post');throw new \RuntimeException('Rollback');});}catch(\RuntimeException){}
+        \Illuminate\Support\Facades\Event::assertDispatchedTimes(\App\Events\Kanban\KanbanInvalidated::class,1);
+        \Illuminate\Support\Facades\Event::swap(new \Illuminate\Events\Dispatcher(app()));
+        \Illuminate\Support\Facades\Event::listen(\App\Events\Kanban\KanbanInvalidated::class,static function():void{throw new \RuntimeException('Unavailable transport');});
+        \Illuminate\Support\Facades\Log::spy();
+        DB::transaction(fn()=>$service->changed('post'));
+        \Illuminate\Support\Facades\Log::shouldHaveReceived('warning')->once()->with('Kanban live notification failed.',['type'=>'post','exception'=>\RuntimeException::class]);
+    }
+
+    public function test_hard_capacities_also_guard_transitions_outside_the_board(): void
+    {
+        $definition=$this->setupBoard();$one=$this->postItem();$two=$this->postItem();
+        $url=route('admin.posts.kanban.command',['type'=>'post']);
+        $this->postJson($url,['operation'=>'limits','options_version'=>0,'stale_days'=>7,'limits'=>[['state'=>'review','limit'=>1,'mode'=>'enforce']]])->assertOk();
+        $this->postJson($url,$this->payload($one,$definition))->assertOk();
+        $stream=$two->publicationStreams()->where('locale','*')->firstOrFail();
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        app(\JobMetric\Post\Services\PostStreamWorkflow::class)->transition($two,'*','send',(int)$stream->draft_revision_id,(int)$stream->version,auth()->user());
+    }
+
+    public function test_taxonomy_lanes_never_duplicate_cards_and_temporary_filters_keep_fixed_membership(): void
+    {
+        $this->setupBoard();$one=$this->postItem('Classified');$two=$this->postItem('Unclassified');
+        $first=\JobMetric\Taxonomy\Models\Taxonomy::create(['type'=>'category','status'=>true,'ordering'=>0]);
+        $second=\JobMetric\Taxonomy\Models\Taxonomy::create(['type'=>'category','status'=>true,'ordering'=>1]);
+        $first->translate('en',['name'=>'First']);$second->translate('en',['name'=>'Second']);
+        $one->taxonomies()->attach([$first->id=>['collection'=>'categories'],$second->id=>['collection'=>'categories']]);
+        $read=$this->readBoard(['group_by'=>'taxonomy:categories'])->assertOk()->assertJsonPath('data.summary.total',2);
+        $ids=collect($read->json('data.columns'))->flatMap(fn($column)=>array_column($column['items'],'id'))->all();
+        $this->assertCount(2,$ids);$this->assertCount(2,array_unique($ids));
+        $lane=collect($read->json('data.columns'))->first(fn($column)=>$column['lane']===(string)$first->id&&$column['status']==='draft');
+        $this->assertSame($one->id,$lane['items'][0]['id']);
+        $this->readBoard(['filters'=>[['driver'=>'taxonomy','config'=>['collection'=>'categories','ids'=>[$second->id]]]]])->assertOk()->assertJsonPath('data.summary.total',1)->assertJsonPath('data.columns.0.items.0.id',$one->id);
+        $this->readBoard(['filters'=>[['driver'=>'missing','config'=>['ids'=>[1]]]]])->assertUnprocessable();
+    }
+
+    public function test_waiting_age_survives_revision_saves_and_self_transition_events(): void
+    {
+        $this->setupBoard();$post=$this->postItem();
+        $stream=$post->publicationStreams()->where('locale','*')->firstOrFail();
+        DB::table($stream->getTable())->where('id',$stream->id)->update(['created_at'=>now()->subDays(10)]);
+        app(PostLifecycle::class)->record($stream,'transition',auth()->user(),['from'=>'draft','to'=>'draft']);
+        app(PostLifecycle::class)->saveDraft($post,'*',['title'=>'Changed','excerpt'=>'Complete','content'=>'Text'],auth()->user());
+        $this->readBoard(['summary'=>'stale'])->assertOk()->assertJsonPath('data.summary.stale',1)->assertJsonPath('data.columns.0.items.0.age_days',10);
     }
 
 }

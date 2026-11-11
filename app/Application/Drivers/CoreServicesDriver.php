@@ -33,6 +33,13 @@ class CoreServicesDriver implements ApplicationDriver
         $app->singleton(State::class, fn () => new State(storage_path('app/installation')));
         $app->singleton(Installation::class);
         $app->singleton(Hooks::class);
+        $app->singleton(\App\Support\KanbanRealtime::class);
+        $app->singleton(\App\Support\KanbanFilterRegistry::class, function () {
+            $registry = new \App\Support\KanbanFilterRegistry;
+            $registry->register('author', new \App\Kanban\Filters\AuthorFilter);
+            $registry->register('taxonomy', new \App\Kanban\Filters\TaxonomyFilter);
+            return $registry;
+        });
     }
 
     /**

@@ -16,6 +16,7 @@ use Throwable;
 class RecordHistory
 {
     private const array FIELDS = [
+        'content_boards' => ['name','roles','users','states','filters'],
         'languages'  => [
             'name',
             'locale',
@@ -69,9 +70,14 @@ class RecordHistory
     /**
      * Record changed public fields inside the caller's persistence transaction.
      *
+     * @param string $resource
+     * @param int $recordId
+     * @param int $userId
+     * @param string $operation
      * @param array<string, mixed> $before
      * @param array<string, mixed> $after
      *
+     * @return void
      * @throws Throwable
      */
     public function record(
@@ -114,7 +120,11 @@ class RecordHistory
     /**
      * Read a bounded history page without exposing account credentials or email addresses.
      *
+     * @param string $resource
+     * @param int $recordId
+     * @param int $page
      *
+     * @return Response
      * @throws Throwable
      */
     public function page(string $resource, int $recordId, int $page): Response

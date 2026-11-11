@@ -31,7 +31,9 @@
         "apexcharts": "^3.40.0",
         "billboard.js": "3.8.1",
         "jquery": "^4.0.0",
+        "laravel-echo": "^2.6.3",
         "leaflet": "^1.9.4",
+        "pusher-js": "^8.6.0",
         "three": "^0.180.0",
         "tiny-slider": "^2.9.4"
     }

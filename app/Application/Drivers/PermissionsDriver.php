@@ -87,6 +87,9 @@ class PermissionsDriver implements ApplicationDriver
             ->addPermission('admin.settings.mail', 'roles.permissions.settings_mail', 'admin.settings.mail.edit', order: 46);
 
         foreach (PostTypeRegistry::values() as $type) {
+            if (PostTypeRegistry::for($type)->hasMultipleKanban()) {
+                $app->make(\App\Services\Posts\ContentBoards::class)->permission($type);
+            }
             $app->make(PostWorkflowPermissions::class)
                 ->for($type);
         }

@@ -309,3 +309,24 @@ Saving/deleting/restoring definitions carry `phase:before`; taxonomy persisted c
 Listeners use the existing priority ordering and equal-priority registration order. The settings-saving and moving boundaries are registered typed lifecycle events and are excluded from automation triggers. No saving, moving or saved hook is invoked during destination previews. See `docs/kanban.md` for the HTTP, pagination, embedding and custom condition contracts.
 
 `jobic:workflow:toast` is a same-origin browser notification used by embedded Kanban editors to forward messages to the parent workspace's shared toast. Its detail is `{message: string, error: boolean}`. The parent displays the string through `textContent`; the event performs no HTTP request or persistence and grants no access. A local toast is used when the parent workspace is unavailable. The shared toast uses a manual browser popover where supported so notifications remain visible above workspace dialogs; normal administration toasts retain their existing transport and appearance.
+
+
+### Managed Kanban boards
+
+- `jobic.admin.posts.kanban.boards.before` / `.after`: trusted view slots around the directory, context `type`; output must be escaped and rendering failures follow common view semantics.
+- `jobic.posts.kanban.boards.saving` / `.deleting`: registered synchronous lifecycle actions after input/domain validation, workflow and board locking, and optimistic version checks; immediately before persistence. Context is exactly `type`, `id` (null before creation), `user_id`, `operation` (`create`, `update`, `delete`). No names, role/user lists, filter configuration, request arrays or secrets are exposed. Priority order follows Hooks; listener failure vetoes and rolls back the transaction. Both are excluded from automation.
+- `jobic.posts.kanban.boards.saved` / `.deleted`: isolated notification actions after the outer transaction commits, with the same context and persisted ID. Bulk deletion uses the same per-board boundaries inside one outer transaction, so one veto prevents every deletion and every post-commit notification. No notification on rollback. Listener failures are logged and do not undo committed data.
+
+Custom-board movement hooks additionally include `id` as the board ID (null for the default board). Preview evaluation still invokes no saving or movement hooks. Board filter drivers register through the shared singleton registry during application boot; query restrictions are validated again before use.
+
+Personal page-size saving/saved hooks include an additional scalar `id` only for custom boards, identifying their definition; the default-board context remains `type` and `user_id`. The settings-saving event's existing safe allowlist preserves this ID. No preference values are added to either context.
+
+- `jobic.admin.posts.kanban.boards.form.before` / `.after`: trusted view slots before and after the independent board form fields, with `type` and `id` (null for creation). Output must be escaped; errors follow shared view rendering semantics. These slots do not run persistence or grant access.
+
+## Kanban workspace capacities and live invalidation
+
+`jobic.posts.kanban.limits.saving` is a synchronous lifecycle action after command, state, audience and optimistic-version validation, under the workflow transaction lock, before shared workspace options are persisted. Listeners execute in priority order and may veto by throwing; persistence and notifications are rolled back. `jobic.posts.kanban.limits.saved` is an isolated notification after the outer transaction commits and never runs on a veto. Both receive only `type`, nullable board `id`, authenticated `user_id`, and `operation` (`limits`). Capacity values, filters, card content, user preferences, request arrays and credentials are excluded. The registered workflow-management permission is required; board-management permission alone is insufficient.
+
+The existing `jobic.posts.kanban.settings.saving/saved` hooks also surround personal density, card-field and grouping preferences. Their safe context and failure semantics remain unchanged. Bulk transitions reuse the individual moving/moved boundaries per card, with each card isolated by its own transaction savepoint.
+
+`kanban.invalidated` is a Reverb transport notification on the private `jobic.kanban.{type}` channel, after commit. Its payload is empty. Subscription requires an active user, an enabled content type and its registered view permission through `AdminAccess`; it never grants board, state or post access. Clients reread authorized HTTP endpoints. Transport failures are logged with only the type and exception class and cannot roll back a successful save. This notification is not a persistence hook or automation trigger.

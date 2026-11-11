@@ -145,9 +145,11 @@ final class PostController extends Controller
         Page::addLocalize('postPage', [
             'type'               => $type,
             'workflowUrl'        => (app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['manage']) || app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['view'])) ? route('admin.posts.workflow.index', ['type' => $type]) : null,
-            'workflowLabel'      => trans('workflow.title'),
-            'kanbanUrl'          => $builder->hasKanban() ? route('admin.posts.kanban.index', ['type' => $type]) : null,
-            'kanbanLabel'        => trans('kanban.title'),
+            'workflowLabel'      => trans('kanban.workflow_settings'),
+            'kanbanUrl'          => $builder->hasMultipleKanban() ? route('admin.posts.kanban.index', ['type' => $type]) : null,
+            'kanbanLabel'        => trans('kanban.manage_boards'),
+            'defaultKanbanUrl' => $builder->hasKanban() ? route('admin.posts.kanban.default', ['type'=>$type]) : null,
+            'defaultKanbanLabel' => trans('kanban.board_link'),
             'dataUrl'            => route('admin.posts.data', [
                 'type' => $type,
             ]),
@@ -580,8 +582,9 @@ final class PostController extends Controller
         $editLock = null;
 
         if ($post && $builder->hasOptimisticLocking()) {
-            $previousLease = app(TaxonomyEditLocks::class)->inspect('posts:' . $type, (int) $post->id);
-            $lease = app(TaxonomyEditLocks::class)->acquire('posts:' . $type, (int) $post->id, request()->user());
+            $lease = (!request()->header('X-Jobic-Presentation'))
+                ? app(TaxonomyEditLocks::class)->acquireDocument('posts:' . $type, (int) $post->id, request()->user())
+                : app(TaxonomyEditLocks::class)->acquire('posts:' . $type, (int) $post->id, request()->user());
             if (! $lease['acquired']) {
                 abort_if($embedded, 423, __('kanban.locked'));
                 $lock = $lease['lock'] ?? [];
@@ -594,7 +597,7 @@ final class PostController extends Controller
                     ]));
             }
             $editLock = $lease['lock'];
-            $embeddedLeaseOwned = $embedded && $previousLease === null;
+            $embeddedLeaseOwned = $embedded;
         }
 
         $postType = new Post;
@@ -1207,11 +1210,15 @@ final class PostController extends Controller
         $editLock = null;
         if (PostTypeRegistry::for($type)
             ->hasOptimisticLocking()) {
-            $editLock = app(TaxonomyEditLocks::class)->inspect('posts:' . $type, (int) $post->id);
-
-            if (! $editLock) {
-                $lease = app(TaxonomyEditLocks::class)->acquire('posts:' . $type, (int) $post->id, $request->user());
-                $editLock = $lease['lock'] ?? null;
+            $locks = app(TaxonomyEditLocks::class);
+            $currentToken = (string) $request->input('_edit_lock', '');
+            if ($currentToken !== '' && $locks->belongsTo('posts:' . $type, (int) $post->id, (int) $request->user()->id, $currentToken)) {
+                $editLock = $locks->inspect('posts:' . $type, (int) $post->id);
+                if ($editLock && (int) $editLock['user_id'] === (int) $request->user()->id) $editLock['token'] = $currentToken;
+                else $editLock = null;
+            } elseif ($currentToken === '') {
+                $lease = $locks->acquire('posts:' . $type, (int) $post->id, $request->user());
+                $editLock = $lease['acquired'] ? $lease['lock'] : null;
             }
         }
 

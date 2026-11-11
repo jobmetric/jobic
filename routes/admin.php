@@ -27,6 +27,20 @@ Route::middleware([
 
     Route::prefix('posts/{type}')->name('posts.')->controller(PostController::class)->middleware(EnsurePostPermission::class)->group(function (): void {
         Route::get('kanban', [\App\Http\Controllers\Posts\KanbanController::class, 'index'])->name('kanban.index');
+        Route::get('kanban/default', [\App\Http\Controllers\Posts\KanbanController::class, 'index'])->name('kanban.default');
+        Route::get('kanban/boards/create', [\App\Http\Controllers\Posts\ContentBoardController::class, 'form'])->name('kanban.boards.create');
+        Route::get('kanban/boards/{board}/edit', [\App\Http\Controllers\Posts\ContentBoardController::class, 'form'])->whereNumber('board')->name('kanban.boards.edit');
+        Route::get('kanban/boards/data', [\App\Http\Controllers\Posts\ContentBoardController::class, 'data'])->name('kanban.boards.data');
+        Route::get('kanban/boards/manage', [\App\Http\Controllers\Posts\ContentBoardController::class, 'manage'])->name('kanban.boards.manage');
+        Route::post('kanban/boards/bulk', [\App\Http\Controllers\Posts\ContentBoardController::class, 'bulk'])->middleware('throttle:30,1')->name('kanban.boards.bulk');
+        Route::get('kanban/boards/{board}/history', [\App\Http\Controllers\Posts\ContentBoardController::class, 'history'])->whereNumber('board')->name('kanban.boards.history');
+        Route::post('kanban/boards', [\App\Http\Controllers\Posts\ContentBoardController::class, 'save'])->middleware('throttle:30,1')->name('kanban.boards.store');
+        Route::put('kanban/boards/{board}', [\App\Http\Controllers\Posts\ContentBoardController::class, 'save'])->whereNumber('board')->middleware('throttle:30,1')->name('kanban.boards.update');
+        Route::delete('kanban/boards/{board}', [\App\Http\Controllers\Posts\ContentBoardController::class, 'destroy'])->whereNumber('board')->middleware('throttle:30,1')->name('kanban.boards.destroy');
+        Route::get('kanban/boards/{board}', [\App\Http\Controllers\Posts\KanbanController::class, 'index'])->whereNumber('board')->name('kanban.board');
+        Route::get('kanban/boards/{board}/data', [\App\Http\Controllers\Posts\KanbanController::class, 'data'])->whereNumber('board')->name('kanban.board.data');
+        Route::get('kanban/boards/{board}/posts/{post}', [\App\Http\Controllers\Posts\KanbanController::class, 'details'])->whereNumber(['board','post'])->name('kanban.board.details');
+        Route::post('kanban/boards/{board}/command', [\App\Http\Controllers\Posts\KanbanController::class, 'command'])->whereNumber('board')->middleware('throttle:60,1')->name('kanban.board.command');
         Route::get('kanban/data', [\App\Http\Controllers\Posts\KanbanController::class, 'data'])->name('kanban.data');
         Route::get('kanban/{post}', [\App\Http\Controllers\Posts\KanbanController::class, 'details'])->whereNumber('post')->name('kanban.details');
         Route::post('kanban/command', [\App\Http\Controllers\Posts\KanbanController::class, 'command'])->middleware('throttle:60,1')->name('kanban.command');

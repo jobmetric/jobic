@@ -29,4 +29,7 @@ return [
     'jobic_settings_two_factor_saving' => ['group' => 'Operation lifecycle', 'title' => 'Before saving two-factor settings', 'description' => 'Synchronous operation boundary; listener exceptions veto the operation. Not an automation trigger.'],
     'jobic_posts_kanban_settings_saving' => ['group' => 'Content Kanban', 'title' => 'Kanban settings saving', 'description' => 'Synchronous validation boundary before persistence; listeners may veto.'],
     'jobic_posts_kanban_moving' => ['group' => 'Content Kanban', 'title' => 'Kanban card moving', 'description' => 'Synchronous validation boundary before persistence; listeners may veto.'],
+    'jobic_posts_kanban_boards_saving' => ['group'=>'Kanban boards', 'title'=>'Save board', 'description'=>'Validated synchronous board boundary.'],
+    'jobic_posts_kanban_boards_deleting' => ['group'=>'Kanban boards', 'title'=>'Delete board', 'description'=>'Validated synchronous board boundary.'],
+    'jobic_posts_kanban_limits_saving' => ['group'=>'Kanban', 'title'=>'Before saving column capacities', 'description'=>'Validated synchronous boundary; listeners may veto persistence.'],
 ];

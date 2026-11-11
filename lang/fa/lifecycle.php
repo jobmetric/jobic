@@ -29,4 +29,7 @@ return [
     'jobic_settings_two_factor_saving' => ['group' => 'چرخهٔ عملیات', 'title' => 'پیش از ذخیرهٔ تنظیمات احراز هویت دومرحله‌ای', 'description' => 'مرحلهٔ همگام عملیات؛ خطای شنونده عملیات را متوقف می‌کند. محرک اتوماسیون نیست.'],
     'jobic_posts_kanban_settings_saving' => ['group' => 'کانبان محتوا', 'title' => 'ذخیره تنظیمات کانبان', 'description' => 'مرز همگام پیش از ذخیره؛ شنونده می‌تواند عملیات را متوقف کند.'],
     'jobic_posts_kanban_moving' => ['group' => 'کانبان محتوا', 'title' => 'جابه‌جایی کارت کانبان', 'description' => 'مرز همگام پیش از ذخیره؛ شنونده می‌تواند عملیات را متوقف کند.'],
+    'jobic_posts_kanban_boards_saving' => ['group'=>'بردهای کانبان', 'title'=>'ذخیرهٔ برد', 'description'=>'مرز همگام مدیریت برد پس از اعتبارسنجی.'],
+    'jobic_posts_kanban_boards_deleting' => ['group'=>'بردهای کانبان', 'title'=>'حذف برد', 'description'=>'مرز همگام مدیریت برد پس از اعتبارسنجی.'],
+    'jobic_posts_kanban_limits_saving' => ['group'=>'Kanban', 'title'=>'پیش از ذخیره ظرفیت ستون‌ها', 'description'=>'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند ذخیره را متوقف کند.'],
 ];
