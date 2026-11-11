@@ -1,0 +1,1 @@
+import{i}from"./dashboard-runtime-af3cf29d.js";import{i as a}from"./messaging-app-49c00096.js";import"./jquery-83fec99f.js";import"./icons-f22f49e9.js";import"./preload-helper-cf779743.js";i("messaging-v1",a);

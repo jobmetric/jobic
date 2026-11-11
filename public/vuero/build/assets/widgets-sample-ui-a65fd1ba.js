@@ -1,1 +1,0 @@
-import{i as r}from"./dashboard-runtime-44ac6d04.js";import{i as o}from"./widgets-b30dd1bd.js";import{i as m}from"./widget-charts-aab6c25a.js";import"./jquery-83fec99f.js";import"./icons-bfeca29c.js";import"./preload-helper-cf779743.js";import"./apexcharts-e66b3859.js";import"./chart-theme-40715f27.js";r("widgets-sample-ui",(i,t)=>{o(i,t),m(i)});
