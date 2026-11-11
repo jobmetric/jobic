@@ -30,10 +30,12 @@
     @cmsHook('jobic.admin.posts.kanban.boards.form.after', ['type'=>$type,'id'=>$record?->id])
 </form>
 @include('common.crud.dialog')
+<x-history.disclosure>
 <section class="crud-history crud-page" data-record-history @if(!$record) hidden @endif>
     <header><h2>{{ __('kanban.history') }}</h2><button type="button" class="vuero-button" data-history-refresh>{{ __('languages.history_refresh') }}</button></header>
     <div data-history-entries aria-live="polite"></div>
     <footer><button type="button" class="vuero-button" data-history-previous>{{ __('kanban.previous') }}</button><span data-history-page></span><button type="button" class="vuero-button" data-history-next>{{ __('kanban.next') }}</button></footer>
 </section>
+</x-history.disclosure>
 @endsection
 @push('scripts') @vite('resources/js/kanban/board-form.js', 'vuero/build') @endpush

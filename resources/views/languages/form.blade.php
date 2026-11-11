@@ -25,12 +25,14 @@
 </form>
 @include('common.crud.dialog')
 @cmsHook('jobic.admin.languages.history.before', ['id' => $record?->id])
+<x-history.disclosure>
 <section class="crud-history crud-page" data-record-history @if(!$record) hidden @endif>
     <header><h2>{{ __('languages.history') }}</h2><button type="button" class="vuero-button" data-history-refresh>{{ __('languages.history_refresh') }}</button></header>
     <p class="crud-hint">{{ __('languages.history_hint') }}</p>
     <div data-history-entries aria-live="polite"></div>
     <footer><button type="button" class="vuero-button" data-history-previous>{{ __('languages.previous') }}</button><span data-history-page></span><button type="button" class="vuero-button" data-history-next>{{ __('languages.next') }}</button></footer>
 </section>
+</x-history.disclosure>
 @cmsHook('jobic.admin.languages.history.after', ['id' => $record?->id])
 @endsection
 @push('scripts') @vite('resources/js/languages/form.js', 'vuero/build') @endpush

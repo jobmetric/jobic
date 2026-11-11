@@ -38,11 +38,13 @@
 </form>
 @include('common.crud.dialog')
 @cmsHook('jobic.admin.users.history.before', ['id' => $record?->id])
+<x-history.disclosure>
 <section class="crud-history crud-page" data-record-history @if(!$record) hidden @endif>
     <header><h2>{{ __('users.history') }}</h2><button type="button" class="vuero-button" data-history-refresh>{{ __('users.history_refresh') }}</button></header>
     <p class="crud-hint">{{ __('users.history_hint') }}</p><div data-history-entries aria-live="polite"></div>
     <footer><button type="button" class="vuero-button" data-history-previous>{{ __('users.previous') }}</button><span data-history-page></span><button type="button" class="vuero-button" data-history-next>{{ __('users.next') }}</button></footer>
 </section>
+</x-history.disclosure>
 @cmsHook('jobic.admin.users.history.after', ['id' => $record?->id])
 @endsection
 @push('scripts') @vite('resources/js/users/form.js', 'vuero/build') @endpush

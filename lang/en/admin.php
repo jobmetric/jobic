@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'history_disclosure_title' => 'Change history',
+    'history_and_versions' => 'Changes and versions',
+    'history_disclosure_hint' => 'Open this section when you need to review the record.',
+    'open_history' => 'Show history',
+    'close_history' => 'Hide history',
+
     'control_close' => 'Close',
     'control_close_navigation' => 'Close navigation',
     'control_toggle_navigation' => 'Toggle navigation',

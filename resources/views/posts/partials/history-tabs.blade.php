@@ -1,3 +1,4 @@
+<x-history.disclosure :title="__('admin.history_and_versions')">
 <section class="post-history-tabs crud-page" data-post-history-tabs aria-label="{{ __('posts.history_tabs_label') }}">
     <div class="post-history-tabs__nav" role="tablist" aria-label="{{ __('posts.history_tabs_label') }}">
         <button type="button" id="post-history-changes-tab" role="tab" aria-selected="true" aria-controls="post-history-changes" class="is-active" data-post-history-tab>{{ __('posts.history') }}</button>
@@ -22,3 +23,4 @@
         </section>
     </div>
 </section>
+</x-history.disclosure>

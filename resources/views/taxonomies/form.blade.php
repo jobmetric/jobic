@@ -76,12 +76,14 @@
 </dialog>
 @endif
 @cmsHook('jobic.admin.taxonomies.history.before', ['type'=>$type, 'id'=>$record?->id])
+<x-history.disclosure>
 <section class="crud-history crud-page" data-record-history @if(!$record) hidden @endif>
     <header><h2>{{ __('taxonomies.history') }}</h2><button type="button" class="vuero-button" data-history-refresh>{{ __('taxonomies.history_refresh') }}</button></header>
     <p class="crud-hint">{{ __('taxonomies.history_hint') }}</p>
     <div data-history-entries aria-live="polite"></div>
     <footer><button type="button" class="vuero-button" data-history-previous>{{ __('taxonomies.previous') }}</button><span data-history-page></span><button type="button" class="vuero-button" data-history-next>{{ __('taxonomies.next') }}</button></footer>
 </section>
+</x-history.disclosure>
 @cmsHook('jobic.admin.taxonomies.history.after', ['type'=>$type, 'id'=>$record?->id])
 @endsection
 @push('styles')<link rel="stylesheet" href="{{ asset('theme/vendors/keenicons/styles.bundle.css') }}">@endpush

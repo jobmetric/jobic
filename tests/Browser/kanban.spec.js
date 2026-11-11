@@ -345,6 +345,7 @@ test('board columns move between lists and icon ordering persists with filter ca
     });
     await page.goto('/admin/posts/post/kanban/boards/create');
     await expect(page.locator('[data-board-tab]')).toHaveCount(3);
+    await expect(page.locator('.crud-history-disclosure')).toBeHidden();
     await expect(page.locator('#board-roles')).toBeVisible();
     expect(await page.locator('.board-name-field').evaluate(element=>getComputedStyle(element).gridColumnStart)).toBe('1');
     expect(await page.locator('.board-name-field').evaluate(element=>getComputedStyle(element).gridColumnEnd)).toBe('-1');
@@ -365,6 +366,11 @@ test('board columns move between lists and icon ordering persists with filter ca
     await page.screenshot({path:'test-results/kanban-board-filter-form-desktop.png',fullPage:true});
     await page.locator('[data-board-form] button[value="save"]').click();
     await expect.poll(()=>saved?.states).toEqual(['review','draft']);
+    await expect(page.locator('.crud-history-disclosure')).toBeVisible();
+    await expect(page.locator('.crud-history-disclosure')).not.toHaveAttribute('open');
+    await page.screenshot({path:'test-results/kanban-board-history-closed.png',fullPage:true});
+    await page.locator('.crud-history-disclosure__trigger').click();
+    await expect(page.locator('.crud-history-disclosure')).toHaveAttribute('open');
     expect(saved.filters).toEqual([{driver:'taxonomy',config:{collection:'categories',ids:['4']}}]);expect(errors).toEqual([]);
 });
 

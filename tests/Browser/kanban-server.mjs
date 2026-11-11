@@ -30,6 +30,8 @@ function directoryFixture(copy=flatCopy('lang/en/kanban.php'),form=false){
 
  html=html.replaceAll(/@foreach\(\['total_boards'[^\n]*@endforeach/g,`<article><span>${copy.total_boards}</span><strong data-board-stat>—</strong></article>`);
  html=html.replaceAll(/@cmsHook\([^\n]+/g,'');
+ html=html.replaceAll('<x-history.disclosure>',`<details class="crud-history-disclosure"><summary class="crud-history-disclosure__trigger"><span class="crud-history-disclosure__icon">◷</span><span class="crud-history-disclosure__copy"><strong>${copy.history}</strong><small>${flatCopy('lang/en/admin.php').history_disclosure_hint}</small></span><span class="crud-history-disclosure__action"><span class="is-closed">${flatCopy('lang/en/admin.php').open_history}</span><span class="is-open">${flatCopy('lang/en/admin.php').close_history}</span>⌄</span></summary><div class="crud-history-disclosure__content">`).replaceAll('</x-history.disclosure>','</div></details>');
+ html=html.replaceAll('@if(!$record) hidden @endif','hidden');
  html=html.replaceAll(/<x-vuero.icon[^>]*\/>/g,'');
  html=html.replaceAll(/<x-form.field([^>]*) :label="__\('kanban.([^']+)'\)"[^>]*>/g,(_,attributes,key)=>`<label class="crud-field${attributes.includes('board-name-field')?' board-name-field':''}">${copy[key]||key}`);
  html=html.replaceAll('</x-form.field>','</label>');

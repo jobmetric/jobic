@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'history_disclosure_title' => 'تاریخچه تغییرات',
+    'history_and_versions' => 'تاریخچه تغییرات و نسخه‌ها',
+    'history_disclosure_hint' => 'برای مرور سابقه، این بخش را باز کنید.',
+    'open_history' => 'نمایش تاریخچه',
+    'close_history' => 'بستن تاریخچه',
+
     'control_close' => 'بستن',
     'control_close_navigation' => 'بستن منو',
     'control_toggle_navigation' => 'باز و بسته کردن منو',
