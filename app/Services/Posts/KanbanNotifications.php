@@ -95,8 +95,8 @@ final class KanbanNotifications
         $board->visiblePost($type, (int) $row->post_id, $actor);
         $context = ['type' => $type, 'post_id' => (int) $row->post_id, 'user_id' => (int) $actor->id];
         Hooks::action('jobic.posts.kanban.notification.reading', $context);
-        DB::table('kanban_notifications')->where('id', $id)->whereNull('read_at')->update(['read_at' => now()]);
-        DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.notification.read', $context));
+        $updated = DB::table('kanban_notifications')->where('id', $id)->whereNull('read_at')->update(['read_at' => now()]);
+        if ($updated) DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.notification.read', $context));
 
         return Response::make(true, __('kanban.saved'));
     }
