@@ -826,3 +826,9 @@ html[dir='rtl'] .cms-page--kanban .kb-work-date-picker #ui-datepicker-div .ui-da
 .kb-notification-preferences label:last-of-type{border-block-end:0}
 .kb-group-saving{margin:8px 2px 0;color:var(--kb-muted);font-size:11px}
 @media(max-width:700px){.kb-work-layout{grid-template-columns:1fr}.kb-work-column{padding-inline:0}.kb-work-column:first-child{border-inline-end:0;border-block-end:1px solid var(--kb-border);padding-block-end:16px}.kb-work-panel form>.rf-btn{margin-inline-start:0}.kb-detail-tabs-bar{padding-inline-end:8px}.kb-work-readonly{grid-template-columns:1fr}}
+
+/* Trusted extension views share the board's spacing and logical flow. */
+.kb-extension { min-width: 0; color: inherit; }
+.kb-extension--header, .kb-extension--column { display: inline-flex; align-items: center; gap: .5rem; }
+.kb-extension--card, .kb-extension--column-body, .kb-extension--detail { margin-block: .5rem; }
+.kb-extension :is(a, button):focus-visible { outline: 2px solid var(--primary, #3b82f6); outline-offset: 2px; }

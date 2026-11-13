@@ -427,14 +427,14 @@
     "src": "resources/js/kanban/boards.js"
   },
   "resources/js/kanban/index.css": {
-    "file": "assets/index-a5c50ae7.css",
+    "file": "assets/index-59157605.css",
     "src": "resources/js/kanban/index.css"
   },
   "resources/js/kanban/index.js": {
     "css": [
-      "assets/index-a5c50ae7.css"
+      "assets/index-59157605.css"
     ],
-    "file": "assets/index-81b31b82.js",
+    "file": "assets/index-20e7aa78.js",
     "imports": [
       "_WorkflowToast-ea06635a.js",
       "_page-1cca34fb.js",
