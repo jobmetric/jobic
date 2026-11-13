@@ -7,6 +7,7 @@ namespace App\Services\Posts;
 use App\Facades\Hooks;
 use App\Models\User;
 use App\Support\LocalizedDate;
+use App\Support\KanbanExtensions;
 use App\Support\AdminAccess;
 use Illuminate\Support\Facades\DB;
 use JobMetric\PackageCore\Output\Response;
@@ -39,8 +40,12 @@ final class KanbanNotifications
         if (! $recipient || ! ($recipient->ui_preferences['kanban_notifications'][$kind] ?? true)) {
             return false;
         }
-        return DB::table('kanban_notifications')->insertOrIgnore(['user_id' => $recipientId, 'post_id' => $postId,
+        $context = ['user_id' => $recipientId, 'post_id' => $postId, 'operation' => $kind];
+        Hooks::action('jobic.posts.kanban.notification.sending', $context);
+        $inserted = DB::table('kanban_notifications')->insertOrIgnore(['user_id' => $recipientId, 'post_id' => $postId,
             'actor_id' => $actorId, 'kind' => $kind, 'dedupe_key' => $dedupeKey, 'created_at' => now()]) > 0;
+        if ($inserted) DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.notification.sent', $context));
+        return $inserted;
     }
 
     /**
@@ -70,7 +75,7 @@ final class KanbanNotifications
         }
 
         return Response::make(true, '', ['items' => $items, 'unread' => $unread,
-            'preferences' => $this->preferences($actor)]);
+            'preferences' => $this->preferences($actor), 'extra' => KanbanExtensions::data('notifications', ['type' => $type, 'id' => $board->selectedBoard()?->id, 'user_id' => (int) $actor->id])]);
     }
 
     /**
@@ -88,7 +93,10 @@ final class KanbanNotifications
         $row = DB::table('kanban_notifications')->where('user_id', $actor->id)->where('id', $id)->first();
         abort_unless($row, 404);
         $board->visiblePost($type, (int) $row->post_id, $actor);
+        $context = ['type' => $type, 'post_id' => (int) $row->post_id, 'user_id' => (int) $actor->id];
+        Hooks::action('jobic.posts.kanban.notification.reading', $context);
         DB::table('kanban_notifications')->where('id', $id)->whereNull('read_at')->update(['read_at' => now()]);
+        DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.notification.read', $context));
 
         return Response::make(true, __('kanban.saved'));
     }

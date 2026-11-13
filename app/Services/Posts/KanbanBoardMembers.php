@@ -7,6 +7,7 @@ namespace App\Services\Posts;
 use App\Models\ContentBoard;
 use App\Models\User;
 use App\Support\AdminAccess;
+use App\Support\KanbanExtensions;
 use App\Support\PostWorkflowPermissions;
 use JobMetric\PackageCore\Output\Response;
 use JobMetric\Post\Facades\PostTypeRegistry;
@@ -108,7 +109,10 @@ final class KanbanBoardMembers
             }
             abort_unless($found, 409, __('kanban.stale'));
         }
-        $items = array_slice($matches, $start, self::PAGE_SIZE);
+        $items = array_map(static function (array $member) use ($type, $board): array {
+            $member['extra'] = KanbanExtensions::data('member', ['type' => $type, 'id' => $board?->id, 'user_id' => $member['id']]);
+            return $member;
+        }, array_slice($matches, $start, self::PAGE_SIZE));
         asort($availableRoles, SORT_NATURAL | SORT_FLAG_CASE);
         return Response::make(true, '', [
             'items' => $items,

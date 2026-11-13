@@ -15,6 +15,7 @@ use App\Support\AdminAccess;
 use App\Support\CalendarInput;
 use App\Support\EditorRenderer;
 use App\Support\KanbanFilterRegistry;
+use App\Support\KanbanExtensions;
 use App\Support\LocaleCatalog;
 use App\Support\LocalizedDate;
 use App\Support\PostWorkflowPermissions;
@@ -180,7 +181,7 @@ class Kanban
                 'oldest_days' => $oldest, 'arrived_30d' => $arrived, 'departed_30d' => $departed];
         }
 
-        return Response::make(true, '', ['states' => $rows]);
+        return Response::make(true, '', ['states' => $rows, 'extra' => KanbanExtensions::data('insights', ['type' => $type, 'id' => $this->board?->id, 'user_id' => (int) $actor->id])]);
     }
 
     /**
@@ -247,7 +248,7 @@ class Kanban
             }
         }
         return Response::make(true, '', ['month' => implode('/', array_slice(explode('/', LocalizedDate::format($start, false)), 0, 2)),
-            'today' => $today->toDateString(), 'days' => $days, 'events' => $events, 'truncated' => $truncated, 'offset' => $offset]);
+            'today' => $today->toDateString(), 'days' => $days, 'events' => $events, 'truncated' => $truncated, 'offset' => $offset, 'extra' => KanbanExtensions::data('calendar', ['type' => $type, 'id' => $this->board?->id, 'user_id' => (int) $actor->id])]);
     }
 
     /**
@@ -345,6 +346,7 @@ class Kanban
     public function page(string $type, User $actor): array
     {
         return ['workspace' => app(KanbanWorkspace::class)->preferences($type, $this->board, $actor),'options' => app(KanbanWorkspace::class)->options($type, $this->board),'filterCatalog' => app(KanbanFilterRegistry::class)->catalog($type),'groupChoices' => $this->groupChoices($type),'realtime' => app(\App\Support\KanbanRealtime::class)->client($type),'boardVersion' => $this->board?->version, 'boardName' => $this->board?->name, 'pageSize' => $this->pageSize($type, $actor), 'editable' => $this->mayMove($type, $actor), 'calendar' => LocaleCatalog::calendar(),
+            'slots' => collect(['header', 'settings', 'calendar', 'insights', 'notifications'])->mapWithKeys(fn (string $zone) => [$zone => KanbanExtensions::view($zone, ['type' => $type, 'id' => $this->board?->id])])->all(),
             'copy' => trans('kanban'), 'dataUrl' => route($this->board ? 'admin.posts.kanban.board.data' : 'admin.posts.kanban.data', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
             'membersUrl' => route($this->board ? 'admin.posts.kanban.board.members' : 'admin.posts.kanban.members', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
             'calendarUrl' => route($this->board ? 'admin.posts.kanban.board.calendar' : 'admin.posts.kanban.calendar', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
@@ -379,7 +381,7 @@ class Kanban
         $this->view['group_by'] = $group;
         $definition = app(PostLifecycleView::class)->activeDefinition($type);
         if (! $definition) {
-            return Response::make(true, '', ['definition_id' => null, 'columns' => [], 'summary'=>['total'=>0,'scheduled'=>0,'stale'=>0], 'options'=>app(KanbanWorkspace::class)->options($type,$this->board)]);
+            return Response::make(true, '', ['definition_id' => null, 'columns' => [], 'summary'=>['total'=>0,'scheduled'=>0,'stale'=>0], 'extra' => KanbanExtensions::data('board', ['type' => $type, 'id' => $this->board?->id, 'user_id' => (int) $actor->id]), 'options'=>app(KanbanWorkspace::class)->options($type,$this->board)]);
         }
         abort_if(isset($data['definition_id']) && (int) $data['definition_id'] !== (int) $definition->id, 409, __('kanban.stale'));
         $options = app(KanbanWorkspace::class)->options($type, $this->board);
@@ -439,7 +441,7 @@ class Kanban
             }
         }
         abort_if(isset($data['state']) && $columns === [], 404);
-        return Response::make(true, '', ['board_version' => $this->board?->version,'board_name' => $this->board?->name,'definition_id' => $definition->id,'columns' => $columns,'summary' => $summary,'options' => $options,'lanes' => $lanes,'next_lane_offset' => $moreLanes ? (int)($data['lane_offset'] ?? 0) + 20 : null]);
+        return Response::make(true, '', ['board_version' => $this->board?->version,'board_name' => $this->board?->name,'definition_id' => $definition->id,'columns' => $columns,'summary' => $summary,'extra' => KanbanExtensions::data('board', ['type' => $type, 'id' => $this->board?->id, 'user_id' => (int) $actor->id]),'options' => $options,'lanes' => $lanes,'next_lane_offset' => $moreLanes ? (int)($data['lane_offset'] ?? 0) + 20 : null]);
     }
 
     /**
@@ -615,7 +617,7 @@ class Kanban
     {
         $visible = empty($state['view_roles']) || app(PostStateAccess::class)->hasAnySystemRole($actor, $state['view_roles']);
         $version = (int) $this->columnQuery($type)->where('status', $state['status'])->value('version');
-        $column = ['id' => $state['id'], 'status' => $state['status'], 'name' => $state['translations'][app()->getLocale()]['name'] ?? $state['name'],
+        $column = ['extension_html' => KanbanExtensions::view('column.header', ['type' => $type, 'id' => $this->board?->id, 'state' => $state['status']]), 'id' => $state['id'], 'status' => $state['status'], 'name' => $state['translations'][app()->getLocale()]['name'] ?? $state['name'],
             'restricted' => ! $visible, 'version' => $version, 'count' => null, 'items' => [], 'cursor' => null];
         if (! $visible) {
             return $column;
@@ -643,6 +645,8 @@ class Kanban
         $more = $rows->count() > $size;
         $page = $rows->take($size);
         $column['items'] = $page->map(fn (Post $post) => $this->card($post))->values()->all();
+        $column['body_extension_html'] = KanbanExtensions::view('column.body', ['type' => $type, 'id' => $this->board?->id, 'state' => $state['status']]);
+        $column['extra'] = KanbanExtensions::data('column', ['type' => $type, 'id' => $this->board?->id, 'state' => $state['status']]);
         if ($more && ($last = $page->last())) {
             $column['cursor'] = Crypt::encryptString(json_encode([
                 'view' => $this->viewFingerprint(), 'board' => $this->board?->id, 'board_version' => $this->board?->version, 'type' => $type, 'state' => $state['status'], 'actor' => (int) $actor->id, 'definition' => (int) $definition->id,
@@ -685,7 +689,9 @@ class Kanban
             'updated_at' => LocalizedDate::format($post->updated_at),'version' => (int)$post->stream_version,'revision_id' => (int)$post->draft_revision_id,'state' => $post->workflow_status,
             'assignee' => $work['assignee'], 'due_at' => $work['due_at'], 'due_state' => $work['due_state'],
             'priority' => $work['priority'], 'review_status' => $reviewStatus,
-            'dependency_count' => count($work['dependencies'])];
+            'dependency_count' => count($work['dependencies']),
+            'extra' => KanbanExtensions::data('card', ['type' => $post->type, 'id' => $this->board?->id, 'post_id' => (int) $post->id]),
+            'extension_html' => KanbanExtensions::view('card', ['type' => $post->type, 'id' => $this->board?->id, 'post_id' => (int) $post->id])];
     }
 
     /**
@@ -742,6 +748,8 @@ class Kanban
         $mayEdit = app(AdminAccess::class)->allows($actor, PostTypeRegistry::for($type)->getManagePermission() ?? $base);
 
         return Response::make(true, '', ['card' => $this->card($post), 'definition_id' => $definition->id,
+            'extension_html' => KanbanExtensions::view('detail', ['type' => $type, 'id' => $this->board?->id, 'post_id' => $id]),
+            'extra' => KanbanExtensions::data('detail', ['type' => $type, 'id' => $this->board?->id, 'post_id' => $id]),
             'locale' => $locale, 'excerpt' => $post->getTranslation('excerpt', $locale),
             'content_html' => app(EditorRenderer::class)->render(app(EditorDocuments::class)->readForEditor($post, $locale)), 'destinations' => $destinations,
             'edit_url' => $mayEdit ? route('admin.posts.edit', ['type' => $type, 'post' => $id, 'embedded' => 'kanban']) : null,

@@ -67,6 +67,61 @@ class KanbanTest extends TestCase
         return $this->getJson(route('admin.posts.kanban.board.data',['type'=>'post','board'=>$board->id]+$query+['board_version'=>$board->version]));
     }
 
+    public function test_authorized_kanban_extensions_are_isolated_from_core_fields(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $seen = [];
+        Hooks::addFilter('jobic.posts.kanban.card.extra', function (array $value, array $context) use (&$seen): array {
+            $seen[] = $context;
+            return ['external_reference' => 'CMS-42'];
+        });
+        Hooks::addAction('jobic.admin.posts.kanban.card', static fn (array $context): string => '<span data-extension-card="'.(int) $context['post_id'].'">External</span>');
+        $this->readBoard()->assertOk()
+            ->assertJsonPath('data.columns.0.items.0.id', $post->id)
+            ->assertJsonPath('data.columns.0.items.0.extra.external_reference', 'CMS-42')
+            ->assertSee('data-extension-card', false);
+        $this->assertSame(['type' => 'post', 'id' => null, 'post_id' => (int) $post->id], $seen[0]);
+        $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $post->id]))
+            ->assertOk()->assertJsonPath('data.card.extra.external_reference', 'CMS-42');
+    }
+
+    public function test_invalid_extension_data_cannot_replace_board_response(): void
+    {
+        $this->setupBoard();
+        $this->postItem();
+        Hooks::addFilter('jobic.posts.kanban.card.extra', static fn (): array => ['items' => []]);
+        $this->readBoard()->assertStatus(500);
+    }
+
+    public function test_restricted_column_never_renders_its_body_extension(): void
+    {
+        $role = \JobMetric\Rolix\Models\Role::create(['type' => 'system', 'name' => 'Private review', 'allow' => [], 'deny' => []]);
+        $this->setupBoard(viewRoles: [(int) $role->id]);
+        $called = false;
+        Hooks::addAction('jobic.admin.posts.kanban.column.body', function () use (&$called): string {
+            $called = true;
+            return '<span>Private extension</span>';
+        });
+        $this->readBoard()->assertOk()->assertJsonPath('data.columns.1.restricted', true)
+            ->assertJsonMissingPath('data.columns.1.body_extension_html');
+        $this->assertTrue($called); // The visible draft column may render the shared slot.
+    }
+
+    public function test_notification_delivery_exposes_safe_ordered_hooks(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $recipient = User::factory()->create();
+        $seen = [];
+        Hooks::addAction('jobic.posts.kanban.notification.sending', function (array $context) use (&$seen): void { $seen[] = ['sending', $context]; });
+        Hooks::addAction('jobic.posts.kanban.notification.sent', function (array $context) use (&$seen): void { $seen[] = ['sent', $context]; });
+        $this->assertTrue(app(\App\Services\Posts\KanbanNotifications::class)->send((int) $recipient->id, (int) $post->id, 'assignment', (int) auth()->id()));
+        $expected = ['user_id' => (int) $recipient->id, 'post_id' => (int) $post->id, 'operation' => 'assignment'];
+        $this->assertSame(['sending', $expected], $seen[0]);
+        $this->assertDatabaseHas('kanban_notifications', ['user_id' => $recipient->id, 'post_id' => $post->id, 'kind' => 'assignment']);
+    }
+
     public function test_card_priority_and_shared_color_mode_are_validated_and_visible(): void
     {
         $this->setupBoard();
