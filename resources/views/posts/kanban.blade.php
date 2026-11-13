@@ -2,7 +2,7 @@
 @section('title', __('kanban.title'))
 @section('language', app()->getLocale())
 @section('direction', \App\Support\LocaleCatalog::direction())
-@section('body-class', 'cms-page--kanban')
+@section('body-class', 'cms-page cms-page--kanban')
 @section('body')
     @cmsHook('jobic.admin.posts.kanban.before', ['type' => $type])
     <div data-kanban-root></div>

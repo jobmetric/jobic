@@ -530,7 +530,8 @@ if (form) {
         title: labels.unsaved_title,
         description: editorConfig.messages.unsaved,
         confirm: labels.leave,
-    }), {normalizeValue:(name,value)=>[...form.querySelectorAll('[data-editor-content]')].some(input=>input.name===name)?editorContentSnapshot(value):value});
+    }), {normalizeValue:(name,value)=>[...form.querySelectorAll('[data-editor-content]')].some(input=>input.name===name)?editorContentSnapshot(value):value,
+        beforeUnload: !editorConfig.embedded});
     const releaseEmbeddedLease = async () => {
         if (!editorConfig.embedded) return;
         const token = form.elements.namedItem('_edit_lock');
@@ -546,9 +547,10 @@ if (form) {
     };
     if (editorConfig.embedded) {
         window.kanbanEditor = {
-            canClose: async () => {
+            isDirty: () => guard.dirty(),
+            canClose: async ({confirmed = false} = {}) => {
                 if (form.dataset.saving) return false;
-                if (guard.dirty() && !(await showDialog({title: labels.unsaved_title, description: editorConfig.messages.unsaved, confirm: labels.leave}))) return false;
+                if (guard.dirty() && !confirmed && !(await showDialog({title: labels.unsaved_title, description: editorConfig.messages.unsaved, confirm: labels.leave}))) return false;
                 try { await releaseEmbeddedLease(); return true; }
                 catch (error) { announce(error.message, true); return false; }
             },

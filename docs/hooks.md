@@ -54,6 +54,7 @@ Services validate using dto before `saving`, then persist, then emit `saved`. `s
 | `jobic.settings.seo.saving`, `jobic.settings.seo.saved` | action | section, user_id, fields (names only) |
 | `jobic.settings.profile.saving`, `jobic.settings.profile.saved` | action | section, user_id, fields |
 | `jobic.settings.security.saving`, `jobic.settings.security.saved` | action | section, user_id, fields; no passwords/hashes |
+| `jobic.posts.kanban.card_work.saving`, `jobic.posts.kanban.card_work.saved` | action | type, post_id, user_id, operation; assignment, deadline and dependency values excluded |
 | `jobic.settings.appearance.saving`, `jobic.settings.appearance.saved` | action | section, user_id, fields |
 | `jobic.settings.mail.saving`, `jobic.settings.mail.saved` | action | section, user_id (nullable for CLI), fields; no credentials |
 
@@ -327,6 +328,13 @@ Personal page-size saving/saved hooks include an additional scalar `id` only for
 
 `jobic.posts.kanban.limits.saving` is a synchronous lifecycle action after command, state, audience and optimistic-version validation, under the workflow transaction lock, before shared workspace options are persisted. Listeners execute in priority order and may veto by throwing; persistence and notifications are rolled back. `jobic.posts.kanban.limits.saved` is an isolated notification after the outer transaction commits and never runs on a veto. Both receive only `type`, nullable board `id`, authenticated `user_id`, and `operation` (`limits`). Capacity values, filters, card content, user preferences, request arrays and credentials are excluded. The registered workflow-management permission is required; board-management permission alone is insufficient.
 
+`jobic.posts.kanban.comment.saving` and `.saved` bracket comment persistence; `review.saving` and `.saved` bracket revision review requests and decisions; `notifications.saving` and `.saved` bracket personal notification preference changes. All names have the `jobic.posts.kanban.` prefix. The `saving` action is synchronous under the operation's transaction, after authorization and validation, and may veto by throwing. The `saved` notification runs only after commit and is isolated from delivery errors. Comment context contains only `type`, `post_id`, and `user_id` before persistence, plus `comment_id` after commit; review context also contains `revision_id`; notification preference context contains only `user_id`. Comment text, mention names, recipient lists, approval notes, preference values, credentials and raw requests are excluded. A veto rolls back the owning transaction and suppresses `saved`. Callbacks follow priority and registration order. Board viewing permission applies to comments and personal notifications; workflow management permission applies to review commands.
+
 The existing `jobic.posts.kanban.settings.saving/saved` hooks also surround personal density, card-field and grouping preferences. Their safe context and failure semantics remain unchanged. Bulk transitions reuse the individual moving/moved boundaries per card, with each card isolated by its own transaction savepoint.
+
+## Board planning
+
+
+`jobic.posts.kanban.card_work.saving` is a synchronous action after board, card, assignee, dependency and optimistic-version checks, inside the workflow-locked transaction before assignment, deadline and dependency persistence. Exceptions veto the entire card-work update. `jobic.posts.kanban.card_work.saved` runs as an isolated after-commit notification. Both receive only `type`, `post_id`, authenticated `user_id`, and `operation=card_work`; names, due dates, dependency IDs and request data are excluded. For example, an extension can refresh a private workload index after `saved`. The registered workflow-management permission remains required at the route boundary.
 
 `kanban.invalidated` is a Reverb transport notification on the private `jobic.kanban.{type}` channel, after commit. Its payload is empty. Subscription requires an active user, an enabled content type and its registered view permission through `AdminAccess`; it never grants board, state or post access. Clients reread authorized HTTP endpoints. Transport failures are logged with only the type and exception class and cannot roll back a successful save. This notification is not a persistence hook or automation trigger.

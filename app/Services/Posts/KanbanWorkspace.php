@@ -44,12 +44,18 @@ class KanbanWorkspace
      */
     public function preferences(string $type, ?ContentBoard $board, User $actor): array
     {
-        $defaults = ['density' => 'full','card_fields' => ['image','terms','author','updated','age'],'group_by' => 'none'];
-        $preferences = array_replace($defaults, $actor->ui_preferences['kanban'][$this->key($type, $board)] ?? []);
+        $newFields = ['assignee','scheduled','deadline','dependencies'];
+        $defaults = ['density' => 'full','card_fields' => ['image','terms','author','updated','age',...$newFields],'group_by' => 'none'];
+        $stored = $actor->ui_preferences['kanban'][$this->key($type, $board)] ?? [];
+        $preferences = array_replace($defaults, $stored);
         if (!in_array($preferences['density'], ['full','compact'], true)) {
             $preferences['density'] = 'full';
         }
-        $preferences['card_fields'] = is_array($preferences['card_fields']) ? array_values(array_intersect($defaults['card_fields'], $preferences['card_fields'])) : $defaults['card_fields'];
+        $selected = is_array($preferences['card_fields']) ? $preferences['card_fields'] : $defaults['card_fields'];
+        if (($stored['card_fields_version'] ?? 0) < 2) {
+            $selected = array_merge($selected, $newFields);
+        }
+        $preferences['card_fields'] = array_values(array_intersect($defaults['card_fields'], $selected));
         $groups = ['none','author',...array_map(static fn ($key) => 'taxonomy:'.$key, array_keys(\JobMetric\Post\Facades\PostTypeRegistry::for($type)->getTaxonomyTypes()))];
         if (!in_array($preferences['group_by'], $groups, true)) {
             $preferences['group_by'] = 'none';
@@ -68,7 +74,9 @@ class KanbanWorkspace
     public function options(string $type, ?ContentBoard $board): array
     {
         $row = Schema::hasTable('kanban_workspace_options') ? DB::table('kanban_workspace_options')->where('scope', $this->key($type, $board))->first() : null;
-        return ['version' => (int)($row?->version ?? 0),'stale_days' => (int)(json_decode($row?->options ?? '{}', true)['stale_days'] ?? 7),'limits' => json_decode($row?->options ?? '{}', true)['limits'] ?? []];
+        $values = json_decode($row?->options ?? '{}', true) ?: [];
+        return ['version' => (int) ($row?->version ?? 0), 'stale_days' => (int) ($values['stale_days'] ?? 7),
+            'limits' => $values['limits'] ?? [], 'color_mode' => $values['color_mode'] ?? 'signals'];
     }
 
     /**
@@ -169,7 +177,8 @@ class KanbanWorkspace
             abort_if($current['version'] !== (int)$data['options_version'], 409, __('kanban.stale'));
             $context = ['type' => $type,'id' => $board?->id,'user_id' => (int)$actor->id,'operation' => 'limits'];
             Hooks::lifecycle('jobic.posts.kanban.limits.saving', $context);
-            $options = ['stale_days' => (int)$data['stale_days'],'limits' => $data['limits']];
+            $options = ['stale_days' => (int)$data['stale_days'],'limits' => $data['limits'],
+                'color_mode' => $data['color_mode'] ?? $current['color_mode']];
             $values = ['type' => $type,'board_id' => $board?->id,'options' => json_encode($options, JSON_THROW_ON_ERROR),'version' => $current['version'] + 1,'updated_at' => now()];
             if ($current['version'] === 0) {
                 $values['created_at'] = now();

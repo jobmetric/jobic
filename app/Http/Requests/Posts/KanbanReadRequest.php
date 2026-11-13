@@ -46,7 +46,8 @@ class KanbanReadRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['search' => 'sometimes|nullable|string|max:160','filters' => 'sometimes|array|max:20','filters.*' => 'array:driver,config','filters.*.driver' => 'required|string|max:80','filters.*.config' => 'required|array','summary' => 'sometimes|nullable|in:scheduled,stale','group_by' => 'sometimes|string|max:100','lane' => 'sometimes|nullable|string|max:100','lane_offset' => 'sometimes|integer|min:0|max:100000','board_version' => 'sometimes|integer|min:1','state' => 'sometimes|string|max:80', 'cursor' => 'sometimes|nullable|string|max:3000',
+        return ['search' => 'sometimes|nullable|string|max:160','filters' => 'sometimes|array|max:20','filters.*' => 'array:driver,config','filters.*.driver' => 'required|string|max:80','filters.*.config' => 'required|array','summary' => 'sometimes|nullable|in:scheduled,stale','mine' => 'sometimes|boolean','assignee_id' => 'sometimes|integer|min:1','group_by' => 'sometimes|string|max:100','lane' => 'sometimes|nullable|string|max:100','lane_offset' => 'sometimes|integer|min:0|max:100000','board_version' => 'sometimes|integer|min:1','state' => 'sometimes|string|max:80', 'cursor' => 'sometimes|nullable|string|max:3000', 'member_cursor' => 'sometimes|integer|min:0', 'member_search' => 'sometimes|string|max:80', 'member_role' => 'sometimes|integer|min:0', 'member_sort' => 'sometimes|in:name,cards',
+            'calendar_offset' => 'sometimes|integer|min:-12|max:12', 'comment_cursor' => 'sometimes|integer|min:1',
             'locale' => ['sometimes', \Illuminate\Validation\Rule::in(\App\Support\LocaleCatalog::codes())], 'definition_id' => 'sometimes|integer|min:1'];
     }
 }

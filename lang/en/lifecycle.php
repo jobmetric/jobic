@@ -32,4 +32,5 @@ return [
     'jobic_posts_kanban_boards_saving' => ['group'=>'Kanban boards', 'title'=>'Save board', 'description'=>'Validated synchronous board boundary.'],
     'jobic_posts_kanban_boards_deleting' => ['group'=>'Kanban boards', 'title'=>'Delete board', 'description'=>'Validated synchronous board boundary.'],
     'jobic_posts_kanban_limits_saving' => ['group'=>'Kanban', 'title'=>'Before saving column capacities', 'description'=>'Validated synchronous boundary; listeners may veto persistence.'],
+    'jobic_posts_kanban_card_work_saving' => ['group'=>'Content Kanban', 'title'=>'Before saving card work', 'description'=>'Validated assignment, deadline and dependency boundary.'],
 ];

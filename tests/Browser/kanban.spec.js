@@ -5,7 +5,7 @@ function copyFor(locale) {
     const source = fs.readFileSync(`lang/${locale}/kanban.php`, 'utf8');
     return Object.fromEntries([...source.matchAll(/'([^']+)'\s*=>\s*'((?:\\.|[^'])*)'/g)].map(match => [match[1], match[2].replaceAll("\\'", "'")]));
 }
-async function fixture(page, locale = 'en') {
+async function fixture(page, locale = 'en', datePlugin = false) {
     const copy = copyFor(locale);
     let size = 5;
     let source = Array.from({length: 12}, (_, i) => ({id:i+1, title:locale==='fa'?`محتوای نمونه ${i+1}`:`Article ${i+1}`,author:'Board author',avatar_url:'/vuero/images/admin/avatars/presets/avatar-01.webp',author_id:7,age_days:2,terms:[{id:1,name:'News',collection:'categories'}],updated_at:'۱۴۰۵/۰۸/۱۸',version:1,revision_id:i+1,state:'draft'}));
@@ -14,17 +14,19 @@ async function fixture(page, locale = 'en') {
     let requiresDue = false;
     let previewDelay = 0;
     let pageDelay = 0;
-    let customVersion = null;let realtimeEnabled=false;
+    let customVersion = null;let realtimeEnabled=false;let memberCount=7;let cardWork={version:0,assignee:null,due_at:null,dependencies:[]};
     let workspaceOptions={version:0,stale_days:7,limits:[]};
-    let workspacePrefs={density:'full',card_fields:['image','terms','author','updated','age'],group_by:'none'};
+    let workspacePrefs={density:'full',card_fields:['image','terms','author','updated','age','assignee','scheduled','deadline','dependencies'],group_by:'none'};
     await page.route('**/admin/posts/post/kanban', async route => {
         const response = await route.fetch();
         let html = await response.text();
         const match = html.match(/(<script type="application\/json" id="jobic-page-data">)([\s\S]*?)(<\/script>)/);
         const data = JSON.parse(match[2]);
-        data.kanban.realtime={enabled:realtimeEnabled,key:'fixture-key',host:'127.0.0.1',port:5185,scheme:'http',authUrl:'/fixture-broadcast-auth',channel:'jobic.kanban.post'};data.kanban.workspace=workspacePrefs;data.kanban.options=workspaceOptions;data.kanban.filterCatalog={author:{label:copy.authors,fields:[{key:'ids',label:copy.authors,multiple:true,options:[{id:7,name:'Board author'}]}]}};data.kanban.boardVersion=customVersion;data.kanban.boardName=customVersion?'Team board':null;data.kanban.copy = copy; data.ui.loading = copy.loading; data.kanban.editable = true; data.kanban.pageSize = 5;
+        data.kanban.realtime={enabled:realtimeEnabled,key:'fixture-key',host:'127.0.0.1',port:5185,scheme:'http',authUrl:'/fixture-broadcast-auth',channel:'jobic.kanban.post'};data.kanban.workspace={...workspacePrefs};data.kanban.options=workspaceOptions;data.kanban.filterCatalog={author:{label:copy.authors,fields:[{key:'ids',label:copy.authors,multiple:true,options:[{id:7,name:'Board author'}]}]}};data.kanban.boardVersion=customVersion;data.kanban.boardName=customVersion?'Team board':null;data.kanban.membersUrl=customVersion?`/admin/posts/post/kanban/boards/${customVersion}/members`:'/admin/posts/post/kanban/members';data.kanban.calendarUrl='/admin/posts/post/kanban/calendar';data.kanban.insightsUrl='/admin/posts/post/kanban/insights';data.kanban.copy = copy; data.kanban.calendar = locale==='fa'?'jalali':'gregorian';data.ui.loading = copy.loading; data.kanban.editable = true; data.kanban.pageSize = 5;
+        data.kanban.notificationsUrl='/admin/posts/post/kanban/notifications';
         html = html.replace(match[0], `${match[1]}${JSON.stringify(data)}${match[3]}`);
         html = html.replace(/<html[^>]*>/, `<html lang="${locale}" dir="${locale==='fa'?'rtl':'ltr'}" data-theme="light">`);
+        if(datePlugin)html=html.replace('</head>',`<link rel="stylesheet" href="/assets/vendor/domi/plugins/jquery-ui-bootstrap/jquery-ui.css"><link rel="stylesheet" href="/assets/vendor/domi/plugins/datetime/jquery-ui-timepicker-addon.css"><script src="/assets/vendor/domi/plugins/jquery-ui/jquery-ui.min.js"></script><script src="/assets/vendor/domi/plugins/datetime/jquery-ui-timepicker-addon.js"></script>${locale==='fa'?'<script src="/assets/vendor/domi/plugins/datetime/jalali.js"></script><script>Date.now=Date.now||function(){return new Date().getTime()}</script>':''}</head>`);
         await route.fulfill({response,body:html});
     });
     await page.route('**/admin/posts/post/kanban/data**', async route => {
@@ -37,13 +39,27 @@ async function fixture(page, locale = 'en') {
         for(const column of columns){column.lane=url.searchParams.get('group_by')==='author'?'7':'all';column.lane_name=column.lane==='7'?'Board author':'';column.capacity=workspaceOptions.limits.find(row=>row.state===column.status);column.capacity_count=column.count;}
         await route.fulfill({json:{ok:true,data:{definition_id:1,columns,summary:{total,scheduled:0,stale:0},options:workspaceOptions}}});
     });
+    await page.route(/\/admin\/posts\/post\/kanban(?:\/boards\/\d+)?\/members(?:\?.*)?$/,async route=>{
+        const url=new URL(route.request().url());const cursor=Number(url.searchParams.get('member_cursor')||0);const search=(url.searchParams.get('member_search')||'').toLowerCase();
+        let all=Array.from({length:memberCount},(_,index)=>({id:index+1,name:`Board member ${index+1}`,avatar_url:index%2?null:'/vuero/images/admin/avatars/presets/avatar-01.webp',access:'role',primary_role:index%2?'Review':'Editorial',roles:[],card_count:index%3})).filter(member=>member.name.toLowerCase().includes(search));
+        if(url.searchParams.get('member_role'))all=all.filter(member=>member.primary_role===(url.searchParams.get('member_role')==='1'?'Editorial':'Review'));
+        if(url.searchParams.get('member_sort')==='cards')all.sort((a,b)=>b.card_count-a.card_count||a.id-b.id);
+        const remaining=all.slice(cursor?Math.max(0,all.findIndex(member=>member.id===cursor)+1):0);const items=remaining.slice(0,20);
+        await route.fulfill({json:{ok:true,data:{items,total:all.length,next_cursor:remaining.length>20?items.at(-1).id:null,role_options:[{id:1,name:'Editorial'},{id:2,name:'Review'}]}}});
+    });
+    await page.route('**/admin/posts/post/kanban/calendar**',async route=>{
+        const offset=Number(new URL(route.request().url()).searchParams.get('calendar_offset')||0);
+        await route.fulfill({json:{ok:true,data:{month:`2026/${11+offset}`,today:'2026-11-12',days:[{date:'2026-11-12',label:'2026/11/12',weekday:4}],events:[{id:1,date:'2026-11-12',kind:'deadline',title:'Article 1',state:'Draft'}],truncated:false,offset}}});
+    });
+    await page.route('**/admin/posts/post/kanban/insights**',async route=>route.fulfill({json:{ok:true,data:{states:[{status:'draft',name:'Draft',count:12,average_days:2,stale:1}]}}}));
+    await page.route('**/admin/posts/post/kanban/notifications**',async route=>route.fulfill({json:{ok:true,data:{items:[],unread:0,preferences:{}}}}));
     await page.route(/\/admin\/posts\/post\/kanban\/\d+(?:\?.*)?$/, async route => {
         const id=Number(new URL(route.request().url()).pathname.split('/').pop());
         if(previewDelay)await new Promise(resolve=>setTimeout(resolve,previewDelay));
         const card=[...source,...target].find(c=>c.id===id);
-        await route.fulfill({json:{ok:true,data:{card,locale,definition_id:1,excerpt:copy.details,content_html:'<p>Safe preview content</p>',edit_url:'/kanban-editor-fixture',destinations:[{transition:'send',label:copy.move,state:'review',status:'ready',checks:[],requires_due:requiresDue},{transition:'private',label:'Private',state:'private',status:'unknown',checks:[],requires_due:false}]}}});
+        await route.fulfill({json:{ok:true,data:{card,work:cardWork,discussion:{items:[],cursor:null},locale,definition_id:1,excerpt:copy.details,content_html:'<p>Safe preview content</p>',edit_url:'/kanban-editor-fixture',destinations:[{transition:'send',label:copy.move,state:'review',status:'ready',checks:[],requires_due:requiresDue},{transition:'private',label:'Private',state:'private',status:'unknown',checks:[],requires_due:false}]}}});
     });
-    await page.route('**/kanban-editor-fixture**', route => route.fulfill({contentType:'text/html',body:'<!doctype html><html><body><form><label>Title<input name="title" value="Unchanged"></label><button type="button" id="save">Save</button></form><script>let dirty=false;document.querySelector("input").oninput=()=>dirty=true;window.kanbanEditor={canClose:async()=>!dirty||confirm("Discard changes?")};document.querySelector("#save").onclick=()=>{dirty=false;parent.dispatchEvent(new CustomEvent("jobic:kanban:saved"));};</script></body></html>'}));
+    await page.route('**/kanban-editor-fixture**', route => route.fulfill({contentType:'text/html',body:'<!doctype html><html><body><form><label>Title<input name="title" value="Unchanged"></label><button type="button" id="save">Save</button></form><script>let dirty=false;document.querySelector("input").oninput=()=>dirty=true;window.kanbanEditor={isDirty:()=>dirty,canClose:async({confirmed=false}={})=>!dirty||confirmed};document.querySelector("#save").onclick=()=>{dirty=false;parent.dispatchEvent(new CustomEvent("jobic:kanban:saved"));};</script></body></html>'}));
     await page.route('**/admin/posts/post/kanban/command', async route => {
         const body=route.request().postData()||'';
         const field=name=>body.match(new RegExp(`name="${name}"\\r?\\n\\r?\\n([^\\r\\n]+)`))?.[1];
@@ -51,9 +67,10 @@ async function fixture(page, locale = 'en') {
         if(customVersion && Number(field('board_version'))!==customVersion)return route.fulfill({status:409,json:{ok:false,message:'Stale board'}});
         if(field('operation')==='settings') {
             if(failSettings) return route.fulfill({status:422,json:{ok:false,message:copy.failed,errors:{page_size:[copy.failed]}}});
-            size=Number(field('page_size'));workspacePrefs={density:field('density'),card_fields:JSON.parse(field('card_fields')),group_by:field('group_by')};return route.fulfill({json:{ok:true,message:copy.saved,data:{page_size:size}}});
+            size=Number(field('page_size'));workspacePrefs={...workspacePrefs,...(field('density')?{density:field('density')}:{}),...(field('card_fields')?{card_fields:JSON.parse(field('card_fields'))}:{}),...(field('group_by')?{group_by:field('group_by')}: {})};return route.fulfill({json:{ok:true,message:copy.saved,data:{page_size:size}}});
         }
         if(field('operation')==='limits'){workspaceOptions={version:workspaceOptions.version+1,stale_days:Number(field('stale_days')),limits:JSON.parse(field('limits'))};return route.fulfill({json:{ok:true,message:copy.saved,data:{options:workspaceOptions}}});}
+        if(field('operation')==='card_work'){cardWork={version:cardWork.version+1,assignee:{id:Number(field('assignee_id')),name:'Board member 1'},due_at:field('work_due_local'),dependencies:JSON.parse(field('dependency_ids')).map(id=>({id}))};return route.fulfill({json:{ok:true,message:copy.saved,data:{work:cardWork}}});}
         if(field('operation')==='bulk'){const results=JSON.parse(field('items')).map((item,index)=>{if(index)return {id:item.post_id,ok:false,message:copy.locked,status:423};const card=source.find(row=>row.id===item.post_id);source=source.filter(row=>row.id!==item.post_id);target.push({...card,state:item.state});return {id:item.post_id,ok:true,message:copy.moved,status:200};});return route.fulfill({json:{ok:true,message:copy.bulk_done,data:{results}}});}
         const id=Number(field('post_id'));const before=Number(field('before_id'));
         const card=[...source,...target].find(c=>c.id===id);
@@ -62,7 +79,7 @@ async function fixture(page, locale = 'en') {
         let index=list.findIndex(c=>c.id===before);if(index<0)index=list.length;list.splice(index,0,card);
         await route.fulfill({json:{ok:true,message:copy.moved,data:{id}}});
     });
-    return {copy,live:value=>realtimeEnabled=value, customBoard:version=>{customVersion=version;},failSettings: value=>failSettings=value,requireDue: value=>requiresDue=value,delayPreview: value=>previewDelay=value,delayPage: value=>pageDelay=value,seedTarget: count=>target=Array.from({length:count},(_,i)=>({id:101+i,title:`Review ${i+1}`,author:'Board author',updated_at:'2026/11/10',version:1,revision_id:101+i,state:'review'}))};
+    return {copy,live:value=>realtimeEnabled=value, customBoard:version=>{customVersion=version;},memberCount:value=>memberCount=value,failSettings: value=>failSettings=value,requireDue: value=>requiresDue=value,delayPreview: value=>previewDelay=value,seedCardWork:()=>{source[0]={...source[0],assignee:{id:1,name:'Board member 1'},scheduled_at:'2026/11/20',due_at:'2026/11/18',dependency_count:2};},seedTarget: count=>target=Array.from({length:count},(_,i)=>({id:101+i,title:`Review ${i+1}`,author:'Board author',updated_at:'2026/11/10',version:1,revision_id:101+i,state:'review'}))};
 }
 
 for(const locale of ['en','fa']) for(const mobile of [false,true]) {
@@ -94,8 +111,9 @@ for(const locale of ['en','fa']) for(const mobile of [false,true]) {
         await expect(page.locator('.kb-details[open]')).toBeVisible();
         await expect(page.frameLocator('.kb-details iframe').locator('input')).toHaveValue('Unchanged');
         await page.frameLocator('.kb-details iframe').locator('input').fill('Unsaved');
-        page.once('dialog',dialog=>dialog.dismiss());
         await page.locator('.kb-details[open]>header button').click();
+        await expect(page.locator('.kb-discard-dialog[open]')).toBeVisible();
+        await page.locator('.kb-discard-dialog .rf-btn--secondary').click();
         await expect(page.locator('.kb-details[open]')).toBeVisible();
         await page.frameLocator('.kb-details iframe').locator('#save').click();
         await page.locator('.kb-details[open]>header button').click();
@@ -105,6 +123,66 @@ for(const locale of ['en','fa']) for(const mobile of [false,true]) {
         expect(errors).toEqual([]);
     });
 }
+
+for(const locale of ['en','fa']) test(`card work and discussion stay in separate tabs with themed discard confirmation ${locale}`,async({page})=>{
+    const {copy}=await fixture(page,locale);
+    let nativePrompts=0;page.on('dialog',dialog=>{nativePrompts++;dialog.dismiss();});
+    await page.goto('/admin/posts/post/kanban');
+    await page.locator('[data-kanban-card="1"] .kb-card-title').click();
+    await page.locator('.kb-details[open]>header button').click();
+    await expect(page.locator('.kb-details[open],.kb-discard-dialog[open]')).toHaveCount(0);
+    await page.locator('[data-kanban-card="1"] .kb-card-title').click();
+    await expect(page.locator('#kb-detail-panel-discussion')).toBeVisible();
+    await expect(page.locator('#kb-detail-panel-work')).toBeHidden();
+    await page.locator('.kb-detail-collapse').click();
+    await expect(page.locator('#kb-detail-panel-discussion')).toBeHidden();
+    await page.locator('.kb-detail-collapse').click();
+    await expect(page.locator('#kb-detail-panel-discussion')).toBeVisible();
+    await page.locator('#kb-comment-body').fill('Draft comment');
+    await page.locator('.rf-header__back').click();
+    await expect(page.locator('.kb-discard-dialog[open]')).toBeVisible();
+    await page.locator('.kb-discard-dialog .rf-btn--secondary').click();
+    await expect(page.locator('.kb-details[open]')).toBeVisible();
+    await page.locator('.kb-details[open]>header button').click();
+    await expect(page.locator('.kb-discard-dialog[open]')).toContainText(copy.unsaved);
+    await page.locator('.kb-discard-dialog .rf-btn--secondary').click();
+    await expect(page.locator('.kb-details[open]')).toBeVisible();
+    await page.locator('.kb-details[open]>header button').click();
+    await page.locator('.kb-discard-dialog .rf-btn--danger').click();
+    await expect(page.locator('.kb-details[open]')).toHaveCount(0);
+    expect(nativePrompts).toBe(0);
+});
+
+test('card work uses two clean columns and notifications toggle from the header gear',async({page})=>{
+    const {copy}=await fixture(page,'en');
+    await page.goto('/admin/posts/post/kanban');
+    await page.locator('[data-kanban-card="1"] .kb-card-title').click();
+    await page.locator('#kb-detail-tab-work').click();
+    await expect(page.locator('.kb-work-column')).toHaveCount(2);
+    await expect(page.locator('.kb-work-column').first()).toContainText(copy.assignee);
+    await expect(page.locator('.kb-work-column').last()).toContainText(copy.dependencies);
+    await page.locator('.kb-details[open]>header button').click();
+    await page.locator('.kb-notification-trigger').click();
+    await expect(page.locator('.kb-notifications')).toBeVisible();
+    await page.locator('.kb-notification-settings-trigger').click();
+    await expect(page.locator('.kb-notification-preferences form')).toBeVisible();
+    await page.locator('.kb-notification-settings-trigger').click();
+    await expect(page.locator('.kb-notifications')).toBeVisible();
+});
+
+test('clearing a saved grouping survives a full board reload',async({page})=>{
+    await fixture(page,'en');
+    await page.goto('/admin/posts/post/kanban');
+    await page.locator('.kb-group-trigger').click();
+    await page.locator('.kb-group-choices input[value=author]').check();
+    await expect(page.locator('.kb-lane-title')).toContainText('Board author');
+    await page.locator('.kb-group-trigger').click();
+    await page.locator('.kb-group-choices input[value=none]').check();
+    await expect(page.locator('.kb-lane-title')).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator('.kb-group-trigger')).not.toHaveClass(/is-active/);
+    await expect(page.locator('.kb-lane-title')).toHaveCount(0);
+});
 
 test('Kanban drag highlights authorized and uncertain destinations, then persists transition and order', async({page})=>{
     await fixture(page);
@@ -232,6 +310,42 @@ test('native card targets support cross-column insertion and same-column order',
     await expect(page.locator('[data-kanban-column="review"] .kb-card').nth(1)).toHaveAttribute('data-kanban-card','1');
     await page.locator('[data-kanban-card="2"]').dragTo(page.locator('[data-kanban-card="4"]'),{targetPosition:{x:90,y:25}});
     await expect(page.locator('[data-kanban-column="draft"] .kb-card').nth(1)).toHaveAttribute('data-kanban-card','2');
+});
+
+test('reorder placeholder stays at the start while dragging across its gap', async({page})=>{
+    await fixture(page);
+    await page.goto('/admin/posts/post/kanban');
+    const source=page.locator('[data-kanban-column="draft"] [data-kanban-card="2"]');
+    const first=page.locator('[data-kanban-column="draft"] [data-kanban-card="1"]');
+    const body=page.locator('[data-kanban-column="draft"] .kb-column-body');
+    const point=await first.evaluate(element=>{const rect=element.getBoundingClientRect();return {clientX:rect.left+20,clientY:rect.top+4};});
+    const transfer=await page.evaluateHandle(()=>new DataTransfer());
+    await source.dispatchEvent('dragstart',{dataTransfer:transfer});
+    await first.dispatchEvent('dragover',{...point,dataTransfer:transfer});
+    for(let index=0;index<6;index++){
+        await body.dispatchEvent('dragover',{...point,dataTransfer:transfer});
+        await expect(page.locator('[data-kanban-column="draft"] .kb-placeholder + [data-kanban-card="1"]')).toHaveCount(1);
+    }
+    await source.dispatchEvent('dragend',{dataTransfer:transfer});
+    await expect(page.locator('[data-kanban-column="draft"] .kb-card-checkbox:checked')).toHaveCount(0);
+});
+
+for(const locale of ['en','fa'])test(`new card details can be hidden and saved in ${locale}`,async({page})=>{
+    const controls=await fixture(page,locale);controls.seedCardWork();
+    await page.goto('/admin/posts/post/kanban');
+    const card=page.locator('[data-kanban-card="1"]');
+    await expect(card.locator('.kb-card-assignee')).toHaveCount(1);
+    await expect(card.locator('.kb-card-signals')).toContainText('2026/11/20');
+    await expect(card.locator('.kb-card-work-signals')).toContainText('2026/11/18');
+    const documentId=await page.evaluate(()=>performance.timeOrigin);
+    await page.getByRole('button',{name:controls.copy.settings,exact:true}).click();
+    for(const key of ['assignee','scheduled','deadline','dependencies'])await page.getByRole('checkbox',{name:controls.copy[`field_${key}`]}).uncheck();
+    await page.locator('.kb-settings[open] button[type=submit]').click();
+    await expect(card.locator('.kb-card-assignee,.kb-card-work-signals')).toHaveCount(0);
+    await expect(card.locator('.kb-card-signals')).not.toContainText('2026/11/20');
+    expect(await page.evaluate(()=>performance.timeOrigin)).toBe(documentId);
+    await page.getByRole('button',{name:controls.copy.settings,exact:true}).click();
+    for(const key of ['assignee','scheduled','deadline','dependencies'])await expect(page.getByRole('checkbox',{name:controls.copy[`field_${key}`]})).not.toBeChecked();
 });
 
 for (const locale of ['en','fa']) for (const mobile of [false,true]) {
@@ -499,17 +613,18 @@ for(const locale of ['en','fa'])for(const mobile of [false,true])test(`workspace
     expect(errors).toEqual([]);
 });
 
-test('Reverb invalidations refresh idle boards and defer while a dialog is open',async({page})=>{
+test('Reverb invalidations refresh idle boards and open dialogs automatically',async({page})=>{
     const controls=await fixture(page);controls.live(true);let socket;
     await page.route('**/fixture-broadcast-auth',route=>route.fulfill({json:{auth:'fixture-key:fixture-signature'}}));
     await page.routeWebSocket('ws://127.0.0.1:5185/**',ws=>{socket=ws;ws.send(JSON.stringify({event:'pusher:connection_established',data:JSON.stringify({socket_id:'123.456',activity_timeout:30})}));ws.onMessage(message=>{const event=JSON.parse(message);if(event.event==='pusher:subscribe')ws.send(JSON.stringify({event:'pusher_internal:subscription_succeeded',channel:'private-jobic.kanban.post',data:'{}'}));});});
     await page.goto('/admin/posts/post/kanban');await expect(page.locator('.kb-live-status')).toHaveClass(/is-connected/);
     controls.seedTarget(1);socket.send(JSON.stringify({event:'kanban.invalidated',channel:'private-jobic.kanban.post',data:'[]'}));
     await expect(page.locator('[data-kanban-column="review"] .kb-card')).toHaveCount(1);
-    await page.locator('.rf-settings-trigger').click();controls.seedTarget(2);socket.send(JSON.stringify({event:'kanban.invalidated',channel:'private-jobic.kanban.post',data:'[]'}));
-    await expect(page.locator('.kb-refresh-pending')).toBeAttached();await page.waitForTimeout(850);
-    await expect(page.locator('[data-kanban-column="review"] .kb-card')).toHaveCount(1);
-    await page.locator('.rf-settings-dialog[open] .rf-mapping__close').click();await expect(page.locator('[data-kanban-column="review"] .kb-card')).toHaveCount(2);
+    await page.locator('.rf-settings-trigger').click();await page.locator('#kb-page-size').selectOption('10',{force:true});controls.seedTarget(2);socket.send(JSON.stringify({event:'kanban.invalidated',channel:'private-jobic.kanban.post',data:'[]'}));
+    await expect(page.locator('.kb-refresh-pending')).toHaveCount(0);
+    await expect(page.locator('[data-kanban-column="review"] .kb-card')).toHaveCount(2);
+    await expect(page.locator('#kb-page-size')).toHaveValue('10');
+    await page.locator('.rf-settings-dialog[open] .rf-mapping__close').click();
 });
 
 for(const locale of ['en','fa'])for(const width of [320,390,768,1440])test(`one Kanban header and accessible settings ${locale} ${width}`,async({page})=>{
@@ -560,4 +675,132 @@ for(const locale of ['en','fa'])test(`Kanban compact dialogs, quick filter toolt
     expect(await page.locator('.kb-filter-value .select2-selection--multiple').evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
     if(locale==='fa')await page.screenshot({path:'test-results/kanban-filters-fa-390.png'});
     await expect(page.locator('.kb-board-filters .rf-settings-dialog__foot')).not.toContainText(copy.cancel);
+});
+
+for(const locale of ['en','fa'])for(const mobile of [false,true])test(`Kanban member avatars and paged dialog ${locale} ${mobile?'mobile':'desktop'}`,async({page})=>{
+    await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:900});
+    const controls=await fixture(page,locale);const {copy}=controls;controls.memberCount(23);
+    await page.goto('/admin/posts/post/kanban');
+    await expect(page.locator('.kb-member-avatar')).toHaveCount(4);
+    await expect(page.locator('.kb-member-more')).toBeVisible();
+    await page.locator('.kb-member-avatar').first().hover();
+    expect(await page.locator('.kb-member-avatar').first().evaluate(element=>getComputedStyle(element,'::after').visibility)).toBe('visible');
+    await page.locator('.kb-member-more').click();
+    await expect(page.locator('.kb-members-dialog[open]')).toBeVisible();
+    await expect(page.locator('.kb-members-row')).toHaveCount(20);
+    await expect(page.locator('.kb-members-row').first()).toContainText('Editorial');
+    await page.locator('.kb-members-load-more').click();
+    await expect(page.locator('.kb-members-row')).toHaveCount(23);
+    await page.locator('.kb-members-search input').fill('member 21');
+    await expect(page.locator('.kb-members-row')).toHaveCount(1);
+    await expect(page.locator('.kb-members-row')).toContainText('Board member 21');
+    await page.locator('.kb-members-search input').fill('');
+    await page.locator('.kb-members-role-menu summary').click();
+    await page.locator('.kb-members-role-options button').filter({hasText:'Review'}).click();
+    await expect(page.locator('.kb-members-row')).toHaveCount(11);
+    await page.locator('.kb-members-sort button').filter({hasText:copy.member_sort_cards}).click();
+    await expect(page.locator('.kb-members-row').first().locator('.kb-members-card-count strong')).toHaveText(new Intl.NumberFormat(locale).format(2));
+    await page.locator('.kb-members-dialog-head button').click();
+    await expect(page.locator('.kb-member-more')).toBeFocused();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    if(locale==='fa'&&mobile)await page.screenshot({path:'test-results/kanban-members-fa-mobile.png'});
+});
+
+test('member card action filters assignments and can be cleared without navigation',async({page})=>{
+    await fixture(page,'en');
+    await page.goto('/admin/posts/post/kanban');
+    const documentId=await page.evaluate(()=>performance.timeOrigin);
+    await page.locator('.kb-member-more').click();
+    const assigned=page.waitForRequest(request=>request.url().includes('assignee_id=1'));
+    await page.locator('.kb-members-row .kb-members-card-count').first().click();
+    await assigned;
+    await expect(page.locator('.kb-assignee-filter')).toBeVisible();
+    await page.locator('.kb-assignee-filter').click();
+    await expect(page.locator('.kb-assignee-filter')).toHaveCount(0);
+    expect(await page.evaluate(()=>performance.timeOrigin)).toBe(documentId);
+});
+
+for(const locale of ['en','fa'])for(const mobile of [false,true])test(`Kanban planning tools ${locale} ${mobile?'mobile':'desktop'}`,async({page})=>{
+    await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:900});
+    const {copy}=await fixture(page,locale);
+    await page.goto('/admin/posts/post/kanban');
+    const documentId=await page.evaluate(()=>performance.timeOrigin);
+    await page.getByRole('button',{name:copy.my_work}).click();
+    await expect(page.getByRole('button',{name:copy.my_work})).toHaveAttribute('aria-pressed','true');
+    await page.getByRole('button',{name:copy.calendar}).click();
+    await expect(page.locator('.kb-calendar-day')).toHaveCount(1);
+    await expect(page.locator('.kb-calendar-day button')).toContainText('Article 1');
+    await expect(page.locator('.kb-calendar-day.is-today')).toHaveCount(1);
+    await page.locator('.kb-calendar-view-switch button').last().click();
+    await expect(page.locator('.kb-calendar-table tbody tr')).toHaveCount(1);
+    await expect(page.locator('.kb-calendar-table')).toContainText('Article 1');
+    await page.locator('.kb-calendar-view-switch button').first().click();
+    if(locale==='en'&&!mobile)await page.screenshot({path:'test-results/kanban-calendar-redesign.png'});
+    await page.locator('.kb-calendar-head-month button').last().click();
+    await expect(page.locator('.kb-calendar-head-month strong')).toContainText('12');
+    await page.locator('.kb-calendar-dialog .rf-mapping__close').click();
+    await page.getByRole('button',{name:copy.insights}).click();
+    await expect(page.locator('.kb-insights-list')).toContainText('Draft');
+    if(locale==='en'&&!mobile)await page.screenshot({path:'test-results/kanban-insights-redesign.png'});
+    await page.locator('.kb-feature-dialog .rf-mapping__close').last().click();
+    await page.locator('.kb-card-title').first().click();
+    await page.locator('.kb-work-panel summary').click();
+    if(locale==='en'&&!mobile)await page.screenshot({path:'test-results/kanban-card-work-redesign.png'});
+    await page.locator('#kb-assignee-search').fill('Board member 1');
+    await page.locator('.kb-work-options button').filter({hasText:'Board member 1'}).click();
+    await page.locator('#kb-work-due').click();
+    await page.locator('#kb-work-date-input').fill('2026/11/20 12:00');
+    await page.getByRole('button',{name:copy.apply_deadline}).click();
+    const dependencyTitle=locale==='fa'?'محتوای نمونه 2':'Article 2';
+    await page.locator('#kb-dependency-search').fill(dependencyTitle);
+    await page.locator('.kb-dependency-results button').filter({hasText:dependencyTitle}).click();
+    await page.locator('.kb-work-panel button[type=submit]').click();
+    await expect(page.locator('.kb-work-panel')).toContainText('Board member 1');
+    if(mobile)expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    expect(await page.evaluate(()=>performance.timeOrigin)).toBe(documentId);
+});
+
+for(const locale of ['en','fa'])test(`editorial deadline opens the shared ${locale} calendar inside card details`,async({page})=>{
+    const {copy}=await fixture(page,locale,true);
+    await page.goto('/admin/posts/post/kanban');
+    await page.locator('.kb-card-title').first().click();
+    await page.locator('.kb-work-panel summary').click();
+    await page.getByRole('button',{name:copy.choose_deadline}).click();
+    await expect(page.locator('.kb-work-date-dialog[open]')).toBeVisible();
+    await expect(page.locator('.kb-work-date-picker #ui-datepicker-div')).toBeVisible();
+    await expect(page.locator('.kb-work-date-picker .ui-datepicker-month')).toBeVisible();
+    await expect(page.locator('.kb-work-date-picker .ui-datepicker-year')).toBeVisible();
+    const month=page.locator('.kb-work-date-picker .ui-datepicker-month');
+    const nextMonth=await month.evaluate(select=>select.options[select.selectedIndex===0?1:0]?.value);
+    await month.selectOption(nextMonth);
+    await expect(page.locator('.kb-work-date-picker .ui-datepicker-month')).toHaveValue(nextMonth);
+    await page.locator('#kb-work-date-input').fill(locale==='fa'?'۱۴۰۵/۰۱/۰۱ ۱۲:۳۴':'2026/03/21 12:34');
+    await page.getByRole('button',{name:copy.apply_deadline}).click();
+    await expect(page.locator('.kb-work-date-dialog')).not.toBeVisible();
+    await expect(page.locator('#kb-work-due')).toContainText(locale==='fa'?'۱۴۰۵/۰۱/۰۱':'2026/03/21');
+});
+
+test('card selection appears on hover and stays visible after selection',async({page})=>{
+    await fixture(page,'en');
+    await page.goto('/admin/posts/post/kanban');
+    const card=page.locator('.kb-card').first();
+    const checkbox=card.locator('.kb-card-checkbox');
+    await expect(checkbox).toHaveCSS('opacity','0');
+    await card.hover();
+    await expect(checkbox).toHaveCSS('opacity','1');
+    await checkbox.check();
+    await page.locator('.kb-header').hover();
+    await expect(checkbox).toHaveCSS('opacity','1');
+    await expect(card).toHaveClass(/is-selected/);
+});
+
+test('Kanban planning controls translate in the current document',async({page})=>{
+    await fixture(page,'en');
+    await page.goto('/admin/posts/post/kanban');
+    const persian=copyFor('fa');
+    await page.evaluate(copy=>{const element=document.getElementById('jobic-page-data');const data=JSON.parse(element.textContent);data.kanban.copy=copy;element.textContent=JSON.stringify(data);document.documentElement.lang='fa';document.documentElement.dir='rtl';window.dispatchEvent(new CustomEvent('cms:presentation-refreshed',{detail:{locale:'fa'}}));},persian);
+    await expect(page.getByRole('button',{name:persian.my_work})).toBeVisible();
+    await expect(page.locator('.kb-save-view,.kb-saved-view-list')).toHaveCount(0);
+    await expect(page.getByRole('button',{name:persian.calendar})).toBeVisible();
+    await expect(page.getByRole('button',{name:persian.insights})).toBeVisible();
 });

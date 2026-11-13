@@ -32,4 +32,5 @@ return [
     'jobic_posts_kanban_boards_saving' => ['group'=>'بردهای کانبان', 'title'=>'ذخیرهٔ برد', 'description'=>'مرز همگام مدیریت برد پس از اعتبارسنجی.'],
     'jobic_posts_kanban_boards_deleting' => ['group'=>'بردهای کانبان', 'title'=>'حذف برد', 'description'=>'مرز همگام مدیریت برد پس از اعتبارسنجی.'],
     'jobic_posts_kanban_limits_saving' => ['group'=>'Kanban', 'title'=>'پیش از ذخیره ظرفیت ستون‌ها', 'description'=>'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند ذخیره را متوقف کند.'],
+    'jobic_posts_kanban_card_work_saving' => ['group'=>'کانبان محتوا', 'title'=>'پیش از ذخیرهٔ اطلاعات کارت', 'description'=>'مرز اعتبارسنجی‌شدهٔ مسئول، موعد و وابستگی کارت.'],
 ];

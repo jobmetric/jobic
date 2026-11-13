@@ -1,12 +1,12 @@
 // Preserve edits across failed requests and AJAX preference changes.
-export function guardUnsaved(form, confirmLeave, {normalizeValue = (name,value) => value} = {}) {
+export function guardUnsaved(form, confirmLeave, {normalizeValue = (name,value) => value, beforeUnload = true} = {}) {
     const snapshot = () => JSON.stringify([...new FormData(form)].filter(([key]) => !['_token', '_method', '_version', '_edit_lock', 'intent'].includes(key)).map(([key,value])=>[key,normalizeValue(key,value)]));
     let baseline = snapshot();
     let leaving = false;
     let prompting = false;
     const dirty = () => !leaving && !form.hasAttribute('data-readonly') && baseline !== snapshot();
     window.addEventListener('beforeunload', event => {
-        if (leaving || (!dirty() && !form.dataset.saving)) return;
+        if (!beforeUnload || leaving || (!dirty() && !form.dataset.saving)) return;
         event.preventDefault(); event.returnValue = '';
     });
     document.addEventListener('click', async event => {

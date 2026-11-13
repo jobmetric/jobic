@@ -56,7 +56,7 @@ final readonly class EnsurePostPermission
                 return $next($request);
             }
             if ($custom) app(\App\Services\Posts\ContentBoards::class)->accessible($type,(int)$request->route('board'),$request->user());
-            if ($request->isMethod('POST') && $request->input('operation') !== 'settings') {
+            if ($request->isMethod('POST') && ! in_array($request->input('operation'), ['settings', 'comment', 'notification_read', 'notification_preferences'], true)) {
                 abort_unless($this->access->allows($request->user(), app(PostWorkflowPermissions::class)->for($type)['manage']), 403);
             }
             $this->authorizeRecord($request, $type);

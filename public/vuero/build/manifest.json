@@ -3,11 +3,11 @@
     "file": "assets/WorkflowToast-4c455428.css",
     "src": "WorkflowToast.css"
   },
-  "_WorkflowToast-e2bbb3e8.js": {
+  "_WorkflowToast-ea06635a.js": {
     "css": [
       "assets/WorkflowToast-4c455428.css"
     ],
-    "file": "assets/WorkflowToast-e2bbb3e8.js",
+    "file": "assets/WorkflowToast-ea06635a.js",
     "imports": [
       "_icons-f22f49e9.js",
       "_selects-9c73cec7.js",
@@ -74,15 +74,15 @@
       "_form-layout-runtime-df83fa2c.js"
     ]
   },
-  "_history-44eebc49.js": {
-    "file": "assets/history-44eebc49.js",
+  "_history-63738adb.js": {
+    "file": "assets/history-63738adb.js"
+  },
+  "_history-f5feac78.js": {
+    "file": "assets/history-f5feac78.js",
     "imports": [
       "_shared-e23d1b01.js",
-      "_history-7ae2bba1.js"
+      "_history-63738adb.js"
     ]
-  },
-  "_history-7ae2bba1.js": {
-    "file": "assets/history-7ae2bba1.js"
   },
   "_icons-f22f49e9.js": {
     "file": "assets/icons-f22f49e9.js"
@@ -394,14 +394,14 @@
       "assets/kanban-boards-fa1743e1.css",
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/board-form-5d990a3b.js",
+    "file": "assets/board-form-5dff6e1e.js",
     "imports": [
       "_page-1cca34fb.js",
       "_settings-25b93569.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
-      "_history-44eebc49.js",
-      "_history-7ae2bba1.js",
+      "_history-f5feac78.js",
+      "_history-63738adb.js",
       "_shared-33b8445a.js",
       "_icons-f22f49e9.js",
       "_shared-e23d1b01.js"
@@ -427,22 +427,23 @@
     "src": "resources/js/kanban/boards.js"
   },
   "resources/js/kanban/index.css": {
-    "file": "assets/index-87ee857b.css",
+    "file": "assets/index-a5c50ae7.css",
     "src": "resources/js/kanban/index.css"
   },
   "resources/js/kanban/index.js": {
     "css": [
-      "assets/index-87ee857b.css"
+      "assets/index-a5c50ae7.css"
     ],
-    "file": "assets/index-d54fdae7.js",
+    "file": "assets/index-81b31b82.js",
     "imports": [
-      "_WorkflowToast-e2bbb3e8.js",
+      "_WorkflowToast-ea06635a.js",
       "_page-1cca34fb.js",
       "_settings-25b93569.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_apexcharts-e66b3859.js",
-      "_icons-f22f49e9.js"
+      "_icons-f22f49e9.js",
+      "_jquery-83fec99f.js"
     ],
     "isEntry": true,
     "src": "resources/js/kanban/index.js"
@@ -451,13 +452,13 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-8a76ceb4.js",
+    "file": "assets/form-de2ddf64.js",
     "imports": [
       "_shared-33b8445a.js",
       "_page-1cca34fb.js",
       "_settings-25b93569.js",
       "_toast-bc3a4876.js",
-      "_history-7ae2bba1.js",
+      "_history-63738adb.js",
       "_icons-f22f49e9.js"
     ],
     "isEntry": true,
@@ -569,19 +570,19 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-39400be1.js",
+    "file": "assets/form-368256ab.js",
     "imports": [
       "resources/js/posts/editor-runtime.js",
       "resources/js/posts/editor-workbench.js",
       "_toast-bc3a4876.js",
-      "_history-7ae2bba1.js",
+      "_history-63738adb.js",
       "_page-1cca34fb.js",
       "_settings-25b93569.js",
       "_shared-e23d1b01.js",
       "_media-manager-e3dd67da.js",
       "_icons-f22f49e9.js",
       "_selects-9c73cec7.js",
-      "_history-44eebc49.js",
+      "_history-f5feac78.js",
       "_jquery-83fec99f.js",
       "_preload-helper-cf779743.js",
       "_editor-tool-settings-fae2e84f.js"
@@ -617,13 +618,13 @@
       "assets/crud-fields-e2001d2c.css",
       "assets/roles-28074802.css"
     ],
-    "file": "assets/form-77a09979.js",
+    "file": "assets/form-c7d85693.js",
     "imports": [
       "_shared-53a39e7c.js",
       "_page-1cca34fb.js",
       "_settings-25b93569.js",
       "_toast-bc3a4876.js",
-      "_history-7ae2bba1.js",
+      "_history-63738adb.js",
       "_selects-9c73cec7.js",
       "_icons-f22f49e9.js"
     ],
@@ -659,14 +660,14 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-3378c844.js",
+    "file": "assets/form-d408d722.js",
     "imports": [
       "_shared-e23d1b01.js",
       "_page-1cca34fb.js",
       "_settings-25b93569.js",
       "_toast-bc3a4876.js",
-      "_history-7ae2bba1.js",
-      "_history-44eebc49.js",
+      "_history-63738adb.js",
+      "_history-f5feac78.js",
       "_media-manager-e3dd67da.js",
       "_icons-f22f49e9.js",
       "_preload-helper-cf779743.js"
@@ -694,13 +695,13 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-8bfdf327.js",
+    "file": "assets/form-225a1440.js",
     "imports": [
       "_shared-b83b863c.js",
       "_page-1cca34fb.js",
       "_settings-25b93569.js",
       "_toast-bc3a4876.js",
-      "_history-7ae2bba1.js",
+      "_history-63738adb.js",
       "_icons-f22f49e9.js"
     ],
     "isEntry": true,
@@ -1685,9 +1686,9 @@
     "css": [
       "assets/index-9def9e4b.css"
     ],
-    "file": "assets/index-7011bcf2.js",
+    "file": "assets/index-cfbfd6ed.js",
     "imports": [
-      "_WorkflowToast-e2bbb3e8.js",
+      "_WorkflowToast-ea06635a.js",
       "_selects-9c73cec7.js",
       "_page-1cca34fb.js",
       "_toast-bc3a4876.js",

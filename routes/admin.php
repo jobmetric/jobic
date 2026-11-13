@@ -39,9 +39,17 @@ Route::middleware([
         Route::delete('kanban/boards/{board}', [\App\Http\Controllers\Posts\ContentBoardController::class, 'destroy'])->whereNumber('board')->middleware('throttle:30,1')->name('kanban.boards.destroy');
         Route::get('kanban/boards/{board}', [\App\Http\Controllers\Posts\KanbanController::class, 'index'])->whereNumber('board')->name('kanban.board');
         Route::get('kanban/boards/{board}/data', [\App\Http\Controllers\Posts\KanbanController::class, 'data'])->whereNumber('board')->name('kanban.board.data');
+        Route::get('kanban/boards/{board}/members', [\App\Http\Controllers\Posts\KanbanController::class, 'members'])->whereNumber('board')->name('kanban.board.members');
+        Route::get('kanban/boards/{board}/calendar', [\App\Http\Controllers\Posts\KanbanController::class, 'calendar'])->whereNumber('board')->name('kanban.board.calendar');
+        Route::get('kanban/boards/{board}/insights', [\App\Http\Controllers\Posts\KanbanController::class, 'insights'])->whereNumber('board')->name('kanban.board.insights');
+        Route::get('kanban/boards/{board}/notifications', [\App\Http\Controllers\Posts\KanbanController::class, 'notifications'])->whereNumber('board')->name('kanban.board.notifications');
         Route::get('kanban/boards/{board}/posts/{post}', [\App\Http\Controllers\Posts\KanbanController::class, 'details'])->whereNumber(['board','post'])->name('kanban.board.details');
         Route::post('kanban/boards/{board}/command', [\App\Http\Controllers\Posts\KanbanController::class, 'command'])->whereNumber('board')->middleware('throttle:60,1')->name('kanban.board.command');
         Route::get('kanban/data', [\App\Http\Controllers\Posts\KanbanController::class, 'data'])->name('kanban.data');
+        Route::get('kanban/members', [\App\Http\Controllers\Posts\KanbanController::class, 'members'])->name('kanban.members');
+        Route::get('kanban/calendar', [\App\Http\Controllers\Posts\KanbanController::class, 'calendar'])->name('kanban.calendar');
+        Route::get('kanban/insights', [\App\Http\Controllers\Posts\KanbanController::class, 'insights'])->name('kanban.insights');
+        Route::get('kanban/notifications', [\App\Http\Controllers\Posts\KanbanController::class, 'notifications'])->name('kanban.notifications');
         Route::get('kanban/{post}', [\App\Http\Controllers\Posts\KanbanController::class, 'details'])->whereNumber('post')->name('kanban.details');
         Route::post('kanban/command', [\App\Http\Controllers\Posts\KanbanController::class, 'command'])->middleware('throttle:60,1')->name('kanban.command');
         Route::get('workflow', [WorkflowController::class, 'index'])->name('workflow.index');

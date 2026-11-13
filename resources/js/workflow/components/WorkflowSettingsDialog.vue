@@ -3,7 +3,7 @@ import {nextTick,onMounted,ref,watch} from 'vue';
 import {iconMarkup} from '../../common/icons';
 import {enhanceSelects} from '../../common/selects';
 import '../../../css/workflow-shell.css';
-const props=defineProps({open:Boolean,title:{type:String,required:true},intro:{type:String,default:''},closeLabel:{type:String,required:true},busy:Boolean});
+const props=defineProps({open:Boolean,title:{type:String,required:true},intro:{type:String,default:''},closeLabel:{type:String,required:true},busy:Boolean,icon:{type:String,default:'settings'}});
 const emit=defineEmits(['close']);
 const dialog=ref(null);
 function showModal(){ if(!dialog.value?.open) dialog.value?.showModal(); nextTick(()=>enhanceSelects(dialog.value)); }
@@ -17,8 +17,9 @@ defineExpose({showModal,close});
 <template>
     <dialog ref="dialog" class="rf-settings-dialog" :aria-label="title" @close="emit('close')" @cancel="busy && $event.preventDefault()" @click="backdrop">
         <header class="rf-settings-dialog__head">
-            <span class="rf-settings-dialog__icon" v-html="iconMarkup('settings',20)"/>
+            <span class="rf-settings-dialog__icon" v-html="iconMarkup(props.icon,20)"/>
             <div><h2>{{ title }}</h2><p v-if="intro">{{ intro }}</p></div>
+            <slot name="header-actions" />
             <button type="button" class="rf-mapping__close" :disabled="busy" :aria-label="closeLabel" @click="requestClose"><span v-html="iconMarkup('x',18)"/></button>
         </header>
         <div class="rf-settings-dialog__body"><slot /></div>

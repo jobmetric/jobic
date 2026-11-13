@@ -9,3 +9,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('posts:run-schedules')->everyMinute()->withoutOverlapping();
+Schedule::command('kanban:send-reminders')->hourly()->withoutOverlapping();
+
+Artisan::command('kanban:send-reminders', function (): void {
+    $this->info((string) app(\App\Services\Posts\KanbanNotifications::class)->sendDeadlineReminders());
+})->purpose('Notify assigned board members about upcoming editorial deadlines.');

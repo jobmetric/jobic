@@ -22,14 +22,14 @@ class KanbanTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function setupBoard(array $roles = [], array $tasks = [], array $viewRoles = [], bool $future = false): int
+    private function setupBoard(array $roles = [], array $tasks = [], array $viewRoles = [], bool $future = false, bool $publish = false, bool $approval = false): int
     {
         $this->withoutVite();
         if (!auth()->user()) $this->actingAs(User::factory()->create());
         $service = app(PostWorkflowDefinitions::class);
         $definition = $service->saveDraft('post', ['states' => [
-            ['id' => 'draft', 'name' => 'Draft', 'status' => 'draft', 'is_start' => true, 'is_terminal' => false, 'content_status' => 'editable'],
-            ['id' => 'review', 'name' => 'Review', 'status' => 'review', 'is_start' => false, 'is_terminal' => true, 'content_status' => $future ? 'future' : 'editable', 'view_roles' => $viewRoles],
+            ['id' => 'draft', 'name' => 'Draft', 'status' => 'draft', 'is_start' => true, 'is_terminal' => false, 'content_status' => 'editable', 'allows_approval' => $approval],
+            ['id' => 'review', 'name' => 'Review', 'status' => 'review', 'is_start' => false, 'is_terminal' => true, 'content_status' => $future ? 'future' : ($publish ? 'publish' : 'editable'), 'view_roles' => $viewRoles],
         ], 'transitions' => [['id' => 'send', 'from' => 'draft', 'to' => 'review', 'label' => 'Send', 'slug' => 'send', 'roles' => $roles, 'tasks' => $tasks]]], true, 0, auth()->user());
         $preview = $service->preview('post', $definition->id);
         $service->activate('post', $definition->id, $preview['fingerprint'], [], auth()->user());
@@ -67,6 +67,173 @@ class KanbanTest extends TestCase
         return $this->getJson(route('admin.posts.kanban.board.data',['type'=>'post','board'=>$board->id]+$query+['board_version'=>$board->version]));
     }
 
+    public function test_card_priority_and_shared_color_mode_are_validated_and_visible(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $command = route('admin.posts.kanban.command', ['type' => 'post']);
+        $this->postJson($command, ['operation' => 'card_work', 'post_id' => $post->id, 'meta_version' => 0,
+            'priority' => 'urgent'])->assertOk()->assertJsonPath('data.work.priority', 'urgent');
+        $this->readBoard()->assertOk()->assertJsonPath('data.columns.0.items.0.priority', 'urgent');
+        $this->postJson($command, ['operation' => 'limits', 'options_version' => 0, 'stale_days' => 7,
+            'limits' => [], 'color_mode' => 'priority'])->assertOk()->assertJsonPath('data.options.color_mode', 'priority');
+        $this->postJson($command, ['operation' => 'limits', 'options_version' => 1, 'stale_days' => 7,
+            'limits' => [], 'color_mode' => 'invalid'])->assertUnprocessable();
+        $this->postJson($command, ['operation' => 'card_work', 'post_id' => $post->id, 'meta_version' => 1,
+            'priority' => 'invalid'])->assertUnprocessable();
+    }
+
+    public function test_card_discussion_and_notifications_remain_within_visible_board(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $actor = auth()->user();
+        $other = User::factory()->create();
+        $comment = $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']),
+            ['operation' => 'comment', 'post_id' => $post->id, 'comment_body' => 'Please check this draft.']);
+        $comment->assertOk();
+        $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $post->id]))
+            ->assertOk()->assertJsonPath('data.discussion.items.0.body', 'Please check this draft.');
+        $this->actingAs($other);
+        $this->getJson(route('admin.posts.kanban.notifications', ['type' => 'post']))->assertOk();
+        $this->actingAs($actor);
+    }
+
+    public function test_editorial_review_uses_revision_and_authorized_reviewer(): void
+    {
+        $this->setupBoard(approval: true);
+        $post = $this->postItem();
+        $reviewer = User::factory()->create();
+        $reviewerRole = Role::create(['type' => 'system', 'name' => 'Review member',
+            'allow' => ['admin.content.posts.view', app(\App\Support\PostWorkflowPermissions::class)->for('post')['manage']], 'deny' => []]);
+        $reviewer->assignRole((int) $reviewerRole->id);
+        $stream = PostPublicationStream::where('post_id', $post->id)->where('locale', '*')->firstOrFail();
+        $url = route('admin.posts.kanban.command', ['type' => 'post']);
+        $this->postJson($url, ['operation' => 'request_review', 'post_id' => $post->id,
+            'version' => $stream->version, 'revision_id' => $stream->draft_revision_id,
+            'reviewer_ids' => [$reviewer->id]])->assertOk();
+        $this->assertDatabaseHas('kanban_card_reviews', ['post_id' => $post->id, 'reviewer_id' => $reviewer->id, 'status' => 'pending']);
+        $this->actingAs($reviewer);
+        $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $post->id]))
+            ->assertOk()->assertJsonPath('data.review.can_decide', true);
+        $stream->refresh();
+        $this->postJson($url, ['operation' => 'review_decide', 'post_id' => $post->id,
+            'version' => $stream->version, 'revision_id' => $stream->draft_revision_id,
+            'decision' => 'approve'])->assertOk();
+        $this->assertDatabaseHas('kanban_card_reviews', ['post_id' => $post->id, 'reviewer_id' => $reviewer->id, 'status' => 'approved']);
+    }
+
+    public function test_comment_hook_veto_rolls_back_without_exposing_comment_text(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $seen = [];
+        Hooks::addAction('jobic.posts.kanban.comment.saving', function (array $context) use (&$seen): void {
+            $seen[] = $context;
+            throw new \RuntimeException('No comment');
+        });
+        $this->withoutExceptionHandling();
+        try {
+            $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']),
+                ['operation' => 'comment', 'post_id' => $post->id, 'comment_body' => 'private editorial text']);
+            $this->fail('The hook should veto the comment.');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('No comment', $exception->getMessage());
+        }
+        $this->assertCount(1, $seen);
+        $this->assertArrayNotHasKey('body', $seen[0]);
+        $this->assertDatabaseMissing('kanban_card_comments', ['post_id' => $post->id]);
+    }
+
+    public function test_mentions_create_private_notifications_and_preferences_suppress_new_items(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $recipient = User::factory()->create(['name' => 'Reviewer']);
+        $role = Role::create(['type' => 'system', 'name' => 'Board viewer',
+            'allow' => ['admin.content.posts.view'], 'deny' => []]);
+        $recipient->assignRole((int) $role->id);
+        $command = route('admin.posts.kanban.command', ['type' => 'post']);
+        $this->postJson($command, ['operation' => 'comment', 'post_id' => $post->id,
+            'comment_body' => 'Please review @[Reviewer](user:'.$recipient->id.')'])->assertOk();
+        $this->actingAs($recipient);
+        $feed = $this->getJson(route('admin.posts.kanban.notifications', ['type' => 'post']))
+            ->assertOk()->assertJsonPath('data.unread', 1)->assertJsonPath('data.items.0.kind', 'mention');
+        $this->postJson($command, ['operation' => 'notification_read', 'notification_id' => $feed->json('data.items.0.id')])
+            ->assertOk();
+        $this->postJson($command, ['operation' => 'notification_preferences', 'notification_preferences' => [
+            'mention' => false, 'assignment' => true, 'deadline' => true, 'review_requested' => true, 'review_decided' => true,
+        ]])->assertOk()->assertJsonPath('data.preferences.mention', false);
+        $this->actingAs(User::findOrFail((int) DB::table('kanban_card_comments')->where('post_id', $post->id)->value('user_id')));
+        $this->postJson($command, ['operation' => 'comment', 'post_id' => $post->id,
+            'comment_body' => 'Another @[Reviewer](user:'.$recipient->id.')'])->assertOk();
+        $this->actingAs($recipient);
+        $this->getJson(route('admin.posts.kanban.notifications', ['type' => 'post']))
+            ->assertOk()->assertJsonPath('data.unread', 0)->assertJsonCount(1, 'data.items');
+    }
+
+    public function test_workflow_report_exposes_bounded_flow_and_age_for_visible_cards(): void
+    {
+        $this->setupBoard();
+        $this->postItem();
+        $this->getJson(route('admin.posts.kanban.insights', ['type' => 'post']))
+            ->assertOk()->assertJsonPath('data.states.0.count', 1)
+            ->assertJsonPath('data.states.0.arrived_30d', 0)
+            ->assertJsonPath('data.states.0.departed_30d', 0)
+            ->assertJsonPath('data.states.0.oldest_days', 0);
+    }
+
+    public function test_clearing_grouping_persists_for_the_next_board_open(): void
+    {
+        $this->setupBoard();
+        $actor = auth()->user();
+        $url = route('admin.posts.kanban.command', ['type' => 'post']);
+        $base = ['operation' => 'settings', 'page_size' => 5, 'density' => 'full'];
+        $this->postJson($url, $base + ['group_by' => 'author'])->assertOk();
+        $this->assertSame('author', app(\App\Services\Posts\KanbanWorkspace::class)->preferences('post', null, $actor->fresh())['group_by']);
+        $this->postJson($url, $base + ['group_by' => 'none'])->assertOk();
+        $this->assertSame('none', app(\App\Services\Posts\KanbanWorkspace::class)->preferences('post', null, $actor->fresh())['group_by']);
+    }
+
+    public function test_notification_preference_hooks_are_ordered_and_exclude_values(): void
+    {
+        $this->setupBoard();
+        $order = [];
+        Hooks::addAction('jobic.posts.kanban.notifications.saving', function (array $context) use (&$order): void {
+            $order[] = ['saving', $context];
+        }, 5);
+        Hooks::addAction('jobic.posts.kanban.notifications.saving', function (array $context) use (&$order): void {
+            $order[] = ['saving-later', $context];
+        }, 15);
+        Hooks::addAction('jobic.posts.kanban.notifications.saved', function (array $context) use (&$order): void {
+            $order[] = ['saved', $context];
+        });
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']),
+            ['operation' => 'notification_preferences', 'notification_preferences' => ['mention' => false]])->assertOk();
+        $this->assertSame(['saving', 'saving-later', 'saved'], array_column($order, 0));
+        foreach ($order as [, $context]) {
+            $this->assertSame(['user_id' => (int) auth()->id()], $context);
+        }
+    }
+
+    public function test_review_request_respects_another_editors_lease(): void
+    {
+        $this->setupBoard(approval: true);
+        $post = $this->postItem();
+        $other = User::factory()->create();
+        $role = Role::create(['type' => 'system', 'name' => 'Lease reviewer', 'allow' => [
+            'admin.content.posts.view', app(\App\Support\PostWorkflowPermissions::class)->for('post')['manage'],
+        ], 'deny' => []]);
+        $other->assignRole((int) $role->id);
+        app(TaxonomyEditLocks::class)->acquire('posts:post', (int) $post->id, $other);
+        $stream = PostPublicationStream::where('post_id', $post->id)->where('locale', '*')->firstOrFail();
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), [
+            'operation' => 'request_review', 'post_id' => $post->id, 'version' => $stream->version,
+            'revision_id' => $stream->draft_revision_id, 'reviewer_ids' => [$other->id],
+        ])->assertStatus(423);
+        $this->assertDatabaseMissing('kanban_card_reviews', ['post_id' => $post->id]);
+    }
+
     public function test_simple_and_multiple_modes_have_separate_entrypoints_and_preserve_data(): void
     {
         $this->setupBoard(); $board=$this->customBoard();
@@ -91,6 +258,231 @@ class KanbanTest extends TestCase
         $role=Role::create(['type'=>'system','name'=>'Editorial audience']);
         $actor->assignRole((int)$role->id);$board->update(['roles'=>[$role->id]]);
         $this->customRead($board->fresh())->assertOk();
+    }
+
+    public function test_member_directory_respects_board_audience_and_pages_without_private_account_fields(): void
+    {
+        $this->setupBoard();
+        $viewer = Role::create(['type' => 'system', 'name' => 'Viewer', 'allow' => ['admin.content.posts.view'], 'deny' => []]);
+        $audience = Role::create(['type' => 'system', 'name' => 'Audience', 'parent_id' => $viewer->id, 'allow' => ['admin.content.posts.view'], 'deny' => []]);
+        $members = collect(range(1, 22))->map(function ($number) use ($audience): User {
+            $user = User::factory()->create(['name' => "Member {$number}", 'avatar_preset' => 2]);
+            $user->assignRole((int) $audience->id);
+            return $user;
+        });
+        $outsider = User::factory()->create(['name' => 'Outside']);
+        $outsider->assignRole((int) $viewer->id);
+        $board = $this->customBoard(['roles' => [$audience->id]]);
+        $this->actingAs($members->first());
+        $url = route('admin.posts.kanban.board.members', ['type' => 'post', 'board' => $board->id]);
+        $first = $this->getJson($url . '?board_version=1')->assertOk()
+            ->assertJsonPath('data.total', 22)->assertJsonCount(20, 'data.items');
+        $this->assertArrayNotHasKey('email', $first->json('data.items.0'));
+        $this->assertNotNull($first->json('data.items.0.avatar_url'));
+        $first->assertJsonPath('data.items.0.access', 'role')->assertJsonPath('data.items.0.primary_role', 'Audience')
+            ->assertJsonPath('data.items.0.card_count', 0);
+        $cursor = $first->json('data.next_cursor');
+        $second = $this->getJson($url . '?board_version=1&member_cursor=' . $cursor)->assertOk()
+            ->assertJsonCount(2, 'data.items')->assertJsonPath('data.next_cursor', null);
+        $this->assertEmpty(array_intersect(array_column($first->json('data.items'), 'id'), array_column($second->json('data.items'), 'id')));
+        $this->actingAs($outsider);
+        $this->getJson($url . '?board_version=1')->assertForbidden();
+    }
+
+    public function test_member_cards_can_be_filtered_by_role_and_sorted_by_visible_authored_count(): void
+    {
+        $this->setupBoard();
+        $editor = Role::create(['type' => 'system', 'name' => 'Editor', 'allow' => ['admin.content.posts.view'], 'deny' => []]);
+        $reviewer = Role::create(['type' => 'system', 'name' => 'Reviewer', 'allow' => ['admin.content.posts.view'], 'deny' => []]);
+        $first = User::factory()->create(['name' => 'Alice']);
+        $second = User::factory()->create(['name' => 'Bob']);
+        $first->assignRole((int) $editor->id);
+        $second->assignRole((int) $reviewer->id);
+        $board = $this->customBoard(['roles' => [$editor->id, $reviewer->id]]);
+        $this->actingAs($second);
+        $this->postItem('Bob article');
+        $this->actingAs($first);
+        $this->postItem('Alice first');
+        $this->postItem('Alice second');
+        $url = route('admin.posts.kanban.board.members', ['type' => 'post', 'board' => $board->id]);
+        $this->getJson($url . '?board_version=1&member_sort=cards')->assertOk()
+            ->assertJsonPath('data.items.0.name', 'Alice')->assertJsonPath('data.items.0.card_count', 2)
+            ->assertJsonPath('data.items.1.name', 'Bob')->assertJsonPath('data.items.1.card_count', 1);
+        $this->getJson($url . '?board_version=1&member_role=' . $reviewer->id)->assertOk()
+            ->assertJsonPath('data.total', 1)->assertJsonPath('data.items.0.name', 'Bob');
+    }
+
+    public function test_card_work_assignment_deadline_and_dependencies_follow_board_scope(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-12 10:00:00'));
+        $this->setupBoard();
+        $actor = auth()->user();
+        $first = $this->postItem('Assigned card');
+        $dependency = $this->postItem('Required card');
+        $due = now()->addDays(2)->format('Y/m/d H:i');
+        $url = route('admin.posts.kanban.command', ['type' => 'post']);
+        $this->postJson($url, ['operation' => 'card_work', 'post_id' => $first->id, 'meta_version' => 0,
+            'assignee_id' => $actor->id, 'work_due_local' => $due, 'dependency_ids' => [$dependency->id]])
+            ->assertOk()->assertJsonPath('data.work.assignee.id', $actor->id)
+            ->assertJsonPath('data.work.dependencies.0.id', $dependency->id);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/',
+            (string) \Illuminate\Support\Facades\DB::table('kanban_card_meta')->where('post_id', $first->id)->value('due_at'));
+        $this->readBoard(['mine' => 1])->assertOk()->assertJsonPath('data.columns.0.count', 1)
+            ->assertJsonPath('data.columns.0.items.0.id', $first->id);
+        $this->readBoard(['assignee_id' => $actor->id])->assertOk()->assertJsonPath('data.columns.0.count', 1)
+            ->assertJsonPath('data.columns.0.items.0.due_state', null);
+        $this->travel(3)->days();
+        $this->readBoard(['assignee_id' => $actor->id])->assertOk()
+            ->assertJsonPath('data.columns.0.items.0.due_state', 'overdue');
+        $this->travelBack();
+        $this->postJson($url, ['operation' => 'card_work', 'post_id' => $first->id, 'meta_version' => 0,
+            'dependency_ids' => []])->assertStatus(409);
+        $this->postJson($url, ['operation' => 'card_work', 'post_id' => $dependency->id, 'meta_version' => 0,
+            'dependency_ids' => [$first->id]])->assertStatus(422);
+        $this->getJson(route('admin.posts.kanban.insights', ['type' => 'post']))->assertOk()
+            ->assertJsonPath('data.states.0.count', 2);
+        $this->getJson(route('admin.posts.kanban.calendar', ['type' => 'post']))->assertOk()
+            ->assertJsonStructure(['data' => ['today', 'days', 'events']])
+            ->assertJsonPath('data.events.0.kind', 'deadline')
+            ->assertJsonPath('data.events.0.id', $first->id);
+        $this->postJson($url, ['operation' => 'card_work', 'post_id' => $first->id, 'meta_version' => 1,
+            'assignee_id' => null, 'dependency_ids' => '[]'])->assertOk()
+            ->assertJsonPath('data.work.assignee', null)->assertJsonCount(0, 'data.work.dependencies');
+        $this->postJson($url, ['operation' => 'card_work', 'post_id' => $first->id, 'meta_version' => 2,
+            'work_due_local' => now()->subDay()->format('Y/m/d H:i')])->assertOk();
+    }
+
+    public function test_card_deadline_model_roundtrips_active_calendar(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        app()->setLocale('fa');
+        \App\Models\KanbanCardMeta::create(['post_id' => $post->id,
+            'version' => 1, 'due_local' => '۱۴۰۵/۰۱/۰۱ ۱۲:۳۴']);
+        $this->assertSame('2026-03-21', substr((string) \Illuminate\Support\Facades\DB::table('kanban_card_meta')->where('post_id', $post->id)->value('due_at'), 0, 10));
+        $this->assertSame('2026-03-21 12:34:00', (string) \Illuminate\Support\Facades\DB::table('kanban_card_meta')->where('post_id', $post->id)->value('due_at'));
+        $this->assertStringStartsWith('۱۴۰۵/۰۱/۰۱', (string) \App\Models\KanbanCardMeta::findOrFail($post->id)->due_local);
+
+        app()->setLocale('en');
+        $this->assertStringStartsWith('2026/03/21', (string) \App\Models\KanbanCardMeta::findOrFail($post->id)->due_local);
+    }
+
+    public function test_removed_saved_view_command_is_rejected(): void
+    {
+        $this->setupBoard();
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']),
+            ['operation' => 'views', 'saved_views' => []])->assertUnprocessable()->assertJsonValidationErrors('operation');
+    }
+
+    public function test_card_work_respects_foreign_edit_lease_and_veto_hook(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $other = User::factory()->create();
+        $locks = app(TaxonomyEditLocks::class);
+        $lease = $locks->acquire('posts:post', (int) $post->id, $other);
+        $url = route('admin.posts.kanban.command', ['type' => 'post']);
+        $data = ['operation' => 'card_work', 'post_id' => $post->id, 'meta_version' => 0, 'dependency_ids' => []];
+        $this->postJson($url, $data)->assertStatus(423);
+        $locks->release('posts:post', (int) $post->id, (int) $other->id, $lease['lock']['token']);
+        $order = [];
+        Hooks::addAction('jobic.posts.kanban.card_work.saving', function (array $context) use (&$order): void {
+            $order[] = 'first';
+            $this->assertSame(['type', 'post_id', 'user_id', 'operation'], array_keys($context));
+            $this->assertDatabaseCount('kanban_card_meta', 0);
+        }, 5);
+        Hooks::addAction('jobic.posts.kanban.card_work.saving', function () use (&$order): void {
+            $order[] = 'veto';
+            throw \Illuminate\Validation\ValidationException::withMessages(['assignee_id' => 'Vetoed']);
+        }, 10);
+        Hooks::addAction('jobic.posts.kanban.card_work.saved', function () use (&$order): void { $order[] = 'saved'; });
+        $this->postJson($url, $data)->assertStatus(422);
+        $this->assertSame(['first', 'veto'], $order);
+        $this->assertDatabaseCount('kanban_card_meta', 0);
+    }
+
+    public function test_card_work_rejects_assignee_and_dependency_outside_custom_board(): void
+    {
+        $this->setupBoard();
+        $actor = auth()->user();
+        $inside = $this->postItem('Inside');
+        $other = User::factory()->create();
+        $this->actingAs($other);
+        $outside = $this->postItem('Outside');
+        $this->actingAs($actor);
+        $board = $this->customBoard(['users' => [$actor->id], 'filters' => [['driver' => 'author', 'config' => ['ids' => [$actor->id]]]]]);
+        $url = route('admin.posts.kanban.board.command', ['type' => 'post', 'board' => $board->id]);
+        $base = ['operation' => 'card_work', 'board_version' => 1, 'post_id' => $inside->id, 'meta_version' => 0];
+        $this->postJson($url, $base + ['assignee_id' => $other->id])->assertForbidden();
+        $this->postJson($url, $base + ['dependency_ids' => [$outside->id]])->assertNotFound();
+        $this->assertDatabaseCount('kanban_card_meta', 0);
+    }
+
+    public function test_planning_hooks_emit_safe_context_in_order_after_success(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $order = [];
+        Hooks::addAction('jobic.posts.kanban.card_work.saving', function (array $context) use (&$order): void {
+            $order[] = 'work-saving';
+            $this->assertSame(['type', 'post_id', 'user_id', 'operation'], array_keys($context));
+        });
+        Hooks::addAction('jobic.posts.kanban.card_work.saved', function (array $context) use (&$order): void {
+            $order[] = 'work-saved';
+            $this->assertArrayNotHasKey('due_at', $context);
+        });
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']),
+            ['operation' => 'card_work', 'post_id' => $post->id, 'meta_version' => 0])->assertOk();
+        $this->assertSame(['work-saving', 'work-saved'], $order);
+    }
+
+    public function test_publication_waits_for_dependency_and_preview_explains_block(): void
+    {
+        $definition = $this->setupBoard([], [], [], false, true);
+        $dependent = $this->postItem('Dependent');
+        $prerequisite = $this->postItem('Prerequisite');
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), [
+            'operation' => 'card_work', 'post_id' => $dependent->id, 'meta_version' => 0,
+            'dependency_ids' => [$prerequisite->id],
+        ])->assertOk();
+        $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $dependent->id]))
+            ->assertOk()->assertJsonPath('data.destinations.0.status', 'blocked');
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), $this->payload($dependent, $definition))
+            ->assertUnprocessable()->assertJsonValidationErrors('dependency_ids');
+        $this->assertSame('editable', Post::findOrFail($dependent->id)->status);
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), $this->payload($prerequisite, $definition))->assertOk();
+        $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $dependent->id]))
+            ->assertOk()->assertJsonPath('data.destinations.0.status', 'ready');
+        $columns = $this->readBoard()->assertOk()->json('data.columns');
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), array_replace($this->payload($dependent, $definition), [
+            'source_column_version' => $columns[0]['version'], 'column_version' => $columns[1]['version'],
+        ]))->assertOk();
+        $this->assertSame('publish', Post::findOrFail($dependent->id)->status);
+    }
+
+    public function test_scheduled_publication_rolls_back_when_prerequisite_is_unpublished(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-12 10:00:00'));
+        $definition = $this->setupBoard([], [], [], true);
+        $dependent = $this->postItem('Scheduled dependent');
+        $prerequisite = $this->postItem('Unpublished prerequisite');
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), [
+            'operation' => 'card_work', 'post_id' => $dependent->id, 'meta_version' => 0,
+            'dependency_ids' => [$prerequisite->id],
+        ])->assertOk();
+        $payload = $this->payload($dependent, $definition);
+        $payload['due_local'] = now()->addDay()->format('Y/m/d H:i');
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), $payload)->assertOk();
+        $schedule = \JobMetric\Post\Models\PostScheduledAction::query()->where('state', 'pending')->firstOrFail();
+        $this->travelTo(now()->addDays(2));
+        try {
+            app(PostLifecycle::class)->execute((int) $schedule->id);
+            $this->fail('The scheduled release should have been rejected.');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $this->assertArrayHasKey('dependency_ids', $exception->errors());
+        }
+        $this->assertSame('future', Post::findOrFail($dependent->id)->status);
+        $this->assertDatabaseHas(config('post.tables.schedule', 'post_scheduled_actions'), ['id' => $schedule->id, 'state' => 'pending']);
     }
 
     public function test_author_filter_applies_to_counts_pagination_details_and_commands(): void
@@ -370,9 +762,13 @@ class KanbanTest extends TestCase
         $this->actingAs(User::factory()->create());
         $role = Role::create(['type' => 'system', 'name' => 'Private review', 'allow' => [], 'deny' => [], 'is_super' => false]);
         $definition = $this->setupBoard([], [], [(int) $role->id]); $post = $this->postItem();
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), ['operation' => 'card_work',
+            'post_id' => $post->id, 'meta_version' => 0, 'work_due_local' => now()->addDays(2)->format('Y/m/d H:i')])->assertOk();
         $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']), $this->payload($post, $definition))->assertOk();
         $this->readBoard()->assertOk()->assertJsonPath('data.summary.total',0)->assertJsonPath('data.columns.1.restricted', true)->assertJsonPath('data.columns.1.count', null)->assertJsonCount(0, 'data.columns.1.items')->assertJsonPath('data.columns.0.count', 0);
         $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $post->id]))->assertForbidden();
+        $this->getJson(route('admin.posts.kanban.insights', ['type' => 'post']))->assertOk()->assertJsonCount(1, 'data.states');
+        $this->getJson(route('admin.posts.kanban.calendar', ['type' => 'post']))->assertOk()->assertJsonCount(0, 'data.events');
     }
 
     public function test_preflight_checks_content_without_executing_actions(): void
@@ -465,15 +861,20 @@ class KanbanTest extends TestCase
 
     public function test_scheduled_transition_requires_time_and_accepts_calendar_input(): void
     {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-12 10:00:00'));
         $definition = $this->setupBoard([], [], [], true); $post = $this->postItem();
         $this->getJson(route('admin.posts.kanban.details', ['type' => 'post', 'post' => $post->id]))->assertOk()->assertJsonPath('data.destinations.0.requires_due', true);
         $url = route('admin.posts.kanban.command', ['type' => 'post']);
         $payload = $this->payload($post, $definition);
         $this->postJson($url, $payload)->assertUnprocessable()->assertJsonValidationErrors('due_at');
+        $payload['due_local'] = now()->subDay()->format('Y/m/d H:i');
+        $this->postJson($url, $payload)->assertUnprocessable()->assertJsonValidationErrors('due_at');
         $this->assertSame('draft', PostPublicationStream::where('post_id', $post->id)->where('locale', '*')->value('status'));
         $payload['due_local'] = now()->addYear()->format('Y/m/d H:i');
         $this->postJson($url, $payload)->assertOk();
         $this->assertDatabaseHas(config('post.tables.schedule', 'post_scheduled_actions'), ['state' => 'pending']);
+        $this->getJson(route('admin.posts.kanban.calendar', ['type' => 'post', 'calendar_offset' => 12]))
+            ->assertOk()->assertJsonPath('data.events.0.kind', 'publish');
     }
 
     public function test_malformed_legacy_task_configuration_is_rejected_before_conversion(): void
@@ -521,8 +922,16 @@ class KanbanTest extends TestCase
     public function test_workspace_personal_fields_and_capacity_version_validation(): void
     {
         $this->setupBoard();$url=route('admin.posts.kanban.command',['type'=>'post']);
+        $actor=auth()->user();
+        $actor->ui_preferences=['kanban'=>['post'=>['card_fields'=>['author']]]];$actor->save();
+        $this->assertSame(['author','assignee','scheduled','deadline','dependencies'], app(\App\Services\Posts\KanbanWorkspace::class)->preferences('post',null,$actor->fresh())['card_fields']);
         $this->postJson($url,['operation'=>'settings','page_size'=>10,'density'=>'compact','card_fields'=>[],'group_by'=>'author'])->assertOk();
         $this->assertSame([],auth()->user()->fresh()->ui_preferences['kanban']['post']['card_fields']);
+        $this->assertSame(2,auth()->user()->fresh()->ui_preferences['kanban']['post']['card_fields_version']);
+        $this->assertSame([],app(\App\Services\Posts\KanbanWorkspace::class)->preferences('post',null,auth()->user()->fresh())['card_fields']);
+        $this->postJson($url,['operation'=>'settings','page_size'=>5,'card_fields'=>['assignee','scheduled','deadline','dependencies']])->assertOk();
+        $this->assertSame(['assignee','scheduled','deadline','dependencies'],app(\App\Services\Posts\KanbanWorkspace::class)->preferences('post',null,auth()->user()->fresh())['card_fields']);
+        $this->postJson($url,['operation'=>'settings','page_size'=>5,'card_fields'=>['private_note']])->assertUnprocessable()->assertJsonValidationErrors('card_fields.0');
         $payload=['operation'=>'limits','options_version'=>0,'stale_days'=>3,'limits'=>[['state'=>'review','limit'=>1,'mode'=>'enforce']]];
         $this->postJson($url,$payload)->assertOk()->assertJsonPath('data.options.version',1);
         $this->postJson($url,$payload)->assertStatus(409);

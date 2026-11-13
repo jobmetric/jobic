@@ -53,6 +53,7 @@ final class PostTypeDriver implements ApplicationDriver
         }
 
         \JobMetric\Post\Models\PostPublicationStream::updating([\App\Services\Posts\KanbanWorkspace::class,'checkCapacity']);
+        \JobMetric\Post\Models\PostPublicationStream::updating([\App\Services\Posts\KanbanCardWork::class,'blockUnreadyPublication']);
         \JobMetric\Post\Models\PostPublicationStream::saved(static function($stream):void { if($stream->locale==='*')app(\App\Support\KanbanRealtime::class)->changed($stream->post->type); });
         \JobMetric\Post\Models\Post::deleted(static fn($post)=>app(\App\Support\KanbanRealtime::class)->changed($post->type));
         \JobMetric\Post\Models\PostPublicationStream::updated([\App\Services\Posts\Kanban::class, 'streamChanged']);

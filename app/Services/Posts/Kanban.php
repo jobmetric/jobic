@@ -36,6 +36,7 @@ use JobMetric\Post\Services\PostStreamWorkflow;
 use JobMetric\Post\Services\PostWorkflowDefinitions;
 use JobMetric\Post\Services\WorkflowTransitionAccess;
 use JobMetric\Post\Services\WorkflowTransitionPreview;
+use JobMetric\MultiCalendar\Factory\CalendarConverterFactory;
 use Throwable;
 
 /**
@@ -67,6 +68,186 @@ class Kanban
         $this->board = $id ? app(ContentBoards::class)->accessible($type, $id, $actor) : null;
 
         return $this;
+    }
+
+    /**
+     * Return the already authorized custom board, or null for the default board.
+     *
+     * @return ContentBoard|null
+     */
+    public function selectedBoard(): ?ContentBoard
+    {
+        return $this->board;
+    }
+
+    /**
+     * Count cards authored by each user that this viewer can see on the selected board.
+     *
+     * @param string $type
+     * @param User $actor
+     *
+     * @return array<int, int>
+     */
+    public function visibleAuthorCounts(string $type, User $actor): array
+    {
+        $definition = app(PostLifecycleView::class)->activeDefinition($type);
+        if (! $definition) {
+            return [];
+        }
+        $counts = [];
+        foreach ($this->states($definition) as $state) {
+            if (! empty($state['view_roles']) && ! app(PostStateAccess::class)->hasAnySystemRole($actor, $state['view_roles'])) {
+                continue;
+            }
+            $query = $this->query($type, $state['status'])->where('ks.definition_id', $definition->id)
+                ->selectSub($this->laneQuery($type, 'author'), 'member_author_id');
+            foreach (DB::query()->fromSub($query, 'visible_cards')->selectRaw('member_author_id, COUNT(*) AS total')->groupBy('member_author_id')->get() as $row) {
+                if ($row->member_author_id !== null) {
+                    $id = (int) $row->member_author_id;
+                    $counts[$id] = ($counts[$id] ?? 0) + (int) $row->total;
+                }
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Find a card through the same board, workflow and state restrictions as column reads.
+     *
+     * @param string $type
+     * @param int $id
+     * @param User $actor
+     *
+     * @return Post
+     */
+    public function visiblePost(string $type, int $id, User $actor): Post
+    {
+        $definition = app(PostLifecycleView::class)->activeDefinition($type);
+        abort_unless($definition, 404);
+        foreach ($this->states($definition) as $state) {
+            if (! empty($state['view_roles']) && ! app(PostStateAccess::class)->hasAnySystemRole($actor, $state['view_roles'])) {
+                continue;
+            }
+            $post = $this->query($type, $state['status'])->where('ks.definition_id', $definition->id)->where((new Post())->qualifyColumn('id'), $id)->first();
+            if ($post) {
+                return $post;
+            }
+        }
+        abort(404);
+    }
+
+    /**
+     * Summarize visible cards per workflow state without disclosing restricted columns.
+     *
+     * @param string $type
+     * @param User $actor
+     * @param array<string, mixed> $data
+     *
+     * @return Response
+     */
+    public function insights(string $type, User $actor, array $data = []): Response
+    {
+        $definition = app(PostLifecycleView::class)->activeDefinition($type);
+        if (! $definition) return Response::make(true, '', ['states' => []]);
+        $this->setView($type, $data, $actor);
+        $options = app(KanbanWorkspace::class)->options($type, $this->board);
+        $rows = [];
+        foreach ($this->states($definition) as $state) {
+            if (! empty($state['view_roles']) && ! app(PostStateAccess::class)->hasAnySystemRole($actor, $state['view_roles'])) continue;
+            $query = $this->viewQuery($type, $state['status'], (int) $definition->id, false);
+            $count = 0; $totalDays = 0; $stale = 0; $oldest = 0; $streamIds = [];
+            foreach ($query->cursor() as $post) {
+                $entered = $post->state_entered_at_raw ?? $post->stream_created_at ?? $post->created_at;
+                $days = max(0, (int) Carbon::parse($entered)->diffInDays(now()));
+                $count++; $totalDays += $days; $oldest = max($oldest, $days);
+                $streamIds[] = (int) $post->publication_stream_id;
+                if ($days >= $options['stale_days']) $stale++;
+            }
+            $arrived = 0; $departed = 0;
+            foreach (array_chunk($streamIds, 500) as $ids) {
+                $events = DB::table(config('post.tables.lifecycle_event', 'post_lifecycle_events'))
+                    ->whereIn('stream_id', $ids)->where('event', 'transition')->where('created_at', '>=', now()->subDays(30))
+                    ->get(['context']);
+                foreach ($events as $event) {
+                    $context = is_array($event->context) ? $event->context : json_decode($event->context ?: '{}', true);
+                    if (($context['to'] ?? null) === $state['status']) $arrived++;
+                    if (($context['from'] ?? null) === $state['status']) $departed++;
+                }
+            }
+            $rows[] = ['status' => $state['status'], 'name' => $state['translations'][app()->getLocale()]['name'] ?? $state['name'],
+                'count' => $count, 'average_days' => $count ? round($totalDays / $count, 1) : 0, 'stale' => $stale,
+                'oldest_days' => $oldest, 'arrived_30d' => $arrived, 'departed_30d' => $departed];
+        }
+
+        return Response::make(true, '', ['states' => $rows]);
+    }
+
+    /**
+     * Build the active language's calendar month and its visible card events.
+     *
+     * @param string $type
+     * @param User $actor
+     * @param int $offset
+     * @param array<string, mixed> $data
+     *
+     * @return Response
+     */
+    public function calendar(string $type, User $actor, int $offset = 0, array $data = []): Response
+    {
+        $converter = CalendarConverterFactory::make(LocaleCatalog::calendar());
+        $today = now();
+        [$year, $month] = array_slice($converter->fromGregorian($today->year, $today->month, $today->day), 0, 2);
+        $month += $offset;
+        while ($month < 1) { $month += 12; $year--; }
+        while ($month > 12) { $month -= 12; $year++; }
+        [$gy, $gm, $gd] = $converter->toGregorian($year, $month, 1);
+        $start = Carbon::create($gy, $gm, $gd, 0, 0, 0, config('app.timezone'));
+        $nextMonth = $month === 12 ? 1 : $month + 1;
+        $nextYear = $month === 12 ? $year + 1 : $year;
+        [$ey, $em, $ed] = $converter->toGregorian($nextYear, $nextMonth, 1);
+        $end = Carbon::create($ey, $em, $ed, 0, 0, 0, config('app.timezone'));
+        $days = [];
+        for ($day = $start->copy(); $day->lt($end); $day->addDay()) {
+            $days[] = ['date' => $day->toDateString(), 'label' => LocalizedDate::format($day, false), 'weekday' => $day->dayOfWeek];
+        }
+        $definition = app(PostLifecycleView::class)->activeDefinition($type);
+        $events = []; $truncated = false;
+        if ($definition) {
+            $this->setView($type, $data, $actor);
+            foreach ($this->states($definition) as $state) {
+                if (! empty($state['view_roles']) && ! app(PostStateAccess::class)->hasAnySystemRole($actor, $state['view_roles'])) continue;
+                $scheduleTable = config('post.tables.schedule', 'post_scheduled_actions');
+                $posts = $this->viewQuery($type, $state['status'], (int) $definition->id, false)
+                    ->with('translations')->leftJoin('kanban_card_meta as card_work', (new Post())->qualifyColumn('id'), '=', 'card_work.post_id')
+                    ->addSelect('card_work.due_at as editorial_due_at')
+                    ->where(function ($dates) use ($start, $end, $scheduleTable): void {
+                        $dates->where(fn ($due) => $due->where('card_work.due_at', '>=', $start)->where('card_work.due_at', '<', $end))
+                            ->orWhereExists(fn ($scheduled) => $scheduled->selectRaw('1')->from($scheduleTable.' as cs')
+                                ->whereColumn('cs.stream_id', 'ks.id')->where('cs.state', 'pending')
+                                ->where('cs.due_at', '>=', $start)->where('cs.due_at', '<', $end));
+                    })->limit(501)->get();
+                if ($posts->count() > 500) $truncated = true;
+                $visiblePosts = $posts->take(500);
+                $schedules = DB::table($scheduleTable)->whereIn('stream_id', $visiblePosts->pluck('publication_stream_id')->all())
+                    ->where('state', 'pending')->where('due_at', '>=', $start)->where('due_at', '<', $end)
+                    ->get(['stream_id', 'due_at'])->groupBy('stream_id');
+                foreach ($visiblePosts as $post) {
+                    $title = $post->getTranslation('title', LocaleCatalog::resolve(app()->getLocale())) ?: __('kanban.untitled');
+                    $stateName = $state['translations'][app()->getLocale()]['name'] ?? $state['name'];
+                    if ($post->editorial_due_at) {
+                        $events[] = ['id' => (int) $post->id, 'date' => Carbon::parse($post->editorial_due_at)->toDateString(),
+                            'kind' => 'deadline', 'title' => $title, 'state' => $stateName];
+                    }
+                    foreach ($schedules->get($post->publication_stream_id, []) as $scheduled) {
+                        $events[] = ['id' => (int) $post->id, 'date' => Carbon::parse($scheduled->due_at)->toDateString(),
+                            'kind' => 'publish', 'title' => $title, 'state' => $stateName];
+                    }
+                }
+            }
+        }
+        return Response::make(true, '', ['month' => implode('/', array_slice(explode('/', LocalizedDate::format($start, false)), 0, 2)),
+            'today' => $today->toDateString(), 'days' => $days, 'events' => $events, 'truncated' => $truncated, 'offset' => $offset]);
     }
 
     /**
@@ -163,8 +344,12 @@ class Kanban
      */
     public function page(string $type, User $actor): array
     {
-        return ['workspace' => app(KanbanWorkspace::class)->preferences($type, $this->board, $actor),'options' => app(KanbanWorkspace::class)->options($type, $this->board),'filterCatalog' => app(KanbanFilterRegistry::class)->catalog($type),'groupChoices' => $this->groupChoices($type),'realtime' => app(\App\Support\KanbanRealtime::class)->client($type),'boardVersion' => $this->board?->version, 'boardName' => $this->board?->name, 'pageSize' => $this->pageSize($type, $actor), 'editable' => $this->mayMove($type, $actor),
+        return ['workspace' => app(KanbanWorkspace::class)->preferences($type, $this->board, $actor),'options' => app(KanbanWorkspace::class)->options($type, $this->board),'filterCatalog' => app(KanbanFilterRegistry::class)->catalog($type),'groupChoices' => $this->groupChoices($type),'realtime' => app(\App\Support\KanbanRealtime::class)->client($type),'boardVersion' => $this->board?->version, 'boardName' => $this->board?->name, 'pageSize' => $this->pageSize($type, $actor), 'editable' => $this->mayMove($type, $actor), 'calendar' => LocaleCatalog::calendar(),
             'copy' => trans('kanban'), 'dataUrl' => route($this->board ? 'admin.posts.kanban.board.data' : 'admin.posts.kanban.data', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
+            'membersUrl' => route($this->board ? 'admin.posts.kanban.board.members' : 'admin.posts.kanban.members', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
+            'calendarUrl' => route($this->board ? 'admin.posts.kanban.board.calendar' : 'admin.posts.kanban.calendar', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
+            'insightsUrl' => route($this->board ? 'admin.posts.kanban.board.insights' : 'admin.posts.kanban.insights', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
+            'notificationsUrl' => route($this->board ? 'admin.posts.kanban.board.notifications' : 'admin.posts.kanban.notifications', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
             'commandUrl' => route($this->board ? 'admin.posts.kanban.board.command' : 'admin.posts.kanban.command', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
             'detailUrl' => route($this->board ? 'admin.posts.kanban.board.details' : 'admin.posts.kanban.details', ['type' => $type, 'post' => '__ID__', ...($this->board ? ['board' => $this->board->id] : [])]),
             'backUrl' => route(PostTypeRegistry::for($type)->hasMultipleKanban() ? 'admin.posts.kanban.index' : 'admin.posts.index', ['type' => $type]),
@@ -188,10 +373,7 @@ class Kanban
         if (isset($data['board_version'])) {
             $this->checkVersion($data);
         }
-        $this->view = array_intersect_key($data, array_flip(['search','filters','summary','group_by','lane']));
-        if (!empty($data['filters'])) {
-            $this->view['filters'] = app(KanbanFilterRegistry::class)->validate($type, $data['filters']);
-        }
+        $this->setView($type, $data, $actor);
         $group = $data['group_by'] ?? app(KanbanWorkspace::class)->preferences($type, $this->board, $actor)['group_by'];
         abort_unless(array_key_exists($group, $this->groupChoices($type)), 422);
         $this->view['group_by'] = $group;
@@ -308,6 +490,9 @@ class Kanban
     {
         $options = app(KanbanWorkspace::class)->options($type, $this->board);
         $query = app(KanbanWorkspace::class)->filter($this->query($type, $status)->where('ks.definition_id', $definition), $type, array_diff_key($this->view, ['summary' => true]), $options['stale_days']);
+        if (! empty($this->view['assignee_id'])) {
+            $query->whereExists(fn ($assigned) => $assigned->selectRaw('1')->from('kanban_card_meta as work')->whereColumn('work.post_id', (new Post())->qualifyColumn('id'))->where('work.assignee_id', $this->view['assignee_id']));
+        }
         if ($summary && !empty($this->view['summary'])) {
             app(KanbanWorkspace::class)->filter($query, $type, ['summary' => $this->view['summary']], $options['stale_days']);
         }
@@ -318,6 +503,28 @@ class Kanban
             $query->whereRaw('('.$sub->toSql().')'.($value === 'none' ? ' IS NULL' : ' = ?'), [...$sub->getBindings(),...($value === 'none' ? [] : [(int)$value])]);
         }
         return app(KanbanWorkspace::class)->metadata($query);
+    }
+
+    /**
+     * Normalize temporary board filters for columns, calendar and insights.
+     *
+     * @param string $type
+     * @param array<string, mixed> $data
+     * @param User $actor
+     *
+     * @return void
+     */
+    private function setView(string $type, array $data, User $actor): void
+    {
+        $this->view = array_intersect_key($data, array_flip(['search', 'filters', 'summary', 'group_by', 'lane']));
+        if (! empty($data['mine'])) {
+            $this->view['assignee_id'] = (int) $actor->id;
+        } elseif (! empty($data['assignee_id'])) {
+            $this->view['assignee_id'] = (int) $data['assignee_id'];
+        }
+        if (! empty($data['filters'])) {
+            $this->view['filters'] = app(KanbanFilterRegistry::class)->validate($type, $data['filters']);
+        }
     }
 
     /**
@@ -383,7 +590,7 @@ class Kanban
         })->leftJoin($this->positionTable().' as kp', function ($join) use ($posts): void {
             $join->on('kp.post_id', '=', $posts.'.id')->on('kp.column_id', '=', 'kc.id');
         })->where($posts.'.type', $type)->where('ks.status', $status)
-            ->select($posts.'.*', 'ks.id as publication_stream_id', 'ks.version as stream_version', 'ks.draft_revision_id', 'ks.status as workflow_status')
+            ->select($posts.'.*', 'ks.id as publication_stream_id', 'ks.version as stream_version', 'ks.draft_revision_id', 'ks.approved_revision_id', 'ks.status as workflow_status')
             ->selectRaw('COALESCE(kp.rank, '.$posts.'.id * 1024) as board_rank');
         if ($this->board) {
             app(KanbanFilterRegistry::class)->apply($query, $type, $this->board->filters);
@@ -467,11 +674,18 @@ class Kanban
         $image = $post->files->first(fn ($file) => $file->pivot?->collection === 'base');
         $terms = $post->taxonomies->map(fn ($term) => ['id' => (int)$term->id,'name' => $term->getTranslation('name', LocaleCatalog::resolve(app()->getLocale())) ?: '#'.$term->id,'collection' => $term->pivot->collection])->values()->all();
         $schedule = DB::table(config('post.tables.schedule', 'post_scheduled_actions'))->where('stream_id', $post->publication_stream_id)->where('state', 'pending')->orderBy('due_at')->value('due_at');
+        $work = app(KanbanCardWork::class)->read((int) $post->id, $this, request()->user());
+        $reviews = DB::table('kanban_card_reviews')->where('post_id', $post->id)->where('revision_id', $post->draft_revision_id)->pluck('status');
+        $reviewStatus = (int) ($post->approved_revision_id ?? 0) > 0 && (int) $post->approved_revision_id === (int) $post->draft_revision_id
+            ? 'approved' : ($reviews->contains('rejected') ? 'rejected' : ($reviews->contains('pending') ? 'pending' : null));
         return ['id' => (int)$post->id,'title' => $post->getTranslation('title', LocaleCatalog::resolve(app()->getLocale())) ?: __('kanban.untitled'),
             'author' => $user?->name ?? __('kanban.unknown_author'),'author_id' => $author ? (int)$author : null,'avatar_url' => $user?->avatarUrl(),
             'image_url' => $image ? (\JobMetric\Media\Http\Resources\MediaResource::make($image)->resolve(request())['src'] ?? null) : null,
             'terms' => $terms,'age_days' => $age,'entered_at' => LocalizedDate::format($entered),'scheduled_at' => $schedule ? LocalizedDate::format($schedule) : null,
-            'updated_at' => LocalizedDate::format($post->updated_at),'version' => (int)$post->stream_version,'revision_id' => (int)$post->draft_revision_id,'state' => $post->workflow_status];
+            'updated_at' => LocalizedDate::format($post->updated_at),'version' => (int)$post->stream_version,'revision_id' => (int)$post->draft_revision_id,'state' => $post->workflow_status,
+            'assignee' => $work['assignee'], 'due_at' => $work['due_at'], 'due_state' => $work['due_state'],
+            'priority' => $work['priority'], 'review_status' => $reviewStatus,
+            'dependency_count' => count($work['dependencies'])];
     }
 
     /**
@@ -481,11 +695,12 @@ class Kanban
      * @param int $id
      * @param User $actor
      * @param string|null $locale
+     * @param int|null $commentCursor
      *
      * @return Response
      * @throws Throwable
      */
-    public function details(string $type, int $id, User $actor, ?string $locale = null): Response
+    public function details(string $type, int $id, User $actor, ?string $locale = null, ?int $commentCursor = null): Response
     {
         $locale = LocaleCatalog::resolve($locale ?? app()->getLocale());
         $post = Post::where('type', $type)->with('translations')->findOrFail($id);
@@ -500,6 +715,7 @@ class Kanban
         $post->publication_stream_id = $stream->id;
         $post->stream_version = $stream->version;
         $post->draft_revision_id = $stream->draft_revision_id;
+        $post->approved_revision_id = $stream->approved_revision_id;
         $post->workflow_status = $stream->status;
         $states = collect($definition->graph['states'])->keyBy('id');
         $destinations = [];
@@ -510,6 +726,11 @@ class Kanban
                 }
                 $preview = app(WorkflowTransitionPreview::class)->inspect($edge, $stream, $actor);
                 $target = $states[$edge['to']];
+                if (($target['content_status'] ?? '') === 'publish'
+                    && ! KanbanCardWork::dependenciesReady((int) $post->id, $type)) {
+                    $preview['status'] = 'blocked';
+                    $preview['checks'][] = ['message' => __('kanban.dependency_blocked')];
+                }
                 if ($this->board && ! in_array($target['status'], $this->board->states, true)) {
                     continue;
                 }
@@ -524,7 +745,10 @@ class Kanban
             'locale' => $locale, 'excerpt' => $post->getTranslation('excerpt', $locale),
             'content_html' => app(EditorRenderer::class)->render(app(EditorDocuments::class)->readForEditor($post, $locale)), 'destinations' => $destinations,
             'edit_url' => $mayEdit ? route('admin.posts.edit', ['type' => $type, 'post' => $id, 'embedded' => 'kanban']) : null,
-            'history_url' => $mayEdit ? route('admin.posts.history', ['type' => $type, 'post' => $id]) : null]);
+            'history_url' => $mayEdit ? route('admin.posts.history', ['type' => $type, 'post' => $id]) : null,
+            'work' => app(KanbanCardWork::class)->read($id, $this, $actor),
+            'discussion' => app(KanbanDiscussion::class)->read($id, $commentCursor),
+            'review' => app(KanbanReview::class)->read($post, $stream, (bool) (collect($definition->graph['states'])->firstWhere('status', $stream->status)['allows_approval'] ?? false), $actor)]);
     }
 
     /**
@@ -546,6 +770,9 @@ class Kanban
             $data['due_at'] = CalendarInput::parse($data['due_local']);
         }
         $data = dto($data, KanbanCommandRequest::class);
+        if ($data['operation'] !== 'card_work' && ! empty($data['due_at']) && Carbon::parse($data['due_at'])->lte(now())) {
+            throw ValidationException::withMessages(['due_at' => __('kanban.due_error')]);
+        }
         $this->checkVersion($data);
         if (isset($data['group_by'])) {
             abort_unless(array_key_exists($data['group_by'], $this->groupChoices($type)), 422);
@@ -576,12 +803,36 @@ class Kanban
                         $preferences['kanban'][$this->preferenceKey($type)][$key] = $data[$key];
                     }
                 }
+                if (array_key_exists('card_fields', $data)) {
+                    $preferences['kanban'][$this->preferenceKey($type)]['card_fields_version'] = 2;
+                }
                 $user->ui_preferences = $preferences;
                 $user->save();
                 DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.settings.saved', $context));
             });
 
             return Response::make(true, __('kanban.saved'), ['page_size' => (int) $data['page_size']]);
+        }
+        if ($data['operation'] === 'card_work') {
+            abort_unless($this->mayMove($type, $actor), 403);
+            return app(KanbanCardWork::class)->save($type, $this, $data, $actor);
+        }
+        if ($data['operation'] === 'comment') {
+            return app(KanbanDiscussion::class)->add($type, $this, $data, $actor);
+        }
+        if ($data['operation'] === 'notification_read') {
+            return app(KanbanNotifications::class)->markRead($type, $this, $actor, (int) $data['notification_id']);
+        }
+        if ($data['operation'] === 'notification_preferences') {
+            return app(KanbanNotifications::class)->savePreferences($actor, $data['notification_preferences']);
+        }
+        if ($data['operation'] === 'request_review') {
+            abort_unless($this->mayMove($type, $actor), 403);
+            return app(KanbanReview::class)->request($type, $this, $data, $actor);
+        }
+        if ($data['operation'] === 'review_decide') {
+            abort_unless($this->mayMove($type, $actor), 403);
+            return app(KanbanReview::class)->decide($type, $this, $data, $actor);
         }
         abort_unless($this->mayMove($type, $actor), 403);
         $id = (int) $data['post_id'];

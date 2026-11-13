@@ -18,6 +18,7 @@ final class LifecycleEvents
         'jobic.posts.kanban.boards.deleting' => \App\Events\Kanban\KanbanBoardsDeletingEvent::class,
         'jobic.posts.kanban.limits.saving'=>\App\Events\Kanban\KanbanLimitsSavingEvent::class,
         'jobic.posts.kanban.settings.saving' => \App\Events\Kanban\KanbanSettingsSavingEvent::class,
+        'jobic.posts.kanban.card_work.saving' => \App\Events\Kanban\KanbanCardWorkSavingEvent::class,
         'jobic.posts.kanban.moving' => \App\Events\Kanban\KanbanMovingEvent::class,
         'jobic.users.saving' => \App\Events\User\UserSavingEvent::class,
         'jobic.users.deleting' => \App\Events\User\UserDeletingEvent::class,
