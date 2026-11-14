@@ -816,7 +816,7 @@ class Kanban
                 }
                 $user->ui_preferences = $preferences;
                 $user->save();
-                DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.settings.saved', $context));
+                DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.settings.saved', $context));
             });
 
             return Response::make(true, __('kanban.saved'), ['page_size' => (int) $data['page_size']]);
@@ -911,7 +911,7 @@ class Kanban
                 $rank = $this->rankBefore($type, $data['state'], (int) $target->id, $id, isset($data['before_id']) ? (int) $data['before_id'] : null);
                 DB::table($this->positionTable())->updateOrInsert(['post_id' => $id, ...($this->board ? ['column_id' => $target->id] : [])], ['column_id' => $target->id, 'rank' => $rank]);
                 DB::table($this->columnTable())->where('id', $target->id)->increment('version');
-                DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.moved', $context));
+                DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.moved', $context));
             });
         } catch (PostStatusTransitionNotAllowedException $error) {
             return Response::make(false, __('kanban.stale'), null, 409);

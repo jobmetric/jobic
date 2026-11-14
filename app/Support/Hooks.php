@@ -6,6 +6,7 @@ namespace App\Support;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
+use JobMetric\EventSystem\Support\CommittedEventDispatcher;
 use Throwable;
 
 /** Trusted, in-process extension points registered by service providers. */
@@ -91,6 +92,23 @@ class Hooks
                 ]);
             }
         }
+    }
+
+    /**
+     * Dispatch a committed Kanban outcome before notifying legacy hook observers.
+     *
+     * Call this from the owning transaction's after-commit callback. Domain listener
+     * failures are isolated by CommittedEventDispatcher; legacy failures by notify.
+     *
+     * @param string $name
+     * @param array<string, mixed> $context
+     *
+     * @return void
+     */
+    public function kanbanOutcome(string $name, array $context = []): void
+    {
+        app(CommittedEventDispatcher::class)->dispatch(KanbanOutcomeEvents::make($name, $context));
+        $this->notify($name, $context);
     }
 
     /**

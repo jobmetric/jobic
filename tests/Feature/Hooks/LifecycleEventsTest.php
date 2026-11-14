@@ -21,7 +21,7 @@ class LifecycleEventsTest extends TestCase
     public function test_catalog_is_registered_translated_and_excluded_from_automation(): void
     {
         $registry = app('EventRegistry');
-        $this->assertCount(31, LifecycleEvents::CLASSES);
+        $this->assertCount(37, LifecycleEvents::CLASSES);
         foreach (LifecycleEvents::CLASSES as $key => $class) {
             $this->assertSame($class, $registry->forKey($key));
             $definition = $class::definition();
@@ -32,6 +32,21 @@ class LifecycleEventsTest extends TestCase
                 }
             }
         }
+    }
+
+    public function test_new_kanban_boundaries_dispatch_safe_domain_events_before_legacy_hooks(): void
+    {
+        $calls = [];
+        Event::listen(\App\Events\Kanban\KanbanNotificationSendingEvent::class, function ($event) use (&$calls): void {
+            $this->assertSame(['post_id' => 7, 'user_id' => 4, 'operation' => 'assignment'], $event->context);
+            $calls[] = 'domain';
+        });
+        Hooks::addAction('jobic.posts.kanban.notification.sending', function ($context) use (&$calls): void {
+            $this->assertArrayHasKey('secret', $context);
+            $calls[] = 'legacy';
+        });
+        Hooks::lifecycle('jobic.posts.kanban.notification.sending', ['post_id' => 7, 'user_id' => 4, 'operation' => 'assignment', 'secret' => 'excluded']);
+        $this->assertSame(['domain', 'legacy'], $calls);
     }
 
     public function test_domain_then_legacy_delivery_preserves_priority_and_original_context(): void

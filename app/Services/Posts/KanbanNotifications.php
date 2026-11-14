@@ -41,10 +41,10 @@ final class KanbanNotifications
             return false;
         }
         $context = ['user_id' => $recipientId, 'post_id' => $postId, 'operation' => $kind];
-        Hooks::action('jobic.posts.kanban.notification.sending', $context);
+        Hooks::lifecycle('jobic.posts.kanban.notification.sending', $context);
         $inserted = DB::table('kanban_notifications')->insertOrIgnore(['user_id' => $recipientId, 'post_id' => $postId,
             'actor_id' => $actorId, 'kind' => $kind, 'dedupe_key' => $dedupeKey, 'created_at' => now()]) > 0;
-        if ($inserted) DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.notification.sent', $context));
+        if ($inserted) DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.notification.sent', $context));
         return $inserted;
     }
 
@@ -90,15 +90,20 @@ final class KanbanNotifications
      */
     public function markRead(string $type, Kanban $board, User $actor, int $id): Response
     {
-        $row = DB::table('kanban_notifications')->where('user_id', $actor->id)->where('id', $id)->first();
-        abort_unless($row, 404);
-        $board->visiblePost($type, (int) $row->post_id, $actor);
-        $context = ['type' => $type, 'post_id' => (int) $row->post_id, 'user_id' => (int) $actor->id];
-        Hooks::action('jobic.posts.kanban.notification.reading', $context);
-        $updated = DB::table('kanban_notifications')->where('id', $id)->whereNull('read_at')->update(['read_at' => now()]);
-        if ($updated) DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.notification.read', $context));
+        return DB::transaction(function () use ($type, $board, $actor, $id): Response {
+            $row = DB::table('kanban_notifications')->where('user_id', $actor->id)->where('id', $id)->lockForUpdate()->first();
+            abort_unless($row, 404);
+            $board->visiblePost($type, (int) $row->post_id, $actor);
+            if ($row->read_at !== null) {
+                return Response::make(true, __('kanban.saved'));
+            }
+            $context = ['type' => $type, 'post_id' => (int) $row->post_id, 'user_id' => (int) $actor->id];
+            Hooks::lifecycle('jobic.posts.kanban.notification.reading', $context);
+            DB::table('kanban_notifications')->where('id', $id)->whereNull('read_at')->update(['read_at' => now()]);
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.notification.read', $context));
 
-        return Response::make(true, __('kanban.saved'));
+            return Response::make(true, __('kanban.saved'));
+        });
     }
 
     /**
@@ -131,14 +136,14 @@ final class KanbanNotifications
         DB::transaction(function () use ($actor, $values): void {
             $user = User::query()->whereKey($actor->id)->lockForUpdate()->firstOrFail();
             $context = ['user_id' => (int) $actor->id];
-            Hooks::action('jobic.posts.kanban.notifications.saving', $context);
+            Hooks::lifecycle('jobic.posts.kanban.notifications.saving', $context);
             $preferences = $user->ui_preferences ?? [];
             foreach (array_keys($this->preferences($user)) as $kind) {
                 $preferences['kanban_notifications'][$kind] = (bool) ($values[$kind] ?? true);
             }
             $user->ui_preferences = $preferences;
             $user->save();
-            DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.notifications.saved', $context));
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.notifications.saved', $context));
         });
 
         return Response::make(true, __('kanban.saved'), ['preferences' => $this->preferences($actor->fresh())]);

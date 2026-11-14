@@ -33,4 +33,10 @@ return [
     'jobic_posts_kanban_boards_deleting' => ['group'=>'بردهای کانبان', 'title'=>'حذف برد', 'description'=>'مرز همگام مدیریت برد پس از اعتبارسنجی.'],
     'jobic_posts_kanban_limits_saving' => ['group'=>'Kanban', 'title'=>'پیش از ذخیره ظرفیت ستون‌ها', 'description'=>'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند ذخیره را متوقف کند.'],
     'jobic_posts_kanban_card_work_saving' => ['group'=>'کانبان محتوا', 'title'=>'پیش از ذخیرهٔ اطلاعات کارت', 'description'=>'مرز اعتبارسنجی‌شدهٔ مسئول، موعد و وابستگی کارت.'],
+
+    'jobic_posts_kanban_comment_saving' => ['group' => 'کانبان محتوا', 'title' => 'پیش از ذخیرهٔ گفتگوی کارت', 'description' => 'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند عملیات را متوقف کند.'],
+    'jobic_posts_kanban_review_saving' => ['group' => 'کانبان محتوا', 'title' => 'پیش از ذخیرهٔ بازبینی کارت', 'description' => 'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند عملیات را متوقف کند.'],
+    'jobic_posts_kanban_notifications_saving' => ['group' => 'کانبان محتوا', 'title' => 'پیش از ذخیرهٔ تنظیمات اعلان', 'description' => 'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند عملیات را متوقف کند.'],
+    'jobic_posts_kanban_notification_sending' => ['group' => 'کانبان محتوا', 'title' => 'پیش از ارسال اعلان کارت', 'description' => 'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند عملیات را متوقف کند.'],
+    'jobic_posts_kanban_notification_reading' => ['group' => 'کانبان محتوا', 'title' => 'پیش از خوانده‌شدن اعلان', 'description' => 'مرز همگام پس از اعتبارسنجی؛ شنونده می‌تواند عملیات را متوقف کند.'],
 ];

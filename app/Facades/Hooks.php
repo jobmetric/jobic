@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void lifecycle(string $name, array $context = [])
  * @method static void action(string $name, array $context = [])
  * @method static void notify(string $name, array $context = [])
+ * @method static void kanbanOutcome(string $name, array $context = [])
  * @method static mixed filter(string $name, mixed $value, array $context = [])
  * @method static void addView(string $name, string $view, int $priority = 10)
  * @method static \Illuminate\Support\HtmlString render(string $name, array $context = [])

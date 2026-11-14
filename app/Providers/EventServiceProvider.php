@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Listeners\SynchronizeUserNameFromMetadata;
 use App\Support\LifecycleEvents;
+use App\Support\KanbanOutcomeEvents;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\ServiceProvider;
 use JobMetric\EventSystem\Support\EventRegistry;
@@ -74,6 +75,10 @@ class EventServiceProvider extends ServiceProvider
         }
 
         foreach (LifecycleEvents::CLASSES as $event) {
+            $registry->register($event);
+        }
+
+        foreach (KanbanOutcomeEvents::CLASSES as $event) {
             $registry->register($event);
         }
 

@@ -40,4 +40,16 @@ return [
     'editor_document_stored' => ['group' => 'EditorDocument', 'title' => 'EditorDocument stored', 'description' => 'Successful business outcome: EditorDocument stored.'],
     'editor_document_updated' => ['group' => 'EditorDocument', 'title' => 'EditorDocument updated', 'description' => 'Successful business outcome: EditorDocument updated.'],
     'editor_document_deleted' => ['group' => 'EditorDocument', 'title' => 'EditorDocument deleted', 'description' => 'Successful business outcome: EditorDocument deleted.'],
+
+    'jobic_posts_kanban_boards_saved' => ['group' => 'Content Kanban', 'title' => 'Board saved', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_boards_deleted' => ['group' => 'Content Kanban', 'title' => 'Board deleted', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_limits_saved' => ['group' => 'Content Kanban', 'title' => 'Column capacities saved', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_settings_saved' => ['group' => 'Content Kanban', 'title' => 'Personal board settings saved', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_card_work_saved' => ['group' => 'Content Kanban', 'title' => 'Card work saved', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_moved' => ['group' => 'Content Kanban', 'title' => 'Card moved or reordered', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_comment_saved' => ['group' => 'Content Kanban', 'title' => 'Card comment saved', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_review_saved' => ['group' => 'Content Kanban', 'title' => 'Card review saved', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_notifications_saved' => ['group' => 'Content Kanban', 'title' => 'Notification preferences saved', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_notification_sent' => ['group' => 'Content Kanban', 'title' => 'Card notification sent', 'description' => 'Successful Kanban business outcome after transaction commit.'],
+    'jobic_posts_kanban_notification_read' => ['group' => 'Content Kanban', 'title' => 'Card notification read', 'description' => 'Successful Kanban business outcome after transaction commit.'],
 ];

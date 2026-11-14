@@ -122,6 +122,40 @@ class KanbanTest extends TestCase
         $this->assertDatabaseHas('kanban_notifications', ['user_id' => $recipient->id, 'post_id' => $post->id, 'kind' => 'assignment']);
     }
 
+    public function test_comment_publishes_typed_outcome_after_successful_persistence(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $events = [];
+        \Illuminate\Support\Facades\Event::listen(\App\Events\Kanban\KanbanCommentSavedEvent::class,
+            function ($event) use (&$events): void {
+                $this->assertDatabaseHas('kanban_card_comments', ['id' => $event->context['comment_id']]);
+                $events[] = $event->context;
+            });
+        $this->postJson(route('admin.posts.kanban.command', ['type' => 'post']),
+            ['operation' => 'comment', 'post_id' => $post->id, 'comment_body' => 'Ready for review.'])->assertOk();
+        $this->assertCount(1, $events);
+        $this->assertSame((int) $post->id, $events[0]['post_id']);
+    }
+
+    public function test_typed_notification_veto_prevents_insert_and_legacy_action(): void
+    {
+        $this->setupBoard();
+        $post = $this->postItem();
+        $recipient = User::factory()->create();
+        $legacy = false;
+        \Illuminate\Support\Facades\Event::listen(\App\Events\Kanban\KanbanNotificationSendingEvent::class,
+            static function (): void { throw \Illuminate\Validation\ValidationException::withMessages(['recipient' => 'Vetoed']); });
+        Hooks::addAction('jobic.posts.kanban.notification.sending', function () use (&$legacy): void { $legacy = true; });
+        try {
+            app(\App\Services\Posts\KanbanNotifications::class)->send((int) $recipient->id, (int) $post->id, 'assignment', (int) auth()->id());
+            $this->fail('Expected typed veto.');
+        } catch (\Illuminate\Validation\ValidationException) {
+            $this->assertFalse($legacy);
+            $this->assertDatabaseMissing('kanban_notifications', ['user_id' => $recipient->id, 'post_id' => $post->id]);
+        }
+    }
+
     public function test_card_priority_and_shared_color_mode_are_validated_and_visible(): void
     {
         $this->setupBoard();

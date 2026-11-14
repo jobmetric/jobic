@@ -139,7 +139,7 @@ final class KanbanCardWork
                         'post_id' => (int) $post->id, 'depends_on_post_id' => $id, 'created_at' => now(), 'updated_at' => now(),
                     ], $dependencies));
                 }
-                DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.card_work.saved', $context));
+                DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.card_work.saved', $context));
             });
         } finally {
             if (! $existing) {

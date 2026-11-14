@@ -234,7 +234,7 @@ class ContentBoards extends AbstractCrudService
             $board->save();
             $context['id'] = (int) $board->id;
             app(RecordHistory::class)->record('content_boards', (int) $board->id, (int) $actor->id, $context['operation'], $before, $board->toArray());
-            DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.boards.saved', $context));
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.boards.saved', $context));
             app(\App\Support\KanbanRealtime::class)->changed($type);
 
             return Response::make(true, __('kanban.saved'), ['board' => $board->fresh()->toArray(), 'edit_url'=>route('admin.posts.kanban.boards.edit',['type'=>$type,'board'=>$board->id]), 'save_url'=>route('admin.posts.kanban.boards.update',['type'=>$type,'board'=>$board->id])]);
@@ -264,7 +264,7 @@ class ContentBoards extends AbstractCrudService
             Hooks::lifecycle('jobic.posts.kanban.boards.deleting', $context);
             app(RecordHistory::class)->record('content_boards', $id, (int) $actor->id, 'delete', $board->toArray(), []);
             $board->delete();
-            DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.boards.deleted', $context));
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.boards.deleted', $context));
             app(\App\Support\KanbanRealtime::class)->changed($type);
 
             return Response::make(true, __('kanban.deleted'));

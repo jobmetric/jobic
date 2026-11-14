@@ -184,7 +184,7 @@ class KanbanWorkspace
                 $values['created_at'] = now();
             }
             DB::table('kanban_workspace_options')->updateOrInsert(['scope' => $this->key($type, $board)], $values);
-            DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.limits.saved', $context));
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.limits.saved', $context));
             return $this->options($type, $board);
         });
     }

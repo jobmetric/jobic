@@ -33,4 +33,10 @@ return [
     'jobic_posts_kanban_boards_deleting' => ['group'=>'Kanban boards', 'title'=>'Delete board', 'description'=>'Validated synchronous board boundary.'],
     'jobic_posts_kanban_limits_saving' => ['group'=>'Kanban', 'title'=>'Before saving column capacities', 'description'=>'Validated synchronous boundary; listeners may veto persistence.'],
     'jobic_posts_kanban_card_work_saving' => ['group'=>'Content Kanban', 'title'=>'Before saving card work', 'description'=>'Validated assignment, deadline and dependency boundary.'],
+
+    'jobic_posts_kanban_comment_saving' => ['group' => 'Content Kanban', 'title' => 'Before saving a card comment', 'description' => 'Synchronous, validated boundary; listeners may veto persistence.'],
+    'jobic_posts_kanban_review_saving' => ['group' => 'Content Kanban', 'title' => 'Before saving a card review', 'description' => 'Synchronous, validated boundary; listeners may veto persistence.'],
+    'jobic_posts_kanban_notifications_saving' => ['group' => 'Content Kanban', 'title' => 'Before saving notification preferences', 'description' => 'Synchronous, validated boundary; listeners may veto persistence.'],
+    'jobic_posts_kanban_notification_sending' => ['group' => 'Content Kanban', 'title' => 'Before sending a card notification', 'description' => 'Synchronous, validated boundary; listeners may veto persistence.'],
+    'jobic_posts_kanban_notification_reading' => ['group' => 'Content Kanban', 'title' => 'Before marking a notification read', 'description' => 'Synchronous, validated boundary; listeners may veto persistence.'],
 ];

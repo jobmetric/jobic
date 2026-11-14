@@ -71,11 +71,11 @@ final class KanbanDiscussion
         }
         $id = DB::transaction(function () use ($type, $postId, $actor, $body, $mentions): int {
             $context = ['type' => $type, 'post_id' => $postId, 'user_id' => (int) $actor->id];
-            Hooks::action('jobic.posts.kanban.comment.saving', $context);
+            Hooks::lifecycle('jobic.posts.kanban.comment.saving', $context);
             $id = (int) DB::table('kanban_card_comments')->insertGetId(['post_id' => $postId, 'user_id' => $actor->id,
                 'body' => $body, 'created_at' => now(), 'updated_at' => now()]);
             foreach ($mentions as $recipientId) app(KanbanNotifications::class)->send($recipientId, $postId, 'mention', (int) $actor->id);
-            DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.comment.saved', $context + ['comment_id' => $id]));
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.comment.saved', $context + ['comment_id' => $id]));
             return $id;
         });
         app(\App\Support\KanbanRealtime::class)->changed($type);

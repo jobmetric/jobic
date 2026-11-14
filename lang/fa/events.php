@@ -40,4 +40,16 @@ return [
     'editor_document_stored' => ['group' => 'سند ویرایشگر', 'title' => 'سند ویرایشگر ایجاد شد', 'description' => 'نتیجهٔ موفق عملیات: سند ویرایشگر ایجاد شد.'],
     'editor_document_updated' => ['group' => 'سند ویرایشگر', 'title' => 'سند ویرایشگر ویرایش شد', 'description' => 'نتیجهٔ موفق عملیات: سند ویرایشگر ویرایش شد.'],
     'editor_document_deleted' => ['group' => 'سند ویرایشگر', 'title' => 'سند ویرایشگر حذف شد', 'description' => 'نتیجهٔ موفق عملیات: سند ویرایشگر حذف شد.'],
+
+    'jobic_posts_kanban_boards_saved' => ['group' => 'کانبان محتوا', 'title' => 'برد ذخیره شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_boards_deleted' => ['group' => 'کانبان محتوا', 'title' => 'برد حذف شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_limits_saved' => ['group' => 'کانبان محتوا', 'title' => 'ظرفیت ستون‌ها ذخیره شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_settings_saved' => ['group' => 'کانبان محتوا', 'title' => 'تنظیمات شخصی برد ذخیره شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_card_work_saved' => ['group' => 'کانبان محتوا', 'title' => 'مدیریت کار کارت ذخیره شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_moved' => ['group' => 'کانبان محتوا', 'title' => 'کارت جابه‌جا یا مرتب شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_comment_saved' => ['group' => 'کانبان محتوا', 'title' => 'گفتگوی کارت ذخیره شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_review_saved' => ['group' => 'کانبان محتوا', 'title' => 'بازبینی کارت ذخیره شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_notifications_saved' => ['group' => 'کانبان محتوا', 'title' => 'تنظیمات اعلان ذخیره شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_notification_sent' => ['group' => 'کانبان محتوا', 'title' => 'اعلان کارت ارسال شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
+    'jobic_posts_kanban_notification_read' => ['group' => 'کانبان محتوا', 'title' => 'اعلان کارت خوانده شد', 'description' => 'نتیجهٔ موفق عملیات کانبان پس از ثبت تراکنش.'],
 ];

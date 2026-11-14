@@ -236,5 +236,159 @@
       ]
     ],
     "key": "jobic.editor_document.deleted"
+  },
+  "KanbanBoardsSavedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "برد ذخیره شد",
+    "translation": "jobic_posts_kanban_boards_saved",
+    "agg": "Kanban",
+    "op": "saved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.boards.saved"
+  },
+  "KanbanBoardsDeletedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "برد حذف شد",
+    "translation": "jobic_posts_kanban_boards_deleted",
+    "agg": "Kanban",
+    "op": "deleted",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.boards.deleted"
+  },
+  "KanbanLimitsSavedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "ظرفیت ستون‌ها ذخیره شد",
+    "translation": "jobic_posts_kanban_limits_saved",
+    "agg": "Kanban",
+    "op": "saved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.limits.saved"
+  },
+  "KanbanSettingsSavedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "تنظیمات شخصی برد ذخیره شد",
+    "translation": "jobic_posts_kanban_settings_saved",
+    "agg": "Kanban",
+    "op": "saved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.settings.saved"
+  },
+  "KanbanCardWorkSavedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "مدیریت کار کارت ذخیره شد",
+    "translation": "jobic_posts_kanban_card_work_saved",
+    "agg": "Kanban",
+    "op": "saved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.card_work.saved"
+  },
+  "KanbanMovedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "کارت جابه‌جا یا مرتب شد",
+    "translation": "jobic_posts_kanban_moved",
+    "agg": "Kanban",
+    "op": "moved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.moved"
+  },
+  "KanbanCommentSavedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "گفتگوی کارت ذخیره شد",
+    "translation": "jobic_posts_kanban_comment_saved",
+    "agg": "Kanban",
+    "op": "saved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.comment.saved"
+  },
+  "KanbanReviewSavedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "بازبینی کارت ذخیره شد",
+    "translation": "jobic_posts_kanban_review_saved",
+    "agg": "Kanban",
+    "op": "saved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.review.saved"
+  },
+  "KanbanNotificationsSavedEvent": {
+    "group": "کانبان محتوا",
+    "verb": "تنظیمات اعلان ذخیره شد",
+    "translation": "jobic_posts_kanban_notifications_saved",
+    "agg": "Kanban",
+    "op": "saved",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.notifications.saved"
+  },
+  "KanbanNotificationSentEvent": {
+    "group": "کانبان محتوا",
+    "verb": "اعلان کارت ارسال شد",
+    "translation": "jobic_posts_kanban_notification_sent",
+    "agg": "Kanban",
+    "op": "sent",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.notification.sent"
+  },
+  "KanbanNotificationReadEvent": {
+    "group": "کانبان محتوا",
+    "verb": "اعلان کارت خوانده شد",
+    "translation": "jobic_posts_kanban_notification_read",
+    "agg": "Kanban",
+    "op": "read",
+    "fields": [
+      [
+        "context",
+        "array"
+      ]
+    ],
+    "key": "jobic.posts.kanban.notification.read"
   }
 }

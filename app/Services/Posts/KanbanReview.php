@@ -86,8 +86,8 @@ final class KanbanReview
             abort_if(DB::table('kanban_card_reviews')->where('post_id', $post->id)
                 ->where('revision_id', $stream->draft_revision_id)->where('status', 'pending')->exists(), 409, __('kanban.stale'));
             $context = ['type' => $type, 'post_id' => (int) $post->id, 'user_id' => (int) $actor->id,
-                'revision_id' => (int) $stream->draft_revision_id];
-            Hooks::action('jobic.posts.kanban.review.saving', $context);
+                'revision_id' => (int) $stream->draft_revision_id, 'operation' => 'request'];
+            Hooks::lifecycle('jobic.posts.kanban.review.saving', $context);
             if ((int) $stream->submitted_revision_id !== (int) $stream->draft_revision_id) {
                 app(PostLifecycle::class)->submit($post, '*', (int) $stream->draft_revision_id, $actor, (int) $stream->version);
             }
@@ -97,7 +97,7 @@ final class KanbanReview
                     'reviewer_id' => $id, 'requested_by' => $actor->id, 'status' => 'pending', 'created_at' => now(), 'updated_at' => now()]);
                 app(KanbanNotifications::class)->send($id, (int) $post->id, 'review_requested', (int) $actor->id);
             }
-            DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.review.saved', $context));
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.review.saved', $context));
             });
         });
         app(\App\Support\KanbanRealtime::class)->changed($type);
@@ -130,8 +130,8 @@ final class KanbanReview
             abort_unless($review && $review->status === 'pending', 403);
             abort_if(DB::table('kanban_card_reviews')->where('post_id', $post->id)->where('revision_id', $stream->draft_revision_id)->where('status', 'rejected')->exists(), 409, __('kanban.stale'));
             $context = ['type' => $type, 'post_id' => (int) $post->id, 'user_id' => (int) $actor->id,
-                'revision_id' => (int) $stream->draft_revision_id];
-            Hooks::action('jobic.posts.kanban.review.saving', $context);
+                'revision_id' => (int) $stream->draft_revision_id, 'operation' => 'decide'];
+            Hooks::lifecycle('jobic.posts.kanban.review.saving', $context);
             $status = $data['decision'] === 'approve' ? 'approved' : 'rejected';
             DB::table('kanban_card_reviews')->where('id', $review->id)->update(['status' => $status, 'decided_at' => now(), 'updated_at' => now()]);
             if ($status === 'rejected') {
@@ -140,7 +140,7 @@ final class KanbanReview
                 app(PostLifecycle::class)->approve($post, '*', (int) $stream->draft_revision_id, $actor, (int) $stream->version);
             }
             if ($review->requested_by) app(KanbanNotifications::class)->send((int) $review->requested_by, (int) $post->id, 'review_decided', (int) $actor->id);
-            DB::afterCommit(static fn () => Hooks::notify('jobic.posts.kanban.review.saved', $context));
+            DB::afterCommit(static fn () => Hooks::kanbanOutcome('jobic.posts.kanban.review.saved', $context));
             });
         });
         app(\App\Support\KanbanRealtime::class)->changed($type);
