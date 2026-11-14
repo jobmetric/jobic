@@ -355,7 +355,7 @@ class Kanban
             'commandUrl' => route($this->board ? 'admin.posts.kanban.board.command' : 'admin.posts.kanban.command', ['type' => $type, ...($this->board ? ['board' => $this->board->id] : [])]),
             'detailUrl' => route($this->board ? 'admin.posts.kanban.board.details' : 'admin.posts.kanban.details', ['type' => $type, 'post' => '__ID__', ...($this->board ? ['board' => $this->board->id] : [])]),
             'backUrl' => route(PostTypeRegistry::for($type)->hasMultipleKanban() ? 'admin.posts.kanban.index' : 'admin.posts.index', ['type' => $type]),
-            'typeLabel' => __(PostTypeRegistry::for($type)->getLabel()),
+            'typeLabel' => PostTypeRegistry::for($type)->getLabel(),
             'locales' => collect(LocaleCatalog::all())->map(fn ($language, $code) => ['code' => $code, 'name' => $language['name']])->values()->all()];
     }
 
@@ -455,7 +455,7 @@ class Kanban
     {
         $choices = ['none' => __('kanban.group_none'),'author' => __('kanban.author')];
         foreach (PostTypeRegistry::for($type)->getTaxonomyTypes() as $key => $definition) {
-            $choices['taxonomy:'.$key] = __(\JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($definition['type'])->getLabel());
+            $choices['taxonomy:'.$key] = \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($definition['type'])->getLabel();
         }
         return $choices;
     }

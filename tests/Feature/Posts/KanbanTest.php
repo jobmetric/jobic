@@ -67,6 +67,21 @@ class KanbanTest extends TestCase
         return $this->getJson(route('admin.posts.kanban.board.data',['type'=>'post','board'=>$board->id]+$query+['board_version'=>$board->version]));
     }
 
+    public function test_card_type_and_taxonomy_labels_remain_plain_text_in_both_languages(): void
+    {
+        $this->setupBoard();
+        foreach (['en', 'fa'] as $locale) {
+            app()->setLocale($locale);
+            $page = app(\App\Services\Posts\Kanban::class)->useBoard('post', null, auth()->user())->page('post', auth()->user());
+            $this->assertSame(__('posts.types.post'), $page['typeLabel']);
+            $this->assertIsString($page['typeLabel']);
+            $this->assertSame(__('posts.category'), $page['groupChoices']['taxonomy:categories']);
+            $taxonomy = app(\App\Kanban\Filters\TaxonomyFilter::class)->form('post');
+            $this->assertSame(__('posts.category'), $taxonomy['fields'][0]['options'][0]['name']);
+            $this->assertIsString($taxonomy['fields'][0]['options'][0]['name']);
+        }
+    }
+
     public function test_authorized_kanban_extensions_are_isolated_from_core_fields(): void
     {
         $this->setupBoard();

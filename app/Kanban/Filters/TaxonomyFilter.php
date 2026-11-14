@@ -42,7 +42,7 @@ class TaxonomyFilter implements KanbanFilterDriver
         }
         $groups = [];
         foreach ($collections as $collection=>$definition) {
-            $groups[] = ['id' => $collection, 'name' => __(\JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($definition['type'])->getLabel())];
+            $groups[] = ['id' => $collection, 'name' => \JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry::for($definition['type'])->getLabel()];
         }
 
         return ['label' => __('kanban.taxonomy'), 'fields' => [
