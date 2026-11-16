@@ -217,7 +217,11 @@ final class AdminMenuDriver implements ApplicationDriver
             });
     }
 
-    /** Return each registered menu-item taxonomy's independent access keys. */
+    /**
+     * Return each registered menu-item taxonomy's independent access keys.
+     *
+     * @return list<string>
+     */
     private function menuItemPermissions(): array
     {
         $permissions = [];
@@ -234,7 +238,13 @@ final class AdminMenuDriver implements ApplicationDriver
         return array_values(array_unique(array_filter($permissions)));
     }
 
-    /** Return the independent access keys for one registered taxonomy type. */
+    /**
+     * Return the independent access keys for one registered taxonomy type.
+     *
+     * @param string $type
+     *
+     * @return list<string>
+     */
     private function taxonomyMenuPermissions(string $type): array
     {
         if (! TaxonomyTypeRegistry::has($type)) {
