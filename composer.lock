@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5455390f50ecb8e3340a9c8a71801b27",
+    "content-hash": "b82c789ecc48803992cdafc2edefe37a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1757,20 +1757,20 @@
         },
         {
             "name": "jobmetric/laravel-extension",
-            "version": "2.2.0",
+            "version": "2.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-extension.git",
-                "reference": "e56cc095ccfec605839c09ea7083c8508dbd5ccc"
+                "reference": "84029d524761d403b94e521034f736a9bb62c37e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-extension/zipball/e56cc095ccfec605839c09ea7083c8508dbd5ccc",
-                "reference": "e56cc095ccfec605839c09ea7083c8508dbd5ccc",
+                "url": "https://api.github.com/repos/jobmetric/laravel-extension/zipball/84029d524761d403b94e521034f736a9bb62c37e",
+                "reference": "84029d524761d403b94e521034f736a9bb62c37e",
                 "shasum": ""
             },
             "require": {
-                "jobmetric/laravel-event-system": "^2.10",
+                "jobmetric/laravel-event-system": "^2.10.3",
                 "jobmetric/laravel-form": "^1.6",
                 "jobmetric/laravel-package-core": "^1.39",
                 "laravel/framework": ">=9.19",
@@ -1830,7 +1830,8 @@
                 "issues": "https://github.com/jobmetric/laravel-extension/issues",
                 "source": "https://github.com/jobmetric/laravel-extension"
             },
-            "time": "2026-10-20T23:27:23+00:00"
+            "time": "2026-11-15T11:47:36+00:00",
+            "published-time": "2026-11-15T11:47:40+00:00"
         },
         {
             "name": "jobmetric/laravel-flow",
@@ -12096,7 +12097,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -12107,6 +12108,6 @@
         "ext-redis": "*",
         "ext-zip": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.11.0"
 }

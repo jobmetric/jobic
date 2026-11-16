@@ -21,7 +21,7 @@
         "jobmetric/laravel-custom-field": "^2.3.1",
         "jobmetric/laravel-env-modifier": "^2.2",
         "jobmetric/laravel-event-system": "^2.10.3",
-        "jobmetric/laravel-extension": "^2.2.0",
+        "jobmetric/laravel-extension": "^2.3.2",
         "jobmetric/laravel-flow": "^2.5.0",
         "jobmetric/laravel-language": "^2.6.0",
         "jobmetric/laravel-layout": "^2.1.0",
