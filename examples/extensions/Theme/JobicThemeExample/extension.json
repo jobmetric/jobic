@@ -1,0 +1,11 @@
+{
+  "extension": "Theme",
+  "name": "JobicThemeExample",
+  "version": "1.0.0",
+  "title": "Jobic Theme Example",
+  "description": "Removable standalone Theme with isolated views, safe hooks and owned audit data.",
+  "multiple": false,
+  "priority": 10,
+  "depends": [],
+  "author": "JobMetric"
+}

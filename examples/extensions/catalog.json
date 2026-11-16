@@ -1,0 +1,7 @@
+{
+  "single": {"type": "Module", "name": "JobicSingleExample"},
+  "multiple": {"type": "Module", "name": "JobicMultipleExample"},
+  "system": {"type": "Component", "name": "JobicSystemExample"},
+  "theme": {"type": "Theme", "name": "JobicThemeExample"},
+  "plugin": {"type": "Plugin", "name": "JobicPluginExample"}
+}

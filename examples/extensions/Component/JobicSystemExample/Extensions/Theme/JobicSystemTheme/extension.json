@@ -1,0 +1,8 @@
+{
+  "extension": "Theme",
+  "name": "JobicSystemTheme",
+  "version": "1.0.0",
+  "title": "JobicSystemTheme",
+  "multiple": false,
+  "depends": []
+}

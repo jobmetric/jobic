@@ -1,0 +1,25 @@
+{
+  "extension": "Component",
+  "name": "JobicSystemExample",
+  "version": "1.0.0",
+  "title": "Jobic System Example",
+  "description": "A removable component with owned Module, Theme and Plugin extensions.",
+  "multiple": false,
+  "priority": 10,
+  "depends": [],
+  "author": "JobMetric",
+  "children": [
+    {
+      "type": "Module",
+      "name": "JobicSystemCards"
+    },
+    {
+      "type": "Theme",
+      "name": "JobicSystemTheme"
+    },
+    {
+      "type": "Plugin",
+      "name": "JobicSystemObserver"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "extension": "Module",
+  "name": "JobicSingleExample",
+  "version": "1.0.0",
+  "title": "Jobic Single Example",
+  "description": "Removable Jobic extension example for single Plugin instances.",
+  "multiple": false,
+  "priority": 10,
+  "depends": [],
+  "author": "JobMetric"
+}

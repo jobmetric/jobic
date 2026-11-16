@@ -1,0 +1,11 @@
+{
+  "extension": "Module",
+  "name": "JobicMultipleExample",
+  "version": "1.0.0",
+  "title": "Jobic Multiple Example",
+  "description": "Removable Jobic extension example for multiple Plugin instances.",
+  "multiple": true,
+  "priority": 10,
+  "depends": [],
+  "author": "JobMetric"
+}

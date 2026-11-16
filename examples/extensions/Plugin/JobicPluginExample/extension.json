@@ -1,0 +1,11 @@
+{
+  "extension": "Plugin",
+  "name": "JobicPluginExample",
+  "version": "1.0.0",
+  "title": "Jobic Plugin Example",
+  "description": "Removable standalone Plugin with isolated views, safe hooks and owned audit data.",
+  "multiple": false,
+  "priority": 10,
+  "depends": [],
+  "author": "JobMetric"
+}

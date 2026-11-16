@@ -1,0 +1,8 @@
+{
+  "extension": "Module",
+  "name": "JobicSystemCards",
+  "version": "1.0.0",
+  "title": "JobicSystemCards",
+  "multiple": true,
+  "depends": []
+}

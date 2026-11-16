@@ -1,0 +1,8 @@
+{
+  "extension": "Plugin",
+  "name": "JobicSystemObserver",
+  "version": "1.0.0",
+  "title": "JobicSystemObserver",
+  "multiple": false,
+  "depends": []
+}
