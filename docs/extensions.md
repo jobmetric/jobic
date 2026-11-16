@@ -1,0 +1,131 @@
+# Extension management
+
+The settings menu exposes `/admin/settings/extensions`. Jobic uses `jobmetric/laravel-extension` for discovery, metadata, installed records, migration execution and Plugin persistence. It does not treat infrastructure Composer libraries as removable extensions. Types come from `ExtensionTypeRegistry`; extension identities come from `ExtensionRegistry`, including namespaces contributed by installed Composer packages.
+
+## Lifecycle
+
+Upload first creates a private review ticket and reports the ZIP's exact files and manifest without executing its PHP or changing live extension files. Placement requires a separate CSRF-protected confirmation from the same actor. Confirmed placement adds code without installing or activating it. Install runs the package's installation/migrations and default single-instance creation, but starts inactive. Activate separately enables the package's normal configuration/register/boot lifecycle on subsequent requests. Deactivate preserves all Plugin instances and owned data. Instance `status` remains independent of Extension activation; direct `Plugin::run()` also respects the CMS owner's activation policy.
+
+Uninstall requires the owner to be inactive and an explicit deletion confirmation. It preserves the package's existing contract: rollback the extension's migrations, delete its Plugin instances and remove its installed record. Delete files is separate, only after uninstalling and only for application-owned extensions. Composer package files are never deleted through the panel. Restore missing extension files before uninstalling so the package can execute its own cleanup contract. An active dependant prevents disabling its dependency; installed dependants must be uninstalled before removing a dependency’s owned data or files; a missing, inactive or cyclic dependency prevents activation. Emergency recovery also suppresses dependants effectively without deleting their data.
+
+Existing installations without an override retain their active behavior. New CMS installations write an inactive override before package install. Overrides live in private `storage/app/extensions/states.json`, use atomic replacement and a revision for optimistic locking, and are separate from extension business data. Include this directory and the package's `storage/app/installed_extensions.json` in backups and share them and the managed extension directory across web/worker instances. CMS mutation commands use a nonblocking filesystem lock and reject overlapping commands with HTTP 409. Stop old long-lived application/queue workers after lifecycle deployments; already-running PHP requests cannot be unloaded in place.
+
+All manager endpoints enforce registered permissions beneath `admin.settings.extensions`: `view`, `upload`, `install`, `activate`, `deactivate`, `upgrade`, `uninstall`, `delete` and `plugins`. The existing AdminAccess service controls presentation and route decisions. A grant of `view` supplies the settings entry; action permissions independently control operations. Activation changes invalidate the Laravel route cache for subsequent requests. The shared activation middleware additionally rejects disabled owners’ controller routes and live closure routes. Rebuild deployment route caches only after the desired activation state is established. Extension routes must still enforce their own registered Rolix permissions, authentication, ownership, CSRF and DTO validation.
+
+## ZIP format and upgrades
+
+A ZIP contains exactly one `extension.json`, the matching `<Name>.php` entry class and optional extension-owned resources. Its enclosing folder may be present. The manifest retains the package's fields: `extension`, `name`, `version`, `title`, optional `description`, `multiple`, `priority`, `depends` and author information. Type and name use PascalCase directory identifiers. The class is `App\Extensions\<Type>\<Name>\<Name>` and extends `AbstractExtension`. `depends` retains its existing array of extension FQCNs. Register new types/namespaces in a package provider's **register** phase, before Kernel discovery; the management UI reads these registries dynamically.
+
+The uploader checks 50 MB compressed size, 100 MB total extracted size, a 256 KB manifest, 2,000 entries, duplicate names, traversal, Windows paths and symlinks/special files. It extracts to private staging, parses PHP declarations without executing them, and returns the complete file list, sizes, SHA-256 digests and manifest. The page exports both the manifest and complete JSON report. Review tickets are actor/operation-bound, expire after 30 minutes and are consumed once. Confirmation rechecks hashes, identity, version and dependencies, then verifies the executable contract in fresh CLI PHP before promotion. Expired private staging is removed by `extensions:purge-staging`; retained upgrade backups are unaffected. It never runs Composer or accepts a remote URL. Dependencies supplied by Composer must already exist in deployment. Configure `EXTENSIONS_PHP_BINARY` if CLI PHP is not discoverable beside the web PHP installation. Inspection never executes uploaded PHP; contract execution occurs only after confirmation.
+
+An upgrade review and its later confirmation must both match the selected locally owned installed identity and contain a strictly newer semantic version. The manager checks dependencies, temporarily disables the owner, retains prior files under `storage/app/extensions/backups`, and invokes `extensions:migrate` in a fresh safe-mode process so an already-loaded old PHP class cannot run the upgrade. Successful upgrades retain the previous activation state. A migration failure restores previous files, keeps the owner inactive and reports failure. Database DDL or side effects performed by extension code may require manual recovery; file restoration is not a database rollback. Backups are retained for deliberate operator cleanup. Downgrades and ZIP replacement of Composer-owned code are blocked.
+
+## Bundled examples
+
+The upload page offers five removable examples and their 1.1.0 upgrade ZIPs, covering Component, Module (single and multiple), Theme and Plugin. Source, archives, build instructions and the complete manual acceptance walkthrough are in `examples/extensions/README.md`. The standalone examples demonstrate protected pages, public settings fields, write-only secrets, safe hooks and independent audit tables. Single creates one default instance; Multiple supports independently named instances. They remain outside `app/Extensions` until explicitly inspected and confirmed through the manager.
+
+## Extending the CMS
+
+Keep extension controllers, requests, domain services, views, translations and resources inside the extension directory and namespace. Use `configuration(ExtensionCore)` and the package's `EventTrait` callbacks for registration and boot. Add CMS behavior through `App\Facades\Hooks`, the existing admin-menu, permission and domain registries, and documented view slots. Filters may add/remove navigation entries; adding a link never grants route access. Do not modify core files, replace authentication/authorization services, or expose settings fields through hook contexts. Declare extension assets with the existing package facilities and only load management-page assets where needed.
+
+`AbstractExtension::form()` supplies Plugin settings fields; the CMS renders the form's field definitions and delegates validation/storage to the package. `multiple=false` permits one instance; `multiple=true` permits separately named instances. Plugin tables are bounded server-side queries, selection stays in the current document, and saves use shared AJAX transport without a reload. Version checks reject stale edits. Public history includes only instance name and status, never arbitrary Plugin configuration. Password fields are write-only in the CMS form, remain unchanged when left blank on edit, and clear after a successful save. Confirmed instance bulk operations validate every selected ID/version before hooks and commit atomically. English/Persian controls, Domi localization, Select2, shared dialogs and localized dates follow the normal CMS contracts. The Languages CRUD design remains a review candidate; this feature does not change its approval status.
+
+## Recovery
+
+```sh
+php artisan extensions:disable 'App\Extensions\Module\Example\Example'
+php artisan extensions:disable --all
+```
+
+The recovery command skips extension discovery and loading before it changes activation overrides. If necessary, set `EXTENSIONS_SAFE_MODE=true` in the process environment; it is also honored when Laravel configuration is cached. Safe mode suppresses extension discovery, boot and Plugin execution. `extensions:migrate` is an internal upgrade worker and requires safe mode plus an installed extension implementing the existing contract. Repair a failed migration deliberately, then activate from the panel. Never reset an existing database to recover an extension.
+
+## Validation and release
+
+Jobic requires the published `jobmetric/laravel-extension` 2.3.2 release (`84029d524761d403b94e521034f736a9bb62c37e`) through Composer `^2.3.2`. Packagist exposes the immutable tag, and composer.lock records that reference. It includes the snapshot/ArrayObject corrections and the optional composition contract. No vendor repair or production source override is used.
+
+```sh
+php vendor/phpunit/phpunit/phpunit tests/Feature/Extensions
+JOBIC_EXTENSION_PACKAGE_SOURCE=/absolute/package/worktree php vendor/phpunit/phpunit/phpunit --bootstrap tests/Support/extension-package-bootstrap.php tests/Feature/Extensions
+node tests/Browser/extensions-check.mjs
+```
+
+The first command runs every extension case against the installed 2.3.2 release, including package regressions and composed-system rendering. The optional second command supports future package development, overriding optimized classmaps only in the test bootstrap. The browser runner creates a private temporary SQLite/storage sandbox and runs both English and Persian; set `JOBIC_TEST_PHP` and optionally `JOBIC_EXTENSION_PACKAGE_SOURCE` as needed. It must never use a real site's database. No application schema migration or installer restart is required for this feature.
+
+The browser acceptance runner compares toolbar alignment, button ordering and action height with the existing Languages CRUD. Archive pages use a standalone primary action instead of split-save intents, as explicitly requested. It checks report downloads, cancellation before placement, mobile report overflow, complete example cleanup, and real 1.1.0 upgrades through CLI PHP. Web workers explicitly forward effective cache/storage bootstrap paths to the CLI worker; raw requests and connection credentials are not copied into hook contexts or process arguments.
+
+
+## Composed types (package 2.3.2)
+
+Jobic registers Component, Module, Theme and Plugin through ExtensionTypeRegistry in the application driver; Widget is not registered by Jobic. Other packages retain their registered types. Component declares `contains => ['Module', 'Theme', 'Plugin']`; this is a direct-child allowlist, not a list of installed components. The package remains generic and permits other container types.
+
+Actual members are listed in the root manifest's `children`, each containing only `type` and `name`. Their manifests and classes live under `Extensions/<Type>/<Name>` inside the root. They are discovered in the existing registry and have separate installed rows/instance CRUD. The package derives reserved `_owner` metadata. Parent/child namespaces are shown in the downloadable inspection report and review table; an owned row exposes only independent activation and instance actions. Install, upgrade, uninstall and file removal go through the root.
+
+Every newly installed member starts disabled. Enable the root before its children. Disabling a root preserves child overrides and instance data, but suppresses execution throughout the owner chain; re-enabling the root restores only children previously enabled. External dependants of any member block destructive owner changes. Safe lifecycle hooks retain one root-operation context; child manifests, configuration and filenames are never added to hook context. The upload report is separate authorized response data.
+
+ZIP validation accepts multiple manifests only when every child is declared, permitted and inside the owner. Confirmation rechecks the complete file digest and structure. Older installed package versions reject composition with a translated validation error, rather than partially installing. No deployment source override or vendor patch is introduced. The published `2.3.2` tag on `release/composition-2.3.0` contains this work plus the previously prepared runtime fixes and supersedes the older isolated 2.2.1 candidate.
+
+Upgrade 2.3.0's composition contract requires unchanged membership and nondecreasing member versions; the root must advance. Addition/removal of members is rejected before file replacement. Schema and arbitrary extension side effects are not transactionally reversible; file restoration leaves the root disabled on failure. Metadata and installed snapshots publish only after success. Package migrations run outside metadata transactions for MySQL DDL safety.
+
+The new System example ZIP contains one Component and its Module (multiple), Theme (single) and Plugin (single). Its protected system preview and audit table belong to the root. Theme is a lifecycle/resource example, not an implementation of a site-wide theme-selection engine. Downloads are available on the upload page, including 1.1.0. Browser acceptance downloads the actual HTTP response from those buttons, then uploads that exact saved file, including composed CLI upgrades in a private sandbox. Test-only CLI source injection is confined to the browser router; production resolves Composer releases.
+
+The upload resolver handles Windows temporary files for which `getRealPath()` returns false using the readable pathname; missing/invalid temporary files produce a field validation error. This covers the production TypeError recorded on November 15.
+
+
+## Installed release acceptance
+
+Release 2.3.2 was verified from Packagist at `84029d524761d403b94e521034f736a9bb62c37e` and installed by Composer. Only laravel-extension changed among locked packages; composer.json validates. The installed-release suite passed 75 tests / 3348 assertions, including extension lifecycle, CMS hooks, CRUD, authentication and all application event catalogs/behavior, with no skipped cases. The package suite passed 266 tests / 521 assertions against compatible declared dependencies (one existing dependency deprecation).
+
+Browser acceptance passed English and Persian against the installed vendor release with no local package source override: actual in-panel ZIP downloads were uploaded unchanged, all single/multiple/composed examples were installed, configured, activated, upgraded through the real CLI worker, uninstalled and deleted in disposable private SQLite/storage sandboxes. All four composed member versions reached 1.1.0; pending controls, document identity, CSRF, permissions, JSON reports and desktop/mobile layouts were checked. Examples remain available for explicit installation; no live-site sample installation or database reset was performed.
+
+
+## Apache/FastCGI CLI discovery regression
+
+A real `jobic.test` upload failed with `A PHP CLI executable is required for extension archive inspection and upgrades`. Earlier browser acceptance used PHP's CLI server, which returns its own CLI executable and did not expose this web-SAPI difference. An authenticated-token diagnostic on the actual Apache host confirmed `PHP_SAPI=cgi-fcgi`, a `php-cgi.exe` runtime, an empty Symfony discovery result, and a working sibling `php.exe`. The temporary diagnostic was removed.
+
+Runtime now checks the CLI sibling of the current PHP executable and the loaded php.ini directory before accepting the environment finder result. An explicit EXTENSIONS_PHP_BINARY must name a real executable file. Missing CLI produces a translated archive field error (422), not an uncaught runtime error (500). Tests cover finder failure during upload of a downloaded sample and a missing configured executable.
+
+Run `JOBIC_TEST_WEB_SERVER=apache node tests/Browser/extensions-check.mjs` using Node on the Apache host. JOBIC_TEST_APACHE_ORIGIN defaults to https://jobic.test. This mode creates a temporary random, cookie-token-protected entrypoint, asserts the actual FastCGI SAPI, uses fresh private SQLite/storage/cache paths and prevents fixture browser requests from reaching the live app's dynamic routes. The entrypoint is removed on completion/failure. Default CLI-server tests remain useful but do not replace this check.
+
+Apache/FastCGI acceptance passed English and Persian on the actual local Apache server: all six downloaded sample/upgrade ZIPs were uploaded unchanged, with complete single/multiple/composed installation, real CLI upgrades and cleanup. The accompanying installed-release regression suite passed 77 tests / 3356 assertions. No live-site database reset or sample installation was performed.
+
+
+## Upload and review presentation
+
+Archive upload/upgrade pages automatically inspect the selected or dropped ZIP. There is no inspection toolbar button; only a valid review exposes the explicit confirmation action. They do not expose Save and new or Save and close; Plugin record forms retain their normal CRUD split-save controls. During review the complete file-selection area, including example downloads, is hidden. Back clears the selected file and local review ticket, revokes report object URLs and returns to selection in the same document. Confirmation failure invalidates the consumed review and requires returning to selection. Pending requests disable the Back action.
+
+Successful upgrade placement returns a fresh optimistic version and refreshes the hidden form token, so another archive can be inspected without a stale-edit conflict. After placement, selection remains hidden and the report stays available; explicit actions offer another upload or the authorized extension list. Nothing navigates or reloads automatically. The example gallery uses one bordered catalog surface with five translated rows, each containing a type icon, name, concise description and disclosure chevron. Titles and summaries align in columns on desktop and stack on narrow screens. Keyboard focus, RTL chevrons, dark mode and reduced motion are supported. Selecting a card opens the shared dialog with full capabilities, type and instance mode, separate base/upgrade downloads and a lifecycle checklist. Standalone Theme and Plugin examples complement the two Module modes and composed Component. It accurately distinguishes the sample Theme's ownership demo from a global theme/layout engine. Desktop uses the shared toolbar placement; narrow archive toolbars wrap the title above actions so long labels cannot overlap it.
+
+
+## Complete sample catalog and real upgrades
+
+`examples/extensions/catalog.json` drives all five download routes and the ten generated ZIPs. Each root example has a separately owned 1.1.0 upgrade-marker migration: its table is absent after 1.0.0 installation, created by the real upgrade worker, visible through an upgrade-applied preview message and removed during uninstall. Existing audit tables and instance settings remain intact during upgrade.
+
+Apache/FastCGI browser acceptance passed in English and Persian for all five downloaded base archives and their five upgrades, with desktop/mobile dialog checks, installation, configuration, activation, real CLI migrations and complete sandbox cleanup. The installed-release feature suite passed 26 tests / 326 assertions, including catalog type coverage and standalone Theme/Plugin lifecycle and secret exclusion. No live database reset or live sample installation was performed.
+
+
+## Automatic archive review animation
+
+Selecting or dropping one ZIP submits through the shared AJAX transport without navigation. The existing green upload box presents the actual pending request, selected filename and a ZIP document with emerging file sheets and an indeterminate scan animation in place, then transitions to success and reveals the file report. The motion does not imply measured progress. An inspection failure keeps its translated server explanation inside the same upload box, with a keyboard-accessible return to selection; no files are placed. Confirmation remains explicit and uses the existing confirmation dialog and ticket contract. Confirmation failures invalidate the review as before.
+
+The file-selection prompt is replaced in place while processing; no dialog, backdrop or page-level focus trap is created. The shared request lock prevents duplicate submissions. Shared loadingButton, CSRF renewal, field errors, toast, duplicate-submit protection and document identity remain in place. Reduced-motion preferences remove animation and ornamental waiting; the visual states and status announcements remain.
+
+Animation acceptance: `node tests/Browser/archive-motion-check.mjs` runs against the private Apache sandbox and checks Persian mobile/dark presentation, real drag/drop inspection, one-request locking, inline processing without a dialog, translated network errors, retry-button recovery and unchanged document identity. The full `extensions-check.mjs` runner also covers automatic inspection of all five base/upgrade pairs, malformed ZIP recovery, reduced motion and explicit confirmation in English/Persian.
+
+The upload surface uses a single subtle bordered panel with a decorative ZIP paper stack, title/help copy, shared primary file-picker styling and a limits footer. Desktop aligns the illustration, copy and picker horizontally; tablet and mobile layouts stack them without overflow. Hover, keyboard focus and drag-entry states use the existing primary color, with reduced-motion support. Processing, success and error still replace content within that same surface.
+
+The in-place processing artwork shares the upload panel’s paper-stack design. Decorative sheets move out from the ZIP while the request is pending; success stops scanning, settles the sheets and draws a check before revealing staggered report facts. Failure stops the scan and uses an explanatory error card with the same retry action. These drawings do not represent measured upload percentages or verified individual files. The real report remains authoritative. Reduced motion shows static states and a completed check without decorative delays.
+
+Animation pacing follows the requested calm presentation: the processing scene stays visible for at least 2.2 seconds, the actual response changes the state through a short text fade, and success remains readable for 1.6 seconds before a 420 ms exit into the report. Longer requests retain their real pending state; no completion is shown before the server response. Reduced-motion preferences bypass these decorative waits. Desktop processing uses a compact illustration next to one grouped title/help/filename block, with its status track at the bottom and retry action alongside. At viewport widths of 901px and above, selection, working, success and error share an exactly 256px-high canvas; state changes do not grow the panel. Mobile keeps a responsive vertical layout. The redundant visible file-field heading is omitted while the native file input retains its translated accessible name.
+
+Archive errors have one presentation owner: the animated upload surface. The shared transport retains CSRF renewal and validation metadata, but archive failures do not also populate the external field/summary or create an error toast. Distinct server validation messages are deduplicated and rendered as text inside the surface; the file input receives `aria-invalid` and references that visible message through `aria-describedby`. Retry clears those attributes. Other extension/Plugin forms keep the shared field errors, summary and toast behavior.
+
+
+## Temporary upload ownership and cleanup
+
+The native HTTP ZIP is deleted in a `finally` block immediately after extraction/inspection, on success and failure, before PHP request shutdown. `is_uploaded_file` limits this deletion to PHP-owned uploads; repository example archives and caller-supplied local files are borrowed and remain intact. Only extracted payloads and their actor-bound review metadata remain during the explicit confirmation window. Confirmed placement and failed confirmation consume and remove staging in `finally`.
+
+Back/retry after a successful review calls the permission-protected `upload-discard` or `upgrade-discard` endpoint before clearing the selection. The Form Request validates the opaque ticket; the service checks actor and operation under the existing shared lock. Discard is idempotent and cannot remove another actor's review. A failed cleanup request keeps the ticket available for retry. Page exit queues the same CSRF-protected cleanup with `sendBeacon`; this is best effort when the browser or connection is interrupted.
+
+Expired abandoned reviews are pruned every minute by `extensions:purge-staging` through Laravel's scheduler and opportunistically before the next archive inspection. Scheduler deployment must run the normal Laravel `schedule:run` task. Reviews retain the configured 30-minute confirmation window; active reviews, installed extensions and upgrade recovery backups are outside the purge scope. No database reset or migration is involved.
+
+PHPDoc audit covered the extension classes, owning integration drivers/history service and bundled PHP examples: 82 files and 197 named class/method declarations. Class summaries use the Auth-style multiline layout; parameter order/types, the separator before returns and typed return documentation were checked. Missing return/parameter documentation on the two taxonomy menu permission helpers was completed without changing their implementation.

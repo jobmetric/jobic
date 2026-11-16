@@ -45,7 +45,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('web', [
             SecurityHeaders::class,
+            \App\Http\Middleware\Admin\EnsureExtensionActive::class,
         ]);
+        $middleware->appendToGroup('api', [\App\Http\Middleware\Admin\EnsureExtensionActive::class]);
 
         $middleware->group('installation', [
             EncryptCookies::class,

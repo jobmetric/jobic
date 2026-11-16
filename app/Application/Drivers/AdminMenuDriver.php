@@ -201,7 +201,7 @@ final class AdminMenuDriver implements ApplicationDriver
                         ->label((string) ($item['label'] ?? trans('admin.sections.' . $key)))
                         ->icon((string) ($item['icon'] ?? 'settings'))
                         ->url($itemUrl)
-                        ->active(static fn (): bool => url()->current() === rtrim($itemUrl, '/'))
+                        ->active(static fn (): bool => url()->current() === rtrim($itemUrl, '/') || str_starts_with(url()->current(), rtrim($itemUrl, '/').'/'))
                         ->order((int) ($item['order'] ?? 0))
                         ->end();
                 }

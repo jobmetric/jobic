@@ -86,6 +86,11 @@ class PermissionsDriver implements ApplicationDriver
             ->addPermission('admin.settings.languages', 'roles.permissions.settings_languages', 'admin.settings.languages.index', order: 45)
             ->addPermission('admin.settings.mail', 'roles.permissions.settings_mail', 'admin.settings.mail.edit', order: 46);
 
+        $permissions->addPermission('admin.settings.extensions', 'extensions.title');
+        foreach (['view', 'upload', 'install', 'activate', 'deactivate', 'upgrade', 'uninstall', 'delete', 'plugins'] as $operation) {
+            $permissions->addPermission('admin.settings.extensions.'.$operation, 'extensions.'.$operation, $operation === 'view' ? 'admin.settings.extensions.index' : null, order: 47);
+        }
+
         foreach (PostTypeRegistry::values() as $type) {
             if (PostTypeRegistry::for($type)->hasMultipleKanban()) {
                 $app->make(\App\Services\Posts\ContentBoards::class)->permission($type);

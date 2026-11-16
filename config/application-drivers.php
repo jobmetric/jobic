@@ -12,6 +12,7 @@ use App\Application\Drivers\TaxonomyDriver;
 
 return [
     CoreServicesDriver::class,
+    \App\Application\Drivers\ExtensionsDriver::class,
     EditorDriver::class,
     SettingsDriver::class,
     SocialNetworksDriver::class,

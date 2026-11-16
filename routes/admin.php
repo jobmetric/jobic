@@ -145,6 +145,36 @@ Route::middleware([
     });
 
     Route::prefix('settings')->name('settings.')->group(function (): void {
+        Route::prefix('extensions')->name('extensions.')->controller(\App\Http\Controllers\Extensions\ExtensionController::class)->group(function (): void {
+            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.extensions.view')->name('index');
+            Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.settings.extensions.view')->name('data');
+            Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.settings.extensions.upload')->name('create');
+            Route::get('examples/{variant}', 'exampleArchive')->whereIn('variant', array_keys(config('extensions.examples', [])))->middleware(EnsurePermission::class.':admin.settings.extensions.upload')->name('example');
+            Route::get('upgrade', 'create')->middleware(EnsurePermission::class.':admin.settings.extensions.upgrade')->name('upgrade-form');
+            foreach (['upload', 'install', 'activate', 'deactivate', 'upgrade', 'uninstall', 'delete'] as $operation) {
+                Route::post('commands/'.$operation, 'command')->defaults('operation', $operation)
+                    ->middleware([EnsurePermission::class.':admin.settings.extensions.'.$operation, 'throttle:20,1'])->name($operation);
+            }
+            foreach (['upload', 'upgrade'] as $operation) {
+                Route::post('commands/'.$operation.'/discard', 'discardArchive')->defaults('operation', $operation)
+                    ->middleware([EnsurePermission::class.':admin.settings.extensions.'.$operation, 'throttle:30,1'])->name($operation.'-discard');
+                Route::post('commands/'.$operation.'/confirm', 'confirmArchive')->defaults('operation', $operation)
+                    ->middleware([EnsurePermission::class.':admin.settings.extensions.'.$operation, 'throttle:20,1'])->name($operation.'-confirm');
+            }
+            Route::middleware(EnsurePermission::class.':admin.settings.extensions.plugins')->group(function (): void {
+                Route::get('{extension}/plugins', 'pluginIndex')->whereNumber('extension')->name('plugins');
+                Route::get('{extension}/plugins/data', 'pluginData')->whereNumber('extension')->name('plugins.data');
+                Route::post('{extension}/plugins/bulk', 'bulkPlugins')->whereNumber('extension')->middleware('throttle:30,1')->name('plugins.bulk');
+                Route::get('{extension}/plugins/create', 'plugins')->whereNumber('extension')->name('plugins.create');
+                Route::get('{extension}/plugins/{plugin}/history', 'pluginHistory')->whereNumber(['extension', 'plugin'])->name('plugins.history');
+                Route::post('{extension}/plugins/{plugin}/commands/{operation}', 'pluginCommand')->whereNumber(['extension', 'plugin'])->whereIn('operation', ['activate', 'deactivate', 'delete'])->middleware('throttle:30,1')->name('plugins.command');
+                Route::get('{extension}/plugins/{plugin}/edit', 'plugins')->whereNumber(['extension', 'plugin'])->name('plugins.edit');
+                Route::post('{extension}/plugins', 'savePlugin')->whereNumber('extension')->middleware('throttle:30,1')->name('plugins.store');
+                Route::post('{extension}/plugins/{plugin}', 'savePlugin')->whereNumber(['extension', 'plugin'])->middleware('throttle:30,1')->name('plugins.update');
+                Route::delete('{extension}/plugins/{plugin}', 'deletePlugin')->whereNumber(['extension', 'plugin'])->middleware('throttle:30,1')->name('plugins.delete');
+            });
+        });
+
         Route::prefix('forms/{application}/{key}')->name('forms.')->controller(DynamicSettingController::class)->group(function (): void {
             Route::get('/', 'edit')->middleware(EnsurePermission::class.':admin.settings.dynamic')->name('edit');
             Route::put('/', 'update')->middleware([EnsurePermission::class.':admin.settings.dynamic', 'throttle:30,1'])->name('update');

@@ -63,3 +63,8 @@ Every registry CRUD must be copied from the complete Languages CRUD contract bef
 All CMS forms use one control contract. A normal input or select has one outer border and one focus state; password fields use `cms-settings-control` containing exactly one `cms-password-input`, whose inner input has no border. Do not layer CRUD input borders over password controls, add page-specific wrappers, or invent alternate control styling.
 
 Form fields are rendered through the shared Blade components in `resources/views/components/form` (`x-form.field`, `x-form.input`, `x-form.select`, `x-form.textarea`, and `x-form.password`). New CMS forms must reuse these components instead of duplicating field markup.
+
+
+## Extension ZIP workflow exception
+
+At the user's explicit request, extension upload/upgrade pages inspect automatically on file selection or drop and expose a standalone placement-confirmation button only during review. There is no inspection button and no Save and new / Save and close. This exception is confined to archive forms; editable Plugin instances retain the common CRUD toolbar. Review hides the selection area and offers Back within the current document. Completion offers explicit management/another-upload navigation. Existing shared button styling, desktop alignment, AJAX transport, loading, toast and field-error behavior still apply; narrow archive toolbars keep the title separate from the action row to avoid overlap.

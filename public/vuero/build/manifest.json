@@ -232,6 +232,16 @@
       "_icons-f22f49e9.js"
     ]
   },
+  "_shared-e4f1e437.js": {
+    "css": [
+      "assets/crud-fields-e2001d2c.css"
+    ],
+    "file": "assets/shared-e4f1e437.js",
+    "imports": [
+      "_page-1cca34fb.js",
+      "_icons-f22f49e9.js"
+    ]
+  },
   "_toast-bc3a4876.js": {
     "file": "assets/toast-bc3a4876.js"
   },
@@ -302,6 +312,16 @@
     "file": "assets/marker-icon-574c3a5c.png",
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
+  "resources/css/crud.css": {
+    "file": "assets/crud-8a03360a.css",
+    "isEntry": true,
+    "src": "resources/css/crud.css"
+  },
+  "resources/css/extensions-upload.css": {
+    "file": "assets/extensions-upload-00c9a13c.css",
+    "isEntry": true,
+    "src": "resources/css/extensions-upload.css"
+  },
   "resources/css/posts.css": {
     "file": "assets/posts-ae1fa6bb.css",
     "isEntry": true,
@@ -370,6 +390,38 @@
     ],
     "isEntry": true,
     "src": "resources/js/admin/shell.js"
+  },
+  "resources/js/extensions/form.js": {
+    "css": [
+      "assets/crud-fields-e2001d2c.css"
+    ],
+    "file": "assets/form-5c45d4bf.js",
+    "imports": [
+      "_shared-e4f1e437.js",
+      "_page-1cca34fb.js",
+      "_settings-25b93569.js",
+      "_toast-bc3a4876.js",
+      "_history-63738adb.js",
+      "_icons-f22f49e9.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/extensions/form.js"
+  },
+  "resources/js/extensions/index.js": {
+    "css": [
+      "assets/crud-fields-e2001d2c.css"
+    ],
+    "file": "assets/index-ebde7419.js",
+    "imports": [
+      "_shared-e4f1e437.js",
+      "_page-1cca34fb.js",
+      "_settings-25b93569.js",
+      "_toast-bc3a4876.js",
+      "_selects-9c73cec7.js",
+      "_icons-f22f49e9.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/extensions/index.js"
   },
   "resources/js/installation/wizard.css": {
     "file": "assets/wizard-af53e2d6.css",

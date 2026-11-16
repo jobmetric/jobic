@@ -16,6 +16,7 @@ use Throwable;
 class RecordHistory
 {
     private const array FIELDS = [
+        'extension_plugins' => ['name', 'status'],
         'content_boards' => ['name','roles','users','states','filters'],
         'languages'  => [
             'name',
