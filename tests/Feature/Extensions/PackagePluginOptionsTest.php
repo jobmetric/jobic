@@ -8,9 +8,9 @@ use JobMetric\Extension\Models\Extension;
 use JobMetric\Extension\Models\Plugin;
 use JobMetric\Extension\Services\Plugin as PluginService;
 use Tests\Fixtures\Extensions\PaymentMethod\Beta\Beta;
-use Tests\TestCase;
+use Tests\Support\ExtensionManagementTestCase;
 
-class PackagePluginOptionsTest extends TestCase
+class PackagePluginOptionsTest extends ExtensionManagementTestCase
 {
     use DatabaseMigrations;
 

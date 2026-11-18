@@ -33,3 +33,6 @@ composer.phar
 /.env-install-*
 /storage/app/installation/
 /.env.bootstrap.lock
+
+# Extensions installed through the CMS belong to the deployment, not the repository.
+/app/Extensions/

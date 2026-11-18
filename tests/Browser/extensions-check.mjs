@@ -8,6 +8,7 @@ import { apacheSandbox } from './extensions-apache.mjs';
 
 const php = process.env.JOBIC_TEST_PHP || 'C:/laragon/bin/php/php-8.5.8-nts-Win32-vs17-x64/php.exe';
 const source = process.env.JOBIC_EXTENSION_PACKAGE_SOURCE;
+const flattenExtensions = rows => rows.flatMap(row => [row, ...flattenExtensions(row.children || [])]);
 const exampleCatalog = JSON.parse(fs.readFileSync('examples/extensions/catalog.json', 'utf8'));
 const hasComposition = Boolean(source) || fs.existsSync(path.resolve('vendor/jobmetric/laravel-extension/src/Support/ExtensionComposition.php'));
 const apacheMode = process.env.JOBIC_TEST_WEB_SERVER === 'apache';
@@ -53,9 +54,17 @@ try {
             await page.evaluate(() => { window.originalDocument = document; });
             await page.route('**/commands/install', async route => { await new Promise(resolve => setTimeout(resolve, 500)); await route.continue(); });
             async function operate(name, operation) {
-                const row = page.locator('#extension-table tbody tr').filter({hasText: name});
-                await row.locator('summary').click();
-                const button = row.locator(`[data-operation=${operation}]`);
+                const response = await page.request.get(`${base}/data?draw=1&start=0&length=100`);
+                const records = flattenExtensions((await response.json()).data.data);
+                const record = records.find(row => row.name === name);
+                assert.ok(record, name);
+                if (record.owner) {
+                    const parent = records.find(row => row.namespace === record.owner);
+                    const toggle = page.locator(`[data-toggle-children="${parent.id}"]`);
+                    if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.click();
+                }
+                const button = page.locator(`[data-operation=${operation}][data-id="${record.id}"]`);
+                await button.locator('xpath=ancestor::details[1]/summary').click();
                 await button.click();
                 await page.locator('[data-dialog-confirm]').click();
                 await page.waitForFunction(() => document.querySelector('[data-table-loading]').hidden === false);
@@ -71,8 +80,7 @@ try {
             await operate('Alpha fixture', 'deactivate');
             await operate('Beta fixture', 'install');
             const beta = page.locator('#extension-table tbody tr').filter({hasText: 'Beta fixture'});
-            await beta.locator('summary').click();
-            await beta.locator('a').filter({hasText: locale === 'en' ? 'Plugin instances' : 'نمونه‌های افزونه'}).click();
+            await beta.locator('.crud-row-actions > a').click();
             await page.locator('[data-crud-action=create]').click();
             await page.locator('[data-crud-action=save]').click();
             await page.locator('[data-error-for="fields.label"]').filter({hasText: /.+/}).waitFor();
@@ -267,12 +275,13 @@ try {
                 await operate(sampleTitle, 'install');
                 await operate(sampleTitle, 'activate');
                 if (variant === 'system') {
+                    await page.locator('[data-toggle-children]').click();
                     for (const childName of ['JobicSystemCards', 'JobicSystemTheme', 'JobicSystemObserver']) {
-                        const child = page.locator('#extension-table tbody tr').filter({hasText: childName});
+                        const child = page.locator('.extension-child-row').filter({hasText: childName});
                         assert.equal(await child.locator('[data-operation=uninstall],[data-operation=delete],a[href*="/extensions/upgrade?"]').count(), 0);
                         await operate(childName, 'activate');
                     }
-                    await page.locator('#extension-table tbody tr').filter({hasText: 'JobicSystemCards'}).locator('.crud-row-actions > a').click();
+                    await page.locator('.extension-child-row').filter({hasText: 'JobicSystemCards'}).locator('.crud-row-actions > a').click();
                     for (const label of ['Owned A', 'Owned B']) {
                         await page.locator('[data-crud-action=create]').click();
                         await page.locator('[name=name]').fill(label);
@@ -344,7 +353,7 @@ try {
                 await page.evaluate(() => {window.originalDocument = document;});
                 if (variant === 'system') {
                     const result = await page.request.get(`${base}/data?draw=1&start=0&length=100`);
-                    const members = (await result.json()).data.data.filter(row => row.name.startsWith('JobicSystem') || row.name === sampleTitle);
+                    const members = flattenExtensions((await result.json()).data.data).filter(row => row.name.startsWith('JobicSystem') || row.name === sampleTitle);
                     assert.equal(members.length, 4);
                     assert.ok(members.every(row => row.installed_version === '1.1.0'));
                 }

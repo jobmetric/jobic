@@ -20,7 +20,7 @@ export async function sendSettings(url, data) {
         const fallback = document.querySelector('[data-cms-shell]')?.dataset.saveFailed || 'The server could not process the request.';
         result = { ok: false, message: `${fallback} (HTTP ${response.status})`, errors: {} };
     }
-    if (!response.ok || !result.ok) throw Object.assign(new Error(result.message), { errors: result.errors || {}, status: response.status });
+    if (!response.ok || !result.ok) throw Object.assign(new Error(result.message), { errors: result.errors || {}, status: response.status, data: result.data });
     return result;
 }
 

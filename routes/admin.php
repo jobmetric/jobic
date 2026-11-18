@@ -151,6 +151,13 @@ Route::middleware([
             Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.settings.extensions.upload')->name('create');
             Route::get('examples/{variant}', 'exampleArchive')->whereIn('variant', array_keys(config('extensions.examples', [])))->middleware(EnsurePermission::class.':admin.settings.extensions.upload')->name('example');
             Route::get('upgrade', 'create')->middleware(EnsurePermission::class.':admin.settings.extensions.upgrade')->name('upgrade-form');
+            foreach (['activate', 'deactivate', 'delete'] as $operation) {
+                $permissions = [EnsurePermission::class.':admin.settings.extensions.'.$operation, 'throttle:20,1'];
+                if ($operation === 'delete') {
+                    $permissions[] = EnsurePermission::class.':admin.settings.extensions.uninstall';
+                }
+                Route::post('bulk/'.$operation, 'bulkExtensions')->defaults('operation', $operation)->middleware($permissions)->name('bulk.'.$operation);
+            }
             foreach (['upload', 'install', 'activate', 'deactivate', 'upgrade', 'uninstall', 'delete'] as $operation) {
                 Route::post('commands/'.$operation, 'command')->defaults('operation', $operation)
                     ->middleware([EnsurePermission::class.':admin.settings.extensions.'.$operation, 'throttle:20,1'])->name($operation);

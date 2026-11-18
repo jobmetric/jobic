@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Extensions;
 
 use Closure;
+use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
@@ -132,7 +133,7 @@ class Runtime
     }
 
     /**
-     * Allow legacy installations unless an explicit inactive override exists.
+     * Evaluate committed installation, available code and inherited activation preferences.
      *
      * @param  string  $namespace
      *
@@ -169,7 +170,7 @@ class Runtime
      */
     private function enabled(string $namespace, array $states, array $installed, array $trail = []): bool
     {
-        if (($states[$namespace]['active'] ?? true) !== true || in_array($namespace, $trail, true)) {
+        if (! isset($installed[$namespace]) || ! $this->available($namespace) || ($states[$namespace]['active'] ?? true) !== true || in_array($namespace, $trail, true)) {
             return false;
         }
         $trail[] = $namespace;
@@ -191,6 +192,43 @@ class Runtime
     }
 
     /**
+     * Locate an installed entry file without executing a provider or autoloading its PHP code.
+     *
+     * @param string $namespace
+     *
+     * @return bool
+     */
+    private function available(string $namespace): bool
+    {
+        if (class_exists($namespace, false)) {
+            return is_file((string) (new \ReflectionClass($namespace))->getFileName());
+        }
+        foreach (ClassLoader::getRegisteredLoaders() as $loader) {
+            if (($path = $loader->findFile($namespace)) && is_file($path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Read the configured activation preference independently of owner or dependency suppression.
+     *
+     * @param string $namespace
+     *
+     * @return bool
+     */
+    public function requested(string $namespace): bool
+    {
+        try {
+            return ($this->states()[$namespace]['active'] ?? true) === true;
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
+    /**
      * Atomically replace one activation override under the caller's operation lock.
      *
      * @param  string  $namespace
@@ -201,8 +239,23 @@ class Runtime
      */
     public function set(string $namespace, bool $active): void
     {
+        $this->setMany([$namespace => $active]);
+    }
+
+    /**
+     * Publish an activation batch through one atomic state-file replacement under the caller's lock.
+     *
+     * @param array<string, bool> $changes
+     *
+     * @return void
+     * @throws Throwable
+     */
+    public function setMany(array $changes): void
+    {
         $states = $this->states();
-        $states[$namespace] = ['active' => $active, 'revision' => bin2hex(random_bytes(16))];
+        foreach ($changes as $namespace => $active) {
+            $states[$namespace] = ['active' => $active, 'revision' => bin2hex(random_bytes(16))];
+        }
         File::ensureDirectoryExists($this->directory());
         $temporary = tempnam($this->directory(), '.state-');
         if ($temporary === false) {

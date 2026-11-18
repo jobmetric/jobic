@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use JobMetric\Extension\Models\Extension;
 use JobMetric\Extension\Support\InstalledExtensionsFile;
-use Tests\TestCase;
+use Tests\Support\ExtensionManagementTestCase;
 
 /** Regression coverage for the package's transaction-aware installed snapshot. */
-class InstalledSnapshotTest extends TestCase
+class InstalledSnapshotTest extends ExtensionManagementTestCase
 {
     use DatabaseMigrations;
 

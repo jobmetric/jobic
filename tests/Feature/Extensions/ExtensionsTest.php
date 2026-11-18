@@ -30,10 +30,10 @@ use JobMetric\Rolix\Models\Role;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Tests\Fixtures\Extensions\Module\Alpha\Alpha;
 use Tests\Fixtures\Extensions\PaymentMethod\Beta\Beta;
-use Tests\TestCase;
+use Tests\Support\ExtensionManagementTestCase;
 use ZipArchive;
 
-class ExtensionsTest extends TestCase
+class ExtensionsTest extends ExtensionManagementTestCase
 {
     use DatabaseMigrations;
 
@@ -51,6 +51,7 @@ class ExtensionsTest extends TestCase
         config(['extensions.runtime_path' => $this->directory, 'extensions.installed_file' => $this->directory.'/installed.json',
             'extensions.root' => $this->directory.'/owned', 'extensions.safe_mode' => false]);
         ExtensionTypeRegistry::register('PaymentMethod');
+        ExtensionNamespaceRegistry::unregister('App\\Extensions');
         ExtensionNamespaceRegistry::register('Tests\\Fixtures\\Extensions');
         app('ExtensionKernel')->discover();
     }
@@ -125,7 +126,175 @@ class ExtensionsTest extends TestCase
         $this->get(route('admin.settings.extensions.index'))->assertForbidden()->assertSee('admin-shell', false);
         $this->command('install')->assertForbidden();
         $this->postJson(route('admin.settings.extensions.upload-discard'), ['ticket' => str_repeat('a', 64)])->assertForbidden();
+        $this->postJson(route('admin.settings.extensions.bulk.activate'), ['entries' => [], 'confirm' => 1])->assertForbidden();
         $this->get(route('admin.dashboard'))->assertOk()->assertDontSee(route('admin.settings.extensions.index'), false);
+    }
+
+    public function test_public_manifest_filters_and_nested_children_keep_private_settings_out_of_the_table(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->command('install')->assertOk();
+        $this->command('install', Beta::class)->assertOk();
+        $beta = Extension::whereNamespace(Beta::class)->firstOrFail();
+        $info = (array) $beta->info;
+        $info['_owner'] = Alpha::class;
+        $beta->update(['info' => $info]);
+        InstalledExtensionsFile::syncFromDatabase(app());
+        $query = ['draw' => 1, 'start' => 0, 'length' => 10, 'type' => 'PaymentMethod'];
+        $response = $this->getJson(route('admin.settings.extensions.data', $query))->assertOk()
+            ->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.context_only', true)
+            ->assertJsonPath('data.data.0.namespace', Alpha::class)->assertJsonPath('data.data.0.children.0.namespace', Beta::class);
+        $this->assertCount(1, $response->json('data.data'));
+        Extension::create(['extension' => 'Module', 'name' => 'PublicProjection', 'namespace' => 'Example\\Missing', 'info' => [
+            'extension' => 'Module', 'name' => 'PublicProjection', 'version' => '1.0.0', 'author' => ['name' => 'Example author', 'token' => 'DO_NOT_EXPOSE'],
+            'homepage' => 'https://private:DO_NOT_EXPOSE@example.test', 'fields' => ['api_secret' => 'DO_NOT_EXPOSE'], 'multiple' => true,
+        ]]);
+        $safe = $this->getJson(route('admin.settings.extensions.data', ['draw' => 1, 'start' => 0, 'length' => 10, 'status' => 'missing', 'mode' => 'multiple']))->assertOk()
+            ->assertJsonPath('data.recordsFiltered', 1)->assertJsonPath('data.data.0.manifest.author', 'Example author');
+        $this->assertStringNotContainsString('DO_NOT_EXPOSE', $safe->getContent());
+        $this->getJson(route('admin.settings.extensions.data', $query + ['source' => 'local']))->assertOk()->assertJsonPath('data.recordsFiltered', 0);
+        $this->getJson(route('admin.settings.extensions.data', $query + ['mode' => 'single']))->assertOk()->assertJsonPath('data.recordsFiltered', 0);
+        $this->getJson(route('admin.settings.extensions.data', $query + ['installation' => 'available']))->assertOk()->assertJsonPath('data.recordsFiltered', 0);
+    }
+
+    public function test_unknown_runtime_identities_are_inactive_and_bulk_activation_is_atomic_before_hooks(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->assertFalse(app(Runtime::class)->active('Example\\NotInstalled'));
+        Extension::create(['extension' => 'Module', 'name' => 'MissingEntry', 'namespace' => 'Example\\MissingEntry']);
+        InstalledExtensionsFile::syncFromDatabase(app());
+        $this->assertFalse(app(Runtime::class)->active('Example\\MissingEntry'));
+        $this->command('install')->assertOk();
+        $this->command('install', Beta::class)->assertOk();
+        $entries = array_map(fn ($namespace) => ['namespace' => $namespace, '_version' => app(Extensions::class)->version($namespace)], [Alpha::class, Beta::class]);
+        $url = route('admin.settings.extensions.bulk.activate');
+        $veto = true;
+        $saved = [];
+        Hooks::addAction('jobic.extensions.lifecycle.saving', function ($context) use (&$veto): void {
+            if ($veto && $context['namespace'] === Beta::class && $context['operation'] === 'activate') {
+                throw ValidationException::withMessages(['namespace' => 'veto']);
+            }
+        });
+        Hooks::addAction('jobic.extensions.lifecycle.saved', function ($context) use (&$saved): void { $saved[] = $context; });
+        $this->postJson($url, ['entries' => $entries, 'confirm' => 1])->assertUnprocessable();
+        $this->assertFalse(app(Runtime::class)->active(Alpha::class));
+        $this->assertFalse(app(Runtime::class)->active(Beta::class));
+        $this->assertSame([], $saved);
+        $veto = false;
+        $this->postJson($url, ['entries' => $entries, 'confirm' => 1])->assertOk();
+        $this->assertTrue(app(Runtime::class)->active(Alpha::class));
+        $this->assertTrue(app(Runtime::class)->active(Beta::class));
+        $this->assertCount(2, $saved);
+        $this->postJson($url, ['entries' => $entries, 'confirm' => 1])->assertConflict();
+        $this->command('deactivate', Beta::class)->assertOk();
+        $fresh = array_map(fn ($namespace) => ['namespace' => $namespace, '_version' => app(Extensions::class)->version($namespace)], [Alpha::class, Beta::class]);
+        $this->postJson(route('admin.settings.extensions.bulk.deactivate'), ['entries' => $fresh, 'confirm' => 1])->assertUnprocessable();
+        $this->assertTrue(app(Runtime::class)->active(Alpha::class));
+        $this->postJson(route('admin.settings.extensions.bulk.delete'), ['entries' => [$fresh[1]], 'confirm' => 1])->assertUnprocessable();
+    }
+
+    public function test_owned_runtime_reason_distinguishes_an_inactive_dependency_from_an_active_parent(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $dependency = $this->fixture('GateDependency');
+        $child = $this->fixture('OwnedGate', [$dependency]);
+        foreach ([Alpha::class, $dependency, $child] as $namespace) {
+            $this->command('install', $namespace)->assertOk();
+        }
+        $record = Extension::whereNamespace($child)->firstOrFail();
+        $info = (array) $record->info;
+        $info['_owner'] = Alpha::class;
+        $record->update(['info' => $info]);
+        InstalledExtensionsFile::syncFromDatabase(app());
+        foreach ([Alpha::class, $dependency, $child] as $namespace) {
+            $this->command('activate', $namespace)->assertOk();
+        }
+        app(Runtime::class)->locked(fn () => app(Runtime::class)->set($dependency, false));
+        $this->assertTrue(app(Runtime::class)->active(Alpha::class));
+        $this->assertFalse(app(Runtime::class)->active($child));
+        $response = $this->getJson(route('admin.settings.extensions.data', ['draw' => 1, 'start' => 0, 'length' => 10]))->assertOk();
+        $root = collect($response->json('data.data'))->firstWhere('namespace', Alpha::class);
+        $this->assertSame(trans('extensions.dependency_inactive'), $root['children'][0]['state_reason']);
+        $this->assertTrue($root['children'][0]['configured_active']);
+    }
+
+    public function test_legacy_installed_preferences_remain_enabled_when_their_entry_file_exists(): void
+    {
+        Extension::create(['extension' => 'Module', 'name' => 'Alpha', 'namespace' => Alpha::class, 'info' => app(Extensions::class)->metadata(Alpha::class)]);
+        InstalledExtensionsFile::syncFromDatabase(app());
+        $this->assertTrue(app(Runtime::class)->requested(Alpha::class));
+        $this->assertTrue(app(Runtime::class)->active(Alpha::class));
+    }
+
+    public function test_bulk_removal_reports_completed_items_without_claiming_rollback_of_deleted_files(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $entries = [];
+        $folders = [];
+        foreach (['First', 'Second'] as $suffix) {
+            $name = 'BulkRemoval'.$suffix.bin2hex(random_bytes(3));
+            $namespace = 'App\\Extensions\\Module\\'.$name.'\\'.$name;
+            $folder = $this->directory.'/owned/Module/'.$name;
+            File::ensureDirectoryExists($folder);
+            $info = ['extension' => 'Module', 'name' => $name, 'version' => '1.0.0', 'title' => $name, 'multiple' => false, 'depends' => []];
+            File::put($folder.'/extension.json', json_encode($info));
+            File::put($folder.'/'.$name.'.php', '<?php namespace App\\Extensions\\Module\\'.$name.'; class '.$name.' extends \\Tests\\Fixtures\\Extensions\\Module\\Alpha\\Alpha {}');
+            foreach (\Composer\Autoload\ClassLoader::getRegisteredLoaders() as $loader) {
+                $loader->addClassMap([$namespace => $folder.'/'.$name.'.php']);
+            }
+            ExtensionRegistry::register('Module', $namespace);
+            Extension::create(['extension' => 'Module', 'name' => $name, 'namespace' => $namespace, 'info' => $info]);
+            app(Runtime::class)->set($namespace, false);
+            $folders[] = $folder;
+            $entries[] = ['namespace' => $namespace, '_version' => app(Extensions::class)->version($namespace)];
+        }
+        InstalledExtensionsFile::syncFromDatabase(app());
+        $entries = array_map(fn ($entry) => $entry + ['confirm' => 1], $entries);
+        foreach ($entries as &$entry) {
+            $entry['_version'] = app(Extensions::class)->version($entry['namespace']);
+        }
+        unset($entry);
+        $fail = true;
+        Hooks::addAction('jobic.extensions.lifecycle.saving', function ($context) use (&$fail, $entries): void {
+            if ($fail && $context['namespace'] === $entries[1]['namespace'] && $context['operation'] === 'uninstall') {
+                throw ValidationException::withMessages(['namespace' => 'Stop the second fixture.']);
+            }
+        });
+        $url = route('admin.settings.extensions.bulk.delete');
+        File::ensureDirectoryExists($this->directory.'/different-owned-root');
+        config(['extensions.root' => $this->directory.'/different-owned-root']);
+        $this->postJson($url, ['entries' => $entries, 'confirm' => 1])->assertUnprocessable();
+        $this->assertDatabaseHas('extensions', ['namespace' => $entries[0]['namespace']]);
+        $this->assertDirectoryExists($folders[0]);
+        config(['extensions.root' => $this->directory.'/owned']);
+        $this->postJson($url, ['entries' => $entries, 'confirm' => 1])->assertConflict()->assertJsonPath('data.completed.0', hash('sha256', $entries[0]['namespace']));
+        $this->assertDirectoryDoesNotExist($folders[0]);
+        $this->assertDirectoryExists($folders[1]);
+        $this->assertDatabaseMissing('extensions', ['namespace' => $entries[0]['namespace']]);
+        $this->assertDatabaseHas('extensions', ['namespace' => $entries[1]['namespace']]);
+        $fail = false;
+        $this->postJson($url, ['entries' => [$entries[1]], 'confirm' => 1])->assertOk();
+        $this->assertDirectoryDoesNotExist($folders[1]);
+    }
+
+    public function test_plugin_bulk_actions_reject_mixed_statuses_before_any_save_hook(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->command('install', Beta::class)->assertOk();
+        $extension = Extension::whereNamespace(Beta::class)->firstOrFail();
+        $entries = [];
+        foreach ([1, 0] as $status) {
+            $created = $this->postJson(route('admin.settings.extensions.plugins.store', $extension->id), ['name' => 'Status '.$status, 'status' => $status, 'fields' => ['label' => 'Value']])->assertOk();
+            $entries[] = ['id' => $created->json('data.id'), '_version' => $created->json('data.version')];
+        }
+        $hooks = [];
+        Hooks::addAction('jobic.extensions.plugins.saving', function ($context) use (&$hooks): void { $hooks[] = $context; });
+        foreach (['deactivate', 'activate', 'delete'] as $operation) {
+            $this->postJson(route('admin.settings.extensions.plugins.bulk', $extension->id), ['operation' => $operation, 'entries' => $entries, 'confirm' => 1])->assertUnprocessable();
+        }
+        $this->assertSame([], $hooks);
+        $this->assertSame(2, $extension->plugins()->count());
+        $this->assertSame(1, $extension->plugins()->where('status', true)->count());
     }
 
     public function test_stale_commands_and_pre_hook_veto_never_emit_saved(): void
@@ -284,7 +453,9 @@ class ExtensionsTest extends TestCase
         $this->assertSame(['label' => 'private-option'], $plugin->fields->getArrayCopy());
         $this->getJson(route('admin.settings.extensions.plugins.history', [$extension->id, $plugin->id]))->assertOk()->assertDontSee('private-option');
         $this->getJson(route('admin.settings.extensions.plugins.data', [$extension->id, 'draw' => 1, 'start' => 0, 'length' => 10]))->assertOk()->assertDontSee('private-option');
-        $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertOk();
+        $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertUnprocessable();
+        $disabled = $this->postJson(route('admin.settings.extensions.plugins.command', [$extension->id, $plugin->id, 'deactivate']), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertOk();
+        $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $disabled->json('data.version'), 'confirm' => 1])->assertOk();
     }
 
     public function test_bulk_instances_are_atomic_and_reject_stale_or_foreign_selections(): void
@@ -628,6 +799,7 @@ class ExtensionsTest extends TestCase
         $download = $this->get(route('admin.settings.extensions.example', $variant))->assertOk();
         $review = $this->post(route('admin.settings.extensions.upload'), ['archive' => new UploadedFile($download->baseResponse->getFile()->getPathname(), 'example.zip', 'application/zip', null, true)], ['Accept' => 'application/json'])->assertOk();
         $this->postJson(route('admin.settings.extensions.upload-confirm'), ['ticket' => $review->json('data.ticket'), 'confirm' => 1])->assertOk();
+        ExtensionNamespaceRegistry::register('App\\Extensions');
         (new ExtensionKernel($this->app))->discover();
         $namespace = 'App\\Extensions\\'.$type.'\\'.$name.'\\'.$name;
         $this->command('install', $namespace)->assertOk();

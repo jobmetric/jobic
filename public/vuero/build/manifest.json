@@ -184,8 +184,8 @@
       "_page-1cca34fb.js"
     ]
   },
-  "_settings-25b93569.js": {
-    "file": "assets/settings-25b93569.js",
+  "_settings-772d2b72.js": {
+    "file": "assets/settings-772d2b72.js",
     "imports": [
       "_page-1cca34fb.js",
       "_icons-f22f49e9.js"
@@ -212,6 +212,16 @@
       "_icons-f22f49e9.js"
     ]
   },
+  "_shared-af724e90.js": {
+    "css": [
+      "assets/crud-fields-e2001d2c.css"
+    ],
+    "file": "assets/shared-af724e90.js",
+    "imports": [
+      "_page-1cca34fb.js",
+      "_icons-f22f49e9.js"
+    ]
+  },
   "_shared-b83b863c.js": {
     "css": [
       "assets/crud-fields-e2001d2c.css"
@@ -227,16 +237,6 @@
       "assets/crud-fields-e2001d2c.css"
     ],
     "file": "assets/shared-e23d1b01.js",
-    "imports": [
-      "_page-1cca34fb.js",
-      "_icons-f22f49e9.js"
-    ]
-  },
-  "_shared-e4f1e437.js": {
-    "css": [
-      "assets/crud-fields-e2001d2c.css"
-    ],
-    "file": "assets/shared-e4f1e437.js",
     "imports": [
       "_page-1cca34fb.js",
       "_icons-f22f49e9.js"
@@ -381,10 +381,10 @@
     "css": [
       "assets/admin-shell-8567f706.css"
     ],
-    "file": "assets/shell-8bd9420b.js",
+    "file": "assets/shell-2e4a04a7.js",
     "imports": [
       "_toast-bc3a4876.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_page-1cca34fb.js",
       "_icons-f22f49e9.js"
     ],
@@ -395,11 +395,11 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-5c45d4bf.js",
+    "file": "assets/form-757055b4.js",
     "imports": [
-      "_shared-e4f1e437.js",
+      "_shared-af724e90.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_history-63738adb.js",
       "_icons-f22f49e9.js"
@@ -407,15 +407,20 @@
     "isEntry": true,
     "src": "resources/js/extensions/form.js"
   },
+  "resources/js/extensions/index.css": {
+    "file": "assets/index-602907bb.css",
+    "src": "resources/js/extensions/index.css"
+  },
   "resources/js/extensions/index.js": {
     "css": [
+      "assets/index-602907bb.css",
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/index-ebde7419.js",
+    "file": "assets/index-01a4fa28.js",
     "imports": [
-      "_shared-e4f1e437.js",
+      "_shared-af724e90.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_icons-f22f49e9.js"
@@ -446,10 +451,10 @@
       "assets/kanban-boards-fa1743e1.css",
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/board-form-5dff6e1e.js",
+    "file": "assets/board-form-a052c3ba.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_history-f5feac78.js",
@@ -466,10 +471,10 @@
       "assets/crud-fields-e2001d2c.css",
       "assets/kanban-boards-fa1743e1.css"
     ],
-    "file": "assets/boards-7b5ea9b4.js",
+    "file": "assets/boards-96bd845c.js",
     "imports": [
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_shared-33b8445a.js",
@@ -486,11 +491,11 @@
     "css": [
       "assets/index-59157605.css"
     ],
-    "file": "assets/index-20e7aa78.js",
+    "file": "assets/index-da76e21f.js",
     "imports": [
       "_WorkflowToast-ea06635a.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_apexcharts-e66b3859.js",
@@ -504,11 +509,11 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-de2ddf64.js",
+    "file": "assets/form-72fa8a70.js",
     "imports": [
       "_shared-33b8445a.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_history-63738adb.js",
       "_icons-f22f49e9.js"
@@ -520,11 +525,11 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/index-bb3df1a6.js",
+    "file": "assets/index-094f7efe.js",
     "imports": [
       "_shared-33b8445a.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_icons-f22f49e9.js"
@@ -622,14 +627,14 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-368256ab.js",
+    "file": "assets/form-48d749e1.js",
     "imports": [
       "resources/js/posts/editor-runtime.js",
       "resources/js/posts/editor-workbench.js",
       "_toast-bc3a4876.js",
       "_history-63738adb.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_shared-e23d1b01.js",
       "_media-manager-e3dd67da.js",
       "_icons-f22f49e9.js",
@@ -652,14 +657,14 @@
       "resources/js/posts/editor-runtime.js",
       "resources/js/posts/editor-workbench.js"
     ],
-    "file": "assets/index-e3ea2057.js",
+    "file": "assets/index-84729343.js",
     "imports": [
       "_preload-helper-cf779743.js",
       "_icons-f22f49e9.js",
       "_page-1cca34fb.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_media-manager-e3dd67da.js"
     ],
     "isEntry": true,
@@ -670,11 +675,11 @@
       "assets/crud-fields-e2001d2c.css",
       "assets/roles-28074802.css"
     ],
-    "file": "assets/form-c7d85693.js",
+    "file": "assets/form-b97886d2.js",
     "imports": [
       "_shared-53a39e7c.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_history-63738adb.js",
       "_selects-9c73cec7.js",
@@ -688,11 +693,11 @@
       "assets/crud-fields-e2001d2c.css",
       "assets/roles-28074802.css"
     ],
-    "file": "assets/index-194bc897.js",
+    "file": "assets/index-eb0ff6b1.js",
     "imports": [
       "_shared-53a39e7c.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_icons-f22f49e9.js"
@@ -712,11 +717,11 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-d408d722.js",
+    "file": "assets/form-d663c05d.js",
     "imports": [
       "_shared-e23d1b01.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_history-63738adb.js",
       "_history-f5feac78.js",
@@ -731,11 +736,11 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/index-9da72c54.js",
+    "file": "assets/index-2fbacc24.js",
     "imports": [
       "_shared-e23d1b01.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_icons-f22f49e9.js"
@@ -747,11 +752,11 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-225a1440.js",
+    "file": "assets/form-7e53e8be.js",
     "imports": [
       "_shared-b83b863c.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_history-63738adb.js",
       "_icons-f22f49e9.js"
@@ -763,11 +768,11 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/index-15d498da.js",
+    "file": "assets/index-748deb9e.js",
     "imports": [
       "_shared-b83b863c.js",
       "_page-1cca34fb.js",
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_selects-9c73cec7.js",
       "_icons-f22f49e9.js"
@@ -1677,9 +1682,9 @@
       "assets/admin-shell-8567f706.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/login-7780f315.js",
+    "file": "assets/login-76e1d8bf.js",
     "imports": [
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_page-1cca34fb.js",
       "_jquery-83fec99f.js",
@@ -1693,9 +1698,9 @@
       "assets/admin-shell-8567f706.css",
       "assets/auth-login-8fff407d.css"
     ],
-    "file": "assets/recovery-7780f315.js",
+    "file": "assets/recovery-76e1d8bf.js",
     "imports": [
-      "_settings-25b93569.js",
+      "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
       "_page-1cca34fb.js",
       "_jquery-83fec99f.js",

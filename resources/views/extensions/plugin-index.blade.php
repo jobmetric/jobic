@@ -2,9 +2,10 @@
 @section('title', __('extensions.plugins'))
 @section('content')
 <section class="crud-page" data-extension-list>
-    <header class="crud-toolbar"><div><h1>{{ __('extensions.plugins') }}</h1><p>{{ trans($extension->info['title'] ?? $extension->name) }}</p></div><div data-crud-toolbar data-list-controls></div></header>
+    <header class="crud-toolbar"><div class="crud-taxonomy-heading">@if(app(\App\Support\AdminAccess::class)->allows(auth()->user(), 'admin.settings.extensions.view'))<a class="crud-title-back" href="{{ $back_url }}" aria-label="{{ __('extensions.back_extensions') }}"><x-vuero.icon name="arrow-left" size="24" /></a>@endif<div><h1>{{ __('extensions.plugins') }}</h1><p>{{ trans($extension->info['title'] ?? $extension->name) }}</p></div></div><div data-crud-toolbar data-list-controls></div></header>
+    <p class="crud-hint" data-extension-paused @if($extension_active) hidden @endif>{{ __('extensions.instances_paused') }}</p>
     @cmsHook('jobic.admin.extensions.list.before')
-    <div class="crud-stats">@foreach(['total', 'active', 'inactive', 'recent'] as $stat)<article><span>{{ __('extensions.'.$stat) }}</span><strong data-extension-stat>—</strong><x-vuero.icon name="globe" size="32" /></article>@endforeach</div>
+    <div class="crud-stats">@foreach(['total' => 'apps', 'active' => 'check-circle', 'inactive' => 'clock', 'recent' => 'calendar'] as $stat => $statIcon)<article><span>{{ __('extensions.'.$stat) }}</span><strong data-extension-stat>—</strong><x-vuero.icon :name="$statIcon" size="32" /></article>@endforeach</div>
     <div class="crud-list-controls" data-list-controls>
         <label class="crud-search"><x-vuero.icon name="search" size="20" /><span class="sr-only">{{ __('extensions.search') }}</span><input type="search" data-search placeholder="{{ __('extensions.search') }}" maxlength="100"></label>
         <div class="crud-filter-controls"><button type="button" class="vuero-button" data-show-selected hidden></button><button type="button" class="vuero-button" data-open-filters><x-vuero.icon name="filter" size="18" />{{ __('extensions.filters') }}</button></div>

@@ -6,6 +6,7 @@ namespace App\Services\Extensions;
 
 use App\Facades\Hooks;
 use App\Http\Requests\Extensions\BulkRequest;
+use App\Http\Requests\Extensions\ExtensionBulkRequest;
 use App\Http\Requests\Extensions\CommandRequest;
 use App\Http\Requests\Extensions\ExampleRequest;
 use App\Http\Requests\Extensions\DiscardArchiveRequest;
@@ -49,7 +50,7 @@ class Extensions extends AbstractCrudService
     protected static string $resourceClass = ExtensionResource::class;
 
     /**
-     * Build a bounded table from discovered identities and installed package records.
+     * Page extension families with validated filters, public metadata and owned member rows.
      *
      * @param  array<string, mixed>  $input
      *
@@ -74,24 +75,138 @@ class Extensions extends AbstractCrudService
                 'version' => $info['version'] ?? '', 'installed_version' => $record?->info['version'] ?? null,
                 'status' => $missing ? 'missing' : (! $record ? 'available' : (app(Runtime::class)->active($namespace) ? 'active' : 'inactive')),
                 'depends' => $info['depends'] ?? [], 'description' => trans($info['description'] ?? ''),
+                'manifest' => $this->publicManifest($info),
+                'multiple' => (bool) ($info['multiple'] ?? false),
+                'configured_active' => $record !== null && app(Runtime::class)->requested($namespace),
+                'has_update' => $record !== null && version_compare((string) ($info['version'] ?? '0'), (string) ($record->info['version'] ?? '0'), '>'),
                 'plugins_count' => $record?->plugins_count ?? 0,
                 'installed' => $record !== null, 'local' => $this->local($namespace), 'owner' => $this->owner($namespace, $record),
                 '_version' => $this->version($namespace),
                 'plugins_url' => $record ? route('admin.settings.extensions.plugins', $record->id) : null,
             ];
         }
-        $total = count($rows);
-        $stats = [$total, count(array_filter($rows, fn ($row) => $row['status'] === 'active')), $installed->count(), count(array_filter($rows, fn ($row) => $row['status'] === 'available'))];
+        foreach ($rows as &$row) {
+            $row['blocked'] = $row['installed'] && $row['configured_active'] && $row['status'] === 'inactive';
+            $row['state_reason'] = $row['blocked'] ? trans($row['owner'] && ! app(Runtime::class)->active($row['owner']) ? 'extensions.owner_inactive' : 'extensions.dependency_inactive') : '';
+            $row['actions'] = $row['installed'] ? ($row['configured_active'] ? ['deactivate'] : ['activate']) : ($row['owner'] ? [] : ['install']);
+            if ($row['installed'] && $row['blocked']) {
+                $row['actions'][] = 'activate';
+            }
+            if (! $row['owner']) {
+                if ($row['installed'] && $row['status'] !== 'active') {
+                    $row['actions'][] = 'uninstall';
+                    if ($row['local']) {
+                        $row['actions'][] = 'delete';
+                    }
+                } elseif (! $row['installed'] && $row['local']) {
+                    $row['actions'][] = 'delete';
+                }
+            }
+            $row['action_reasons'] = [];
+            foreach (array_intersect($row['actions'], ['install', 'activate', 'deactivate', 'uninstall']) as $action) {
+                try {
+                    in_array($action, ['install', 'activate'], true) ? $this->dependencies($row['namespace'], $action === 'activate') : $this->dependants($row['namespace'], $action === 'deactivate');
+                } catch (ValidationException $exception) {
+                    $row['action_reasons'][$action] = implode(' ', array_merge(...array_values($exception->errors())));
+                    $row['actions'] = array_values(array_diff($row['actions'], [$action]));
+                    if ($action === 'uninstall') {
+                        $row['actions'] = array_values(array_diff($row['actions'], ['delete']));
+                    }
+                }
+            }
+            if ($row['status'] === 'inactive' && $row['state_reason'] === '' && isset($row['action_reasons']['activate'])) {
+                $row['state_reason'] = $row['action_reasons']['activate'];
+            }
+            if ($row['status'] === 'missing') {
+                $row['actions'] = [];
+            }
+        }
+        unset($row);
+        $stats = [count($rows), count(array_filter($rows, fn ($row) => $row['status'] === 'active')), $installed->count(), count(array_filter($rows, fn ($row) => $row['status'] === 'available'))];
         $search = mb_strtolower($input['search']['value'] ?? '');
-        $rows = array_values(array_filter($rows, fn ($row) => ($search === '' || str_contains(mb_strtolower($row['name'].' '.$row['description']), $search))
-            && (empty($input['type']) || $row['type'] === $input['type'])
-            && (empty($input['status']) || $row['status'] === $input['status'])));
+        $matches = [];
+        foreach ($rows as $row) {
+            if (($search === '' || str_contains(mb_strtolower($row['name'].' '.$row['description'].' '.$row['namespace']), $search))
+                && (empty($input['type']) || $row['type'] === $input['type'])
+                && (empty($input['status']) || $row['status'] === $input['status'])
+                && (empty($input['source']) || $row['local'] === ($input['source'] === 'local'))
+                && (empty($input['installation']) || $row['installed'] === ($input['installation'] === 'installed'))
+                && (empty($input['mode']) || $row['multiple'] === ($input['mode'] === 'multiple'))
+                && (empty($input['updates']) || $row['has_update'] === ($input['updates'] === 'available'))
+                && (empty($input['structure']) || ($input['structure'] === 'owned' ? $row['owner'] !== null : $row['owner'] === null))) {
+                $matches[$row['namespace']] = true;
+            }
+        }
         $column = [1 => 'name', 2 => 'type', 3 => 'version', 4 => 'status', 5 => 'plugins_count'][(int) ($input['order'][0]['column'] ?? 1)];
         usort($rows, fn ($a, $b) => (($a[$column] <=> $b[$column]) ?: strcmp($a['namespace'], $b['namespace'])) * (($input['order'][0]['dir'] ?? 'asc') === 'desc' ? -1 : 1));
+        $byNamespace = array_column($rows, null, 'namespace');
+        $children = [];
+        $roots = [];
+        foreach ($rows as $row) {
+            if ($row['owner'] && isset($byNamespace[$row['owner']])) {
+                $children[$row['owner']][] = $row;
+            } else {
+                $roots[] = $row;
+            }
+        }
+        $tree = function (array $row, bool $include, array $trail = []) use (&$tree, $children, $matches): ?array {
+            if (in_array($row['namespace'], $trail, true)) {
+                return null;
+            }
+            $trail[] = $row['namespace'];
+            $matched = isset($matches[$row['namespace']]);
+            $row['children'] = array_values(array_filter(array_map(fn ($child) => $tree($child, $include || $matched, $trail), $children[$row['namespace']] ?? [])));
+            if (! $include && ! $matched && $row['children'] === []) {
+                return null;
+            }
+            $row['context_only'] = ! $matched && ! $include;
 
-        return Response::make(true, '', ['draw' => (int) $input['draw'], 'recordsTotal' => $total,
-            'recordsFiltered' => count($rows), 'stats' => $stats,
-            'data' => array_slice($rows, (int) $input['start'], (int) $input['length'])]);
+            return $row;
+        };
+        $filtered = array_values(array_filter(array_map(fn ($row) => $tree($row, false), $roots)));
+
+        return Response::make(true, '', ['draw' => (int) $input['draw'], 'recordsTotal' => count($roots),
+            'recordsFiltered' => count($filtered), 'stats' => $stats,
+            'data' => array_slice($filtered, (int) $input['start'], (int) $input['length'])]);
+    }
+
+    /**
+     * Project public manifest fields without exposing configuration defaults, secrets or filesystem paths.
+     *
+     * @param array<string, mixed> $info
+     *
+     * @return array<string, mixed>
+     */
+    private function publicManifest(array $info): array
+    {
+        $public = [];
+        foreach (['name', 'extension', 'version', 'title', 'description', 'license'] as $key) {
+            if (is_string($info[$key] ?? null)) {
+                $public[$key] = mb_substr($info[$key], 0, 2000);
+            }
+        }
+        $author = $info['author'] ?? null;
+        $public['author'] = is_string($author) ? mb_substr($author, 0, 300) : (is_array($author) && is_string($author['name'] ?? null) ? mb_substr($author['name'], 0, 300) : '');
+        $public['multiple'] = (bool) ($info['multiple'] ?? false);
+        $public['priority'] = is_numeric($info['priority'] ?? null) ? (int) $info['priority'] : 0;
+        foreach (['depends', 'keywords'] as $key) {
+            $public[$key] = array_values(array_map(fn ($value) => mb_substr($value, 0, 300), array_filter(is_array($info[$key] ?? null) ? $info[$key] : [], 'is_string')));
+        }
+        foreach (['homepage', 'website'] as $key) {
+            $url = $info[$key] ?? null;
+            if (is_string($url) && filter_var($url, FILTER_VALIDATE_URL) && in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'], true)
+                && ! parse_url($url, PHP_URL_USER) && ! parse_url($url, PHP_URL_PASS)) {
+                $public[$key] = $url;
+            }
+        }
+        $public['children'] = [];
+        foreach (is_array($info['children'] ?? null) ? $info['children'] : [] as $child) {
+            if (is_array($child) && is_string($child['type'] ?? null) && is_string($child['name'] ?? null)) {
+                $public['children'][] = ['type' => $child['type'], 'name' => $child['name']];
+            }
+        }
+
+        return $public;
     }
 
     /**
@@ -171,7 +286,7 @@ class Extensions extends AbstractCrudService
     {
         $record = Extension::whereNamespace($namespace)->withCount('plugins')->first();
 
-        return hash('sha256', serialize([$record?->getAttributes(), $this->metadata($namespace, $record), app(Runtime::class)->states()[$namespace] ?? null]));
+        return hash('sha256', serialize([$record?->getAttributes(), $this->metadata($namespace, $record), app(Runtime::class)->states()[$namespace] ?? null, app(Runtime::class)->active($namespace)]));
     }
 
     /**
@@ -238,83 +353,185 @@ class Extensions extends AbstractCrudService
     {
         $input = dto($input, CommandRequest::class);
 
+        return app(Runtime::class)->locked(fn (): Response => in_array($operation, ['upload', 'upgrade'], true)
+            ? $this->archive($operation, $input, $userId)
+            : $this->executeCommand($operation, $input, $userId));
+    }
+
+    /**
+     * Validate identity, observed version and dependencies before any lifecycle hook or mutation.
+     *
+     * @param string $operation
+     * @param array<string, mixed> $input
+     *
+     * @return array{0: string, 1: Extension|null}
+     * @throws Throwable
+     */
+    private function validateOperation(string $operation, array $input): array
+    {
+        $namespace = (string) ($input['namespace'] ?? '');
+        $record = Extension::whereNamespace($namespace)->first();
+        abort_unless(ExtensionRegistry::has($namespace) || $record, 404);
+        abort_unless(hash_equals($this->version($namespace), $input['_version'] ?? ''), 409, trans('extensions.conflict'));
+        if ($this->owner($namespace, $record) && in_array($operation, ['install', 'uninstall', 'delete'], true)) {
+            throw ValidationException::withMessages(['namespace' => trans('extensions.owned_extension')]);
+        }
+        if (in_array($operation, ['uninstall', 'delete'], true) && empty($input['confirm'])) {
+            throw ValidationException::withMessages(['confirm' => trans('extensions.confirm_required')]);
+        }
+        if (in_array($operation, ['deactivate', 'uninstall', 'delete'], true)) {
+            $this->dependants($namespace, $operation === 'deactivate');
+        }
+        if ($operation === 'activate') {
+            abort_unless($record && ExtensionRegistry::has($namespace), 409);
+            $this->dependencies($namespace);
+        }
+        if ($operation === 'install') {
+            abort_if($record !== null, 409);
+            $this->dependencies($namespace, false);
+            $info = $this->metadata($namespace);
+            if (Extension::where('extension', $info['extension'] ?? '')->where('name', $info['name'] ?? '')->whereNull('info->_owner')->exists()) {
+                throw ValidationException::withMessages(['namespace' => trans('extensions.identity_conflict')]);
+            }
+        }
+        if ($operation === 'uninstall') {
+            abort_unless($record && ! app(Runtime::class)->active($namespace), 409, trans('extensions.deactivate_first'));
+        }
+        if ($operation === 'delete') {
+            abort_unless(! $record && $this->local($namespace), 409);
+            $this->assertLocalFiles($namespace);
+        }
+        return [$namespace, $record];
+    }
+
+    /**
+     * Require managed extension files to resolve strictly inside the deployment-owned extension root.
+     *
+     * @param string $namespace
+     *
+     * @return void
+     * @throws Throwable
+     */
+    private function assertLocalFiles(string $namespace): void
+    {
+        $path = ExtensionRegistry::has($namespace) && class_exists($namespace)
+            ? (new \ReflectionClass($namespace))->getFileName() : resolveNamespacePath($namespace);
+        $folder = $path && is_dir($path) ? $path : dirname((string) $path);
+        $root = str_replace('\\', '/', (string) realpath((string) config('extensions.root')));
+        $realFolder = str_replace('\\', '/', (string) realpath($folder));
+        abort_unless($root !== '' && $realFolder !== '' && str_starts_with($realFolder.'/', $root.'/'), 422, trans('extensions.invalid_archive'));
+    }
+
+    /**
+     * Execute one prevalidated lifecycle operation while the caller holds the shared lock.
+     *
+     * @param string $operation
+     * @param array<string, mixed> $input
+     * @param int $userId
+     *
+     * @return Response
+     * @throws Throwable
+     */
+    private function executeCommand(string $operation, array $input, int $userId): Response
+    {
+        [$namespace, $record] = $this->validateOperation($operation, $input);
+        $context = ['namespace' => $namespace, 'operation' => $operation, 'user_id' => $userId];
+        Hooks::action('jobic.extensions.lifecycle.saving', $context);
+        try {
+            switch ($operation) {
+                case 'install':
+                    app(Runtime::class)->set($namespace, false);
+                    $this->requireSuccess(PackageExtension::install($namespace));
+                    foreach ($this->members($namespace) as $member) {
+                        app(Runtime::class)->set($member, false);
+                    }
+                    break;
+                case 'activate':
+                case 'deactivate':
+                    abort_unless($record !== null, 409);
+                    app(Runtime::class)->set($namespace, $operation === 'activate');
+                    break;
+                case 'uninstall':
+                    $this->requireSuccess(PackageExtension::uninstall($namespace, true));
+                    break;
+                case 'delete':
+                    $this->requireSuccess(PackageExtension::delete(ExtensionRegistry::get($namespace), $namespace));
+                    ExtensionRegistry::unregister($namespace);
+                    break;
+                default:
+                    abort(422);
+            }
+        } catch (ExtensionOperationConflictException) {
+            abort(409, trans('extensions.conflict'));
+        } catch (\InvalidArgumentException) {
+            throw ValidationException::withMessages(['namespace' => trans('extensions.invalid_archive')]);
+        } finally {
+            InstalledExtensionsFile::syncFromDatabase(app());
+            ExtensionKernel::clearDiscoverCache();
+        }
+        Hooks::notify('jobic.extensions.lifecycle.saved', $context);
+
+        return Response::make(true, trans('extensions.saved'), ['version' => $this->version($namespace)]);
+    }
+
+    /**
+     * Preflight a homogeneous selection and publish activation atomically or report deletion progress.
+     *
+     * @param string $operation
+     * @param array<string, mixed> $input
+     * @param int $userId
+     *
+     * @return Response
+     * @throws Throwable
+     */
+    public function bulkExtensions(string $operation, array $input, int $userId): Response
+    {
+        $input = dto($input, ExtensionBulkRequest::class);
+        abort_unless(in_array($operation, ['activate', 'deactivate', 'delete'], true), 422);
+
         return app(Runtime::class)->locked(function () use ($operation, $input, $userId): Response {
-            if (in_array($operation, ['upload', 'upgrade'], true)) {
-                return $this->archive($operation, $input, $userId);
-            }
-            $namespace = (string) ($input['namespace'] ?? '');
-            $record = Extension::whereNamespace($namespace)->first();
-            abort_unless(ExtensionRegistry::has($namespace) || $record, 404);
-            abort_unless(hash_equals($this->version($namespace), $input['_version'] ?? ''), 409, trans('extensions.conflict'));
-            if ($this->owner($namespace, $record) && in_array($operation, ['install', 'uninstall', 'delete'], true)) {
-                throw ValidationException::withMessages(['namespace' => trans('extensions.owned_extension')]);
-            }
-            $context = ['namespace' => $namespace, 'operation' => $operation, 'user_id' => $userId];
-            if (in_array($operation, ['uninstall', 'delete'], true) && empty($input['confirm'])) {
-                throw ValidationException::withMessages(['confirm' => trans('extensions.confirm_required')]);
-            }
-            if (in_array($operation, ['deactivate', 'uninstall', 'delete'], true)) {
-                $this->dependants($namespace, $operation === 'deactivate');
-            }
-            if ($operation === 'activate') {
-                abort_unless($record && ExtensionRegistry::has($namespace), 409);
-                $this->dependencies($namespace);
-            }
-            if ($operation === 'install') {
-                abort_if($record !== null, 409);
-                $this->dependencies($namespace, false);
-                $info = $this->metadata($namespace);
-                if (Extension::where('extension', $info['extension'] ?? '')->where('name', $info['name'] ?? '')->whereNull('info->_owner')->exists()) {
-                    throw ValidationException::withMessages(['namespace' => trans('extensions.identity_conflict')]);
+            foreach ($input['entries'] as $entry) {
+                $namespace = $entry['namespace'];
+                $record = Extension::whereNamespace($namespace)->first();
+                abort_unless(hash_equals($this->version($namespace), $entry['_version']), 409, trans('extensions.conflict'));
+                if ($operation === 'delete') {
+                    abort_unless($this->local($namespace) && ! $this->owner($namespace, $record) && ExtensionRegistry::has($namespace), 422, trans('extensions.bulk_delete_local'));
+                    abort_if($record && app(Runtime::class)->active($namespace), 422, trans('extensions.mixed_selection'));
+                    $this->assertLocalFiles($namespace);
+                } else {
+                    abort_unless($record && app(Runtime::class)->active($namespace) === ($operation === 'deactivate'), 422, trans('extensions.mixed_selection'));
                 }
+                $this->validateOperation($operation === 'delete' && $record ? 'uninstall' : $operation, $entry + ['confirm' => 1]);
             }
-            if ($operation === 'uninstall') {
-                abort_unless($record && ! app(Runtime::class)->active($namespace), 409, trans('extensions.deactivate_first'));
-            }
-            if ($operation === 'delete') {
-                abort_unless(! $record && $this->local($namespace), 409);
-                $path = resolveNamespacePath($namespace);
-                $folder = $path && is_dir($path) ? $path : dirname((string) $path);
-                $root = str_replace('\\', '/', (string) realpath((string) config('extensions.root')));
-                $realFolder = str_replace('\\', '/', (string) realpath($folder));
-                abort_unless($root !== '' && $realFolder !== '' && str_starts_with($realFolder.'/', $root.'/'), 422, trans('extensions.invalid_archive'));
-            }
-            Hooks::action('jobic.extensions.lifecycle.saving', $context);
-            try {
-                switch ($operation) {
-                    case 'install':
-                        app(Runtime::class)->set($namespace, false);
-                        $this->requireSuccess(PackageExtension::install($namespace));
-                        foreach ($this->members($namespace) as $member) {
-                            app(Runtime::class)->set($member, false);
-                        }
-                        break;
-                    case 'activate':
-                    case 'deactivate':
-                        abort_unless($record !== null, 409);
-                        app(Runtime::class)->set($namespace, $operation === 'activate');
-                        break;
-                    case 'uninstall':
-                        $this->requireSuccess(PackageExtension::uninstall($namespace, true));
-                        break;
-                    case 'delete':
-                        $this->requireSuccess(PackageExtension::delete(ExtensionRegistry::get($namespace), $namespace));
-                        ExtensionRegistry::unregister($namespace);
-                        break;
-                    default:
-                        abort(422);
+            if ($operation !== 'delete') {
+                foreach ($input['entries'] as $entry) {
+                    Hooks::action('jobic.extensions.lifecycle.saving', ['namespace' => $entry['namespace'], 'operation' => $operation, 'user_id' => $userId]);
                 }
-            } catch (ExtensionOperationConflictException) {
-                abort(409, trans('extensions.conflict'));
-            } catch (\InvalidArgumentException) {
-                throw ValidationException::withMessages(['namespace' => trans('extensions.invalid_archive')]);
-            } finally {
+                app(Runtime::class)->setMany(array_fill_keys(array_column($input['entries'], 'namespace'), $operation === 'activate'));
                 InstalledExtensionsFile::syncFromDatabase(app());
                 ExtensionKernel::clearDiscoverCache();
-            }
-            Hooks::notify('jobic.extensions.lifecycle.saved', $context);
+                foreach ($input['entries'] as $entry) {
+                    Hooks::notify('jobic.extensions.lifecycle.saved', ['namespace' => $entry['namespace'], 'operation' => $operation, 'user_id' => $userId]);
+                }
 
-            return Response::make(true, trans('extensions.saved'), ['version' => $this->version($namespace)]);
+                return Response::make(true, trans('extensions.saved'));
+            }
+            $completed = [];
+            foreach ($input['entries'] as $entry) {
+                try {
+                    if (Extension::whereNamespace($entry['namespace'])->exists()) {
+                        $this->executeCommand('uninstall', $entry + ['confirm' => 1], $userId);
+                    }
+                    $this->executeCommand('delete', ['namespace' => $entry['namespace'], '_version' => $this->version($entry['namespace']), 'confirm' => 1], $userId);
+                    $completed[] = hash('sha256', $entry['namespace']);
+                } catch (Throwable $exception) {
+                    report($exception);
+
+                    return Response::make(false, trans('extensions.bulk_partial'), ['completed' => $completed], 409);
+                }
+            }
+
+            return Response::make(true, trans('extensions.saved'), ['completed' => $completed]);
         });
     }
 
@@ -723,7 +940,7 @@ class Extensions extends AbstractCrudService
         ])->all();
 
         return Response::make(true, '', ['draw' => (int) $input['draw'], 'recordsTotal' => $total,
-            'recordsFiltered' => $count, 'data' => $rows, 'stats' => [$total, $active, $total - $active, $recent]]);
+            'recordsFiltered' => $count, 'data' => $rows, 'owner_active' => app(Runtime::class)->active($extension->namespace), 'can_create' => (bool) ($extension->info['multiple'] ?? false) || $total === 0, 'stats' => [$total, $active, $total - $active, $recent]]);
     }
 
     /**
@@ -741,6 +958,9 @@ class Extensions extends AbstractCrudService
     public function pluginCommand(int $extensionId, int $pluginId, string $operation, array $input, int $userId): Response
     {
         $record = PluginModel::where('extension_id', $extensionId)->findOrFail($pluginId);
+        abort_unless(in_array($operation, ['activate', 'deactivate', 'delete'], true), 422);
+        abort_unless(hash_equals($this->pluginVersion($record), $input['_version'] ?? ''), 409, trans('extensions.conflict'));
+        abort_unless((bool) $record->status === ($operation === 'deactivate'), 422, trans('extensions.mixed_selection'));
 
         return $this->savePlugin($extensionId, $pluginId, $input + ['name' => $record->name, 'status' => $operation === 'activate' ? 1 : 0], $userId, $operation === 'delete');
     }
@@ -774,6 +994,7 @@ class Extensions extends AbstractCrudService
     public function pluginPage(int $extensionId, ?int $pluginId = null): array
     {
         $extension = Extension::findOrFail($extensionId);
+        abort_unless(ExtensionRegistry::has($extension->namespace), 404);
         $record = $pluginId ? $extension->plugins()->findOrFail($pluginId) : null;
         $driver = app($extension->namespace);
 
@@ -785,7 +1006,12 @@ class Extensions extends AbstractCrudService
             }
         }
 
+        $owner = $this->owner($extension->namespace, $extension);
+        $backNamespace = $owner ?: (! empty($extension->info['children']) ? $extension->namespace : null);
+
         return ['extension' => $extension, 'record' => $record,
+            'extension_active' => app(Runtime::class)->active($extension->namespace),
+            'back_url' => route('admin.settings.extensions.index', $backNamespace ? ['expanded' => hash('sha256', $backNamespace)] : []),
             'form' => $form, 'values' => $values,
             'canCreate' => (bool) ($extension->info['multiple'] ?? false) || ! $extension->plugins()->exists(),
             'version' => $record ? $this->pluginVersion($record) : null];
@@ -842,6 +1068,7 @@ class Extensions extends AbstractCrudService
         }
         if ($delete) {
             abort_unless($record && ! empty($input['confirm']), 422);
+            abort_if((bool) $record->status, 422, trans('extensions.deactivate_instance_first'));
         } else {
             $input = dto($input, PluginRequest::class);
             if ($record && array_key_exists('fields', $input)) {
@@ -900,6 +1127,8 @@ class Extensions extends AbstractCrudService
                 foreach ($input['entries'] as $entry) {
                     abort_unless(hash_equals($this->pluginVersion($records->get($entry['id'])), $entry['_version']), 409, trans('extensions.conflict'));
                 }
+                $expected = $input['operation'] === 'deactivate';
+                abort_unless($records->every(fn ($record) => (bool) $record->status === $expected), 422, trans('extensions.mixed_selection'));
                 foreach ($input['entries'] as $entry) {
                     $record = $records->get($entry['id']);
                     $this->persistPlugin($extensionId, $record->id, ['name' => $record->name, 'status' => $input['operation'] === 'activate' ? 1 : 0,

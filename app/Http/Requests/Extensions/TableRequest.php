@@ -60,6 +60,11 @@ class TableRequest extends FormRequest
                 'nullable',
                 'in:asc,desc',
             ],
+            'source' => ['nullable', 'in:local,composer'],
+            'installation' => ['nullable', 'in:installed,available'],
+            'mode' => ['nullable', 'in:single,multiple'],
+            'updates' => ['nullable', 'in:available,current'],
+            'structure' => ['nullable', 'in:root,owned'],
             'status' => [
                 'nullable',
                 'in:available,active,inactive,missing',

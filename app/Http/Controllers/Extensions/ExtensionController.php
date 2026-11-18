@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Extensions;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Extensions\BulkRequest;
+use App\Http\Requests\Extensions\ExtensionBulkRequest;
 use App\Http\Requests\Extensions\CommandRequest;
 use App\Http\Requests\Extensions\ExampleRequest;
 use App\Http\Requests\Extensions\DiscardArchiveRequest;
@@ -96,6 +97,22 @@ class ExtensionController extends Controller
     }
 
     /**
+     * Execute a route-authorized extension selection through the lifecycle service.
+     *
+     * @param ExtensionBulkRequest $request
+     * @param string $operation
+     *
+     * @return JsonResponse
+     * @throws \Throwable
+     */
+    public function bulkExtensions(ExtensionBulkRequest $request, string $operation): JsonResponse
+    {
+        $result = $this->extensions->bulkExtensions($operation, $request->validated(), (int) $request->user()->id);
+
+        return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
+    }
+
+    /**
      * Download one named example for manual upload and lifecycle testing.
      *
      * @param  ExampleRequest  $request
@@ -156,7 +173,7 @@ class ExtensionController extends Controller
         $this->prepare($extension, $page['canCreate']);
         Domi::setPlugins(['jquery', 'datatable', 'select2']);
 
-        return view('extensions.plugin-index', ['extension' => $page['extension']]);
+        return view('extensions.plugin-index', ['extension' => $page['extension'], 'back_url' => $page['back_url'], 'extension_active' => $page['extension_active']]);
     }
 
     /**
@@ -293,12 +310,16 @@ class ExtensionController extends Controller
         foreach (['upload', 'install', 'activate', 'deactivate', 'upgrade', 'uninstall', 'delete'] as $operation) {
             $routes[$operation] = route('admin.settings.extensions.'.$operation);
         }
+        $routes['bulkOperations'] = [];
+        foreach (['activate', 'deactivate', 'delete'] as $operation) {
+            $routes['bulkOperations'][$operation] = route('admin.settings.extensions.bulk.'.$operation);
+        }
         if ($extensionId !== null) {
             $routes = ['index' => route('admin.settings.extensions.plugins', $extensionId),
                 'data' => route('admin.settings.extensions.plugins.data', $extensionId),
                 'bulk' => route('admin.settings.extensions.plugins.bulk', $extensionId),
                 'create' => route('admin.settings.extensions.plugins.create', $extensionId)];
-            Page::addLocalize('pluginContext', ['enabled' => true, 'canCreate' => $canCreate]);
+            Page::addLocalize('pluginContext', ['enabled' => true, 'canCreate' => $canCreate, 'backUrl' => route('admin.settings.extensions.index')]);
         }
         Page::addLocalize('extensionRoutes', $routes);
         $access = [];
