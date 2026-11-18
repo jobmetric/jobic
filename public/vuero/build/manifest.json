@@ -212,11 +212,11 @@
       "_icons-f22f49e9.js"
     ]
   },
-  "_shared-af724e90.js": {
+  "_shared-99f12774.js": {
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/shared-af724e90.js",
+    "file": "assets/shared-99f12774.js",
     "imports": [
       "_page-1cca34fb.js",
       "_icons-f22f49e9.js"
@@ -395,9 +395,9 @@
     "css": [
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/form-757055b4.js",
+    "file": "assets/form-297144a8.js",
     "imports": [
-      "_shared-af724e90.js",
+      "_shared-99f12774.js",
       "_page-1cca34fb.js",
       "_settings-772d2b72.js",
       "_toast-bc3a4876.js",
@@ -408,17 +408,17 @@
     "src": "resources/js/extensions/form.js"
   },
   "resources/js/extensions/index.css": {
-    "file": "assets/index-4dee8af9.css",
+    "file": "assets/index-de720528.css",
     "src": "resources/js/extensions/index.css"
   },
   "resources/js/extensions/index.js": {
     "css": [
-      "assets/index-4dee8af9.css",
+      "assets/index-de720528.css",
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/index-ee7e46f3.js",
+    "file": "assets/index-73fe7b74.js",
     "imports": [
-      "_shared-af724e90.js",
+      "_shared-99f12774.js",
       "_page-1cca34fb.js",
       "_settings-772d2b72.js",
       "_toast-bc3a4876.js",

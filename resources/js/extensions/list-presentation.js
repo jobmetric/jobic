@@ -27,11 +27,11 @@ export function childrenMarkup(row) {
     const render = (entries, depth = 0) => entries.map(child => `<div class="extension-child-row" data-child-id="${escape(child.id)}" style="--child-depth:${Math.min(depth, 4)}">
         <div class="extension-child-select">${child.context_only ? '' : `<input type="checkbox" data-row-id="${escape(child.id)}" aria-label="${escape(copy().select_row)}">`}</div>
         <span class="extension-child-symbol">${icon({Component:'box',Module:'apps',Theme:'layout',Plugin:'code'}[child.type] || 'box')}</span>
-        <div class="extension-child-name"><strong>${escape(child.name)}</strong><small>${escape(child.type_label)} <span aria-hidden="true">·</span> <bdi>${escape(child.version)}</bdi>${child.plugins_url ? ` <span aria-hidden="true">·</span> ${Number(child.plugins_count)} ${escape(copy().plugins_count)}` : ''}</small></div>
+        <div class="extension-child-name"><strong dir="auto">${escape(child.name)}</strong>${child.description ? `<p class="extension-child-description" dir="auto">${escape(child.description)}</p>` : ''}<div class="extension-child-meta"><span>${escape(child.type_label)}</span><span>${escape(copy().version)} <bdi>${escape(child.version || '—')}</bdi></span>${child.multiple ? `<span>${escape(copy().child_instance_count.replace(':count', new Intl.NumberFormat(document.documentElement.lang).format(child.plugins_count)))}</span>` : ''}</div></div>
         <div class="extension-child-state">${statusMarkup(child)}</div>
         ${actionsMarkup(child, false)}
         </div>${render(child.children || [], depth + 1)}`).join('');
-    return `<div class="extension-children"><header class="extension-children__header"><span>${icon('box')}${escape(copy().child_extensions)}</span><small>${flattenRows(row.children || []).length}</small></header><div class="extension-children__items">${render(row.children || [])}</div></div>`;
+    return `<div class="extension-children"><header class="extension-children__header"><span>${icon('box')}${escape(copy().component_children)}</span><small>${flattenRows(row.children || []).length}</small></header><div class="extension-children__items">${render(row.children || [])}</div></div>`;
 }
 export function bulkAvailability(entries, isPlugins) {
     if (!entries.length) return [];
@@ -62,7 +62,9 @@ export function showExtensionDetails(row) {
     const symbol = document.createElement('span'); symbol.className = 'extension-details__symbol'; symbol.innerHTML = icon({Component:'box',Module:'apps',Theme:'layout',Plugin:'code'}[row.type] || 'box');
     const tags = document.createElement('div'); tags.className = 'extension-details__tags';
     [row.type_label, row.version, copy()[row.status], copy()[row.local ? 'filter_source_local' : 'filter_source_composer']].forEach(value => {const tag=document.createElement('span');tag.textContent=value;tags.append(tag);});
-    summary.append(symbol,tags);content.append(summary);
+    const overview=document.createElement('div');overview.className='extension-details__overview';
+    const title=document.createElement('h3');title.textContent=row.name;const description=document.createElement('p');description.textContent=row.description;overview.append(title,description,tags);
+    summary.append(symbol,overview);content.append(summary);
     if(row.state_reason) {const reason=document.createElement('p');reason.className='extension-details__notice';reason.textContent=row.state_reason;content.append(reason);}
     const facts=document.createElement('dl');facts.className='extension-details__facts';
     const metadata=row.manifest || {};
@@ -77,5 +79,5 @@ export function showExtensionDetails(row) {
     const website=metadata.homepage || metadata.website;
     if(website) {const link=document.createElement('a');link.href=website;link.textContent=copy().homepage;link.target='_blank';link.rel='noopener noreferrer';content.append(link);}
     const raw=document.createElement('details'),heading=document.createElement('summary'),hint=document.createElement('p'),pre=document.createElement('pre');heading.textContent=copy().manifest_public;hint.textContent=copy().manifest_public_hint;pre.textContent=JSON.stringify(metadata,null,2);raw.append(heading,hint,pre);content.append(raw);
-    return showDialog({title:row.name,description:row.description,content,wide:true,symbol:'box'});
+    return showDialog({title:copy().extension_overview,description:'',content,wide:true,symbol:'box'});
 }

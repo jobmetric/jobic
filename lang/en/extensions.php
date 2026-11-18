@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'extension_overview' => 'Extension details',
+    'child_instance_count' => ':count instances',
+    'component_children' => 'Extensions in this component',
     'deactivate_instance_first' => 'Deactivate this instance before deleting it.',
     'instances_paused' => 'Instance status is independent. These instances run only when their extension, parent and dependencies are active.',
     'back_extensions' => 'Back to extensions',
@@ -19,8 +22,8 @@ return [
     'filter_structure' => 'Ownership',
     'filter_structure_root' => 'Independent / parent',
     'filter_structure_owned' => 'Owned child',
-    'owner_inactive' => 'Enabled preference; paused while its parent is inactive.',
-    'dependency_inactive' => 'Enabled preference; paused by an unavailable dependency.',
+    'owner_inactive' => 'Activate the parent component first.',
+    'dependency_inactive' => 'Paused: a required extension is inactive or unavailable.',
     'mixed_selection' => 'Select items with the same status before applying a group action.',
     'selection_mixed_hint' => 'Your selection includes different states. Review each group and adjust the selection before continuing.',
     'selection_blocked_hint' => 'Some items require their parent or dependencies first. Adjust your selection or activate the required extension.',

@@ -252,6 +252,9 @@ class ExtensionController extends Controller
     {
         $page = $this->extensions->pluginPage($extension, $plugin);
         $this->prepare($extension, (bool) ($page['extension']->info['multiple'] ?? false));
+        if (! ($page['extension']->info['multiple'] ?? false)) {
+            Page::addLocalize('singleInstanceReturn', ['url' => $page['back_url']]);
+        }
         abort_unless($plugin || $page['canCreate'], 409, trans('extensions.single_instance'));
 
         return view('extensions.plugins', $page);

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use JobMetric\Extension\Exceptions\ExtensionOperationConflictException;
 use JobMetric\Extension\Facades\Extension as PackageExtension;
@@ -462,7 +463,11 @@ class Extensions extends AbstractCrudService
                 case 'activate':
                 case 'deactivate':
                     abort_unless($record !== null, 409);
-                    app(Runtime::class)->setMany($this->activationChanges($namespace, $operation === 'activate'));
+                    $changes = $this->activationChanges($namespace, $operation === 'activate');
+                    if ($operation === 'activate') {
+                        $this->ensureInitialInstances(array_keys($changes), $userId);
+                    }
+                    app(Runtime::class)->setMany($changes);
                     break;
                 case 'uninstall':
                     $this->requireSuccess(PackageExtension::uninstall($namespace, true));
@@ -524,6 +529,9 @@ class Extensions extends AbstractCrudService
                 foreach ($input['entries'] as $entry) {
                     $changes = array_replace($changes, $this->activationChanges($entry['namespace'], $operation === 'activate'));
                 }
+                if ($operation === 'activate') {
+                    $this->ensureInitialInstances(array_keys($changes), $userId);
+                }
                 app(Runtime::class)->setMany($changes);
                 InstalledExtensionsFile::syncFromDatabase(app());
                 ExtensionKernel::clearDiscoverCache();
@@ -549,6 +557,52 @@ class Extensions extends AbstractCrudService
             }
 
             return Response::make(true, trans('extensions.saved'), ['completed' => $completed]);
+        });
+    }
+
+    /**
+     * Create a first multiple-instance draft from form defaults without inventing required settings.
+     *
+     * @param list<string> $namespaces
+     * @param int $userId
+     *
+     * @return void
+     * @throws Throwable
+     */
+    private function ensureInitialInstances(array $namespaces, int $userId): void
+    {
+        DB::transaction(function () use ($namespaces, $userId): void {
+            foreach ($namespaces as $namespace) {
+                $extension = Extension::whereNamespace($namespace)->lockForUpdate()->firstOrFail();
+                if (! ($extension->info['multiple'] ?? false) || $extension->plugins()->exists()
+                    || ! (ExtensionTypeRegistry::get($extension->extension)['instances'] ?? true)) {
+                    continue;
+                }
+                $fields = [];
+                foreach (app($namespace)->form()->build()->getAllCustomFields(true) as $field) {
+                    $name = $field->params['name'] ?? null;
+                    if (is_string($name) && $name !== '') {
+                        $fields[$name] = $field->params['value'] ?? $field->attributes['value'] ?? null;
+                    }
+                }
+                $input = ['name' => trans($extension->info['title'] ?? $extension->name), 'status' => 1, 'fields' => $fields];
+                $valid = true;
+                try {
+                    dto($input, StorePluginRequest::class, ['extension_id' => $extension->id]);
+                } catch (ValidationException) {
+                    $valid = false;
+                }
+                if ($valid) {
+                    $this->persistPlugin($extension->id, null, $input, $userId, false);
+                } else {
+                    // A draft may lack required configuration; it must never execute until explicitly configured.
+                    $context = ['extension_id' => $extension->id, 'id' => null, 'operation' => 'create', 'user_id' => $userId];
+                    Hooks::action('jobic.extensions.plugins.saving', $context);
+                    $draft = $extension->plugins()->create(['name' => $input['name'], 'status' => false, 'fields' => $fields]);
+                    app(RecordHistory::class)->record('extension_plugins', $draft->id, $userId, 'create', [], ['name' => $draft->name, 'status' => false]);
+                    DB::afterCommit(fn () => Hooks::notify('jobic.extensions.plugins.saved', $context));
+                }
+            }
         });
     }
 
@@ -1008,6 +1062,11 @@ class Extensions extends AbstractCrudService
         abort_unless(hash_equals($this->pluginVersion($record), $input['_version'] ?? ''), 409, trans('extensions.conflict'));
         abort_unless((bool) $record->status === ($operation === 'deactivate'), 422, trans('extensions.mixed_selection'));
 
+        if ($operation === 'activate') {
+            $input['fields'] = (array) $record->fields?->getArrayCopy();
+
+        }
+
         return $this->savePlugin($extensionId, $pluginId, $input + ['name' => $record->name, 'status' => $operation === 'activate' ? 1 : 0], $userId, $operation === 'delete');
     }
 
@@ -1126,6 +1185,12 @@ class Extensions extends AbstractCrudService
                     }
                 }
                 $input['fields'] = array_replace((array) $record->fields?->getArrayCopy(), $input['fields']);
+            }
+            if (! empty($input['status'])) {
+                $complete = $input + ['fields' => (array) $record?->fields?->getArrayCopy()];
+                $rules = StorePluginRequest::rulesFor($complete, ['extension_id' => $extensionId]);
+                $rules = array_filter($rules, fn ($key) => $key === 'fields' || str_starts_with($key, 'fields.'), ARRAY_FILTER_USE_KEY);
+                Validator::make($complete, $rules)->validate();
             }
             $input = dto($input, $record ? UpdatePluginRequest::class : StorePluginRequest::class,
                 ['extension_id' => $extensionId, 'plugin' => $record]);

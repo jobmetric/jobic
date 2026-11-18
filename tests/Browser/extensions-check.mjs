@@ -80,6 +80,13 @@ try {
             await operate('Alpha fixture', 'deactivate');
             await operate('Beta fixture', 'install');
             await operate('Beta fixture', 'activate');
+            const betaInventory = await page.request.get(`${base}/data?draw=1&start=0&length=100`);
+            const betaRecord = (await betaInventory.json()).data.data.find(row => row.name === 'Beta fixture');
+            const betaInstances = await page.request.get(`${betaRecord.plugins_url}/data?draw=1&start=0&length=10`);
+            const initialDraft = (await betaInstances.json()).data.data[0];
+            const configured = await page.request.post(`${betaRecord.plugins_url}/${initialDraft.id}`, {headers:{Accept:'application/json','X-CSRF-TOKEN':await page.locator('meta[name=csrf-token]').getAttribute('content')},data:{name:initialDraft.name,status:1,fields:{label:'Configured initial instance'},_version:initialDraft._version}});
+            assert.equal(configured.status(),200);
+
             const beta = page.locator('#extension-table tbody tr').filter({hasText: 'Beta fixture'});
             await beta.locator('.crud-row-actions > a').click();
             await page.locator('[data-crud-action=create]').click();
@@ -304,8 +311,9 @@ try {
                     await page.locator('[name=message]').fill('Single example message');
                     await page.locator('[name=api_secret]').fill('example-browser-secret');
                     await page.locator('[data-crud-action=save]').click();
-                    await page.waitForFunction(() => !document.querySelector('[data-extension-form]').dataset.saving);
-                    assert.equal(await page.locator('[name=api_secret]').inputValue(), '');
+                    await page.waitForURL(base+'*');
+                    await page.locator('#extension-table').waitFor();
+                    assert.equal(await page.locator('[name=api_secret]').count(), 0);
                 } else {
                     for (const label of ['A', 'B']) {
                         await page.locator('[data-crud-action=create]').click();

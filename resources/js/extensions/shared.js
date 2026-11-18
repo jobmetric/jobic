@@ -54,7 +54,7 @@ export function toolbar(kind, {canCreate} = {}) {
         return;
     }
     const cancel = document.createElement('a');
-    cancel.href = routes.index;
+    cancel.href = pageData().singleInstanceReturn?.url || routes.index;
     cancel.className = 'vuero-button crud-cancel';
     cancel.dataset.crudAction = 'cancel';
     cancel.textContent = copy().cancel;

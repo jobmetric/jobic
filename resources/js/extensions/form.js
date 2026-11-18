@@ -71,6 +71,7 @@ if (form) {
             guard.saved(form.hasAttribute('data-upload-form') ? guard.snapshot() : baseline);
             historyPanel?.refresh();
             announce(result.message);
+            if (pageData().singleInstanceReturn) { guard.leave(); location.assign(pageData().singleInstanceReturn.url); return; }
             if (intent === 'close') { guard.leave(); location.assign(pageData().extensionRoutes.index); }
             if (intent === 'new') { guard.leave(); location.assign(form.dataset.newUrl || pageData().extensionRoutes.create); }
         } catch (error) {

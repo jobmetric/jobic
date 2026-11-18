@@ -159,3 +159,14 @@ Parent activation now preflights every installed descendant and its dependency g
 Owned rows use a compact inset list with type-specific symbols, name/type/version, status/reason and existing authorized action menus. Narrow screens keep controls aligned and allow the existing table-scroll container to handle the inventory width.
 
 Family-management verification passed Apache acceptance in English and Persian: direct single-instance editing, hidden inactive management links, no Component instance action, all-member parent activation/deactivation, independent child toggles under an active parent, compact child rows and mobile/dark presentation. Backend regression: 35 tests, 365 assertions, with two operator-installed samples deliberately skipped to preserve deployment files.
+
+
+## Instance return paths and initial multiple-instance records
+
+At the user's explicit request, single-instance edit forms return to the inventory after successful AJAX Save as well as Cancel. The owning component is reopened through the existing expanded identifier when applicable. Validation failures retain the form and draft. Multiple-instance forms retain their existing instance-list return and in-place save behavior. The server provides this trusted destination through Domi (`singleInstanceReturn`), never through a user-supplied redirect URL.
+
+Activation of a multiple-instance extension creates its first record only when no Plugin rows exist. The shared lifecycle lock and database transaction prevent concurrent duplicate creation. The service reads defaults from the package form, uses the existing validated Plugin service path when complete, and creates a disabled draft when required configuration is missing. It never invents required values. That draft follows the package's installation-default model contract, remains unexecutable and must pass full creation-field validation before activation through edit, single-command or bulk paths. Existing instances and their statuses are preserved on subsequent activations. Family and bulk activation apply the same rule to every eligible member; types registered with `instances=false` are excluded.
+
+The details dialog retains the public metadata allowlist, but groups its content into a type illustration, description and status tags, a compact fact sheet, dependency/member chips and the optional public JSON disclosure. All metadata remains escaped and private defaults are excluded.
+
+Instance-flow acceptance passed on real Apache in English and Persian: single Save/Cancel return to inventory, initial multiple-instance draft creation and duplicate prevention, refreshed details on desktop/mobile/dark. Final backend regression: 38 tests / 386 assertions, with two deployment-owned examples preserved by skips. Coverage includes valid-default bulk creation, incomplete-draft activation rejection, duplicate prevention and a pre-hook veto.

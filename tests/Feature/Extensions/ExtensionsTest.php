@@ -247,6 +247,52 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $this->assertStringContainsString('/edit', $parent['plugins_url']);
     }
 
+    public function test_activation_creates_one_inactive_multiple_draft_without_replacing_existing_instances(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->command('install', Beta::class)->assertOk();
+        $extension = Extension::whereNamespace(Beta::class)->firstOrFail();
+        $this->assertSame(0, $extension->plugins()->count());
+        $this->command('activate', Beta::class)->assertOk();
+        $draft = $extension->plugins()->firstOrFail();
+        $this->assertFalse((bool) $draft->status);
+        $this->assertNull($draft->fields['label']);
+        $this->assertSame(1, $extension->plugins()->count());
+        $this->command('deactivate', Beta::class)->assertOk();
+        $this->command('activate', Beta::class)->assertOk();
+        $this->assertSame([$draft->id], $extension->plugins()->pluck('id')->all());
+        $this->postJson(route('admin.settings.extensions.plugins.command', [$extension->id, $draft->id, 'activate']), ['_version' => app(Extensions::class)->pluginVersion($draft)])->assertUnprocessable();
+        $this->assertFalse((bool) $draft->fresh()->status);
+    }
+
+    public function test_bulk_activation_creates_a_ready_initial_instance_when_form_defaults_are_complete(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $namespace = $this->fixture('InitialReady');
+        $path = dirname((new \ReflectionClass($namespace))->getFileName()).'/extension.json';
+        $info = json_decode(File::get($path), true);
+        $info['multiple'] = true;
+        File::put($path, json_encode($info));
+        $this->command('install', $namespace)->assertOk();
+        $extension = Extension::whereNamespace($namespace)->firstOrFail();
+        $this->assertSame(0, $extension->plugins()->count());
+        $entries = [['namespace' => $namespace, '_version' => app(Extensions::class)->version($namespace)]];
+        $this->postJson(route('admin.settings.extensions.bulk.activate'), ['entries' => $entries, 'confirm' => 1])->assertOk();
+        $this->assertSame(1, $extension->plugins()->count());
+        $this->assertTrue((bool) $extension->plugins()->firstOrFail()->status);
+        $this->assertTrue(app(Runtime::class)->active($namespace));
+    }
+
+    public function test_initial_draft_pre_hook_veto_prevents_activation_and_does_not_insert_a_plugin(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->command('install', Beta::class)->assertOk();
+        Hooks::addAction('jobic.extensions.plugins.saving', fn () => throw ValidationException::withMessages(['name' => 'No initial draft.']));
+        $this->command('activate', Beta::class)->assertUnprocessable();
+        $this->assertFalse(app(Runtime::class)->active(Beta::class));
+        $this->assertSame(0, Extension::whereNamespace(Beta::class)->firstOrFail()->plugins()->count());
+    }
+
     public function test_legacy_installed_preferences_remain_enabled_when_their_entry_file_exists(): void
     {
         Extension::create(['extension' => 'Module', 'name' => 'Alpha', 'namespace' => Alpha::class, 'info' => app(Extensions::class)->metadata(Alpha::class)]);
