@@ -60,7 +60,7 @@ class Extensions extends AbstractCrudService
     public function table(array $input): Response
     {
         $input = dto($input, TableRequest::class);
-        $installed = Extension::withCount('plugins')->get()->keyBy('namespace');
+        $installed = Extension::withCount('plugins')->withMin('plugins', 'id')->get()->keyBy('namespace');
         $names = array_unique(array_merge(ExtensionRegistry::values(), $installed->keys()->all()));
         $rows = [];
         foreach ($names as $namespace) {
@@ -82,7 +82,10 @@ class Extensions extends AbstractCrudService
                 'plugins_count' => $record?->plugins_count ?? 0,
                 'installed' => $record !== null, 'local' => $this->local($namespace), 'owner' => $this->owner($namespace, $record),
                 '_version' => $this->version($namespace),
-                'plugins_url' => $record ? route('admin.settings.extensions.plugins', $record->id) : null,
+                'plugins_url' => $record && (ExtensionTypeRegistry::get($info['extension'] ?? '')['instances'] ?? true)
+                    ? (empty($info['multiple']) && $record->plugins_min_id
+                        ? route('admin.settings.extensions.plugins.edit', [$record->id, $record->plugins_min_id])
+                        : route('admin.settings.extensions.plugins', $record->id)) : null,
             ];
         }
         foreach ($rows as &$row) {
@@ -102,10 +105,13 @@ class Extensions extends AbstractCrudService
                     $row['actions'][] = 'delete';
                 }
             }
+            if ($row['status'] === 'missing') {
+                $row['actions'] = [];
+            }
             $row['action_reasons'] = [];
             foreach (array_intersect($row['actions'], ['install', 'activate', 'deactivate', 'uninstall']) as $action) {
                 try {
-                    in_array($action, ['install', 'activate'], true) ? $this->dependencies($row['namespace'], $action === 'activate') : $this->dependants($row['namespace'], $action === 'deactivate');
+                    in_array($action, ['install', 'activate'], true) ? ($action === 'activate' ? $this->activationChanges($row['namespace'], true) : $this->dependencies($row['namespace'], false)) : $this->dependants($row['namespace'], $action === 'deactivate');
                 } catch (ValidationException $exception) {
                     $row['action_reasons'][$action] = implode(' ', array_merge(...array_values($exception->errors())));
                     $row['actions'] = array_values(array_diff($row['actions'], [$action]));
@@ -116,6 +122,10 @@ class Extensions extends AbstractCrudService
             }
             if ($row['status'] === 'inactive' && $row['state_reason'] === '' && isset($row['action_reasons']['activate'])) {
                 $row['state_reason'] = $row['action_reasons']['activate'];
+            }
+            if ($row['owner'] && ! app(Runtime::class)->active($row['owner'])) {
+                $row['actions'] = array_values(array_diff($row['actions'], ['activate', 'deactivate']));
+                $row['state_reason'] = trans('extensions.owner_inactive');
             }
             if ($row['status'] === 'missing') {
                 $row['actions'] = [];
@@ -384,7 +394,10 @@ class Extensions extends AbstractCrudService
         }
         if ($operation === 'activate') {
             abort_unless($record && ExtensionRegistry::has($namespace), 409);
-            $this->dependencies($namespace);
+            $this->activationChanges($namespace, true);
+        }
+        if (in_array($operation, ['activate', 'deactivate'], true) && ($owner = $this->owner($namespace, $record))) {
+            abort_unless(app(Runtime::class)->active($owner), 422, trans('extensions.owner_inactive'));
         }
         if ($operation === 'install') {
             abort_if($record !== null, 409);
@@ -449,7 +462,7 @@ class Extensions extends AbstractCrudService
                 case 'activate':
                 case 'deactivate':
                     abort_unless($record !== null, 409);
-                    app(Runtime::class)->set($namespace, $operation === 'activate');
+                    app(Runtime::class)->setMany($this->activationChanges($namespace, $operation === 'activate'));
                     break;
                 case 'uninstall':
                     $this->requireSuccess(PackageExtension::uninstall($namespace, true));
@@ -507,7 +520,11 @@ class Extensions extends AbstractCrudService
                 foreach ($input['entries'] as $entry) {
                     Hooks::action('jobic.extensions.lifecycle.saving', ['namespace' => $entry['namespace'], 'operation' => $operation, 'user_id' => $userId]);
                 }
-                app(Runtime::class)->setMany(array_fill_keys(array_column($input['entries'], 'namespace'), $operation === 'activate'));
+                $changes = [];
+                foreach ($input['entries'] as $entry) {
+                    $changes = array_replace($changes, $this->activationChanges($entry['namespace'], $operation === 'activate'));
+                }
+                app(Runtime::class)->setMany($changes);
                 InstalledExtensionsFile::syncFromDatabase(app());
                 ExtensionKernel::clearDiscoverCache();
                 foreach ($input['entries'] as $entry) {
@@ -533,6 +550,35 @@ class Extensions extends AbstractCrudService
 
             return Response::make(true, trans('extensions.saved'), ['completed' => $completed]);
         });
+    }
+
+    /**
+     * Plan a parent-wide activation change and validate external dependencies before publishing it.
+     *
+     * @param string $namespace
+     * @param bool $active
+     *
+     * @return array<string, bool>
+     * @throws Throwable
+     */
+    private function activationChanges(string $namespace, bool $active): array
+    {
+        $members = $this->members($namespace);
+        if ($active) {
+            foreach ($members as $member) {
+                $this->dependencies($member, false);
+                foreach (array_merge($this->metadata($member)['depends'] ?? [], array_filter([$this->owner($member, Extension::whereNamespace($member)->first())])) as $dependency) {
+                    if (! in_array($dependency, $members, true) && ! app(Runtime::class)->active($dependency)) {
+                        throw ValidationException::withMessages(['namespace' => trans('extensions.dependency_missing', ['name' => class_basename($dependency)])]);
+                    }
+                }
+                if (! Extension::whereNamespace($member)->exists() || ! ExtensionRegistry::has($member)) {
+                    throw ValidationException::withMessages(['namespace' => trans('extensions.dependency_missing', ['name' => class_basename($member)])]);
+                }
+            }
+        }
+
+        return array_fill_keys($members, $active);
     }
 
     /**

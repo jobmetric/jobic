@@ -206,7 +206,7 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $info['_owner'] = Alpha::class;
         $record->update(['info' => $info]);
         InstalledExtensionsFile::syncFromDatabase(app());
-        foreach ([Alpha::class, $dependency, $child] as $namespace) {
+        foreach ([$dependency, Alpha::class, $child] as $namespace) {
             $this->command('activate', $namespace)->assertOk();
         }
         app(Runtime::class)->locked(fn () => app(Runtime::class)->set($dependency, false));
@@ -216,6 +216,35 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $root = collect($response->json('data.data'))->firstWhere('namespace', Alpha::class);
         $this->assertSame(trans('extensions.dependency_inactive'), $root['children'][0]['state_reason']);
         $this->assertTrue($root['children'][0]['configured_active']);
+    }
+
+    public function test_parent_toggles_all_members_and_disabled_parents_reject_independent_child_changes(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $child = $this->fixture('ChildToggle');
+        foreach ([Alpha::class, $child] as $namespace) {
+            $this->command('install', $namespace)->assertOk();
+        }
+        $record = Extension::whereNamespace($child)->firstOrFail();
+        $info = (array) $record->info;
+        $info['_owner'] = Alpha::class;
+        $record->update(['info' => $info]);
+        InstalledExtensionsFile::syncFromDatabase(app());
+        $this->command('deactivate', $child)->assertUnprocessable();
+        $this->command('activate', Alpha::class)->assertOk();
+        $this->assertTrue(app(Runtime::class)->active($child));
+        $this->command('deactivate', $child)->assertOk();
+        $this->assertTrue(app(Runtime::class)->active(Alpha::class));
+        $this->assertFalse(app(Runtime::class)->active($child));
+        $this->command('deactivate', Alpha::class)->assertOk();
+        $this->command('activate', $child)->assertUnprocessable();
+        $this->command('deactivate', $child)->assertUnprocessable();
+        $entries = [['namespace' => Alpha::class, '_version' => app(Extensions::class)->version(Alpha::class)]];
+        $this->postJson(route('admin.settings.extensions.bulk.activate'), ['entries' => $entries, 'confirm' => 1])->assertOk();
+        $this->assertTrue(app(Runtime::class)->active($child));
+        $response = $this->getJson(route('admin.settings.extensions.data', ['draw' => 1, 'start' => 0, 'length' => 10]))->assertOk();
+        $parent = collect($response->json('data.data'))->firstWhere('namespace', Alpha::class);
+        $this->assertStringContainsString('/edit', $parent['plugins_url']);
     }
 
     public function test_legacy_installed_preferences_remain_enabled_when_their_entry_file_exists(): void
@@ -706,7 +735,7 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $this->assertTrue(Schema::hasTable('jobic_example_system_audit'));
         $this->command('activate', $child)->assertUnprocessable();
         $this->command('activate', $namespace)->assertOk();
-        $this->assertFalse(app(Runtime::class)->active($child));
+        $this->assertTrue(app(Runtime::class)->active($child));
         $this->command('activate', $child)->assertOk();
         $this->assertTrue(app(Runtime::class)->active($child));
         $record = Extension::whereNamespace($child)->firstOrFail();

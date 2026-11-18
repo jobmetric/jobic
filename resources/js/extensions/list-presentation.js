@@ -14,18 +14,24 @@ export function actionsMarkup(row, isPlugins) {
     let menu = operations.filter(op => isPlugins || (access[op] && !(op === 'delete' && row.installed && !access.uninstall)))
         .map(op => `<button type="button" data-operation="${op}" data-id="${escape(row.id)}">${escape(copy()[op === 'delete' && isPlugins ? 'delete_plugin' : op])}</button>`).join('');
     if (isPlugins) return `<div class="crud-row-actions"><a class="crud-icon-button" href="${escape(row.edit_url)}" aria-label="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
-    if (row.installed && row.status !== 'missing' && access.plugins) menu += `<a href="${escape(row.plugins_url)}">${escape(copy().manage_instances)}</a>`;
+    if (row.status === 'active' && row.plugins_url && access.plugins) menu += `<a href="${escape(row.plugins_url)}">${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}</a>`;
     if (row.installed && row.local && !row.owner && access.upgrade) menu += `<a href="${escape(pageData().extensionRoutes.upgradeForm)}?namespace=${encodeURIComponent(row.namespace)}">${escape(copy().upgrade)}</a>`;
     menu += `<button type="button" data-details="${escape(row.id)}">${escape(copy().view)}</button>`;
-    return `<div class="crud-row-actions">${row.installed && row.status !== 'missing' && access.plugins ? `<a class="crud-icon-button" href="${escape(row.plugins_url)}" aria-label="${escape(copy().manage_instances)}" data-tooltip="${escape(copy().manage_instances)}">${icon('settings')}</a>` : ''}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
+    return `<div class="crud-row-actions">${row.status === 'active' && row.plugins_url && access.plugins ? `<a class="crud-icon-button" href="${escape(row.plugins_url)}" aria-label="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}" data-tooltip="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}">${icon('settings')}</a>` : ''}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
 }
 export function nameMarkup(row, expanded = false) {
     const count = flattenRows(row.children || []).length;
     return `<div class="extension-tree-name">${count ? `<button class="crud-icon-button" type="button" data-toggle-children="${escape(row.id)}" aria-expanded="${expanded}" aria-label="${escape(copy()[expanded ? 'hide_children' : 'show_children'])}">${icon(expanded ? 'chevron-down' : 'chevron-right')}</button>` : ''}<span>${escape(row.name)}${count ? `<small>${escape(copy().child_extensions)} · ${count}</small>` : ''}${row.context_only ? `<small>${escape(copy().parent_context)}</small>` : ''}</span></div>`;
 }
 export function childrenMarkup(row) {
-    const render = (entries, depth = 0) => entries.map(child => `<tr class="extension-child-row" data-child-id="${escape(child.id)}"><td>${child.context_only ? '' : `<input type="checkbox" data-row-id="${escape(child.id)}" aria-label="${escape(copy().select_row)}">`}</td><td><div class="extension-child-name">${icon('chevron-right')}<span>${escape(child.name)}<small>${escape(child.namespace.split('\\').slice(-2, -1)[0] || child.type)}</small></span></div></td><td>${escape(child.type_label)}</td><td>${escape(child.version)}</td><td>${statusMarkup(child)}</td><td>${Number(child.plugins_count)}</td><td>${actionsMarkup(child, false)}</td></tr>${render(child.children || [], depth + 1)}`).join('');
-    return `<div class="extension-children"><p>${escape(copy().child_extensions)} · ${escape(row.name)}</p><table class="extension-child-table"><caption class="sr-only">${escape(row.name)} — ${escape(copy().child_extensions)}</caption><thead><tr><th></th>${['name','type','version','status','plugins_count','actions'].map(key=>`<th>${escape(copy()[key])}</th>`).join('')}</tr></thead><tbody>${render(row.children || [])}</tbody></table></div>`;
+    const render = (entries, depth = 0) => entries.map(child => `<div class="extension-child-row" data-child-id="${escape(child.id)}" style="--child-depth:${Math.min(depth, 4)}">
+        <div class="extension-child-select">${child.context_only ? '' : `<input type="checkbox" data-row-id="${escape(child.id)}" aria-label="${escape(copy().select_row)}">`}</div>
+        <span class="extension-child-symbol">${icon({Component:'box',Module:'apps',Theme:'layout',Plugin:'code'}[child.type] || 'box')}</span>
+        <div class="extension-child-name"><strong>${escape(child.name)}</strong><small>${escape(child.type_label)} <span aria-hidden="true">·</span> <bdi>${escape(child.version)}</bdi>${child.plugins_url ? ` <span aria-hidden="true">·</span> ${Number(child.plugins_count)} ${escape(copy().plugins_count)}` : ''}</small></div>
+        <div class="extension-child-state">${statusMarkup(child)}</div>
+        ${actionsMarkup(child, false)}
+        </div>${render(child.children || [], depth + 1)}`).join('');
+    return `<div class="extension-children"><header class="extension-children__header"><span>${icon('box')}${escape(copy().child_extensions)}</span><small>${flattenRows(row.children || []).length}</small></header><div class="extension-children__items">${render(row.children || [])}</div></div>`;
 }
 export function bulkAvailability(entries, isPlugins) {
     if (!entries.length) return [];

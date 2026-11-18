@@ -79,6 +79,7 @@ try {
             await operate('Alpha fixture', 'activate');
             await operate('Alpha fixture', 'deactivate');
             await operate('Beta fixture', 'install');
+            await operate('Beta fixture', 'activate');
             const beta = page.locator('#extension-table tbody tr').filter({hasText: 'Beta fixture'});
             await beta.locator('.crud-row-actions > a').click();
             await page.locator('[data-crud-action=create]').click();
@@ -279,7 +280,7 @@ try {
                     for (const childName of ['JobicSystemCards', 'JobicSystemTheme', 'JobicSystemObserver']) {
                         const child = page.locator('.extension-child-row').filter({hasText: childName});
                         assert.equal(await child.locator('[data-operation=uninstall],[data-operation=delete],a[href*="/extensions/upgrade?"]').count(), 0);
-                        await operate(childName, 'activate');
+                        assert.equal(await child.locator('[data-operation=deactivate]').count(),1);
                     }
                     await page.locator('.extension-child-row').filter({hasText: 'JobicSystemCards'}).locator('.crud-row-actions > a').click();
                     for (const label of ['Owned A', 'Owned B']) {

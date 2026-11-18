@@ -3,7 +3,7 @@
 return [
     'examples' => json_decode(file_get_contents(base_path('examples/extensions/catalog.json')), true, flags: JSON_THROW_ON_ERROR),
     'types' => [
-        'Component' => ['label' => 'extensions.types.component', 'contains' => ['Module', 'Theme', 'Plugin']],
+        'Component' => ['label' => 'extensions.types.component', 'instances' => false, 'contains' => ['Module', 'Theme', 'Plugin']],
         'Module' => ['label' => 'extensions.types.module'],
         'Theme' => ['label' => 'extensions.types.theme'],
         'Plugin' => ['label' => 'extensions.types.plugin'],

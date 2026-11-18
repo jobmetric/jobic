@@ -62,8 +62,10 @@ try {
             await select([alpha,beta]);await available(['deactivate']);await batch('deactivate');
             assert.ok((await data()).filter(row=>[alpha.id,beta.id].includes(row.id)).every(row=>row.status==='inactive'));
             beta=(await data()).find(row=>row.id===beta.id);
+            assert.equal(await page.locator(`a.crud-icon-button[href="${beta.plugins_url}"]`).count(),0);
+            await operation(beta,'activate');beta=(await data()).find(row=>row.id===beta.id);
             const gear=page.locator(`a.crud-icon-button[href="${beta.plugins_url}"]`);assert.equal(await gear.locator('svg circle').count(),1);await gear.click();await loaded();
-            assert.equal(await page.locator('.crud-title-back').getAttribute('href'),base);assert.equal(await page.locator('[data-extension-paused]').isVisible(),true);
+            assert.equal(await page.locator('.crud-title-back').getAttribute('href'),base);assert.equal(await page.locator('[data-extension-paused]').isVisible(),false);
             assert.equal(new Set(await page.locator('.crud-stats svg').evaluateAll(nodes=>nodes.map(node=>node.dataset.icon))).size,4);
             await post(beta.plugins_url,{name:'Enabled instance',status:1,fields:{label:'A'}});
             await post(beta.plugins_url,{name:'Disabled instance',status:0,fields:{label:'B'}});
@@ -78,20 +80,21 @@ try {
             assert.equal(root.children.length,3);assert.equal((await data()).some(row=>row.owner),false);
             await page.locator(`[data-toggle-children="${root.id}"]`).click();assert.equal(await page.locator('.extension-child-row').count(),3);
             let child=flatten(root.children).find(row=>row.type==='Module');assert.equal(await page.locator(`[data-operation=activate][data-id="${child.id}"]`).count(),0);
-            await operation(root,'activate');root=(await data()).find(row=>row.id===root.id);child=flatten(root.children).find(row=>row.type==='Module');await operation(child,'activate');
+            await operation(root,'activate');root=(await data()).find(row=>row.id===root.id);child=flatten(root.children).find(row=>row.type==='Module');assert.ok(root.children.every(row=>row.status==='active'));await operation(child,'deactivate');assert.equal((await data()).find(row=>row.id===root.id).status,'active');await operation(child,'activate');
             assert.equal((await page.request.get(sandbox.applicationBase+'/admin/extension-examples/system')).status(),200);
-            await operation(root,'deactivate');root=(await data()).find(row=>row.id===root.id);child=flatten(root.children).find(row=>row.type==='Module');assert.equal(child.status,'inactive');assert.equal(child.configured_active,true);assert.ok(child.state_reason);assert.equal((await page.request.get(sandbox.applicationBase+'/admin/extension-examples/system')).status(),404);
+            await operation(root,'deactivate');root=(await data()).find(row=>row.id===root.id);child=flatten(root.children).find(row=>row.type==='Module');assert.equal(child.status,'inactive');assert.equal(child.configured_active,false);assert.ok(child.state_reason);assert.equal((await page.request.get(sandbox.applicationBase+'/admin/extension-examples/system')).status(),404);
             await operation(root,'activate');root=(await data()).find(row=>row.id===root.id);assert.equal(flatten(root.children).find(row=>row.type==='Module').status,'active');
-            await page.locator(`a.crud-icon-button[href="${root.plugins_url}"]`).click();await loaded();
-            assert.equal(await page.locator('[data-crud-action=create]').count(),0);
-            await page.locator('[data-select-all]').check();await batch('deactivate');await page.locator('[data-select-all]').check();await batch('delete');
-            assert.equal(await page.locator('[data-crud-action=create]').isVisible(),true);
-            await page.locator('[data-crud-action=create]').click();await page.locator('[data-extension-form]').waitFor();assert.equal(await page.locator('[data-crud-action=new]').count(),0);await page.locator('[data-crud-action=cancel]').click();await loaded();
+            assert.equal(root.plugins_url,null);
+            assert.equal(await page.locator(`[data-operation=deactivate][data-id="${child.id}"]`).count(),1);
+            const singleChild=flatten(root.children).find(row=>row.type==='Theme');
+            assert.ok(singleChild.plugins_url.endsWith('/edit'));
+            await page.locator(`a.crud-icon-button[href="${singleChild.plugins_url}"]`).click();await page.locator('[data-extension-form]').waitFor();
+            await page.locator('[data-crud-action=cancel]').click();await loaded();
             await page.locator('.crud-title-back').click();await loaded();assert.equal(await page.locator(`[data-toggle-children="${root.id}"]`).getAttribute('aria-expanded'),'true');
             await page.locator(`[data-details="${root.id}"]`).locator('xpath=ancestor::details[1]/summary').click();await page.locator(`[data-details="${root.id}"]`).click();assert.equal(await page.locator('.extension-details__facts > div').count(),8);assert.ok((await page.locator('.extension-details pre').textContent()).includes('JobMetric'));await page.waitForTimeout(400);await page.screenshot({path:path.join(directory,`${locale}-details-desktop.png`)});
             await page.setViewportSize({width:390,height:844});await page.evaluate(()=>document.documentElement.dataset.theme='dark');await page.waitForTimeout(350);await page.screenshot({path:path.join(directory,`${locale}-details-mobile.png`)});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('[data-dialog-cancel]').click();await page.screenshot({path:path.join(directory,`${locale}-children-mobile.png`)});
             await page.setViewportSize({width:1440,height:1000});await operation(root,'deactivate');await select([root]);await available(['activate','delete']);await batch('delete');assert.equal((await data()).some(row=>row.id===root.id),false);assert.equal(fs.existsSync(path.join(directory,'owned','Component','JobicSystemExample')),false);
-            assert.deepEqual(errors,[]);console.log('PASS manager details, seven filters, mixed selection, extension/instance bulk actions, nested components, configured/effective activation, back links, icons, mobile/dark',locale,directory);
+            assert.deepEqual(errors,[]);console.log('PASS manager details, seven filters, mixed selection, extension/instance bulk actions, nested family rows, single-instance direct editing, active-only management, parent-wide activation and disabled-parent guards, back links, icons, mobile/dark',locale,directory);
         } catch(error) {console.error('SANDBOX',directory,'ERRORS',errors);throw error;} finally {await page.close();sandbox.server.kill();}
     }
 } finally {await browser.close();}

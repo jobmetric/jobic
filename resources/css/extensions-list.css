@@ -32,3 +32,21 @@
 
 .extension-details__identity { grid-column: 1 / -1; }
 .extension-details__identity dd { font-family: monospace; font-size: .8rem; }
+
+.extension-children { padding:0; overflow:visible; background:var(--surface); border-radius:1rem; }
+.extension-children__header { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.85rem 1.1rem; border-block-end:1px solid var(--border); color:var(--muted); }
+.extension-children__header > span { display:flex; align-items:center; gap:.5rem; font-size:.8rem; }
+.extension-children__header > small { display:grid; place-items:center; min-inline-size:1.7rem; block-size:1.7rem; border-radius:.5rem; background:var(--surface-soft); font-size:.75rem; }
+.extension-child-row { display:grid; grid-template-columns:auto 2.5rem minmax(12rem,1fr) minmax(8rem,.55fr) auto; align-items:center; gap:.85rem; padding:1rem 1.1rem; margin-inline-start:calc(var(--child-depth,0) * 1rem); }
+.extension-child-row + .extension-child-row { border-block-start:1px solid var(--border); }
+.extension-child-symbol { display:grid; place-items:center; inline-size:2.5rem; block-size:2.5rem; background:var(--primary-soft); color:var(--primary); border-radius:.75rem; }
+.extension-child-name { display:block; min-inline-size:0; }
+.extension-child-name strong { font-size:.85rem; font-weight:600; overflow-wrap:anywhere; }
+.extension-child-name small { font-size:.72rem; }
+.extension-child-state .extension-state-reason { max-inline-size:17rem; }
+@media(max-width:850px) {
+ .extension-child-row { grid-template-columns:auto 2.5rem minmax(0,1fr) auto; gap:.65rem; padding:.85rem; }
+ .extension-child-state { grid-column:3; grid-row:2; }
+ .extension-child-row > .crud-row-actions { grid-column:4; grid-row:1 / span 2; }
+ .extension-child-row > .extension-child-select,.extension-child-symbol { align-self:start; }
+}
