@@ -6,7 +6,6 @@ namespace App\Extensions\Plugin\JobicPluginExample;
 
 use App\Facades\Hooks;
 use App\Facades\Permissions;
-use App\Support\AdminAccess;
 use App\Support\Extensions\Runtime;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
@@ -81,13 +80,6 @@ class JobicPluginExample extends AbstractExtension
     {
         Permissions::addPermission('admin.settings.extensions.examples', 'extensions.example_archives');
         Permissions::addPermission('admin.settings.extensions.examples.plugin', 'extension_plugin_jobic_plugin_example::example.title', 'admin.extension-examples.plugin', order: 180);
-        Hooks::addFilter('jobic.admin.settings.sections', static function (array $sections): array {
-            if (app(Runtime::class)->active(self::class) && app(AdminAccess::class)->allows(auth()->user(), 'admin.settings.extensions.examples.plugin')) {
-                $sections['example-plugin'] = ['label' => trans('extension_plugin_jobic_plugin_example::example.title'), 'description' => trans('extension_plugin_jobic_plugin_example::example.intro'), 'icon' => 'package', 'url' => route('admin.extension-examples.plugin'), 'order' => 190];
-            }
-
-            return $sections;
-        });
         Hooks::addView('jobic.admin.content.after', 'extension_plugin_jobic_plugin_example::notice');
         Hooks::addAction('jobic.extensions.plugins.saved', static function (array $context): void {
             $id = Extension::whereNamespace(self::class)->value('id');

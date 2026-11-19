@@ -58,7 +58,7 @@ class ExtensionsDriver implements ApplicationDriver
             if (app(AdminAccess::class)->allows(auth()->user(), 'admin.settings.extensions.view')) {
                 $sections['extensions'] = [
                     'label' => trans('extensions.title'), 'description' => trans('extensions.intro'),
-                    'icon' => 'package', 'url' => route('admin.settings.extensions.index'), 'order' => 70,
+                    'icon' => 'puzzle', 'url' => route('admin.settings.extensions.index'), 'order' => 70,
                 ];
             }
 
