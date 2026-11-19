@@ -134,6 +134,13 @@ class Extensions extends AbstractCrudService
         }
         unset($row);
         $stats = [count($rows), count(array_filter($rows, fn ($row) => $row['status'] === 'active')), $installed->count(), count(array_filter($rows, fn ($row) => $row['status'] === 'available'))];
+        $quickStats = [
+            'all' => count($rows),
+            'active' => count(array_filter($rows, fn ($row) => $row['status'] === 'active')),
+            'inactive' => count(array_filter($rows, fn ($row) => $row['status'] === 'inactive')),
+            'available' => count(array_filter($rows, fn ($row) => $row['status'] === 'available')),
+            'updates' => count(array_filter($rows, fn ($row) => $row['has_update'])),
+        ];
         $search = mb_strtolower($input['search']['value'] ?? '');
         $matches = [];
         foreach ($rows as $row) {
@@ -177,7 +184,7 @@ class Extensions extends AbstractCrudService
         $filtered = array_values(array_filter(array_map(fn ($row) => $tree($row, false), $roots)));
 
         return Response::make(true, '', ['draw' => (int) $input['draw'], 'recordsTotal' => count($roots),
-            'recordsFiltered' => count($filtered), 'stats' => $stats,
+            'recordsFiltered' => count($filtered), 'stats' => $stats, 'quick_stats' => $quickStats,
             'data' => array_slice($filtered, (int) $input['start'], (int) $input['length'])]);
     }
 

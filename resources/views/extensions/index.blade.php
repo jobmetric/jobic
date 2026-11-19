@@ -5,6 +5,11 @@
     <header class="crud-toolbar"><div><h1>{{ __('extensions.title') }}</h1><p>{{ __('extensions.intro') }}</p></div><div data-crud-toolbar data-list-controls></div></header>
     @cmsHook('jobic.admin.extensions.list.before')
     <div class="crud-stats">@foreach(['total' => 'apps', 'active' => 'check-circle', 'installed' => 'box', 'available' => 'folder-download'] as $stat => $statIcon)<article><span>{{ __('extensions.'.$stat) }}</span><strong data-extension-stat>—</strong><x-vuero.icon :name="$statIcon" size="32" /></article>@endforeach</div>
+    <nav class="extension-quick-filters" data-quick-filters aria-label="{{ __('extensions.quick_filters') }}">
+        @foreach(['all', 'active', 'inactive', 'available', 'updates'] as $filter)
+        <button type="button" data-quick-filter="{{ $filter }}" aria-pressed="{{ $filter === 'all' ? 'true' : 'false' }}"><span>{{ __('extensions.quick_'.$filter) }}</span><small data-quick-count="{{ $filter }}">0</small></button>
+        @endforeach
+    </nav>
     <div class="crud-list-controls" data-list-controls>
         <label class="crud-search"><x-vuero.icon name="search" size="20" /><span class="sr-only">{{ __('extensions.search') }}</span><input type="search" data-search placeholder="{{ __('extensions.search') }}" maxlength="100"></label>
         <div class="crud-filter-controls"><button type="button" class="vuero-button" data-show-selected hidden></button><button type="button" class="vuero-button" data-open-filters><x-vuero.icon name="filter" size="18" />{{ __('extensions.filters') }}</button></div>

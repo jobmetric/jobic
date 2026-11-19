@@ -108,7 +108,12 @@ class ExtensionsTest extends ExtensionManagementTestCase
     {
         $this->actingAs(User::factory()->create());
         $query = ['draw' => 1, 'start' => 0, 'length' => 10];
-        $this->getJson(route('admin.settings.extensions.data', $query))->assertOk()->assertJsonPath('data.recordsTotal', 2);
+        $this->getJson(route('admin.settings.extensions.data', $query))->assertOk()
+            ->assertJsonPath('data.recordsTotal', 2)
+            ->assertJsonPath('data.quick_stats.all', 2)
+            ->assertJsonPath('data.quick_stats.active', 0)
+            ->assertJsonPath('data.quick_stats.available', 2)
+            ->assertJsonStructure(['data' => ['quick_stats' => ['all', 'active', 'inactive', 'available', 'updates']]]);
         $this->getJson(route('admin.settings.extensions.data', $query + ['type' => 'PaymentMethod']))->assertOk()->assertJsonPath('data.recordsFiltered', 1);
         $this->getJson(route('admin.settings.extensions.data', array_replace($query, ['length' => -1])))->assertUnprocessable();
         $this->command('install')->assertOk();

@@ -21,6 +21,13 @@ function initialize() {
     const filterForm = document.querySelector('[data-filter-form]');
     const selectAll = document.querySelector('[data-select-all]');
     const selectionButton = document.querySelector('[data-show-selected]');
+    const searchInput = document.querySelector('[data-search]');
+    const quickFilters = document.querySelector('[data-quick-filters]');
+    const query = new URLSearchParams(location.search);
+    const quickValues = {
+        all: {}, active: {status: 'active'}, inactive: {status: 'inactive'},
+        available: {installation: 'available'}, updates: {updates: 'available'},
+    };
     let canCreate;
     let pending = false;
     let loading = false;
@@ -28,6 +35,39 @@ function initialize() {
     let rows = [];
     let searchTimer;
     let restoreFilterButton;
+    const filterNames = [...filterForm.elements].map(field => field.name).filter(Boolean);
+
+    function applyQuickFilter(name) {
+        const values = quickValues[name] || quickValues.all;
+        ['status', 'installation', 'updates'].forEach(key => {
+            const field = filterForm.elements.namedItem(key);
+            if (field) field.value = values[key] || '';
+        });
+        quickFilters?.querySelectorAll('[data-quick-filter]').forEach(button => {
+            button.setAttribute('aria-pressed', String(button.dataset.quickFilter === name));
+        });
+    }
+    function currentQuickFilter() {
+        return Object.entries(quickValues).find(([, values]) => ['status', 'installation', 'updates']
+            .every(key => (filterForm.elements.namedItem(key)?.value || '') === (values[key] || '')))?.[0] || '';
+    }
+    function syncUrl() {
+        const next = new URL(location.href);
+        ['view', 'q', ...filterNames].forEach(key => next.searchParams.delete(key));
+        const view = currentQuickFilter();
+        if (view && view !== 'all') next.searchParams.set('view', view);
+        if (searchInput.value.trim()) next.searchParams.set('q', searchInput.value.trim());
+        new FormData(filterForm).forEach((value, key) => {
+            if (value !== '' && !['status', 'installation', 'updates'].includes(key)) next.searchParams.set(key, value);
+        });
+        history.replaceState(null, '', next);
+    }
+    if (query.get('q')) searchInput.value = query.get('q').slice(0, 100);
+    filterNames.forEach(name => {
+        const field = filterForm.elements.namedItem(name);
+        if (field && query.has(name)) field.value = query.get(name);
+    });
+    applyQuickFilter(quickValues[query.get('view')] ? query.get('view') : currentQuickFilter() || 'all');
     toolbar('list');
 
     function lock() {
@@ -74,7 +114,7 @@ function initialize() {
             empty.hidden = true;
             const params = new URLSearchParams({
                 draw: request.draw, start: request.start, length: request.length,
-                'search[value]': document.querySelector('[data-search]').value,
+                'search[value]': searchInput.value,
                 'order[0][column]': request.order[0]?.column || 1,
                 'order[0][dir]': request.order[0]?.dir || 'asc',
             });
@@ -94,6 +134,10 @@ function initialize() {
                 callback(result.data);
                 document.querySelectorAll('[data-extension-stat]').forEach((node, index) => {
                     node.textContent = new Intl.NumberFormat(document.documentElement.lang).format(result.data.stats[index]);
+                });
+                Object.entries(result.data.quick_stats || {}).forEach(([key, value]) => {
+                    const node = document.querySelector(`[data-quick-count="${key}"]`);
+                    if (node) node.textContent = new Intl.NumberFormat(document.documentElement.lang).format(value);
                 });
                 empty.hidden = result.data.recordsFiltered !== 0;
                 card.append(empty);
@@ -152,9 +196,16 @@ function initialize() {
         });
         selection();
     });
-    document.querySelector('[data-search]').addEventListener('input', () => {
+    searchInput.addEventListener('input', () => {
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => table.ajax.reload(), 300);
+        searchTimer = setTimeout(() => { syncUrl(); table.ajax.reload(); }, 300);
+    });
+    quickFilters?.addEventListener('click', event => {
+        const button = event.target.closest('[data-quick-filter]');
+        if (!button || loading || pending) return;
+        applyQuickFilter(button.dataset.quickFilter);
+        $(filterForm).find('select').trigger('change.select2');
+        syncUrl(); table.ajax.reload();
     });
     document.querySelector('[data-open-filters]').onclick = () => { filterDialog.showModal(); enhanceSelects(filterDialog); };
     document.querySelector('[data-close-filters]').onclick = () => filterDialog.close();
@@ -162,11 +213,11 @@ function initialize() {
         event.preventDefault();
         if (loading || pending) return;
         restoreFilterButton = loadingButton(filterForm.querySelector('[type=submit]'));
-        filterDialog.close(); table.ajax.reload();
+        filterDialog.close(); applyQuickFilter(currentQuickFilter() || 'all'); syncUrl(); table.ajax.reload();
     });
     filterForm.addEventListener('reset', () => setTimeout(() => {
         $(filterForm).find('select').trigger('change.select2');
-        filterDialog.close(); table.ajax.reload();
+        applyQuickFilter('all'); searchInput.value = ''; filterDialog.close(); syncUrl(); table.ajax.reload();
     }, 0));
     document.querySelector('[data-retry]').onclick = () => table.ajax.reload();
     selectionButton.onclick = () => showSelection([...selected.values()], id => {selected.delete(id);selection();});
