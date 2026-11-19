@@ -77,23 +77,29 @@ export function showExtensionDetails(row) {
     const summary = document.createElement('div'); summary.className = 'extension-details__hero';
     const symbol = document.createElement('span'); symbol.className = 'extension-details__symbol'; symbol.innerHTML = icon({Component:'box',Module:'apps',Theme:'layout',Plugin:'code'}[row.type] || 'box');
     const tags = document.createElement('div'); tags.className = 'extension-details__tags';
-    [row.type_label, row.version, copy()[row.status], copy()[row.local ? 'filter_source_local' : 'filter_source_composer']].forEach(value => {const tag=document.createElement('span');tag.textContent=value;tags.append(tag);});
+    [row.type_label, copy()[row.local ? 'filter_source_local' : 'filter_source_composer']].forEach(value => {const tag=document.createElement('span');tag.textContent=value;tags.append(tag);});
     const overview=document.createElement('div');overview.className='extension-details__overview';
-    const title=document.createElement('h3');title.textContent=row.name;const description=document.createElement('p');description.textContent=row.description;overview.append(title,description,tags);
+    const titleLine=document.createElement('div');titleLine.className='extension-details__title-line';
+    const title=document.createElement('h3');title.textContent=row.name;
+    const status=document.createElement('span');status.className=`extension-details__status is-${row.status}`;status.textContent=copy()[row.status];
+    titleLine.append(title,status);
+    const description=document.createElement('p');description.textContent=row.description || copy().empty_hint;overview.append(titleLine,description,tags);
     summary.append(symbol,overview);content.append(summary);
     if(row.state_reason) {const reason=document.createElement('p');reason.className='extension-details__notice';reason.textContent=row.state_reason;content.append(reason);}
     const facts=document.createElement('dl');facts.className='extension-details__facts';
     const metadata=row.manifest || {};
     const values={identity:row.namespace,installed_version:row.installed_version || '—',review_mode:copy()[row.multiple?'multiple':'single'],configured_state:copy()[row.configured_active?'active':'inactive'],author:metadata.author || '—',license:metadata.license || '—',priority:metadata.priority ?? 0,plugins_count:row.plugins_count};
     if(row.owner) values.owner=row.owner;
-    Object.entries(values).forEach(([key,value])=>{const field=document.createElement('div'),label=document.createElement('dt'),text=document.createElement('dd');label.textContent=copy()[key];text.textContent=String(value);if(['identity','owner'].includes(key)){field.className='extension-details__identity';text.dir='ltr';}field.append(label,text);facts.append(field);});content.append(facts);
-    const list=(label,items)=>{const section=document.createElement('section'),heading=document.createElement('h3'),ul=document.createElement('ul');heading.textContent=label;items.forEach(value=>{const li=document.createElement('li');li.textContent=value;ul.append(li);});section.append(heading,ul);content.append(section);};
+    const factIcons={identity:'code',installed_version:'archive',review_mode:'apps',configured_state:'check',author:'users',license:'file-text',priority:'activity',plugins_count:'apps',owner:'box'};
+    Object.entries(values).forEach(([key,value])=>{const field=document.createElement('div'),symbol=document.createElement('span'),body=document.createElement('span'),label=document.createElement('dt'),text=document.createElement('dd');field.className=`extension-details__fact is-${key}`;symbol.className='extension-details__fact-icon';symbol.innerHTML=icon(factIcons[key] || 'info');label.textContent=copy()[key];text.textContent=String(value);if(['identity','owner'].includes(key))text.dir='ltr';body.append(label,text);field.append(symbol,body);facts.append(field);});content.append(facts);
+    const relations=document.createElement('div');relations.className='extension-details__relations';content.append(relations);
+    const list=(label,items)=>{const section=document.createElement('section'),heading=document.createElement('h3'),ul=document.createElement('ul');heading.textContent=label;items.forEach(value=>{const li=document.createElement('li');li.textContent=value;ul.append(li);});section.append(heading,ul);relations.append(section);};
     list(copy().depends,row.depends.length?row.depends:[copy().no_dependencies]);
     if(metadata.children?.length) list(copy().child_extensions,metadata.children.map(child=>`${child.type} · ${child.name}`));
     if(metadata.keywords?.length) list(copy().keywords,metadata.keywords);
     Object.values(row.action_reasons || {}).filter((value,index,array)=>value!==row.state_reason&&array.indexOf(value)===index).forEach(reason=>{const p=document.createElement('p');p.className='extension-details__notice';p.textContent=reason;content.append(p);});
     const website=metadata.homepage || metadata.website;
-    if(website) {const link=document.createElement('a');link.href=website;link.textContent=copy().homepage;link.target='_blank';link.rel='noopener noreferrer';content.append(link);}
+    if(website) {const link=document.createElement('a');link.className='extension-details__website';link.href=website;link.textContent=copy().homepage;link.target='_blank';link.rel='noopener noreferrer';link.insertAdjacentHTML('afterbegin',icon('external-link'));summary.append(link);}
     const raw=document.createElement('details'),heading=document.createElement('summary'),hint=document.createElement('p'),pre=document.createElement('pre');heading.textContent=copy().manifest_public;hint.textContent=copy().manifest_public_hint;pre.textContent=JSON.stringify(metadata,null,2);raw.append(heading,hint,pre);content.append(raw);
     return showDialog({title:copy().extension_overview,description:'',content,wide:true,symbol:'box'});
 }
