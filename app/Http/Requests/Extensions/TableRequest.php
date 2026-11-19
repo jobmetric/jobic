@@ -65,6 +65,8 @@ class TableRequest extends FormRequest
             'mode' => ['nullable', 'in:single,multiple'],
             'updates' => ['nullable', 'in:available,current'],
             'structure' => ['nullable', 'in:root,owned'],
+            'created' => ['nullable', 'in:recent,older'],
+            'updated' => ['nullable', 'in:recent,older'],
             'status' => [
                 'nullable',
                 'in:available,active,inactive,missing',

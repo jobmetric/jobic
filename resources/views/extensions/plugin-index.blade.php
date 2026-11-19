@@ -2,7 +2,7 @@
 @section('title', __('extensions.plugins'))
 @section('content')
 <section class="crud-page" data-extension-list>
-    <header class="crud-toolbar"><div class="crud-taxonomy-heading">@if(app(\App\Support\AdminAccess::class)->allows(auth()->user(), 'admin.settings.extensions.view'))<a class="crud-title-back" href="{{ $back_url }}" aria-label="{{ __('extensions.back_extensions') }}"><x-vuero.icon name="arrow-left" size="24" /></a>@endif<div><h1>{{ __('extensions.plugins') }}</h1><p>{{ trans($extension->info['title'] ?? $extension->name) }}</p></div></div><div data-crud-toolbar data-list-controls></div></header>
+    <header class="crud-toolbar"><div class="crud-taxonomy-heading">@if(app(\App\Support\AdminAccess::class)->allows(auth()->user(), 'admin.settings.extensions.view'))<a class="crud-title-back" href="{{ $back_url }}" aria-label="{{ __('extensions.back_extensions') }}"><x-vuero.icon name="arrow-left" size="24" /></a>@endif<div><h1>{{ __('extensions.plugins') }}</h1></div></div><div data-crud-toolbar data-list-controls></div></header>
     <p class="crud-hint" data-extension-paused @if($extension_active) hidden @endif>{{ __('extensions.instances_paused') }}</p>
     @cmsHook('jobic.admin.extensions.list.before')
     <div class="crud-stats">@foreach(['total' => 'apps', 'active' => 'check-circle', 'inactive' => 'clock', 'recent' => 'calendar'] as $stat => $statIcon)<article><span>{{ __('extensions.'.$stat) }}</span><strong data-extension-stat>—</strong><x-vuero.icon :name="$statIcon" size="32" /></article>@endforeach</div>
@@ -23,6 +23,9 @@
     <header><div><span>{{ __('extensions.plugins') }}</span><h2 id="extension-filters-title">{{ __('extensions.filters') }}</h2></div><button class="crud-icon-button" type="button" data-close-filters aria-label="{{ __('extensions.dismiss') }}"><x-vuero.icon name="x" /></button></header>
     <form data-filter-form class="crud-filter-form"><div class="crud-filter-fields">
         <label>{{ __('extensions.status') }}<select name="status"><option value="">{{ __('extensions.all') }}</option>@foreach(['active','inactive'] as $status)<option value="{{ $status }}">{{ __('extensions.'.$status) }}</option>@endforeach</select></label>
+        @foreach(['created' => ['recent','older'], 'updated' => ['recent','older']] as $key => $options)
+        <label>{{ __('extensions.filter_'.$key) }}<select name="{{ $key }}"><option value="">{{ __('extensions.all') }}</option>@foreach($options as $option)<option value="{{ $option }}">{{ __('extensions.filter_'.$key.'_'.$option) }}</option>@endforeach</select></label>
+        @endforeach
     </div><footer><button class="vuero-button is-primary" type="submit">{{ __('extensions.apply') }}</button><button class="crud-icon-button" type="reset" aria-label="{{ __('extensions.reset') }}" data-tooltip="{{ __('extensions.reset') }}"><x-vuero.icon name="rotate" /></button></footer></form>
 </dialog>
 @include('common.crud.dialog')

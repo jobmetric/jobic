@@ -530,7 +530,36 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $this->getJson(route('admin.settings.extensions.plugins.data', [$extension->id, 'draw' => 1, 'start' => 0, 'length' => 10]))->assertOk()->assertDontSee('private-option');
         $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertUnprocessable();
         $disabled = $this->postJson(route('admin.settings.extensions.plugins.command', [$extension->id, $plugin->id, 'deactivate']), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertOk();
+        $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $disabled->json('data.version'), 'confirm' => 1])
+            ->assertUnprocessable()->assertJsonPath('message', trans('extensions.minimum_instance'));
+        $this->postJson($route, ['name' => 'Surviving instance', 'status' => 0, 'fields' => ['label' => 'survivor']])->assertOk();
         $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $disabled->json('data.version'), 'confirm' => 1])->assertOk();
+        $active = $this->postJson($route, ['name' => 'Active removable instance', 'status' => 1, 'fields' => ['label' => 'active']])->assertOk();
+        $this->postJson(route('admin.settings.extensions.plugins.command', [$extension->id, $active->json('data.id'), 'delete']), [
+            '_version' => $active->json('data.version'), 'confirm' => 1,
+        ])->assertOk();
+    }
+
+    public function test_plugin_table_supports_date_filters_and_marks_the_last_multiple_instance_as_required(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->command('install', Beta::class)->assertOk();
+        $extension = Extension::whereNamespace(Beta::class)->firstOrFail();
+        $created = $this->postJson(route('admin.settings.extensions.plugins.store', $extension->id), [
+            'name' => 'Required instance', 'status' => 0, 'fields' => ['label' => 'required'],
+        ])->assertOk();
+        $plugin = $extension->plugins()->findOrFail($created->json('data.id'));
+        $plugin->forceFill(['created_at' => now()->subDays(40), 'updated_at' => now()->subDays(40)])->save();
+        $route = fn (array $filters = []): string => route('admin.settings.extensions.plugins.data', [
+            'extension' => $extension->id, 'draw' => 1, 'start' => 0, 'length' => 10,
+        ] + $filters);
+
+        $this->getJson($route())->assertOk()
+            ->assertJsonPath('data.data.0.can_delete', false)
+            ->assertJsonPath('data.data.0.must_keep_one', true)
+            ->assertJsonPath('data.data.0.plugins_total', 1);
+        $this->getJson($route(['created' => 'older', 'updated' => 'older']))->assertOk()->assertJsonPath('data.recordsFiltered', 1);
+        $this->getJson($route(['created' => 'recent']))->assertOk()->assertJsonPath('data.recordsFiltered', 0);
     }
 
     public function test_bulk_instances_are_atomic_and_reject_stale_or_foreign_selections(): void

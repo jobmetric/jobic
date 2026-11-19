@@ -66,10 +66,12 @@ try {
             await operation(beta,'activate');beta=(await data()).find(row=>row.id===beta.id);
             const gear=page.locator(`a.crud-icon-button[href="${beta.plugins_url}"]`);assert.equal(await gear.locator('svg circle').count(),1);await gear.click();await loaded();
             assert.equal(await page.locator('.crud-title-back').getAttribute('href'),base);assert.equal(await page.locator('[data-extension-paused]').isVisible(),false);
+            assert.equal(await page.locator('.crud-toolbar .crud-taxonomy-heading p').count(),0);await page.locator('[data-open-filters]').click();assert.equal(await page.locator('[data-filter-form] select').count(),3);await page.locator('[data-close-filters]').click();
             assert.equal(new Set(await page.locator('.crud-stats svg').evaluateAll(nodes=>nodes.map(node=>node.dataset.icon))).size,4);
             await post(beta.plugins_url,{name:'Enabled instance',status:1,fields:{label:'A'}});
             await post(beta.plugins_url,{name:'Disabled instance',status:0,fields:{label:'B'}});
             await page.reload();await loaded();await page.locator('[data-select-all]').check();await available([]);
+            assert.equal(await page.locator('#extension-table tbody tr').filter({hasText:'Enabled instance'}).locator('[data-operation=delete]').count(),1);
             await page.locator('[data-show-selected]').click();assert.equal(await page.locator('.extension-selection-group').count(),2);await page.locator('[data-dialog-cancel]').click();
             await page.locator('[data-select-all]').uncheck();
             const inactive=page.locator('#extension-table tbody tr').filter({hasText:'Disabled instance'});await inactive.locator('[data-row-id]').check();await available(['activate','delete']);await batch('delete');assert.equal(await page.locator('#extension-table tbody tr').filter({hasText:'Disabled instance'}).count(),0);
@@ -88,7 +90,7 @@ try {
             assert.equal(await page.locator(`[data-operation=deactivate][data-id="${child.id}"]`).count(),1);
             const singleChild=flatten(root.children).find(row=>row.type==='Theme');
             assert.ok(singleChild.plugins_url.endsWith('/edit'));
-            await page.locator(`a.crud-icon-button[href="${singleChild.plugins_url}"]`).click();await page.locator('[data-extension-form]').waitFor();
+            const singleEdit=page.locator(`a.crud-icon-button[href="${singleChild.plugins_url}"]`);assert.equal(await singleEdit.locator('svg circle').count(),0);await singleEdit.click();await page.locator('[data-extension-form]').waitFor();
             await page.locator('[data-crud-action=cancel]').click();await loaded();assert.equal(await page.locator(`[data-toggle-children="${root.id}"]`).getAttribute('aria-expanded'),'true');
             await page.locator(`[data-details="${root.id}"]`).locator('xpath=ancestor::details[1]/summary').click();await page.locator(`[data-details="${root.id}"]`).click();assert.equal(await page.locator('.extension-details__facts > div').count(),8);assert.ok((await page.locator('.extension-details pre').textContent()).includes('JobMetric'));await page.waitForTimeout(400);await page.screenshot({path:path.join(directory,`${locale}-details-desktop.png`)});
             await page.setViewportSize({width:390,height:844});await page.evaluate(()=>document.documentElement.dataset.theme='dark');await page.waitForTimeout(350);await page.screenshot({path:path.join(directory,`${locale}-details-mobile.png`)});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('[data-dialog-cancel]').click();await page.screenshot({path:path.join(directory,`${locale}-children-mobile.png`)});

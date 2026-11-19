@@ -1026,15 +1026,26 @@ class Extensions extends AbstractCrudService
         if (in_array($input['status'] ?? '', ['active', 'inactive'], true)) {
             $query->where('status', $input['status'] === 'active');
         }
+        foreach (['created' => 'created_at', 'updated' => 'updated_at'] as $filter => $columnName) {
+            if (($input[$filter] ?? '') === 'recent') {
+                $query->where($columnName, '>=', now()->subDays(30));
+            } elseif (($input[$filter] ?? '') === 'older') {
+                $query->where($columnName, '<', now()->subDays(30));
+            }
+        }
         $count = (clone $query)->count();
         $column = [1 => 'name', 2 => 'status', 3 => 'created_at', 4 => 'updated_at', 5 => 'id'][(int) ($input['order'][0]['column'] ?? 1)];
         $records = $query->orderBy($column, $input['order'][0]['dir'] ?? 'asc')->orderBy('id')
             ->offset((int) $input['start'])->limit((int) $input['length'])->get();
+        $canDelete = ! ($extension->info['multiple'] ?? false) || $total > 1;
         $rows = $records->map(fn (PluginModel $record): array => [
             'id' => (string) $record->id, 'name' => $record->name, 'status' => $record->status ? 'active' : 'inactive',
             'created_at_display' => LocalizedDate::format($record->created_at),
             'updated_at_display' => LocalizedDate::format($record->updated_at),
             '_version' => $this->pluginVersion($record),
+            'can_delete' => $canDelete,
+            'must_keep_one' => (bool) ($extension->info['multiple'] ?? false),
+            'plugins_total' => $total,
             'edit_url' => route('admin.settings.extensions.plugins.edit', [$extensionId, $record->id]),
             'commands' => collect(['activate', 'deactivate', 'delete'])->mapWithKeys(fn ($operation) => [$operation => route('admin.settings.extensions.plugins.command', [$extensionId, $record->id, $operation])])->all(),
         ])->all();
@@ -1060,7 +1071,9 @@ class Extensions extends AbstractCrudService
         $record = PluginModel::where('extension_id', $extensionId)->findOrFail($pluginId);
         abort_unless(in_array($operation, ['activate', 'deactivate', 'delete'], true), 422);
         abort_unless(hash_equals($this->pluginVersion($record), $input['_version'] ?? ''), 409, trans('extensions.conflict'));
-        abort_unless((bool) $record->status === ($operation === 'deactivate'), 422, trans('extensions.mixed_selection'));
+        if ($operation !== 'delete') {
+            abort_unless((bool) $record->status === ($operation === 'deactivate'), 422, trans('extensions.mixed_selection'));
+        }
 
         if ($operation === 'activate') {
             $input['fields'] = (array) $record->fields?->getArrayCopy();
@@ -1173,7 +1186,7 @@ class Extensions extends AbstractCrudService
         }
         if ($delete) {
             abort_unless($record && ! empty($input['confirm']), 422);
-            abort_if((bool) $record->status, 422, trans('extensions.deactivate_instance_first'));
+            abort_if(($extension->info['multiple'] ?? false) && $extension->plugins()->count() <= 1, 422, trans('extensions.minimum_instance'));
         } else {
             $input = dto($input, PluginRequest::class);
             if ($record && array_key_exists('fields', $input)) {
@@ -1238,8 +1251,13 @@ class Extensions extends AbstractCrudService
                 foreach ($input['entries'] as $entry) {
                     abort_unless(hash_equals($this->pluginVersion($records->get($entry['id'])), $entry['_version']), 409, trans('extensions.conflict'));
                 }
-                $expected = $input['operation'] === 'deactivate';
-                abort_unless($records->every(fn ($record) => (bool) $record->status === $expected), 422, trans('extensions.mixed_selection'));
+                if ($input['operation'] !== 'delete') {
+                    $expected = $input['operation'] === 'deactivate';
+                    abort_unless($records->every(fn ($record) => (bool) $record->status === $expected), 422, trans('extensions.mixed_selection'));
+                }
+                if ($input['operation'] === 'delete' && ($extension->info['multiple'] ?? false)) {
+                    abort_if($extension->plugins()->count() - $records->count() < 1, 422, trans('extensions.minimum_instance'));
+                }
                 foreach ($input['entries'] as $entry) {
                     $record = $records->get($entry['id']);
                     $this->persistPlugin($extensionId, $record->id, ['name' => $record->name, 'status' => $input['operation'] === 'activate' ? 1 : 0,

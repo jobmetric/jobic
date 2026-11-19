@@ -4,20 +4,22 @@ import {pageData} from '../common/page';
 export const flattenRows = rows => rows.flatMap(row => [row, ...flattenRows(row.children || [])]);
 export const selectionEntry = row => ({id: row.id, name: row.name, namespace: row.namespace, _version: row._version, status: row.status,
     installed: row.installed, local: row.local, owner: row.owner, blocked: row.blocked || (row.status === 'inactive' && !(row.actions || []).includes('activate')), state_reason: row.state_reason || Object.values(row.action_reasons || {}).join(' '),
-    actions: row.actions || [], childCount: flattenRows(row.children || []).length});
+    actions: row.actions || [], can_delete: row.can_delete !== false, must_keep_one: Boolean(row.must_keep_one), plugins_total: Number(row.plugins_total || 0), childCount: flattenRows(row.children || []).length});
 export function statusMarkup(row) {
     return `<span class="crud-status ${row.status === 'active' ? 'is-active' : ''}">${escape(copy()[row.status])}</span>${row.state_reason ? `<small class="extension-state-reason">${escape(row.state_reason)}</small>` : ''}`;
 }
 export function actionsMarkup(row, isPlugins) {
     const access = pageData().extensionAccess;
-    const operations = isPlugins ? (row.status === 'active' ? ['deactivate'] : ['activate', 'delete']) : (row.actions || []);
+    const operations = isPlugins
+        ? [...(row.status === 'active' ? ['deactivate'] : ['activate']), ...(row.can_delete ? ['delete'] : [])]
+        : (row.actions || []);
     let menu = operations.filter(op => isPlugins || (access[op] && !(op === 'delete' && row.installed && !access.uninstall)))
         .map(op => `<button type="button" data-operation="${op}" data-id="${escape(row.id)}">${escape(copy()[op === 'delete' && isPlugins ? 'delete_plugin' : op])}</button>`).join('');
     if (isPlugins) return `<div class="crud-row-actions"><a class="crud-icon-button" href="${escape(row.edit_url)}" aria-label="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
     if (row.status === 'active' && row.plugins_url && access.plugins) menu += `<a href="${escape(row.plugins_url)}">${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}</a>`;
     if (row.installed && row.local && !row.owner && access.upgrade) menu += `<a href="${escape(pageData().extensionRoutes.upgradeForm)}?namespace=${encodeURIComponent(row.namespace)}">${escape(copy().upgrade)}</a>`;
     menu += `<button type="button" data-details="${escape(row.id)}">${escape(copy().view)}</button>`;
-    return `<div class="crud-row-actions">${row.status === 'active' && row.plugins_url && access.plugins ? `<a class="crud-icon-button" href="${escape(row.plugins_url)}" aria-label="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}" data-tooltip="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}">${icon('settings')}</a>` : ''}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
+    return `<div class="crud-row-actions">${row.status === 'active' && row.plugins_url && access.plugins ? `<a class="crud-icon-button" href="${escape(row.plugins_url)}" aria-label="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}" data-tooltip="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}">${icon(row.multiple ? 'settings' : 'edit')}</a>` : ''}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
 }
 export function nameMarkup(row, expanded = false) {
     const count = flattenRows(row.children || []).length;
@@ -38,7 +40,11 @@ export function bulkAvailability(entries, isPlugins) {
     const active = entries.every(row => row.status === 'active');
     const inactive = entries.every(row => row.status === 'inactive');
     const available = entries.every(row => row.status === 'available');
-    if (isPlugins) return active ? ['deactivate'] : inactive ? ['activate', 'delete'] : [];
+    if (isPlugins) {
+        const deletionAllowed = entries.every(row => row.can_delete)
+            && ! (entries.some(row => row.must_keep_one) && entries.length >= Math.max(...entries.map(row => row.plugins_total)));
+        return [active && 'deactivate', inactive && 'activate', deletionAllowed && 'delete'].filter(Boolean);
+    }
     const access = pageData().extensionAccess;
     const allowed = op => entries.every(row => row.actions.includes(op));
     return [

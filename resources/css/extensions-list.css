@@ -44,6 +44,8 @@
 .extension-child-name strong { font-size:.85rem; font-weight:600; overflow-wrap:anywhere; }
 .extension-child-name small { font-size:.72rem; }
 .extension-child-state .extension-state-reason { max-inline-size:17rem; }
+.extension-child-state { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem .65rem; min-inline-size:0; }
+.extension-child-state .extension-state-reason { margin-block-start:0; }
 @media(max-width:850px) {
  .extension-child-row { grid-template-columns:auto 2.5rem minmax(0,1fr) auto; gap:.65rem; padding:.85rem; }
  .extension-child-state { grid-column:3; grid-row:2; }
