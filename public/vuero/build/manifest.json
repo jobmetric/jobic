@@ -408,15 +408,15 @@
     "src": "resources/js/extensions/form.js"
   },
   "resources/js/extensions/index.css": {
-    "file": "assets/index-834f36bf.css",
+    "file": "assets/index-4d6add87.css",
     "src": "resources/js/extensions/index.css"
   },
   "resources/js/extensions/index.js": {
     "css": [
-      "assets/index-834f36bf.css",
+      "assets/index-4d6add87.css",
       "assets/crud-fields-e2001d2c.css"
     ],
-    "file": "assets/index-33b94f1a.js",
+    "file": "assets/index-d794d574.js",
     "imports": [
       "_shared-99f12774.js",
       "_page-1cca34fb.js",
