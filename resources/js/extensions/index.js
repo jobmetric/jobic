@@ -37,15 +37,18 @@ function initialize() {
     let restoreFilterButton;
     const filterNames = [...filterForm.elements].map(field => field.name).filter(Boolean);
 
+    function markQuickFilter(name) {
+        quickFilters?.querySelectorAll('[data-quick-filter]').forEach(button => {
+            button.setAttribute('aria-pressed', String(button.dataset.quickFilter === name));
+        });
+    }
     function applyQuickFilter(name) {
         const values = quickValues[name] || quickValues.all;
         ['status', 'installation', 'updates'].forEach(key => {
             const field = filterForm.elements.namedItem(key);
             if (field) field.value = values[key] || '';
         });
-        quickFilters?.querySelectorAll('[data-quick-filter]').forEach(button => {
-            button.setAttribute('aria-pressed', String(button.dataset.quickFilter === name));
-        });
+        markQuickFilter(name);
     }
     function currentQuickFilter() {
         return Object.entries(quickValues).find(([, values]) => ['status', 'installation', 'updates']
@@ -58,16 +61,43 @@ function initialize() {
         if (view && view !== 'all') next.searchParams.set('view', view);
         if (searchInput.value.trim()) next.searchParams.set('q', searchInput.value.trim());
         new FormData(filterForm).forEach((value, key) => {
-            if (value !== '' && !['status', 'installation', 'updates'].includes(key)) next.searchParams.set(key, value);
+            const representedByQuickFilter = view && ['status', 'installation', 'updates'].includes(key);
+            if (value !== '' && !representedByQuickFilter) next.searchParams.set(key, value);
         });
         history.replaceState(null, '', next);
+    }
+    function updateEmpty(result) {
+        const title = empty.querySelector('[data-empty-title]');
+        const hint = empty.querySelector('[data-empty-hint]');
+        const add = empty.querySelector('[data-empty-add]');
+        const clear = empty.querySelector('[data-empty-clear]');
+        const hasSearch = searchInput.value.trim() !== '';
+        const hasFilters = [...new FormData(filterForm).values()].some(value => value !== '');
+        if (result.recordsTotal === 0) {
+            title.textContent = copy()[isPlugins ? 'empty_plugins' : 'empty'];
+            hint.textContent = copy()[isPlugins ? 'empty_plugins_hint' : 'empty_hint'];
+            if (add) add.hidden = isPlugins ? !canCreate : !pageData().extensionAccess.upload;
+            if (clear) clear.hidden = true;
+        } else if (hasSearch) {
+            title.textContent = copy().search_empty;
+            hint.textContent = copy().search_empty_hint;
+            if (add) add.hidden = true;
+            if (clear) clear.hidden = false;
+        } else if (hasFilters) {
+            title.textContent = copy().filtered_empty;
+            hint.textContent = copy().filtered_empty_hint;
+            if (add) add.hidden = true;
+            if (clear) clear.hidden = false;
+        }
+        empty.hidden = result.recordsFiltered !== 0;
     }
     if (query.get('q')) searchInput.value = query.get('q').slice(0, 100);
     filterNames.forEach(name => {
         const field = filterForm.elements.namedItem(name);
         if (field && query.has(name)) field.value = query.get(name);
     });
-    applyQuickFilter(quickValues[query.get('view')] ? query.get('view') : currentQuickFilter() || 'all');
+    if (quickValues[query.get('view')]) applyQuickFilter(query.get('view'));
+    else markQuickFilter(currentQuickFilter());
     toolbar('list');
 
     function lock() {
@@ -139,7 +169,7 @@ function initialize() {
                     const node = document.querySelector(`[data-quick-count="${key}"]`);
                     if (node) node.textContent = new Intl.NumberFormat(document.documentElement.lang).format(value);
                 });
-                empty.hidden = result.data.recordsFiltered !== 0;
+                updateEmpty(result.data);
                 card.append(empty);
             } catch (error) {
                 if (error.name === 'AbortError') return;
@@ -213,13 +243,17 @@ function initialize() {
         event.preventDefault();
         if (loading || pending) return;
         restoreFilterButton = loadingButton(filterForm.querySelector('[type=submit]'));
-        filterDialog.close(); applyQuickFilter(currentQuickFilter() || 'all'); syncUrl(); table.ajax.reload();
+        filterDialog.close(); markQuickFilter(currentQuickFilter()); syncUrl(); table.ajax.reload();
     });
     filterForm.addEventListener('reset', () => setTimeout(() => {
         $(filterForm).find('select').trigger('change.select2');
         applyQuickFilter('all'); searchInput.value = ''; filterDialog.close(); syncUrl(); table.ajax.reload();
     }, 0));
     document.querySelector('[data-retry]').onclick = () => table.ajax.reload();
+    empty.querySelector('[data-empty-clear]')?.addEventListener('click', () => {
+        filterForm.reset(); searchInput.value = ''; applyQuickFilter('all');
+        $(filterForm).find('select').trigger('change.select2'); syncUrl(); table.ajax.reload();
+    });
     selectionButton.onclick = () => showSelection([...selected.values()], id => {selected.delete(id);selection();});
     async function mutate(row, operation, button) {
         if (pending || loading) return;

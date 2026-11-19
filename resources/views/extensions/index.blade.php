@@ -17,7 +17,7 @@
     <div class="crud-table-card" data-table-card>
         <div class="crud-loading" data-table-loading hidden role="status"><span class="crud-spinner"></span><strong>{{ __('extensions.loading') }}</strong></div>
         <div class="crud-table-scroll"><table id="extension-table"><thead><tr><th><input type="checkbox" data-select-all aria-label="{{ __('extensions.select_all') }}"></th>@foreach(['name','type','version','status','plugins_count','actions'] as $column)<th>{{ __('extensions.'.$column) }}</th>@endforeach</tr></thead><tbody></tbody></table></div>
-        @include('common.crud.empty', ['title' => __('extensions.empty'), 'hint' => __('extensions.empty_hint')])
+        @include('common.crud.empty', ['title' => __('extensions.empty'), 'hint' => __('extensions.empty_hint'), 'actionUrl' => route('admin.settings.extensions.create'), 'actionLabel' => __('extensions.create'), 'actionHidden' => !app(\App\Support\AdminAccess::class)->allows(auth()->user(), 'admin.settings.extensions.upload'), 'clearLabel' => __('extensions.clear_filters')])
         <div data-table-error hidden role="alert"><span>{{ __('extensions.failed') }}</span><button type="button" data-retry class="vuero-button">{{ __('extensions.retry') }}</button></div>
     </div>
     <div data-table-footer data-list-controls></div>

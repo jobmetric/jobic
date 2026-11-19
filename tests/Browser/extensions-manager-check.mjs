@@ -24,7 +24,8 @@ try {
         async function data() {return (await (await page.request.get(base+'/data?draw=1&start=0&length=100')).json()).data.data;}
         async function operation(row, name) {
             const button = page.locator(`[data-operation=${name}][data-id="${row.id}"]`);
-            await button.locator('xpath=ancestor::details[1]/summary').click();
+            const menu = button.locator('xpath=ancestor::details[1]/summary');
+            if (await menu.count()) await menu.click();
             await button.click(); const response=page.waitForResponse(r=>r.request().method()==='POST' && (r.url().endsWith('/commands/'+name)||r.url().endsWith('/bulk/'+name))); await page.locator('[data-dialog-confirm]').click(); const result=await response;assert.equal(result.status(),200,await result.text());await loaded();
         }
         async function select(rows) {for(const row of rows) await page.locator(`[data-row-id="${row.id}"]`).check();}
@@ -46,10 +47,15 @@ try {
             assert.equal((await page.goto(base)).status(),200);await loaded();
             const initial=await data();let alpha=initial.find(row=>row.name==='Alpha fixture'),beta=initial.find(row=>row.name==='Beta fixture');
             assert.ok(alpha&&beta);
+            assert.equal(await page.locator('[data-quick-filter]').count(),5);
+            assert.equal(await page.locator('[data-quick-filter=all]').getAttribute('aria-pressed'),'true');
+            await page.locator('[data-quick-filter=available]').click();await loaded();assert.ok(page.url().includes('view=available'));
+            await page.reload();await loaded();assert.equal(await page.locator('[data-quick-filter=available]').getAttribute('aria-pressed'),'true');
+            await page.locator('[data-quick-filter=all]').click();await loaded();
             await available([]);
             await page.locator('[data-open-filters]').click();assert.equal(await page.locator('[data-filter-form] select').count(),7);
-            await page.locator('[name=source]').selectOption('local');await page.locator('[data-filter-form] [type=submit]').click();await loaded();assert.equal(await page.locator('[data-table-empty]').isVisible(),true);
-            await page.locator('[data-open-filters]').click();await page.locator('[data-filter-form] [type=reset]').click();await loaded();
+            await page.locator('[name=source]').selectOption('local');await page.locator('[data-filter-form] [type=submit]').click();await loaded();assert.equal(await page.locator('[data-table-empty]').isVisible(),true);assert.equal(await page.locator('[data-empty-clear]').isVisible(),true);
+            await page.locator('[data-empty-clear]').click();await loaded();
             await operation(alpha,'install');alpha=(await data()).find(row=>row.name==='Alpha fixture');
             await operation(beta,'install');beta=(await data()).find(row=>row.name==='Beta fixture');
             await operation(alpha,'activate');alpha=(await data()).find(row=>row.name==='Alpha fixture');

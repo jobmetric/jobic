@@ -13,23 +13,33 @@ export function actionsMarkup(row, isPlugins) {
     const operations = isPlugins
         ? [...(row.status === 'active' ? ['deactivate'] : ['activate']), ...(row.can_delete ? ['delete'] : [])]
         : (row.actions || []);
-    let menu = operations.filter(op => isPlugins || (access[op] && !(op === 'delete' && row.installed && !access.uninstall)))
+    const allowed = operations.filter(op => isPlugins || (access[op] && !(op === 'delete' && row.installed && !access.uninstall)));
+    if (isPlugins) {
+        const menu = allowed.map(op => `<button type="button" data-operation="${op}" data-id="${escape(row.id)}">${escape(copy()[op === 'delete' ? 'delete_plugin' : op])}</button>`).join('');
+        return `<div class="crud-row-actions"><a class="crud-icon-button" href="${escape(row.edit_url)}" aria-label="${escape(copy().edit)}">${icon('edit')}</a>${menu ? `<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details>` : ''}</div>`;
+    }
+    const primary = allowed.includes('install') ? 'install'
+        : row.has_update && row.installed && row.local && !row.owner && access.upgrade ? 'upgrade'
+            : allowed.includes('deactivate') ? 'deactivate' : allowed.includes('activate') ? 'activate' : null;
+    let menu = allowed.filter(op => op !== primary)
         .map(op => `<button type="button" data-operation="${op}" data-id="${escape(row.id)}">${escape(copy()[op === 'delete' && isPlugins ? 'delete_plugin' : op])}</button>`).join('');
-    if (isPlugins) return `<div class="crud-row-actions"><a class="crud-icon-button" href="${escape(row.edit_url)}" aria-label="${escape(copy().edit)}">${icon('edit')}</a><details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
     if (row.status === 'active' && row.plugins_url && access.plugins) menu += `<a href="${escape(row.plugins_url)}">${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}</a>`;
-    if (row.installed && row.local && !row.owner && access.upgrade) menu += `<a href="${escape(pageData().extensionRoutes.upgradeForm)}?namespace=${encodeURIComponent(row.namespace)}">${escape(copy().upgrade)}</a>`;
+    if (row.installed && row.local && !row.owner && access.upgrade && primary !== 'upgrade') menu += `<a href="${escape(pageData().extensionRoutes.upgradeForm)}?namespace=${encodeURIComponent(row.namespace)}">${escape(copy().upgrade)}</a>`;
     menu += `<button type="button" data-details="${escape(row.id)}">${escape(copy().view)}</button>`;
-    return `<div class="crud-row-actions">${row.status === 'active' && row.plugins_url && access.plugins ? `<a class="crud-icon-button" href="${escape(row.plugins_url)}" aria-label="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}" data-tooltip="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}">${icon(row.multiple ? 'settings' : 'edit')}</a>` : ''}<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details></div>`;
+    const primaryMarkup = primary === 'upgrade'
+        ? `<a class="extension-primary-action" href="${escape(pageData().extensionRoutes.upgradeForm)}?namespace=${encodeURIComponent(row.namespace)}">${escape(copy().upgrade)}</a>`
+        : primary ? `<button class="extension-primary-action" type="button" data-operation="${primary}" data-id="${escape(row.id)}">${escape(copy()[primary])}</button>` : '';
+    return `<div class="crud-row-actions">${primaryMarkup}${row.status === 'active' && row.plugins_url && access.plugins ? `<a class="crud-icon-button" href="${escape(row.plugins_url)}" aria-label="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}" data-tooltip="${escape(copy()[row.multiple ? 'manage_instances' : 'edit'])}">${icon(row.multiple ? 'settings' : 'edit')}</a>` : ''}${menu ? `<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon('more-horizontal')}</summary><div class="crud-dropdown__menu">${menu}</div></details>` : ''}</div>`;
 }
 export function nameMarkup(row, expanded = false) {
     const count = flattenRows(row.children || []).length;
-    return `<div class="extension-tree-name">${count ? `<button class="crud-icon-button" type="button" data-toggle-children="${escape(row.id)}" aria-expanded="${expanded}" aria-label="${escape(copy()[expanded ? 'hide_children' : 'show_children'])}">${icon(expanded ? 'chevron-down' : 'chevron-right')}</button>` : ''}<span>${escape(row.name)}${count ? `<small>${escape(copy().child_extensions)} · ${count}</small>` : ''}${row.context_only ? `<small>${escape(copy().parent_context)}</small>` : ''}</span></div>`;
+    return `<div class="extension-tree-name">${count ? `<button class="crud-icon-button" type="button" data-toggle-children="${escape(row.id)}" aria-expanded="${expanded}" aria-label="${escape(copy()[expanded ? 'hide_children' : 'show_children'])}">${icon(expanded ? 'chevron-down' : 'chevron-right')}</button>` : ''}<span><span class="extension-name-line">${escape(row.name)}${row.has_update ? `<small class="extension-update-badge">${escape(copy().update_available)}</small>` : ''}</span>${row.has_update ? `<small>${escape(copy().version_change.replace(':installed', row.installed_version || '—').replace(':available', row.version || '—'))}</small>` : ''}${count ? `<small>${escape(copy().child_extensions)} · ${count}</small>` : ''}${row.context_only ? `<small>${escape(copy().parent_context)}</small>` : ''}</span></div>`;
 }
 export function childrenMarkup(row) {
     const render = (entries, depth = 0) => entries.map(child => `<div class="extension-child-row" data-child-id="${escape(child.id)}" style="--child-depth:${Math.min(depth, 4)}">
         <div class="extension-child-select">${child.context_only ? '' : `<input type="checkbox" data-row-id="${escape(child.id)}" aria-label="${escape(copy().select_row)}">`}</div>
         <span class="extension-child-symbol">${icon({Component:'box',Module:'apps',Theme:'layout',Plugin:'code'}[child.type] || 'box')}</span>
-        <div class="extension-child-name"><strong dir="auto">${escape(child.name)}</strong>${child.description ? `<p class="extension-child-description" dir="auto">${escape(child.description)}</p>` : ''}<div class="extension-child-meta"><span>${escape(child.type_label)}</span><span>${escape(copy().version)} <bdi>${escape(child.version || '—')}</bdi></span>${child.multiple ? `<span>${escape(copy().child_instance_count.replace(':count', new Intl.NumberFormat(document.documentElement.lang).format(child.plugins_count)))}</span>` : ''}</div></div>
+        <div class="extension-child-name"><span class="extension-name-line"><strong dir="auto">${escape(child.name)}</strong>${child.has_update ? `<small class="extension-update-badge">${escape(copy().update_available)}</small>` : ''}</span>${child.description ? `<p class="extension-child-description" dir="auto">${escape(child.description)}</p>` : ''}<div class="extension-child-meta"><span>${escape(child.type_label)}</span><span>${escape(copy().version)} <bdi>${escape(child.version || '—')}</bdi></span>${child.multiple ? `<span>${escape(copy().child_instance_count.replace(':count', new Intl.NumberFormat(document.documentElement.lang).format(child.plugins_count)))}</span>` : ''}</div></div>
         <div class="extension-child-state">${statusMarkup(child)}</div>
         ${actionsMarkup(child, false)}
         </div>${render(child.children || [], depth + 1)}`).join('');
