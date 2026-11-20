@@ -22,7 +22,7 @@ An upgrade review and its later confirmation must both match the selected locall
 
 ## Bundled examples
 
-The upload page offers five removable examples and their 1.1.0 upgrade ZIPs, covering Component, Module (single and multiple), Theme and Plugin. Source, archives, build instructions and the complete manual acceptance walkthrough are in `examples/extensions/README.md`. The standalone examples demonstrate protected pages, public settings fields, write-only secrets, safe hooks and independent audit tables. Single creates one default instance; Multiple supports independently named instances. They remain outside `app/Extensions` until explicitly inspected and confirmed through the manager.
+The upload page offers five removable examples and their 1.1.0 upgrade ZIPs, covering Component, Module (single and multiple), Theme and Plugin. Source, archives, build instructions and the complete manual acceptance walkthrough are in `examples/extensions/README.md`. The standalone examples demonstrate public settings fields, write-only secrets, safe lifecycle hooks and independent audit tables without registering demo pages or product navigation. Single creates one default instance; Multiple supports independently named instances. They remain outside `app/Extensions` until explicitly inspected and confirmed through the manager.
 
 ## Extending the CMS
 
@@ -98,7 +98,7 @@ Successful upgrade placement returns a fresh optimistic version and refreshes th
 
 ## Complete sample catalog and real upgrades
 
-`examples/extensions/catalog.json` drives all five download routes and the ten generated ZIPs. Each root example has a separately owned 1.1.0 upgrade-marker migration: its table is absent after 1.0.0 installation, created by the real upgrade worker, visible through an upgrade-applied preview message and removed during uninstall. Existing audit tables and instance settings remain intact during upgrade.
+`examples/extensions/catalog.json` drives all five download routes and the ten generated ZIPs. Each root example has a separately owned 1.1.0 upgrade-marker migration: its table is absent after 1.0.0 installation, created by the real upgrade worker, verified through database and lifecycle acceptance, and removed during uninstall. Existing audit tables and instance settings remain intact during upgrade.
 
 Apache/FastCGI browser acceptance passed in English and Persian for all five downloaded base archives and their five upgrades, with desktop/mobile dialog checks, installation, configuration, activation, real CLI migrations and complete sandbox cleanup. The installed-release feature suite passed 26 tests / 326 assertions, including catalog type coverage and standalone Theme/Plugin lifecycle and secret exclusion. No live database reset or live sample installation was performed.
 

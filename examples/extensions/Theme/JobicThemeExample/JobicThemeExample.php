@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Extensions\Theme\JobicThemeExample;
 
 use App\Facades\Hooks;
-use App\Facades\Permissions;
 use App\Support\Extensions\Runtime;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,7 @@ use JobMetric\Form\Tab\TabBuilder;
 class JobicThemeExample extends AbstractExtension
 {
     /**
-     * Register only this extension's own views, routes and translation namespace.
+     * Register only this extension's own views and translation namespace.
      *
      * @param  ExtensionCore  $extension
      *
@@ -31,7 +30,7 @@ class JobicThemeExample extends AbstractExtension
      */
     public function configuration(ExtensionCore $extension): void
     {
-        $extension->hasView()->hasTranslation()->hasRoute();
+        $extension->hasView()->hasTranslation();
     }
 
     /**
@@ -68,7 +67,7 @@ class JobicThemeExample extends AbstractExtension
     }
 
     /**
-     * Add an authorized settings card and observe safe instance outcomes while active.
+     * Observe safe instance outcomes through lifecycle hooks while active.
      *
      * @param  ExtensionCore  $core
      * @param  Application  $app
@@ -78,9 +77,6 @@ class JobicThemeExample extends AbstractExtension
      */
     public function afterBootExtension(ExtensionCore $core, Application $app): void
     {
-        Permissions::addPermission('admin.settings.extensions.examples', 'extensions.example_archives');
-        Permissions::addPermission('admin.settings.extensions.examples.theme', 'extension_theme_jobic_theme_example::example.title', 'admin.extension-examples.theme', order: 180);
-        Hooks::addView('jobic.admin.content.after', 'extension_theme_jobic_theme_example::notice');
         Hooks::addAction('jobic.extensions.plugins.saved', static function (array $context): void {
             $id = Extension::whereNamespace(self::class)->value('id');
             if (app(Runtime::class)->active(self::class) && $id && (int) ($context['extension_id'] ?? 0) === (int) $id) {

@@ -64,7 +64,8 @@ try {
                     if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.click();
                 }
                 const button = page.locator(`[data-operation=${operation}][data-id="${record.id}"]`);
-                await button.locator('xpath=ancestor::details[1]/summary').click();
+                const menu = button.locator('xpath=ancestor::details[1]/summary');
+                if (await menu.count()) await menu.click();
                 await button.click();
                 await page.locator('[data-dialog-confirm]').click();
                 await page.waitForFunction(() => document.querySelector('[data-table-loading]').hidden === false);
@@ -90,6 +91,7 @@ try {
             const beta = page.locator('#extension-table tbody tr').filter({hasText: 'Beta fixture'});
             await beta.locator('.crud-row-actions > a').click();
             await page.locator('[data-crud-action=create]').click();
+            await page.locator('[name=name]').fill('Browser instance');
             await page.locator('[data-crud-action=save]').click();
             await page.locator('[data-error-for="fields.label"]').filter({hasText: /.+/}).waitFor();
             await page.locator('[data-plugin-fields] [name=label]').fill('Configured browser label');
@@ -300,13 +302,13 @@ try {
                         await page.locator('#extension-table tbody tr').filter({hasText: label}).waitFor();
                     }
                 }
-                const previewResponse = await page.goto(`${applicationBase}/admin/extension-examples/${variant}`);
-                assert.equal(previewResponse.status(), 200, await page.locator('body').innerText());
-                assert.equal(await page.locator('[data-example-upgraded]').count(), 0);
-                await page.locator('.crud-toolbar a.is-primary').click();
-                if (variant !== 'multiple') {
+                assert.equal((await page.request.get(`${applicationBase}/admin/extension-examples/${variant}`)).status(), 404);
+                if (variant !== 'system') await page.locator('#extension-table tbody tr').filter({hasText: sampleTitle}).locator('.crud-row-actions > a').click();
+                if (variant === 'system') {
+                    // Owned Module instances were exercised above; the Component has no own instances.
+                } else if (variant !== 'multiple') {
                     assert.equal(await page.locator('[data-crud-action=create]').count(), 0);
-                    await page.locator('#extension-table tbody .crud-row-actions > a').first().click();
+                    if (!/\/plugins\/\d+\/edit$/.test(page.url())) await page.locator('#extension-table tbody .crud-row-actions > a').first().click();
                     await page.locator('[name=title]').fill('Browser single title');
                     await page.locator('[name=message]').fill('Single example message');
                     await page.locator('[name=api_secret]').fill('example-browser-secret');
@@ -326,8 +328,6 @@ try {
                         await page.locator('#extension-table tbody tr').filter({hasText: `Multiple ${label}`}).waitFor();
                     }
                 }
-                await page.goto(`${applicationBase}/admin/extension-examples/${variant}`);
-                assert.ok((await page.locator('body').innerText()).includes(variant!=='multiple' ? 'Browser single title' : 'Browser multiple B'));
                 assert.equal((await page.content()).includes('example-browser-secret'), false);
                 await page.goto(base);
                 await page.locator('#extension-table tbody tr').filter({hasText: sampleTitle}).waitFor();
@@ -356,9 +356,7 @@ try {
                 assert.equal(await page.locator('[data-crud-action=save]').isVisible(), false);
                 await page.locator('[data-archive-finish]').click();
                 await page.locator('#extension-table tbody tr').filter({hasText: sampleTitle}).waitFor();
-                const upgradedPreview = await page.request.get(`${applicationBase}/admin/extension-examples/${variant}`);
-                assert.equal(upgradedPreview.status(), 200);
-                assert.ok((await upgradedPreview.text()).includes('data-example-upgraded'), 'The 1.1.0 migration must be observable in the preview');
+                assert.equal((await page.request.get(`${applicationBase}/admin/extension-examples/${variant}`)).status(), 404);
                 await page.evaluate(() => {window.originalDocument = document;});
                 if (variant === 'system') {
                     const result = await page.request.get(`${base}/data?draw=1&start=0&length=100`);

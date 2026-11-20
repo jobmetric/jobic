@@ -3,7 +3,6 @@
 namespace Tests\Feature\Extensions;
 
 use App\Facades\Hooks;
-use App\Http\Middleware\Admin\EnsureExtensionActive;
 use App\Models\User;
 use App\Services\Extensions\Extensions;
 use App\Support\Extensions\Runtime;
@@ -750,16 +749,13 @@ class ExtensionsTest extends ExtensionManagementTestCase
         foreach (['First', 'Second'] as $name) {
             $this->postJson(route('admin.settings.extensions.plugins.store', $multiple->id), ['name' => $name, 'status' => 1, 'fields' => ['title' => $name.' title', 'message' => 'Example message']])->assertOk();
         }
-        $this->get(route('admin.extension-examples.single'))->assertOk()->assertSee('Safe title')->assertSee('&lt;script&gt;never-execute&lt;/script&gt;', false)->assertDontSee('example-private-secret');
-        $this->get(route('admin.extension-examples.multiple'))->assertOk()->assertSee('First title')->assertSee('Second title');
+        $this->assertNull($this->app['router']->getRoutes()->getByName('admin.extension-examples.single'));
+        $this->assertNull($this->app['router']->getRoutes()->getByName('admin.extension-examples.multiple'));
         $this->assertSame(1, DB::table('jobic_example_single_audit')->count());
         $this->assertSame(2, DB::table('jobic_example_multiple_audit')->count());
         foreach ($records as $variant => $record) {
             $this->command('deactivate', $record->namespace)->assertOk();
             $this->assertFalse(app(Runtime::class)->active($record->namespace));
-            $route = $this->app['router']->getRoutes()->getByName('admin.extension-examples.'.$variant);
-            $this->assertContains(EnsureExtensionActive::class, $this->app['router']->gatherRouteMiddleware($route));
-            $this->get(route('admin.extension-examples.'.$variant))->assertNotFound();
             $this->command('uninstall', $record->namespace, ['confirm' => 1])->assertOk();
             $this->command('delete', $record->namespace, ['confirm' => 1])->assertOk();
             $this->assertFalse(Schema::hasTable('jobic_example_'.$variant.'_audit'));
@@ -921,11 +917,10 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $plugin = $record->plugins()->firstOrFail();
         $this->postJson(route('admin.settings.extensions.plugins.update', [$record->id, $plugin->id]), ['name' => $variant.' configuration', 'status' => 1,
             '_version' => app(Extensions::class)->pluginVersion($plugin), 'fields' => ['title' => 'Public preview title', 'message' => '<script>escaped</script>', 'api_secret' => 'private-test-value']])->assertOk();
-        $this->get(route('admin.extension-examples.'.$variant))->assertOk()->assertSee('Public preview title')->assertSee('&lt;script&gt;escaped&lt;/script&gt;', false)->assertDontSee('private-test-value')->assertDontSee('data-example-upgraded', false);
+        $this->assertNull($this->app['router']->getRoutes()->getByName('admin.extension-examples.'.$variant));
         $this->assertSame(1, DB::table('jobic_example_'.$variant.'_audit')->count());
         $this->assertFalse(Schema::hasTable('jobic_example_'.$variant.'_upgrade'));
         $this->command('deactivate', $namespace)->assertOk();
-        $this->get(route('admin.extension-examples.'.$variant))->assertNotFound();
         $this->assertSame('Public preview title', $plugin->fresh()->fields['title']);
         $this->command('uninstall', $namespace, ['confirm' => 1])->assertOk();
         $this->command('delete', $namespace, ['confirm' => 1])->assertOk();
