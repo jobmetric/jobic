@@ -14,7 +14,7 @@ use App\Support\Installation\Environment;
 use App\Support\Installation\Fields;
 use App\Support\Installation\State;
 use Closure;
-use Database\Seeders\InstallationSeeder;
+use Database\Seeders\WebsiteInstallationSeeder;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -491,7 +491,7 @@ class Installation
                 case 2:
                     if (Artisan::call('db:seed', [
                             '--database' => 'installation',
-                            '--class'    => InstallationSeeder::class,
+                            '--class'    => WebsiteInstallationSeeder::class,
                             '--force'    => true,
                         ]) !== 0) {
                         throw new RuntimeException('Seeding failed.');

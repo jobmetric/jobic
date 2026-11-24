@@ -28,8 +28,19 @@ An unassigned page or empty position renders nothing. A failed Module is logged 
 
 ## Page types and Modules
 
+The public homepage at `/` uses the built-in site shell and renders the
+selected theme's declared positions in manifest order for page type `home`.
+If no theme is selected, the homepage still renders its site branding.
+
+The web installer and `DatabaseSeeder` both call
+`WebsiteInstallationSeeder`. It installs the bundled starter theme,
+slideshow and sample articles modules and assigns their instances to the
+starter theme's home layout. Reseeding preserves existing theme selections
+and home assignments. The slide and article copy belongs to the starter
+modules and is translated in `lang/en/site.php` and `lang/fa/site.php`.
+
 Core and trusted extension providers register page types in `App\Support\Layouts\PageTypeRegistry`; the upstream layout package exposes the equivalent generic registry. Keys are stable identifiers and labels are translation keys. Domi's Open Graph page type is unrelated.
 
-Only Plugin instances owned by a `Module` extension may be placed. Single and multiple Module extensions use the same placement record. One instance may be reused in different positions, while the same instance cannot be duplicated in one position. Plugin settings stay in the Plugin record.
+Only Plugin instances owned by a `Module` extension may be placed. Single and multiple Module extensions use the same placement record. One instance may be reused in different positions or repeated within one position. Plugin settings stay in the Plugin record.
 
 The first standard Theme activated on a site with no selection becomes the active website Theme. Later changes are explicit in Settings → Website. The active Theme cannot be deactivated, uninstalled or deleted until another Theme is selected.
