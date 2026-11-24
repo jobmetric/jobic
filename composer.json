@@ -24,7 +24,7 @@
         "jobmetric/laravel-extension": "^2.3.2",
         "jobmetric/laravel-flow": "^2.5.0",
         "jobmetric/laravel-language": "^2.6.0",
-        "jobmetric/laravel-layout": "^2.1.0",
+        "jobmetric/laravel-layout": "2.1.1",
         "jobmetric/laravel-like": "^1.6.0",
         "jobmetric/laravel-membership": "^1.4.0",
         "jobmetric/laravel-metadata": "^4.1.0",

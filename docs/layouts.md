@@ -1,5 +1,11 @@
 # Website layouts
 
+Layout 2.1.1 supports placing the same plugin multiple times in one position.
+For an existing MySQL installation, verify the configured layout plugin table
+and drop its legacy unique index if present. For the default table name:
+`ALTER TABLE layout_plugins DROP INDEX LAYOUT_PLUGIN_UNIQUE_KEY;`.
+Fresh installations use the updated owning migration.
+
 Jobic uses `jobmetric/laravel-layout` for named layouts, page assignments and ordered Plugin placements. A layout belongs to one Theme through the normalized `layout_pages.application` key and must be assigned to at least one registered page type.
 
 ## Theme contract

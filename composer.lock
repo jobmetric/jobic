@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b82c789ecc48803992cdafc2edefe37a",
+    "content-hash": "ea5df87230e3b5b6d1607be713050f97",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1830,8 +1830,7 @@
                 "issues": "https://github.com/jobmetric/laravel-extension/issues",
                 "source": "https://github.com/jobmetric/laravel-extension"
             },
-            "time": "2026-11-15T11:47:36+00:00",
-            "published-time": "2026-11-15T11:47:40+00:00"
+            "time": "2026-11-15T11:47:36+00:00"
         },
         {
             "name": "jobmetric/laravel-flow",
@@ -2059,16 +2058,16 @@
         },
         {
             "name": "jobmetric/laravel-layout",
-            "version": "2.1.0",
+            "version": "2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-layout.git",
-                "reference": "97a58a41047cf1d2483894960a220e2d3236d73b"
+                "reference": "bc426bb0ba038d36ab4ae4d8ec685dd9a56db525"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-layout/zipball/97a58a41047cf1d2483894960a220e2d3236d73b",
-                "reference": "97a58a41047cf1d2483894960a220e2d3236d73b",
+                "url": "https://api.github.com/repos/jobmetric/laravel-layout/zipball/bc426bb0ba038d36ab4ae4d8ec685dd9a56db525",
+                "reference": "bc426bb0ba038d36ab4ae4d8ec685dd9a56db525",
                 "shasum": ""
             },
             "require": {
@@ -2132,7 +2131,7 @@
                 "issues": "https://github.com/jobmetric/laravel-layout/issues",
                 "source": "https://github.com/jobmetric/laravel-layout"
             },
-            "time": "2026-10-20T23:27:21+00:00"
+            "time": "2026-11-24T19:56:16+00:00"
         },
         {
             "name": "jobmetric/laravel-like",
@@ -12097,7 +12096,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -12108,6 +12107,6 @@
         "ext-redis": "*",
         "ext-zip": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.11.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
