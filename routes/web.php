@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', fn () => auth()->check()
-    ? redirect()->route('admin.dashboard')
-    : redirect()->route('login'))->name('home');
+Route::get('/', \App\Http\Controllers\Site\HomeController::class)->name('home');
 
 require __DIR__.'/auth.php';
 Route::get('editor-assets/{key}/{kind}', \App\Http\Controllers\Editor\EditorAssetController::class)

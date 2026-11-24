@@ -11,19 +11,21 @@ class AdminAuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_home_redirects_guests_to_login(): void
+    public function test_home_renders_for_guests(): void
     {
         $this->get(route('home'))
-            ->assertRedirect(route('login'));
+            ->assertOk()
+            ->assertSee('data-site-home', false);
     }
 
-    public function test_home_redirects_authenticated_users_to_dashboard(): void
+    public function test_home_renders_for_authenticated_users(): void
     {
         $this->actingAs(User::factory()->create([
             'password' => 'test-password',
         ]))
             ->get(route('home'))
-            ->assertRedirect(route('admin.dashboard'));
+            ->assertOk()
+            ->assertSee('data-site-home', false);
     }
 
     public function test_completed_installer_redirects_to_login(): void
