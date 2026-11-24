@@ -96,12 +96,12 @@
       "_jquery-83fec99f.js"
     ]
   },
-  "_layouts-194be2ac.js": {
+  "_layouts-979299ef.js": {
     "css": [
-      "assets/layouts-47d19748.css",
+      "assets/layouts-3ca53adc.css",
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/layouts-194be2ac.js",
+    "file": "assets/layouts-979299ef.js",
     "imports": [
       "_page-1cca34fb.js",
       "_icons-206ed4f5.js"
@@ -311,7 +311,7 @@
     "src": "kanban-boards.css"
   },
   "layouts.css": {
-    "file": "assets/layouts-47d19748.css",
+    "file": "assets/layouts-3ca53adc.css",
     "src": "layouts.css"
   },
   "maps.css": {
@@ -345,7 +345,7 @@
     "src": "resources/css/extensions-upload.css"
   },
   "resources/css/layouts.css": {
-    "file": "assets/layouts-47d19748.css",
+    "file": "assets/layouts-3ca53adc.css",
     "src": "layouts.css"
   },
   "resources/css/posts.css": {
@@ -566,9 +566,9 @@
     "css": [
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/form-c9685366.js",
+    "file": "assets/form-d6c2b7d5.js",
     "imports": [
-      "_layouts-194be2ac.js",
+      "_layouts-979299ef.js",
       "_page-1cca34fb.js",
       "_icons-206ed4f5.js",
       "_settings-63ec4cfb.js",
@@ -583,9 +583,9 @@
       "assets/extensions-list-fc344404.css",
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/index-b166bd4b.js",
+    "file": "assets/index-cad55926.js",
     "imports": [
-      "_layouts-194be2ac.js",
+      "_layouts-979299ef.js",
       "_page-1cca34fb.js",
       "_settings-63ec4cfb.js",
       "_toast-bc3a4876.js",

@@ -130,12 +130,13 @@ if (form) {
         return true;
     };
 
-    const filterModules = (nodes, value) => {
+    const library = editor.querySelector(".layout-library");
+    const filterModules = (root, value) => {
         const query = value
             .trim()
             .toLocaleLowerCase(document.documentElement.lang);
         let visible = 0;
-        nodes.forEach((node) => {
+        root.querySelectorAll("[data-plugin-id]").forEach((node) => {
             const matches =
                 !query ||
                 `${node.dataset.moduleName} ${node.dataset.moduleOwner}`
@@ -144,9 +145,9 @@ if (form) {
             node.hidden = !matches;
             if (matches) visible += 1;
         });
-        form.querySelectorAll(".layout-module-group").forEach((group) => {
-            group.hidden = ![...group.querySelectorAll(".layout-module")].some(
-                (node) => !node.hidden,
+        root.querySelectorAll(".layout-module-group").forEach((group) => {
+            group.hidden = !group.querySelector(
+                "[data-plugin-id]:not([hidden])",
             );
         });
         return visible;
@@ -158,15 +159,26 @@ if (form) {
         picker.querySelector("[data-picker-title]").textContent =
             copy().choose_module_for.replace(":position", label);
         pickerList.replaceChildren();
-        modules.forEach((module) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "layout-picker-module";
-            button.dataset.pluginId = module.id;
-            button.dataset.moduleName = module.name;
-            button.dataset.moduleOwner = module.owner;
-            button.innerHTML = `<span class="layout-module-icon">${iconMarkup("box", 17)}</span><span><strong>${escape(module.name)}</strong><small>${escape(module.owner)}</small></span>${iconMarkup(button.disabled ? "check" : "plus", 17)}`;
-            pickerList.append(button);
+        library.querySelectorAll(".layout-module-group").forEach((source) => {
+            const group = source.cloneNode(false);
+            group.hidden = false;
+            const instances = document.createElement("div");
+            group.append(
+                source.querySelector("header").cloneNode(true),
+                instances,
+            );
+            source.querySelectorAll(".layout-module").forEach((row) => {
+                const module = modules.get(row.dataset.pluginId);
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "layout-picker-module";
+                button.dataset.pluginId = module.id;
+                button.dataset.moduleName = module.name;
+                button.dataset.moduleOwner = module.owner;
+                button.innerHTML = `<span class="layout-module-icon">${iconMarkup("box", 17)}</span><span><strong>${escape(module.name)}</strong><small>${escape(row.querySelector("small").textContent.trim())}</small></span>${iconMarkup("plus", 17)}`;
+                instances.append(button);
+            });
+            pickerList.append(group);
         });
         pickerSearch.value = "";
         picker.showModal();
@@ -269,13 +281,13 @@ if (form) {
     form.querySelector("[data-module-search]").addEventListener(
         "input",
         (event) => {
-            const count = filterModules(moduleNodes, event.target.value);
+            const count = filterModules(library, event.target.value);
             form.querySelector("[data-module-no-results]").hidden = count !== 0;
         },
     );
 
     pickerSearch.addEventListener("input", (event) =>
-        filterModules([...pickerList.children], event.target.value),
+        filterModules(pickerList, event.target.value),
     );
     pickerList.addEventListener("click", (event) => {
         const button = event.target.closest("[data-plugin-id]");

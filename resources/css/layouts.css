@@ -483,6 +483,11 @@
     cursor: pointer;
     text-align: start;
 }
+.layout-module-group[hidden],
+.layout-module[hidden],
+.layout-picker-module[hidden] {
+    display: none;
+}
 .layout-picker-module:hover {
     border-color: rgb(var(--primary-rgb) / 35%);
     background: var(--surface-soft);
