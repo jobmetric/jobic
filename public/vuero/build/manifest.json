@@ -349,7 +349,7 @@
     "src": "layouts.css"
   },
   "resources/css/posts.css": {
-    "file": "assets/posts-ae1fa6bb.css",
+    "file": "assets/posts-e1415a4c.css",
     "isEntry": true,
     "src": "resources/css/posts.css"
   },
@@ -508,14 +508,14 @@
     "src": "resources/js/kanban/boards.js"
   },
   "resources/js/kanban/index.css": {
-    "file": "assets/index-59157605.css",
+    "file": "assets/index-ca59877c.css",
     "src": "resources/js/kanban/index.css"
   },
   "resources/js/kanban/index.js": {
     "css": [
-      "assets/index-59157605.css"
+      "assets/index-ca59877c.css"
     ],
-    "file": "assets/index-d1aac8cb.js",
+    "file": "assets/index-542a902a.js",
     "imports": [
       "_WorkflowToast-7fb3893a.js",
       "_page-1cca34fb.js",
@@ -685,7 +685,7 @@
     "css": [
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/form-ef7c70f9.js",
+    "file": "assets/form-e65fade6.js",
     "imports": [
       "resources/js/posts/editor-runtime.js",
       "resources/js/posts/editor-workbench.js",
