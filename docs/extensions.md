@@ -2,6 +2,8 @@
 
 The settings menu exposes `/admin/settings/extensions`. Jobic uses `jobmetric/laravel-extension` for discovery, metadata, installed records, migration execution and Plugin persistence. It does not treat infrastructure Composer libraries as removable extensions. Types come from `ExtensionTypeRegistry`; extension identities come from `ExtensionRegistry`, including namespaces contributed by installed Composer packages.
 
+Theme extensions additionally own a strict schema-1 `layout.json` beside their entry class. Activation and upgrade reject Themes without this contract. The first standard Theme becomes the website Theme when none is selected; the current website Theme cannot be deactivated or removed until another is chosen. See `docs/layouts.md`.
+
 ## Lifecycle
 
 Upload first creates a private review ticket and reports the ZIP's exact files and manifest without executing its PHP or changing live extension files. Placement requires a separate CSRF-protected confirmation from the same actor. Confirmed placement adds code without installing or activating it. Install runs the package's installation/migrations and default single-instance creation, but starts inactive. Activate separately enables the package's normal configuration/register/boot lifecycle on subsequent requests. Deactivate preserves all Plugin instances and owned data. Instance `status` remains independent of Extension activation; direct `Plugin::run()` also respects the CMS owner's activation policy.

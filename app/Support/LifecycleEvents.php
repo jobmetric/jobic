@@ -42,6 +42,7 @@ final class LifecycleEvents
         'jobic.posts.workflow.saving' => \App\Events\Workflow\WorkflowSavingEvent::class,
         'jobic.editor.document.saving' => \App\Events\EditorDocument\EditorDocumentSavingEvent::class,
         'jobic.settings.general.saving' => \App\Events\General\GeneralSavingEvent::class,
+        'jobic.settings.layouts.saving' => \App\Events\Layout\LayoutSavingEvent::class,
         'jobic.settings.seo.saving' => \App\Events\Seo\SeoSavingEvent::class,
         'jobic.settings.appearance.saving' => \App\Events\Appearance\AppearanceSavingEvent::class,
         'jobic.settings.profile.saving' => \App\Events\Profile\ProfileSavingEvent::class,

@@ -253,6 +253,15 @@ export function bindSettingsForms({ announce, applyPreferences }) {
                 return;
             }
             if (form.matches('[data-appearance-form]')) applyPreferences(result.data);
+            if (result.data?.form_action) {
+                form.action = result.data.form_action;
+                let method = form.querySelector('input[name="_method"]');
+                if (!method) { method = document.createElement('input'); method.type = 'hidden'; method.name = '_method'; form.append(method); }
+                method.value = result.data.form_method || 'PUT';
+                let version = form.querySelector('input[name="_version"]');
+                if (!version) { version = document.createElement('input'); version.type = 'hidden'; version.name = '_version'; form.append(version); }
+                version.value = result.data.version || '';
+            }
             form.querySelectorAll('input[type="password"], input[data-secret]').forEach((input) => { input.value = ''; });
             form.querySelectorAll('[data-password-toggle]').forEach((button) => { const input = document.getElementById(button.dataset.passwordToggle); input.value = ''; input.type = 'password'; button.setAttribute('aria-pressed', 'false'); });
             const meter = form.querySelector('meter');

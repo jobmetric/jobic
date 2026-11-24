@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Languages\LanguageController;
+use App\Http\Controllers\Layouts\LayoutController;
 use App\Http\Controllers\Media\MediaManagerController;
 use App\Http\Controllers\Posts\PostController;
 use App\Http\Controllers\Posts\PostLifecycleController;
@@ -145,6 +146,20 @@ Route::middleware([
     });
 
     Route::prefix('settings')->name('settings.')->group(function (): void {
+        Route::prefix('layouts')->name('layouts.')->controller(LayoutController::class)->group(function (): void {
+            Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.layouts.view')->name('index');
+            Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.settings.layouts.view')->name('data');
+            Route::get('create', 'create')->middleware(EnsurePermission::class.':admin.settings.layouts.manage')->name('create');
+            Route::post('/', 'store')->middleware([EnsurePermission::class.':admin.settings.layouts.manage', 'throttle:30,1'])->name('store');
+            Route::post('bulk/activate', 'bulkActivate')->middleware([EnsurePermission::class.':admin.settings.layouts.manage', 'throttle:30,1'])->name('bulk.activate');
+            Route::post('bulk/deactivate', 'bulkDeactivate')->middleware([EnsurePermission::class.':admin.settings.layouts.manage', 'throttle:30,1'])->name('bulk.deactivate');
+            Route::post('bulk/delete', 'bulkDelete')->middleware([EnsurePermission::class.':admin.settings.layouts.delete', 'throttle:30,1'])->name('bulk.delete');
+            Route::post('bulk/restore', 'bulkRestore')->middleware([EnsurePermission::class.':admin.settings.layouts.restore', 'throttle:30,1'])->name('bulk.restore');
+            Route::get('{layout}/edit', 'edit')->whereNumber('layout')->middleware(EnsurePermission::class.':admin.settings.layouts.manage')->name('edit');
+            Route::put('{layout}', 'update')->whereNumber('layout')->middleware([EnsurePermission::class.':admin.settings.layouts.manage', 'throttle:30,1'])->name('update');
+            Route::delete('{layout}', 'destroy')->whereNumber('layout')->middleware([EnsurePermission::class.':admin.settings.layouts.delete', 'throttle:30,1'])->name('destroy');
+            Route::post('{layout}/restore', 'restore')->whereNumber('layout')->middleware([EnsurePermission::class.':admin.settings.layouts.restore', 'throttle:30,1'])->name('restore');
+        });
         Route::prefix('extensions')->name('extensions.')->controller(\App\Http\Controllers\Extensions\ExtensionController::class)->group(function (): void {
             Route::get('/', 'index')->middleware(EnsurePermission::class.':admin.settings.extensions.view')->name('index');
             Route::get('data', 'data')->middleware(EnsurePermission::class.':admin.settings.extensions.view')->name('data');

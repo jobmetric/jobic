@@ -14,6 +14,7 @@ use App\Http\Requests\Settings\SeoRequest;
 use App\Models\LoginEvent;
 use App\Models\User;
 use App\Support\Installation\Environment;
+use App\Support\Layouts\SiteThemes;
 use DateInvalidTimeZoneException;
 use DateMalformedStringException;
 use DateTimeImmutable;
@@ -75,7 +76,9 @@ readonly class Settings
                 'APP_NAME'     => $values['APP_NAME'] ?? config('app.name'),
                 'APP_URL'      => $values['APP_URL'] ?? config('app.url'),
                 'APP_TIMEZONE' => $values['APP_TIMEZONE'] ?? config('app.timezone', 'UTC'),
+                'active_theme' => app(SiteThemes::class)->activeKey(),
             ],
+            'siteThemes'  => app(SiteThemes::class)->available(),
             'seo'         => $section === 'seo' ? [
                 'meta_title'           => SettingStore::get('jobic_seo_meta_title', ''),
                 'meta_description'     => SettingStore::get('jobic_seo_meta_description', ''),
@@ -120,8 +123,13 @@ readonly class Settings
         Hooks::lifecycle('jobic.settings.general.saving', $context);
 
         try {
+            $activeTheme = $values['active_theme'] ?? null;
+            unset($values['active_theme']);
             $outcomeBefore = $this->environment->read();
             $this->environment->write($values);
+            if (is_string($activeTheme) && $activeTheme !== '') {
+                app(SiteThemes::class)->select($activeTheme);
+            }
             if ($outcomeBefore !== $this->environment->read()) {
                 app(\JobMetric\EventSystem\Support\CommittedEventDispatcher::class)->dispatch(new \App\Events\General\GeneralUpdateEvent($userId));
             }

@@ -5,6 +5,18 @@
             <header class="cms-settings-section__header"><span><x-vuero.icon name="building" size="20" /></span><div><h3>{{ __('admin.website_identity') }}</h3><p>{{ __('admin.website_identity_hint') }}</p></div></header>
             <x-settings.fields :fields="['APP_NAME' => ['text', ''], 'APP_URL' => ['url', '']]" :values="$site" />
         </section>
+        <section class="cms-settings-section">
+            <header class="cms-settings-section__header"><span><x-vuero.icon name="layout" size="20" /></span><div><h3>{{ __('layouts.active_theme') }}</h3><p>{{ __('layouts.active_theme_hint') }}</p></div></header>
+            <div class="cms-settings-fields">
+                <x-form.field data-field="active_theme" :label="__('layouts.active_theme')" for="active_theme">
+                    <x-form.select id="active_theme" name="active_theme">
+                        @foreach($siteThemes as $themeKey => $theme)
+                            <option value="{{ $themeKey }}" @selected(old('active_theme', $site['active_theme']) === $themeKey)>{{ $theme->info['title'] ?? $theme->name }}</option>
+                        @endforeach
+                    </x-form.select>
+                </x-form.field>
+            </div>
+        </section>
         <section class="cms-settings-section cms-timezone-section">
             <header class="cms-settings-section__header"><span><x-vuero.icon name="clock" size="20" /></span><div><h3>{{ __('admin.server_timezone') }}</h3><p>{{ __('admin.server_timezone_hint') }}</p></div></header>
             <div class="cms-timezone-layout">

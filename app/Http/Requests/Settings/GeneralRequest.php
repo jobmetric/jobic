@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
+use App\Support\Layouts\SiteThemes;
 use DateTimeZone;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -46,6 +47,11 @@ class GeneralRequest extends FormRequest
                 'required',
                 'string',
                 Rule::in(DateTimeZone::listIdentifiers()),
+            ],
+            'active_theme' => [
+                'nullable',
+                'string',
+                Rule::in(array_keys(app(SiteThemes::class)->available())),
             ],
         ];
     }

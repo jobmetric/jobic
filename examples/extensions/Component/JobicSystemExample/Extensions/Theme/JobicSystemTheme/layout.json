@@ -1,0 +1,8 @@
+{
+    "schema": 1,
+    "positions": {
+        "top": "extension_component_jobic_system_example::example.positions.top",
+        "content": "extension_component_jobic_system_example::example.positions.content",
+        "bottom": "extension_component_jobic_system_example::example.positions.bottom"
+    }
+}

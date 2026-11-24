@@ -57,6 +57,7 @@ Services validate using dto before `saving`, then persist, then emit `saved`. `s
 | `jobic.posts.kanban.card_work.saving`, `jobic.posts.kanban.card_work.saved` | action | type, post_id, user_id, operation; assignment, deadline and dependency values excluded |
 | `jobic.settings.appearance.saving`, `jobic.settings.appearance.saved` | action | section, user_id, fields |
 | `jobic.settings.mail.saving`, `jobic.settings.mail.saved` | action | section, user_id (nullable for CLI), fields; no credentials |
+| `jobic.settings.layouts.saving`, `jobic.settings.layouts.saved` | action | operation, nullable layout_id, theme, page_types, positions, user_id; no Plugin fields. Runs after validation around persistence; `saving` may veto and `saved` is isolated after success. |
 
 For every new feature update this registry in the same change: name, type, value/context schema, timing, validation boundary, failure behavior and an example. Add tests for ordering, veto, success-only notification, escaping and absence of secrets. Existing auth/installer security flows are not implicitly extensible: introduce lifecycle hooks there only with explicit contracts and regression tests.
 
@@ -367,6 +368,8 @@ The manager at `admin/settings/extensions` uses the existing ExtensionTypeRegist
 | `jobic.extensions.plugins.saved` | action notification | same | After the outer plugin transaction commits. Observer exceptions are isolated; rollback emits no notification. For creation the context retains the pre-save nullable `id`; the owning extension ID is always present. |
 | `jobic.admin.extensions.list.before`, `jobic.admin.extensions.list.after` | view | empty | Before/after the authorized Extension or Plugin table shell. Normal Blade view exceptions propagate. |
 | `jobic.admin.extensions.form.before`, `jobic.admin.extensions.form.after` | view | `operation=upload|upgrade|plugin`, optional nullable `id` for Plugin forms | Inside the authorized form, around its fields. Normal Blade view exceptions propagate. Custom input still requires a separately validated package-owned endpoint. |
+| `jobic.admin.layouts.list.before`, `jobic.admin.layouts.list.after` | view | empty | Before/after the authorized Layout table shell. Normal Blade view exceptions propagate. |
+| `jobic.admin.layouts.form.before`, `jobic.admin.layouts.form.after` | view | `operation=create|update`, nullable `id` | Inside the authorized Layout form, around its validated fields and composer. Normal Blade view exceptions propagate; injected input is not persisted unless added to the Form Request contract. |
 
 Archive placement requires the same actor's unexpired ticket and a fresh file-digest check. Inspecting or downloading the JSON report emits no saved event. Lifecycle operations are `upload`, `install`, `activate`, `deactivate`, `upgrade`, `uninstall`, and `delete`; plugin operations are `create`, `update`, and `delete`. Activating/deactivating a Plugin instance updates its `status` through the `update` hook. Lifecycle file/migration changes cannot be made transactionally equivalent to an arbitrary extension's database DDL. Failed upgrade migration restores prior files, leaves the owner effectively inactive, and emits no saved hook. See `docs/extensions.md` for recovery and compatibility limits.
 

@@ -827,6 +827,8 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $this->assertSame(2, DB::table('jobic_example_system_audit')->count());
         $this->command('deactivate', $observer)->assertOk();
         $this->command('uninstall', $child, ['confirm' => 1])->assertUnprocessable();
+        $this->command('deactivate', $namespace)->assertUnprocessable()->assertJsonValidationErrors('namespace');
+        \JobMetric\Setting\Facades\Setting::forget('jobic_site');
         $this->command('deactivate', $namespace)->assertOk();
         $this->assertFalse(app(Runtime::class)->active($child));
         $this->assertSame(2, $record->plugins()->count());
@@ -920,6 +922,10 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $this->assertNull($this->app['router']->getRoutes()->getByName('admin.extension-examples.'.$variant));
         $this->assertSame(1, DB::table('jobic_example_'.$variant.'_audit')->count());
         $this->assertFalse(Schema::hasTable('jobic_example_'.$variant.'_upgrade'));
+        if ($variant === 'theme') {
+            $this->command('deactivate', $namespace)->assertUnprocessable()->assertJsonValidationErrors('namespace');
+            \JobMetric\Setting\Facades\Setting::forget('jobic_site');
+        }
         $this->command('deactivate', $namespace)->assertOk();
         $this->assertSame('Public preview title', $plugin->fresh()->fields['title']);
         $this->command('uninstall', $namespace, ['confirm' => 1])->assertOk();

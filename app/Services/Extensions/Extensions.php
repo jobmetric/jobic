@@ -16,6 +16,8 @@ use App\Services\History\RecordHistory;
 use App\Support\Extensions\Archive;
 use App\Support\Extensions\Runtime;
 use App\Support\LocalizedDate;
+use App\Support\Layouts\SiteThemes;
+use App\Support\Layouts\ThemeManifest;
 use App\Support\RecordVersion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -402,7 +404,23 @@ class Extensions extends AbstractCrudService
         }
         if ($operation === 'activate') {
             abort_unless($record && ExtensionRegistry::has($namespace), 409);
+            if ($record->extension === 'Theme' && app(ThemeManifest::class)->read($namespace) === null) {
+                throw ValidationException::withMessages(['namespace' => trans('layouts.invalid_theme_manifest')]);
+            }
             $this->activationChanges($namespace, true);
+        }
+        if ($record?->extension === 'Theme' && in_array($operation, ['deactivate', 'uninstall', 'delete'], true)
+            && app(SiteThemes::class)->activeKey() === app(SiteThemes::class)->key($record)) {
+            throw ValidationException::withMessages(['namespace' => trans('layouts.active_theme_locked')]);
+        }
+        if ($operation === 'deactivate' && $record !== null) {
+            foreach (array_keys($this->activationChanges($namespace, false)) as $changedNamespace) {
+                $changed = Extension::whereNamespace($changedNamespace)->first();
+                if ($changed?->extension === 'Theme'
+                    && app(SiteThemes::class)->activeKey() === app(SiteThemes::class)->key($changed)) {
+                    throw ValidationException::withMessages(['namespace' => trans('layouts.active_theme_locked')]);
+                }
+            }
         }
         if (in_array($operation, ['activate', 'deactivate'], true) && ($owner = $this->owner($namespace, $record))) {
             abort_unless(app(Runtime::class)->active($owner), 422, trans('extensions.owner_inactive'));
@@ -472,9 +490,17 @@ class Extensions extends AbstractCrudService
                     abort_unless($record !== null, 409);
                     $changes = $this->activationChanges($namespace, $operation === 'activate');
                     if ($operation === 'activate') {
+                        $this->validateThemeActivation(array_keys($changes));
                         $this->ensureInitialInstances(array_keys($changes), $userId);
                     }
                     app(Runtime::class)->setMany($changes);
+                    if ($operation === 'activate' && app(SiteThemes::class)->activeKey() === null) {
+                        $theme = collect(array_keys($changes))->map(fn (string $item): ?Extension => Extension::whereNamespace($item)->first())
+                            ->first(fn (?Extension $item): bool => $item?->extension === 'Theme');
+                        if ($theme instanceof Extension) {
+                            app(SiteThemes::class)->select(app(SiteThemes::class)->key($theme));
+                        }
+                    }
                     break;
                 case 'uninstall':
                     $this->requireSuccess(PackageExtension::uninstall($namespace, true));
@@ -537,9 +563,17 @@ class Extensions extends AbstractCrudService
                     $changes = array_replace($changes, $this->activationChanges($entry['namespace'], $operation === 'activate'));
                 }
                 if ($operation === 'activate') {
+                    $this->validateThemeActivation(array_keys($changes));
                     $this->ensureInitialInstances(array_keys($changes), $userId);
                 }
                 app(Runtime::class)->setMany($changes);
+                if ($operation === 'activate' && app(SiteThemes::class)->activeKey() === null) {
+                    $theme = collect(array_keys($changes))->map(fn (string $item): ?Extension => Extension::whereNamespace($item)->first())
+                        ->first(fn (?Extension $item): bool => $item?->extension === 'Theme');
+                    if ($theme instanceof Extension) {
+                        app(SiteThemes::class)->select(app(SiteThemes::class)->key($theme));
+                    }
+                }
                 InstalledExtensionsFile::syncFromDatabase(app());
                 ExtensionKernel::clearDiscoverCache();
                 foreach ($input['entries'] as $entry) {
@@ -611,6 +645,46 @@ class Extensions extends AbstractCrudService
                 }
             }
         });
+    }
+
+    /**
+     * Validate every Theme included by a direct, family, or bulk activation.
+     *
+     * @param array<int, string> $namespaces
+     *
+     * @return void
+     * @throws ValidationException
+     */
+    private function validateThemeActivation(array $namespaces): void
+    {
+        foreach ($namespaces as $namespace) {
+            $extension = Extension::whereNamespace($namespace)->first();
+            if ($extension?->extension === 'Theme' && app(ThemeManifest::class)->read($namespace) === null) {
+                throw ValidationException::withMessages(['namespace' => trans('layouts.invalid_theme_manifest')]);
+            }
+        }
+    }
+
+    /**
+     * Validate Theme manifests inside a reviewed standalone or composed archive.
+     *
+     * @param string $base
+     *
+     * @return void
+     * @throws ValidationException
+     */
+    private function validateThemeArchive(string $base): void
+    {
+        foreach (File::allFiles($base) as $file) {
+            if ($file->getFilename() !== 'extension.json') {
+                continue;
+            }
+            $info = json_decode((string) File::get($file->getPathname()), true);
+            if (($info['extension'] ?? null) === 'Theme'
+                && app(ThemeManifest::class)->readFile($file->getPath().DIRECTORY_SEPARATOR.'layout.json') === null) {
+                throw ValidationException::withMessages(['archive' => trans('layouts.invalid_theme_manifest')]);
+            }
+        }
     }
 
     /**
@@ -847,6 +921,7 @@ class Extensions extends AbstractCrudService
      */
     private function archiveCandidate(string $operation, array $info, array $input, string $base): array
     {
+        $this->validateThemeArchive($base);
         $namespace = trim(app()->getNamespace(), '\\').'\\Extensions\\'.$info['extension'].'\\'.$info['name'].'\\'.$info['name'];
         $root = (string) config('extensions.root');
         $typeDirectory = $root.'/'.$info['extension'];

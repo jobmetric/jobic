@@ -21,7 +21,7 @@ class LifecycleEventsTest extends TestCase
     public function test_catalog_is_registered_translated_and_excluded_from_automation(): void
     {
         $registry = app('EventRegistry');
-        $this->assertCount(37, LifecycleEvents::CLASSES);
+        $this->assertCount(38, LifecycleEvents::CLASSES);
         foreach (LifecycleEvents::CLASSES as $key => $class) {
             $this->assertSame($class, $registry->forKey($key));
             $definition = $class::definition();

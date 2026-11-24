@@ -1,0 +1,10 @@
+{
+    "schema": 1,
+    "positions": {
+        "top": "extension_theme_jobic_theme_example::example.positions.top",
+        "before_content": "extension_theme_jobic_theme_example::example.positions.before_content",
+        "sidebar": "extension_theme_jobic_theme_example::example.positions.sidebar",
+        "after_content": "extension_theme_jobic_theme_example::example.positions.after_content",
+        "bottom": "extension_theme_jobic_theme_example::example.positions.bottom"
+    }
+}
