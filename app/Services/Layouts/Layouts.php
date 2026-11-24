@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Layouts;
 
 use App\Facades\Hooks;
+use App\Http\Requests\Layouts\LayoutRequest;
 use App\Support\Layouts\PageTypeRegistry;
 use App\Support\Layouts\SiteThemes;
 use App\Support\Layouts\ThemeManifest;
@@ -182,9 +183,7 @@ class Layouts
      */
     public function save(array $data, ?Layout $layout, int $userId): Response
     {
-        if ($layout !== null && ! hash_equals($this->version($layout), (string) ($data['_version'] ?? ''))) {
-            abort(409, trans('layouts.conflict'));
-        }
+        $data = dto($data, LayoutRequest::class);
         $theme = $this->themes->available()[$data['theme']] ?? null;
         if ($theme === null) {
             throw ValidationException::withMessages(['theme' => trans('layouts.invalid_theme')]);
@@ -203,8 +202,13 @@ class Layouts
         }
         $context = ['operation' => $layout ? 'update' : 'create', 'layout_id' => $layout?->id,
             'theme' => $data['theme'], 'page_types' => $data['page_types'], 'positions' => array_values(array_unique(array_column($data['plugins'], 'position'))), 'user_id' => $userId];
-        Hooks::lifecycle('jobic.settings.layouts.saving', $context);
-        $saved = DB::transaction(function () use ($data, $layout): Layout {
+        $saved = DB::transaction(function () use ($data, $layout, $context): Layout {
+            if ($layout !== null) {
+                $layout = Layout::query()->lockForUpdate()->findOrFail($layout->id);
+                if (! hash_equals($this->version($layout), (string) ($data['_version'] ?? ''))) {
+                    abort(409, trans('layouts.conflict'));
+                }
+            }
             foreach ($data['page_types'] as $pageType) {
                 $conflict = LayoutPage::query()->where('application', $data['theme'])->where('page', $pageType)
                     ->whereHas('layout', fn ($query) => $query->whereNull('deleted_at'));
@@ -215,6 +219,7 @@ class Layouts
                     throw ValidationException::withMessages(['page_types' => trans('layouts.page_type_conflict')]);
                 }
             }
+            Hooks::lifecycle('jobic.settings.layouts.saving', $context);
             $layout ??= new Layout;
             $layout->fill(['name' => $data['name'], 'status' => (bool) $data['status']])->save();
             $layout->layoutPages()->delete();
@@ -224,10 +229,11 @@ class Layouts
                 $layout->layoutPlugins()->createMany($data['plugins']);
             }
 
+            $context['layout_id'] = $layout->id;
+            DB::afterCommit(fn () => Hooks::notify('jobic.settings.layouts.saved', $context));
+
             return $layout;
         });
-        $context['layout_id'] = $saved->id;
-        Hooks::notify('jobic.settings.layouts.saved', $context);
 
         return Response::make(true, trans('layouts.saved'), [
             'id' => $saved->id, 'version' => $this->version($saved),

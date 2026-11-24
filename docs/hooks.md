@@ -57,7 +57,7 @@ Services validate using dto before `saving`, then persist, then emit `saved`. `s
 | `jobic.posts.kanban.card_work.saving`, `jobic.posts.kanban.card_work.saved` | action | type, post_id, user_id, operation; assignment, deadline and dependency values excluded |
 | `jobic.settings.appearance.saving`, `jobic.settings.appearance.saved` | action | section, user_id, fields |
 | `jobic.settings.mail.saving`, `jobic.settings.mail.saved` | action | section, user_id (nullable for CLI), fields; no credentials |
-| `jobic.settings.layouts.saving`, `jobic.settings.layouts.saved` | action | operation, nullable layout_id, theme, page_types, positions, user_id; no Plugin fields. Runs after validation around persistence; `saving` may veto and `saved` is isolated after success. |
+| `jobic.settings.layouts.saving`, `jobic.settings.layouts.saved` | action | operation, nullable layout_id, theme, page_types, positions, user_id; no Plugin fields. On create and update, `saving` runs inside the transaction after validation and conflict checks and may veto the write. `saved` runs after the outer commit with isolated observer failures. |
 
 For every new feature update this registry in the same change: name, type, value/context schema, timing, validation boundary, failure behavior and an example. Add tests for ordering, veto, success-only notification, escaping and absence of secrets. Existing auth/installer security flows are not implicitly extensible: introduce lifecycle hooks there only with explicit contracts and regression tests.
 
