@@ -66,7 +66,7 @@ return [
     'active_theme_locked' => 'Choose another website Theme before deactivating or removing the active Theme.',
     'invalid_theme' => 'Select an active standard Theme.', 'invalid_page_type' => 'A selected page type is unavailable.',
     'invalid_placement' => 'A Module placement is not valid for this Theme.',
-    'duplicate_placement' => 'The same Module instance cannot be repeated in the same position.',
+    'duplicate_placement' => 'The installed layout storage does not support repeating a Module instance in the same position.',
     'page_type_conflict' => 'One of these page types already uses another active layout for this Theme.',
     'conflict' => 'This layout changed in another request. Refresh and try again.',
     'page_types' => ['home' => 'Home', 'post' => 'Post', 'page' => 'Page', 'taxonomy' => 'Taxonomy', 'tag' => 'Tag', 'brand' => 'Brand'],

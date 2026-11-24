@@ -9,6 +9,7 @@ use App\Http\Requests\Layouts\LayoutRequest;
 use App\Support\Layouts\PageTypeRegistry;
 use App\Support\Layouts\SiteThemes;
 use App\Support\Layouts\ThemeManifest;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use JobMetric\Extension\Models\Plugin;
@@ -226,7 +227,17 @@ class Layouts
             $layout->layoutPages()->createMany(array_map(fn (string $page): array => ['application' => $data['theme'], 'page' => $page], $data['page_types']));
             $layout->layoutPlugins()->delete();
             if ($data['plugins'] !== []) {
-                $layout->layoutPlugins()->createMany($data['plugins']);
+                try {
+                    $layout->layoutPlugins()->createMany($data['plugins']);
+                } catch (UniqueConstraintViolationException $exception) {
+                    if (! str_contains($exception->getMessage(), 'LAYOUT_PLUGIN_UNIQUE_KEY')) {
+                        throw $exception;
+                    }
+
+                    throw ValidationException::withMessages([
+                        'plugins' => trans('layouts.duplicate_placement'),
+                    ]);
+                }
             }
 
             $context['layout_id'] = $layout->id;
