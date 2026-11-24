@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ea5df87230e3b5b6d1607be713050f97",
+    "content-hash": "9a03b7f2e516fe30f882296cb74b7015",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2392,21 +2392,22 @@
         },
         {
             "name": "jobmetric/laravel-post",
-            "version": "v1.4.0",
+            "version": "v1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jobmetric/laravel-post.git",
-                "reference": "81abb0c3b939497a6fbd01ab9e48d9cf2b917105"
+                "reference": "144b7df8ac0a9c70ef044581ca713a252ad3d37d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/81abb0c3b939497a6fbd01ab9e48d9cf2b917105",
-                "reference": "81abb0c3b939497a6fbd01ab9e48d9cf2b917105",
+                "url": "https://api.github.com/repos/jobmetric/laravel-post/zipball/144b7df8ac0a9c70ef044581ca713a252ad3d37d",
+                "reference": "144b7df8ac0a9c70ef044581ca713a252ad3d37d",
                 "shasum": ""
             },
             "require": {
                 "jobmetric/laravel-event-system": "^2.10",
                 "jobmetric/laravel-flow": "^2.4",
+                "jobmetric/laravel-form": "^1.6",
                 "jobmetric/laravel-metadata": "^4.0.3",
                 "jobmetric/laravel-package-core": "^1.38.1",
                 "jobmetric/laravel-taxonomy": "^4.3",
@@ -2463,7 +2464,7 @@
                 "issues": "https://github.com/jobmetric/laravel-post/issues",
                 "source": "https://github.com/jobmetric/laravel-post"
             },
-            "time": "2026-11-10T08:14:34+00:00"
+            "time": "2026-11-24T22:53:05+00:00"
         },
         {
             "name": "jobmetric/laravel-setting",
