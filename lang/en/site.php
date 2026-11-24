@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'starter_slides' => 'Use sample slides',
     'home' => 'Home',
     'sample' => 'Sample content',
     'starter_layout' => 'Starter homepage',

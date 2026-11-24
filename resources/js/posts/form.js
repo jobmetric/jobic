@@ -7,6 +7,7 @@ import { loadingButton } from '../common/page';
 import { sendSettings } from '../admin/settings';
 import { showDialog } from '../taxonomies/shared';
 import { bindMediaManager } from '../taxonomies/media-manager';
+import { bindMediaItemForms } from './media-item-forms';
 import { pageData } from '../common/page';
 import { iconMarkup } from '../common/icons';
 import { enhanceSelects } from '../common/selects';
@@ -371,6 +372,7 @@ if (form) {
         }
     }
     bindMediaManager(form);
+    bindMediaItemForms(form);
     form.querySelectorAll('[data-taxonomy-quick-add]').forEach(group => {
         const openButton = group.querySelector('[data-taxonomy-add-open]');
         const dialog = group.querySelector('[data-taxonomy-dialog]');

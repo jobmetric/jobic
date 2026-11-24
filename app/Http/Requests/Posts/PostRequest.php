@@ -77,6 +77,10 @@ final class PostRequest extends FormRequest
             'taxonomies'   => $taxonomies,
             'published_at' => $publishedAt,
         ]);
+        $itemMetadata = $this->input('media_item_metadata');
+        if (is_string($itemMetadata)) {
+            $this->merge(['media_item_metadata' => json_decode($itemMetadata, true) ?? $itemMetadata]);
+        }
     }
 
     public function rules(): array
@@ -259,6 +263,7 @@ final class PostRequest extends FormRequest
         }
 
         $customFields = $builder->getCustomFields();
+        $rules['media_item_metadata'] = ['sometimes', 'array'];
         if ($customFields !== []) {
             $rules['metadata'] = [
                 'sometimes',

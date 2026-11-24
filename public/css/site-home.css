@@ -44,6 +44,17 @@
     color: inherit;
 }
 
+.starter-slide--banner img {
+    display: block;
+    inline-size: 100%;
+    height: auto;
+    border-radius: .5rem;
+}
+
+.starter-slide--banner figcaption {
+    margin-block-start: 1rem;
+}
+
 .starter-articles {
     margin-block-start: 2rem;
 }

@@ -122,6 +122,13 @@
             <div class="taxonomy-media-collection">
                 <h3>{{ __('posts.media.'.$collection) }}</h3>
                 <x-media.selector :collection="$collection" :multiple="(bool) ($definition['multiple'] ?? false)" :groups="$mediaGroups" :selected="collect($selectedMedia[$collection] ?? [])" />
+                @php
+                    $itemFields = \App\Support\GalleryItemForms::fields($type, $collection);
+                @endphp
+                @if($itemFields !== [])
+                    @include('posts.partials.media-item-form', ['fields' => $itemFields])
+                    <small class="crud-field-error" data-error-for="media_item_metadata.{{ $collection }}"></small>
+                @endif
                 <small class="crud-field-error" data-error-for="media.{{ $collection }}"></small>
             </div>
     @endforeach

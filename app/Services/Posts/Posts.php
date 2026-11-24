@@ -10,6 +10,7 @@ use App\Services\Editor\EditorDocuments;
 use App\Services\History\RecordHistory;
 use App\Services\Taxonomies\TaxonomyEditLocks;
 use App\Support\EditorDriverRegistry;
+use App\Support\GalleryItemForms;
 use App\Support\RecordVersion;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
@@ -58,6 +59,14 @@ final class Posts
                     abort_unless(hash_equals(RecordVersion::token($post, 'posts:' . $type), (string) ($data['_version'] ?? '')), 409, trans('posts.conflict'));
                 }
             }
+
+            $itemMetadata = GalleryItemForms::validate(
+                $type,
+                $data['media'] ?? [],
+                $data['media_item_metadata'] ?? [],
+                $post?->getMetadata(GalleryItemForms::METADATA_KEY) ?? [],
+            );
+            unset($data['media_item_metadata']);
 
             Hooks::lifecycle('jobic.posts.saving', [
                 'type'    => $type,
@@ -136,6 +145,10 @@ final class Posts
                 $service = app(\JobMetric\Post\Post::class);
                 $result = $isNew ? $service->store($type, $data, $actor) : $service->update($type, (int) $post->id, $data, $actor);
                 $post = $result->data['post'];
+                if ($itemMetadata !== []) {
+                    $post->storeMetadata(GalleryItemForms::METADATA_KEY, $itemMetadata);
+                    $post->unsetRelation('metas');
+                }
             } catch (PostStatusTransitionNotAllowedException) {
                 throw ValidationException::withMessages([
                     'status' => [trans('posts.workflow_status')],

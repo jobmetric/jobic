@@ -6,6 +6,9 @@ namespace App\Application\Drivers;
 
 use App\Contracts\ApplicationDriver;
 use Illuminate\Contracts\Foundation\Application;
+use JobMetric\CustomField\CustomFieldBuilder;
+use JobMetric\Form\FormBuilder;
+use JobMetric\Form\Tab\TabBuilder;
 use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Taxonomy\Facades\TaxonomyTypeRegistry;
 
@@ -87,6 +90,26 @@ final class PostTypeDriver implements ApplicationDriver
             ->help()
             ->url('blog')
             ->comments();
+
+        $slideForm = (new FormBuilder)->tab(function (TabBuilder $tab): void {
+            $tab->id('slide')->label('posts.media_item_details')
+                ->customField(function (CustomFieldBuilder $field): void {
+                    $field::text()->name('title')->label('posts.slide_title')->validation('nullable|string|max:255');
+                })
+                ->customField(function (CustomFieldBuilder $field): void {
+                    $field::text()->name('description')->label('posts.slide_description')->validation('nullable|string|max:1000');
+                });
+        });
+
+        PostTypeRegistry::register('banner')
+            ->label('posts.banners')
+            ->description('posts.banners_description')
+            ->permission('admin.content.banners')
+            ->translationFields(['title', 'excerpt'])
+            ->metadataFields([\App\Support\GalleryItemForms::METADATA_KEY])
+            ->mediaCollection('gallery', true)
+            ->mediaItemForm('gallery', $slideForm)
+            ->filters(['status']);
 
         PostTypeRegistry::register('page')
             ->label('posts.types.page')

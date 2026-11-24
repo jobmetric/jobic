@@ -28,6 +28,17 @@ An unassigned page or empty position renders nothing. A failed Module is logged 
 
 ## Page types and Modules
 
+The slideshow module can select a banner from Content → Banners. It renders
+the selected banner's published gallery and each image's optional caption.
+Leaving the selection empty uses the starter slides.
+
+A post type can opt into image metadata by registering a media collection,
+allowing the `gallery_item_metadata` metadata key, and calling
+`mediaItemForm('gallery', $form)` with a Laravel Form or FormBuilder.
+The post editor renders an item dialog for that collection. Values are keyed
+by collection and media ID, validated using the registered fields, and stored
+with the post transaction. File and password controls are excluded.
+
 The public homepage at `/` uses the built-in site shell and renders the
 selected theme's declared positions in manifest order for page type `home`.
 If no theme is selected, the homepage still renders its site branding.

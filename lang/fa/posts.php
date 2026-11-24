@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'banners' => 'بنرها',
+    'banners_manage' => 'مدیریت بنرها',
+    'banners_description' => 'مجموعه تصاویر اسلایدشو را مدیریت کنید.',
+    'media_item_details' => 'جزئیات تصویر',
+    'media_item_apply' => 'اعمال برای تصویر',
+    'slide_title' => 'عنوان اسلاید',
+    'slide_description' => 'توضیحات اسلاید',
     'empty_page' => 'هنوز برگه‌ای ثبت نشده است.',
     'empty_hint_page' => 'برای شروع، یک برگه اضافه کنید.',
     'taxonomy_name_required' => 'نام این مورد را وارد کنید.',

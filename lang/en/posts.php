@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'banners' => 'Banners',
+    'banners_manage' => 'Manage banners',
+    'banners_description' => 'Manage image collections for slideshows.',
+    'media_item_details' => 'Image details',
+    'media_item_apply' => 'Apply to image',
+    'slide_title' => 'Slide title',
+    'slide_description' => 'Slide description',
     'empty_page' => 'No pages yet.',
     'empty_hint_page' => 'Add a page to get started.',
     'taxonomy_name_required' => 'Enter a name for this item.',
