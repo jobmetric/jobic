@@ -131,17 +131,51 @@ if (form) {
     };
 
     const library = editor.querySelector(".layout-library");
+    const persianNumberWords = [
+        "صفر",
+        "یک",
+        "دو",
+        "سه",
+        "چهار",
+        "پنج",
+        "شش",
+        "هفت",
+        "هشت",
+        "نه",
+        "ده",
+    ];
+    const searchWords = (value) =>
+        (
+            value
+                .normalize("NFKD")
+                .toLowerCase()
+                .replace(/\p{M}/gu, "")
+                .replace(/ي/g, "ی")
+                .replace(/ك/g, "ک")
+                .replace(/[۰-۹]/g, (digit) =>
+                    String(digit.charCodeAt(0) - 0x06f0),
+                )
+                .replace(/[٠-٩]/g, (digit) =>
+                    String(digit.charCodeAt(0) - 0x0660),
+                )
+                .match(/[\p{L}\p{N}]+/gu) ?? []
+        ).map((word) => {
+            const number = persianNumberWords.indexOf(word);
+            return number === -1 ? word : String(number);
+        });
+
     const filterModules = (root, value) => {
-        const query = value
-            .trim()
-            .toLocaleLowerCase(document.documentElement.lang);
+        const query = searchWords(value);
         let visible = 0;
         root.querySelectorAll("[data-plugin-id]").forEach((node) => {
-            const matches =
-                !query ||
-                `${node.dataset.moduleName} ${node.dataset.moduleOwner}`
-                    .toLocaleLowerCase(document.documentElement.lang)
-                    .includes(query);
+            const words = searchWords(
+                `${node.dataset.moduleName} ${node.dataset.moduleOwner}`,
+            );
+            const matches = query.every((term) =>
+                words.some((word) =>
+                    /^\d+$/.test(term) ? word === term : word.includes(term),
+                ),
+            );
             node.hidden = !matches;
             if (matches) visible += 1;
         });
