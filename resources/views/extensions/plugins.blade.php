@@ -21,6 +21,24 @@
                 <x-form.field variant="crud" :label="trans($field->label ?? $field->params['name'])" :for="'plugin-'.$field->params['name']" :error="'fields.'.$field->params['name']"><x-form.input :id="'plugin-'.$field->params['name']" :name="$field->params['name']" :value="$values[$field->params['name']] ?? ($field->params['value'] ?? $field->attributes['value'] ?? null)" :type="$field->attributes['type'] ?? 'text'" /></x-form.field>
                 @continue
             @endif
+            @if($field->type === 'select')
+                @php
+                    $name = $field->params['name'];
+                    $multiple = (bool) ($field->params['multiple'] ?? false);
+                    $hasValue = array_key_exists($name, $values);
+                    $selected = $hasValue
+                        ? array_map('strval', $multiple ? (array) $values[$name] : [$values[$name]])
+                        : [];
+                @endphp
+                <x-form.field variant="crud" :label="trans($field->label ?? $name)" :for="'plugin-'.$name" :error="'fields.'.$name">
+                    <x-form.select :id="'plugin-'.$name" :name="$multiple ? $name.'[]' : $name" :multiple="$multiple" :disabled="in_array('disabled', $field->properties, true)" :required="in_array('required', $field->properties, true)">
+                        @foreach($field->options as $option)
+                            <option value="{{ $option->value }}" @selected($hasValue ? in_array((string) $option->value, $selected, true) : $option->selected)>{{ $option->label }}</option>
+                        @endforeach
+                    </x-form.select>
+                </x-form.field>
+                @continue
+            @endif
             @php
                 $name = $field->params['name'];
                 $rendered = $field->toHtml($values[$name] ?? null, class: 'input', classParent: 'crud-field', hasErrorTagForm: false, hasErrorTagJs: false);
