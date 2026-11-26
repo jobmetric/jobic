@@ -1,6 +1,17 @@
 <?php
 
 return [
+    'carousel_previous' => 'Previous slide',
+    'carousel_next' => 'Next slide',
+    'carousel_go_to' => 'Go to slide :number',
+    'carousel_autoplay' => 'Autoplay',
+    'carousel_loop' => 'Loop slides',
+    'carousel_arrows' => 'Previous and next controls',
+    'carousel_dots' => 'Slide indicators',
+    'carousel_captions' => 'Show image captions',
+    'carousel_on' => 'Enabled',
+    'carousel_off' => 'Disabled',
+    'carousel_seconds' => ':count seconds',
     'starter_slides' => 'Use sample slides',
     'home' => 'Home',
     'sample' => 'Sample content',

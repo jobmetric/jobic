@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Extensions\Module\JobicSlideshow;
 
 use App\Support\GalleryItemForms;
+use App\Support\LocaleCatalog;
 use Illuminate\Validation\Rule;
 use JobMetric\CustomField\CustomFieldBuilder;
 use JobMetric\Extension\Contracts\AbstractExtension;
@@ -49,6 +50,22 @@ final class JobicSlideshow extends AbstractExtension
                         ->validation(['nullable', 'integer', Rule::exists(config('post.tables.post', 'posts'), 'id')
                             ->where('type', 'banner')->whereNull('deleted_at')]);
                 });
+            foreach (['carousel_loop' => '0', 'carousel_arrows' => '1', 'carousel_dots' => '0', 'carousel_captions' => '1'] as $name => $default) {
+                $tab->customField(function (CustomFieldBuilder $field) use ($name, $default): void {
+                    $field::select()->name($name)->label('site.'.$name)->value($default)->options([
+                        ['label' => __('site.carousel_on'), 'value' => '1'],
+                        ['label' => __('site.carousel_off'), 'value' => '0'],
+                    ])->validation('nullable|in:0,1');
+                });
+            }
+            $tab->customField(function (CustomFieldBuilder $field): void {
+                $options = [['label' => __('site.carousel_off'), 'value' => '0']];
+                foreach ([3, 5, 8, 12] as $seconds) {
+                    $options[] = ['label' => __('site.carousel_seconds', ['count' => $seconds]), 'value' => (string) $seconds];
+                }
+                $field::select()->name('carousel_autoplay')->label('site.carousel_autoplay')->value('0')
+                    ->options($options)->validation('nullable|in:0,3,5,8,12');
+            });
         });
     }
 
@@ -61,8 +78,15 @@ final class JobicSlideshow extends AbstractExtension
      */
     public function handle(array $options = []): ?string
     {
+        $settings = [
+            'loop' => (string) ($options['carousel_loop'] ?? '0') === '1',
+            'arrows' => (string) ($options['carousel_arrows'] ?? '1') === '1',
+            'dots' => (string) ($options['carousel_dots'] ?? '0') === '1',
+            'captions' => (string) ($options['carousel_captions'] ?? '1') === '1',
+            'interval' => (int) ($options['carousel_autoplay'] ?? 0),
+        ];
         if (empty($options['banner_id'])) {
-            return view('site.starter.slideshow')->render();
+            return view('site.starter.slideshow', compact('settings'))->render();
         }
 
         $banner = Post::query()->where('type', 'banner')->published()->find((int) $options['banner_id']);
@@ -70,7 +94,14 @@ final class JobicSlideshow extends AbstractExtension
             return null;
         }
 
-        $snapshot = app(PostLifecycle::class)->published($banner, app()->getLocale());
+        $lifecycle = app(PostLifecycle::class);
+        $snapshot = $lifecycle->published($banner, app()->getLocale());
+        foreach (array_keys(LocaleCatalog::all()) as $locale) {
+            if ($snapshot !== null) {
+                break;
+            }
+            $snapshot = $lifecycle->published($banner, $locale);
+        }
         $shared = $snapshot['shared'] ?? [];
         $gallery = collect($shared['media'] ?? [])->where('collection', 'gallery')->pluck('id')->all();
         $metadata = $shared['metadata'][GalleryItemForms::METADATA_KEY]['gallery'] ?? [];
@@ -82,15 +113,16 @@ final class JobicSlideshow extends AbstractExtension
                 continue;
             }
             $image = MediaResource::make($images->get($id))->resolve(request());
-            if (filled($image['src'] ?? null)) {
+            if (($image['mime_group'] ?? null) === 'image') {
                 $slides[] = [
-                    'src' => $image['src'],
+                    'src' => route('media.image.responsive', ['uuid' => $image['uuid'], 'w' => 1440, 'h' => 960]),
+                    'small_src' => route('media.image.responsive', ['uuid' => $image['uuid'], 'w' => 720, 'h' => 480]),
                     'title' => $metadata[$id]['title'] ?? '',
                     'description' => $metadata[$id]['description'] ?? '',
                 ];
             }
         }
 
-        return $slides === [] ? null : view('site.starter.banner-slideshow', compact('slides'))->render();
+        return $slides === [] ? null : view('site.starter.banner-slideshow', compact('slides', 'settings'))->render();
     }
 }

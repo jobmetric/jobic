@@ -27,6 +27,7 @@ class HomeController extends Controller
     {
         Page::prepare('site-home');
         Page::addStyle('css/site-home.css');
+        Page::addScript('js/site-carousel.js');
 
         $theme = $themes->active();
 

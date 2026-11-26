@@ -1,6 +1,17 @@
 <?php
 
 return [
+    'carousel_go_to' => 'رفتن به اسلاید :number',
+    'carousel_autoplay' => 'پخش خودکار',
+    'carousel_loop' => 'تکرار اسلایدها',
+    'carousel_arrows' => 'دکمه‌های قبلی و بعدی',
+    'carousel_dots' => 'نشانگرهای اسلاید',
+    'carousel_captions' => 'نمایش عنوان و توضیحات تصاویر',
+    'carousel_on' => 'فعال',
+    'carousel_off' => 'غیرفعال',
+    'carousel_seconds' => ':count ثانیه',
+    'carousel_previous' => 'اسلاید قبلی',
+    'carousel_next' => 'اسلاید بعدی',
     'starter_slides' => 'نمایش اسلایدهای نمونه',
     'home' => 'صفحهٔ اصلی',
     'sample' => 'محتوای نمونه',
