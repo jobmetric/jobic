@@ -78,6 +78,14 @@ export function enhanceSelects(root = document) {
                 searching: () => pageData().selects?.searching || "",
             },
         });
+        if (select.closest("label")) {
+            // An implicit label forwards clicks on Select2's span to the native select.
+            $(select).next(".select2-container").on("click.cms", (event) => event.preventDefault());
+            $(select).on("click.cms", (event) => {
+                event.preventDefault();
+                $(select).select2("open");
+            });
+        }
         $(select).on("select2:select.cms select2:unselect.cms", () => {
             select.dispatchEvent(new Event("change", { bubbles: true }));
         });
