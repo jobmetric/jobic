@@ -128,6 +128,7 @@ class Page
         Domi::setPlugins(['jquery', 'select2']);
 
         self::addLocalize('selects', [
+            'placeholder' => trans('admin.options.select', [], $locale),
             'no_results' => trans('languages.no_results'),
             'searching'  => trans('languages.searching'),
         ]);

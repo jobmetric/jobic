@@ -4,8 +4,7 @@
         <x-vuero.icon :name="$networks[$item['type'] ?? '']['icon'] ?? 'share'" size="21" />
     </div>
     <x-form.field :label="__('settings/social_networks.network_type')" :for="'social-network-type-'.$index">
-        <x-form.select :id="'social-network-type-'.$index" :name="'networks['.$index.'][type]'" data-social-network-type>
-            <option value="">{{ __('settings/social_networks.choose_network') }}</option>
+        <x-form.select :id="'social-network-type-'.$index" :name="'networks['.$index.'][type]'" placeholder data-social-network-type>
             @foreach($networks as $network)
                 <option value="{{ $network['key'] }}" data-icon="{{ $network['icon'] }}" data-url-template="{{ $network['url_template'] }}" @selected(($item['type'] ?? '') === $network['key'])>{{ trans($network['name']) }}</option>
             @endforeach

@@ -29,9 +29,10 @@
                     $selected = $hasValue
                         ? array_map('strval', $multiple ? (array) $values[$name] : [$values[$name]])
                         : [];
+                    $hasEmptyOption = collect($field->options)->contains(fn ($option) => (string) $option->value === '');
                 @endphp
                 <x-form.field variant="crud" :label="trans($field->label ?? $name)" :for="'plugin-'.$name" :error="'fields.'.$name">
-                    <x-form.select :id="'plugin-'.$name" :name="$multiple ? $name.'[]' : $name" :multiple="$multiple" :disabled="in_array('disabled', $field->properties, true)" :required="in_array('required', $field->properties, true)">
+                    <x-form.select :id="'plugin-'.$name" :name="$multiple ? $name.'[]' : $name" :multiple="$multiple" :placeholder="!$hasEmptyOption" :disabled="in_array('disabled', $field->properties, true)" :required="in_array('required', $field->properties, true)">
                         @foreach($field->options as $option)
                             <option value="{{ $option->value }}" @selected($hasValue ? in_array((string) $option->value, $selected, true) : $option->selected)>{{ $option->label }}</option>
                         @endforeach

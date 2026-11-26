@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'select_menu' => 'Select a menu',
     'carousel_previous' => 'Previous slide',
     'carousel_next' => 'Next slide',
     'carousel_go_to' => 'Go to slide :number',

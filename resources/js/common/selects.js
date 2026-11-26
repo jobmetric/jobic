@@ -12,6 +12,8 @@ export function enhanceSelects(root = document) {
         )
             return;
         const dialog = select.closest("dialog");
+        const emptyOption = select.querySelector("option[data-select-placeholder]");
+        const placeholder = pageData().selects?.placeholder;
         const renderOption = (item) => {
             const flag = item.element?.dataset.flagUrl;
             const rolePath = item.element?.dataset.rolePath;
@@ -62,12 +64,15 @@ export function enhanceSelects(root = document) {
             return $(row);
         };
         $(select).select2({
+            ...((emptyOption || select.multiple) && placeholder
+                ? { placeholder, allowClear: Boolean(emptyOption && !select.required) }
+                : {}),
             templateResult: renderOption,
             templateSelection: renderOption,
             width: "100%",
             dir: document.documentElement.dir,
             dropdownParent: dialog ? $(dialog) : $(document.body),
-            minimumResultsForSearch: select.options.length < 8 ? Infinity : 0,
+            minimumResultsForSearch: select.options.length - Boolean(emptyOption) < 8 ? Infinity : 0,
             language: {
                 noResults: () => pageData().selects?.no_results || "",
                 searching: () => pageData().selects?.searching || "",

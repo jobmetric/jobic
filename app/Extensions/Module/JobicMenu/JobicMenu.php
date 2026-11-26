@@ -46,7 +46,7 @@ final class JobicMenu extends AbstractExtension
                         ])->all();
 
                     $field::select()->name('menu_id')->label('site.extensions.menu')
-                        ->options([['label' => __('site.select_menu'), 'value' => ''], ...$options])
+                        ->options($options)
                         ->validation(['required', 'integer', Rule::exists(Taxonomy::class, 'id')->where('type', 'menu')]);
                 });
         });

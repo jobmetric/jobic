@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'select_menu' => 'انتخاب منو',
     'carousel_go_to' => 'رفتن به اسلاید :number',
     'carousel_autoplay' => 'پخش خودکار',
     'carousel_loop' => 'تکرار اسلایدها',

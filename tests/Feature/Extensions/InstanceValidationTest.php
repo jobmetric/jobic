@@ -28,6 +28,10 @@ class InstanceValidationTest extends TestCase
 
         foreach (['en' => 'Select a menu.', 'fa' => 'یک منو انتخاب کنید.'] as $locale => $message) {
             $user->forceFill(['ui_preferences' => ['locale' => $locale]])->save();
+            $this->withoutVite()->get(route('admin.settings.extensions.plugins.create', $extension->id))
+                ->assertOk()->assertSee('<option value="" data-select-placeholder>'
+                    .trans('admin.options.select', locale: $locale).'</option>', false);
+
             $response = $this->postJson($url, ['name' => 'Navigation', 'status' => 1, 'fields' => []])
                 ->assertUnprocessable()->assertJsonPath('message', $message);
             $this->assertSame([$message], $response->json('errors')['fields.menu_id']);

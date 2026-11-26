@@ -131,7 +131,7 @@ return [
         'password_confirmation' => 'Confirm new password',
     ],
     'options' => [
-        'select' => 'Select',
+        'select' => 'Select an option',
         'male' => 'Male',
         'female' => 'Female',
         'other' => 'Other',
