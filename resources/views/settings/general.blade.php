@@ -11,7 +11,7 @@
                 <x-form.field data-field="active_theme" :label="__('layouts.active_theme')" for="active_theme">
                     <x-form.select id="active_theme" name="active_theme">
                         @foreach($siteThemes as $themeKey => $theme)
-                            <option value="{{ $themeKey }}" @selected(old('active_theme', $site['active_theme']) === $themeKey)>{{ $theme->info['title'] ?? $theme->name }}</option>
+                            <option value="{{ $themeKey }}" @selected(old('active_theme', $site['active_theme']) === $themeKey)>{{ trans($theme->info['title'] ?? $theme->name) }}</option>
                         @endforeach
                     </x-form.select>
                 </x-form.field>

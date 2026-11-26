@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Layouts;
 
 use App\Extensions\Module\JobicMenu\JobicMenu;
+use App\Models\User;
 use App\Services\Installation\Installation;
 use App\Support\Installation\Connections;
 use App\Support\Installation\Environment;
@@ -108,6 +109,15 @@ class StarterHomepageTest extends TestCase
                 ->assertSee('site-menu--cards', false)
                 ->assertSeeInOrder(['https://example.com/resources', 'https://example.com/company'])
                 ->assertDontSee('Hidden menu item');
+
+            $user = User::factory()->create();
+            $this->actingAs($user);
+            foreach (['en' => 'Starter theme', 'fa' => 'قالب آغازین'] as $locale => $label) {
+                $user->forceFill(['ui_preferences' => ['locale' => $locale]])->save();
+                $this->get(route('admin.settings.edit', 'general'))->assertOk()
+                    ->assertSee('value="'.$assignment->application.'" selected>'.$label.'</option>', false)
+                    ->assertDontSee('>site.extensions.theme</option>', false);
+            }
         } finally {
             DB::setDefaultConnection('sqlite');
             DB::purge('installation');
