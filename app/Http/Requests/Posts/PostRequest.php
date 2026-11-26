@@ -100,15 +100,8 @@ final class PostRequest extends FormRequest
             ->findOrFail((int) $this->route('post')) : new Post;
         $record->type = $type;
 
-        $allowedStatuses = app(PostWorkflow::class)->availableStatuses($record) ?: [
-            'publish',
-            'future',
-            'draft',
-            'pending',
-            'private',
-            'archive',
-            'disabled',
-        ];
+        $workflow = app(PostWorkflow::class);
+        $allowedStatuses = $workflow->availableStatuses($record);
 
         $advancedWorkflow = app(PostLifecycleView::class)->activeDefinition($type) !== null;
         $languageLocked = $advancedWorkflow && $record->exists && PostLocaleLock::query()
@@ -118,7 +111,8 @@ final class PostRequest extends FormRequest
                 ->exists();
 
         if ($advancedWorkflow) {
-            $allowedStatuses = [$record->exists ? (string) $record->status : 'editable'];
+            $currentStatus = $record->exists ? (string) $record->status : 'editable';
+            $allowedStatuses = array_keys($workflow->constrain($type, [$currentStatus => $currentStatus]));
         }
 
         $rules = [

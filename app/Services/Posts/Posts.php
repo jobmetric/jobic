@@ -45,6 +45,10 @@ final class Posts
      */
     public function save(string $type, array $data, ?Post $post, ?Authenticatable $actor): Response
     {
+        if (isset($data['status'])) {
+            app(PostWorkflow::class)->validateStatus($type, (string) $data['status']);
+        }
+
         $post = DB::transaction(function () use ($data, $type, $post, $actor): Post {
             app(PostWorkflowDefinitions::class)->lock($type);
             if ($post) {

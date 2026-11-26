@@ -8,6 +8,7 @@ use App\Support\AdminAccess;
 use App\Support\PostWorkflowPermissions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use JobMetric\Post\Facades\PostTypeRegistry;
 use JobMetric\Post\Models\Post;
 use JobMetric\Post\Models\PostLocaleLock;
 use JobMetric\Post\Models\PostPublicationStream;
@@ -99,6 +100,10 @@ final readonly class PostLifecycleView
      */
     public function activeDefinition(string $type): ?PostWorkflowDefinition
     {
+        if (! PostTypeRegistry::getOption($type, 'workflow-enabled', true)) {
+            return null;
+        }
+
         $workflow = DB::table(config('post.tables.workflow', 'post_workflows'))
             ->where('type', $type)
             ->first();

@@ -102,6 +102,7 @@ final class PostTypeDriver implements ApplicationDriver
         });
 
         PostTypeRegistry::register('banner')
+            ->allowedStatuses(['draft', 'publish', 'disabled'])
             ->label('posts.banners')
             ->description('posts.banners_description')
             ->permission('admin.content.banners')
@@ -109,7 +110,11 @@ final class PostTypeDriver implements ApplicationDriver
             ->metadataFields([\App\Support\GalleryItemForms::METADATA_KEY])
             ->mediaCollection('gallery', true)
             ->mediaItemForm('gallery', $slideForm)
+            ->changeStatusInList()
+            ->help()
             ->filters(['status']);
+
+        PostTypeRegistry::setOption('banner', 'workflow-enabled', false);
 
         PostTypeRegistry::register('page')
             ->label('posts.types.page')

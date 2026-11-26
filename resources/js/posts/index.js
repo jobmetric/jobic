@@ -122,7 +122,9 @@ if (table?.length && $.fn?.DataTable) {
 
     function updateSelection() {
         selectionButton.hidden = selected.size === 0;
-        document.querySelector('[data-post-action=delete]')?.toggleAttribute('hidden',selected.size===0);
+        document.querySelectorAll('[data-crud-toolbar] [data-requires-selection]').forEach(control => {
+            control.hidden = selected.size === 0;
+        });
         selectionButton.innerHTML = `${icon('check')}${escape(config.labels.selected.replace(':count', selected.size))}`;
         const visible = [...document.querySelectorAll('[data-post-row]')];
         visible.forEach((checkbox) => { checkbox.checked = selected.has(Number(checkbox.dataset.postRow)); });
@@ -136,7 +138,7 @@ if (table?.length && $.fn?.DataTable) {
         if (row) selected.set(id, {id, title: row.title, editLocked: Boolean(row.edit_lock)});
     }
 
-    mountPostListToolbar(document.querySelector('[data-crud-toolbar]'), () => ({...pageData().postPage, labels: pageData().posts}));
+    mountPostListToolbar(document.querySelector('[data-crud-toolbar]'), () => ({...pageData().postPage, labels: pageData().posts}), () => selected.size > 0);
     window.addEventListener('cms:presentation-refreshed', () => {
         updateSelection();
         const columnLabels = {

@@ -160,6 +160,10 @@ final readonly class PostPublicationProjection
      */
     private function hasAdvancedWorkflow(Post $post): bool
     {
+        if (! app(PostTypeRegistry::class)->getOption((string) $post->type, 'workflow-enabled', true)) {
+            return false;
+        }
+
         return DB::table(config('post.tables.workflow', 'post_workflows') . ' as workflow')
             ->join(config('post.tables.workflow_definition', 'post_workflow_definitions') . ' as definition', 'definition.id', '=', 'workflow.active_definition_id')
             ->where('workflow.type', $post->type)

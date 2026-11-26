@@ -80,7 +80,7 @@ class WorkflowController extends Controller
             ]) : route('admin.posts.index', ['type' => $type]),
             'currentStatus'     => $currentStatus,
             'typeLabel'         => __(PostTypeRegistry::getOption($type, 'label', $type)),
-            'statusChoices'     => collect([
+            'statusChoices'     => app(\App\Services\Posts\PostWorkflow::class)->constrain($type, collect([
                 'editable',
                 'publish',
                 'future',
@@ -88,7 +88,7 @@ class WorkflowController extends Controller
                 'disabled',
             ])
                 ->mapWithKeys(static fn (string $status): array => [$status => __('posts.statuses.' . $status)])
-                ->all(),
+                ->all()),
             'simulationRoles'   => $systemRoles,
             'simulationLocales' => collect(LocaleCatalog::all())
                 ->map(fn (array $locale, string $code): array => [

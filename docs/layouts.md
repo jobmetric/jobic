@@ -28,6 +28,13 @@ An unassigned page or empty position renders nothing. A failed Module is logged 
 
 ## Page types and Modules
 
+Post types can opt into a status allowlist with
+`->allowedStatuses(['draft', 'publish', 'disabled'])`.
+Jobic applies it to form choices, status filters, workflow designer choices
+and status mutations. An omitted or empty allowlist keeps the type's
+standard statuses or its configured workflow choices. Banners use these
+three statuses with direct editorial actions.
+
 The slideshow module can select a banner from Content → Banners. It renders
 the selected banner's published gallery and each image's optional caption.
 Leaving the selection empty uses the starter slides.

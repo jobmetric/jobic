@@ -17,7 +17,7 @@
     <div class="crud-table-card" data-table-card>
         <div class="crud-loading" data-table-loading hidden role="status"><span class="crud-spinner"></span><strong>{{ __('posts.loading') }}</strong></div>
         <div class="crud-table-scroll"><table id="posts-table" class="taxonomy-table posts-table"><thead><tr><th><input type="checkbox" data-select-all aria-label="{{ __('posts.select_all') }}"></th>@if($hasMedia)<th data-column="media"><span data-post-column-label>{{ __('posts.media_column') }}</span></th>@endif<th data-column="title"><span data-post-column-label>{{ __('posts.title_field') }}</span></th><th data-column="status"><span data-post-column-label>{{ __('posts.status') }}</span></th><th data-column="updated_at"><span data-post-column-label>{{ __('posts.updated_at') }}</span></th><th data-column="translations"><span data-post-column-label>{{ __('posts.translations') }}</span></th><th data-column="actions"><span data-post-column-label>{{ __('posts.actions') }}</span></th></tr></thead><tbody></tbody></table></div>
-        @include('common.crud.empty', ['title' => __($type === 'page' ? 'posts.empty_page' : 'posts.empty'), 'hint' => __($type === 'page' ? 'posts.empty_hint_page' : 'posts.empty_hint')])
+        @include('common.crud.empty', ['title' => __('posts.empty'), 'hint' => __('posts.empty_hint')])
         <div data-table-error hidden role="alert"><span>{{ __('posts.failed') }}</span><button type="button" data-retry class="vuero-button">{{ __('posts.retry') }}</button></div>
     </div>
     <div data-table-footer data-list-controls></div>

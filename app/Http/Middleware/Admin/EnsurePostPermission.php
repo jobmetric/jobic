@@ -67,6 +67,8 @@ final readonly class EnsurePostPermission
             ->getActionMethod();
 
         if ($request->routeIs('admin.posts.workflow.*', 'admin.posts.lifecycle.*')) {
+            abort_unless(PostTypeRegistry::getOption($type, 'workflow-enabled', true), 404);
+
             $keys = app(PostWorkflowPermissions::class)->for($type);
 
             $mayManage = $this->access->allows($request->user(), $keys['manage']);

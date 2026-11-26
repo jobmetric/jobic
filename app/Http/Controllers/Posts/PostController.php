@@ -112,7 +112,8 @@ final class PostController extends Controller
             'disabled',
         ])
             ->mapWithKeys(static fn (string $status): array => [$status => __('posts.statuses.' . $status)])
-            ->all() : (app(PostWorkflow::class)->allStatusOptions($postType, $locale) ?: trans('posts.statuses'));
+            ->all() : app(PostWorkflow::class)->allStatusOptions($postType, $locale);
+        $statusLabels = app(PostWorkflow::class)->constrain($type, $statusLabels);
 
         $listFilters = $this->listFilters($builder, $type, $statusLabels);
 
@@ -126,12 +127,14 @@ final class PostController extends Controller
 
         $mediaCollections = $builder->getMediaCollections();
         $operations = ['delete'];
+        $workflowEnabled = PostTypeRegistry::getOption($type, 'workflow-enabled', true);
         $context = ['type' => $type];
 
         $canUnlockEditLocks = $builder->hasOptimisticLocking() && app(AdminAccess::class)->allows(auth()->user(), (string) config('admin.permissions.unlock_edit_lock', 'admin.unlock_edit_lock'));
 
         if ($builder->hasChangeStatusInList() && ! $activeDefinition) {
-            array_unshift($operations, 'activate', 'deactivate');
+            $statusActions = app(PostWorkflow::class)->constrain($type, ['publish' => 'activate', 'disabled' => 'deactivate']);
+            array_unshift($operations, ...array_values($statusActions));
         }
 
         if ($builder->hasHelp()) {
@@ -144,7 +147,7 @@ final class PostController extends Controller
 
         Page::addLocalize('postPage', [
             'type'               => $type,
-            'workflowUrl'        => (app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['manage']) || app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['view'])) ? route('admin.posts.workflow.index', ['type' => $type]) : null,
+            'workflowUrl'        => $workflowEnabled && (app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['manage']) || app(AdminAccess::class)->allows(auth()->user(), $workflowPermissions['view'])) ? route('admin.posts.workflow.index', ['type' => $type]) : null,
             'workflowLabel'      => trans('kanban.workflow_settings'),
             'kanbanUrl'          => $builder->hasMultipleKanban() ? route('admin.posts.kanban.index', ['type' => $type]) : null,
             'kanbanLabel'        => trans('kanban.manage_boards'),
@@ -172,9 +175,9 @@ final class PostController extends Controller
                 'type' => $type,
                 'post' => '__ID__',
             ]),
-            'helpTitle'          => trans($type === 'page' ? 'posts.page_help_title' : 'posts.help_title'),
-            'help'               => Hooks::filter('jobic.posts.help.items', trans($type === 'page' ? 'posts.page_help_items' : 'posts.help_items'), $context),
-            'helpIntro'          => Hooks::filter('jobic.posts.help.intro', trans($type === 'page' ? 'posts.page_help_intro' : 'posts.help_intro'), $context),
+            'helpTitle'          => trans('posts.help_title_generic'),
+            'help'               => Hooks::filter('jobic.posts.help.items', trans('posts.help_items_generic'), $context),
+            'helpIntro'          => Hooks::filter('jobic.posts.help.intro', trans('posts.help_intro_generic'), $context),
             'backUrl'            => $builder->getBackUrl(),
             'translationFields'  => $builder->getTranslationFields(),
             'hasSeo'             => $builder->isSeoEnabled(),
@@ -249,6 +252,9 @@ final class PostController extends Controller
 
         $filters = (array) $request->input('filters', []);
         $requestedStatus = $filters['status'] ?? $request->input('status');
+        if (is_string($requestedStatus) && $requestedStatus !== '') {
+            app(PostWorkflow::class)->validateStatus($type, $requestedStatus);
+        }
         if ($activeDefinition && $requestedStatus !== 'archive') {
             $query->where('status', '<>', 'archive');
         }
@@ -965,13 +971,13 @@ final class PostController extends Controller
                     } else {
                         $postType = new Post;
                         $postType->type = $type;
-                        $statusLabels = app(PostWorkflow::class)->allStatusOptions($postType, $locale) ?: trans('posts.statuses');
+                        $statusLabels = app(PostWorkflow::class)->allStatusOptions($postType, $locale);
                     }
                 }
                 $filters[$field] = [
                     'kind'    => 'status',
                     'label'   => 'posts.status',
-                    'options' => $statusLabels,
+                    'options' => app(PostWorkflow::class)->constrain($type, $statusLabels),
                 ];
 
                 continue;

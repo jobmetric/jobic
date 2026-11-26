@@ -56,7 +56,6 @@
         $statusTarget = $record ?? new \JobMetric\Post\Models\Post;
         $statusTarget->type = $type;
         $statusOptions = app(\App\Services\Posts\PostWorkflow::class)->availableStatusOptions($statusTarget, $activeLocale);
-        $statusOptions = $statusOptions ?: __('posts.statuses');
         $hasActiveWorkflow = app(\App\Services\Posts\PostLifecycleView::class)->activeDefinition($type) !== null;
     @endphp
     @if($hasActiveWorkflow)
