@@ -1,6 +1,16 @@
 <?php
 
 return [
+    'menu_settings' => [
+        'orientation' => 'چیدمان منو',
+        'orientation_options' => ['horizontal' => 'افقی', 'vertical' => 'عمودی'],
+        'alignment' => 'تراز منو',
+        'alignment_options' => ['start' => 'ابتدا', 'center' => 'وسط', 'end' => 'انتها'],
+        'show_title' => 'عنوان منو',
+        'show_title_options' => ['hide' => 'پنهان', 'show' => 'نمایش'],
+        'depth' => 'سطوح منو',
+        'depth_options' => ['all' => 'همهٔ سطوح', '1' => 'فقط سطح اصلی', '2' => 'تا دو سطح', '3' => 'تا سه سطح'],
+    ],
     'carousel_go_to' => 'رفتن به اسلاید :number',
     'carousel_autoplay' => 'پخش خودکار',
     'carousel_loop' => 'تکرار اسلایدها',

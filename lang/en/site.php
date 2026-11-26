@@ -1,6 +1,16 @@
 <?php
 
 return [
+    'menu_settings' => [
+        'orientation' => 'Menu layout',
+        'orientation_options' => ['horizontal' => 'Horizontal', 'vertical' => 'Vertical'],
+        'alignment' => 'Alignment',
+        'alignment_options' => ['start' => 'Start', 'center' => 'Center', 'end' => 'End'],
+        'show_title' => 'Menu title',
+        'show_title_options' => ['hide' => 'Hide', 'show' => 'Show'],
+        'depth' => 'Menu levels',
+        'depth_options' => ['all' => 'All levels', '1' => 'Top level only', '2' => 'Up to two levels', '3' => 'Up to three levels'],
+    ],
     'carousel_previous' => 'Previous slide',
     'carousel_next' => 'Next slide',
     'carousel_go_to' => 'Go to slide :number',

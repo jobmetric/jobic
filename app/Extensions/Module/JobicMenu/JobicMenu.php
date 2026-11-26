@@ -29,7 +29,7 @@ final class JobicMenu extends AbstractExtension
     public function configuration(ExtensionCore $extension): void {}
 
     /**
-     * Let each plugin instance select a menu from the content registry.
+     * Let each plugin instance select a menu and configure its presentation.
      *
      * @return FormBuilder
      */
@@ -49,6 +49,22 @@ final class JobicMenu extends AbstractExtension
                         ->options($options)
                         ->validation(['required', 'integer', Rule::exists(Taxonomy::class, 'id')->where('type', 'menu')]);
                 });
+
+            foreach ([
+                'orientation' => ['horizontal', 'vertical'],
+                'alignment' => ['start', 'center', 'end'],
+                'show_title' => ['hide', 'show'],
+                'depth' => ['all', '1', '2', '3'],
+            ] as $name => $values) {
+                $tab->customField(function (CustomFieldBuilder $field) use ($name, $values): void {
+                    $field::select()->name($name)->label('site.menu_settings.'.$name)->value($values[0])
+                        ->options(array_map(fn (string $value): array => [
+                            'label' => __('site.menu_settings.'.$name.'_options.'.$value),
+                            'value' => $value,
+                        ], $values))
+                        ->validation(['nullable', Rule::in($values)]);
+                });
+            }
         });
     }
 
@@ -76,9 +92,23 @@ final class JobicMenu extends AbstractExtension
             return null;
         }
 
+        $depth = match ((string) ($options['depth'] ?? 'all')) {
+            '1' => 1,
+            '2' => 2,
+            '3' => 3,
+            default => null,
+        };
+
         return view('site.modules.menu', [
             'name' => TaxonomyPresentation::name($menu),
-            'items' => $this->items($children, 0),
+            'items' => $this->items($children, 0, $depth),
+            'vertical' => ($options['orientation'] ?? null) === 'vertical',
+            'alignment' => match ($options['alignment'] ?? null) {
+                'center' => 'center',
+                'end' => 'end',
+                default => 'start',
+            },
+            'showTitle' => ($options['show_title'] ?? null) === 'show',
         ])->render();
     }
 
@@ -87,12 +117,19 @@ final class JobicMenu extends AbstractExtension
      *
      * @param Collection<int, Collection<int, Taxonomy>> $children
      * @param int $parent
+     * @param int|null $remainingLevels
      *
      * @return list<array<string, mixed>>
      */
-    private function items(Collection $children, int $parent): array
+    private function items(Collection $children, int $parent, ?int $remainingLevels): array
     {
-        return $children->get($parent, collect())->map(function (Taxonomy $item) use ($children): array {
+        if ($remainingLevels === 0) {
+            return [];
+        }
+
+        $nextLevel = $remainingLevels === null ? null : $remainingLevels - 1;
+
+        return $children->get($parent, collect())->map(function (Taxonomy $item) use ($children, $nextLevel): array {
             $metadata = $item->metas->pluck('value', 'key');
             $driver = $metadata->get('menu_link_driver');
             $url = $driver === 'external'
@@ -104,7 +141,7 @@ final class JobicMenu extends AbstractExtension
                 'url' => is_string($url) && filter_var($url, FILTER_VALIDATE_URL)
                     && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true) ? $url : null,
                 'separator' => $driver === 'separator',
-                'children' => $this->items($children, $item->id),
+                'children' => $this->items($children, $item->id, $nextLevel),
             ];
         })->values()->all();
     }
