@@ -1,6 +1,6 @@
 import '../../css/extensions-list.css';
 import {flattenRows, selectionEntry, actionsMarkup, statusMarkup, nameMarkup, childrenMarkup, bulkAvailability, showSelection, showExtensionDetails} from './list-presentation';
-import { toolbar, copy, escape, icon, showDialog } from './shared';
+import { toolbar, copy, escape, icon, showDialog, operationError } from './shared';
 import { loadingButton, pageData } from '../common/page';
 import { sendSettings } from '../admin/settings';
 import { announce } from '../common/toast';
@@ -270,7 +270,7 @@ function initialize() {
             data.set('_version', row._version); data.set('confirm', '1');
             const result = await sendSettings(isPlugins ? row.commands[operation] : routes[operation], data);
             selected.delete(row.id); announce(result.message); table.ajax.reload(null, false);
-        } catch (error) { announce(error.status ? error.message : copy().failed, true); }
+        } catch (error) { announce(operationError(error, operation), true); }
         finally { restore(); pending = false; lock(); selection(); }
     }
     async function bulk(operation, button, override = null) {
@@ -286,7 +286,7 @@ function initialize() {
             entries.forEach((entry, index) => { data.set(`entries[${index}][${isPlugins ? 'id' : 'namespace'}]`, isPlugins ? entry.id : entry.namespace); data.set(`entries[${index}][_version]`, entry._version); });
             const result = await sendSettings(isPlugins ? routes.bulk : routes.bulkOperations[operation], data);
             selected.clear(); announce(result.message); table.ajax.reload(null, false);
-        } catch (error) { (error.data?.completed || []).forEach(id => selected.delete(id)); announce(error.message || copy().failed, true); table.ajax.reload(null, false); }
+        } catch (error) { (error.data?.completed || []).forEach(id => selected.delete(id)); announce(operationError(error, operation), true); table.ajax.reload(null, false); }
         finally { restore(); pending = false; lock(); selection(); }
     }
     document.querySelector('[data-crud-toolbar]').addEventListener('click', event => {

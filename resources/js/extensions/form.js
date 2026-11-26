@@ -1,4 +1,4 @@
-import { toolbar, copy, showDialog } from './shared';
+import { toolbar, copy, showDialog, operationError } from './shared';
 import { loadingButton, pageData } from '../common/page';
 import { sendSettings } from '../admin/settings';
 import { announce } from '../common/toast';
@@ -56,7 +56,7 @@ if (form) {
                 if (await archive.received(result.data, submission.generation)) announce(result.message);
                 return;
             }
-            if (archive) await archive.placed(result.data);
+            if (archive) await archive.placed(result.data, result.message);
             if (result.data?.save_url) {
                 form.action = result.data.save_url;
                 let version = form.elements.namedItem('_version');
@@ -91,10 +91,11 @@ if (form) {
                     if (errorNode) field.setAttribute('aria-describedby', errorNode.id);
                 }
             });
-            form.querySelector('[data-settings-errors]').textContent = (error.status ? error.message : copy().failed) || copy().failed;
+            const message = operationError(error, 'save');
+            form.querySelector('[data-settings-errors]').textContent = message;
             const invalid = [...form.querySelectorAll('[aria-invalid=true]')].find(node => node.getClientRects().length);
             if (!archive) (invalid || form.querySelector('[data-settings-errors]'))?.focus();
-            announce(error.status ? error.message : copy().failed, true);
+            announce(message, true);
         } finally {
             restore.forEach(fn => fn()); delete form.dataset.saving; form.removeAttribute('aria-busy');
             form.querySelector('.crud-split-save')?.removeAttribute('inert');

@@ -13,6 +13,10 @@ export function escape(value) {
     span.textContent = String(value ?? '');
     return span.innerHTML.replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 }
+export function operationError(error, operation) {
+    if (error.status && error.status < 500 && error.message) return error.message;
+    return copy().operation_error[operation] || copy().failed;
+}
 export function icon(name) {
     return iconMarkup(name, 18);
 }

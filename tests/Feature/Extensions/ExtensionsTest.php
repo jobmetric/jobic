@@ -83,20 +83,20 @@ class ExtensionsTest extends ExtensionManagementTestCase
         Hooks::addAction('jobic.extensions.lifecycle.saved', function ($context) use (&$events) {
             $events[] = ['saved', $context];
         });
-        $this->command('install')->assertOk();
+        $this->command('install')->assertOk()->assertJsonPath('message', trans('extensions.extension_result.install'));
         $record = Extension::whereNamespace(Alpha::class)->firstOrFail();
         $plugin = $record->plugins()->firstOrFail();
         $this->assertFalse(app(Runtime::class)->active(Alpha::class));
         $this->assertNull(Plugin::run($plugin->id));
         $this->assertNotContains(Alpha::class, InstalledExtensionsFile::read());
-        $this->command('activate')->assertOk();
+        $this->command('activate')->assertOk()->assertJsonPath('message', trans('extensions.extension_result.activate'));
         $this->assertContains(Alpha::class, InstalledExtensionsFile::read());
         $this->assertSame('alpha', Plugin::run($plugin->id));
         $this->command('uninstall', changes: ['confirm' => 1])->assertConflict();
-        $this->command('deactivate')->assertOk();
+        $this->command('deactivate')->assertOk()->assertJsonPath('message', trans('extensions.extension_result.deactivate'));
         $this->assertDatabaseHas('plugins', ['id' => $plugin->id]);
         $this->command('uninstall')->assertUnprocessable();
-        $this->command('uninstall', changes: ['confirm' => 1])->assertOk();
+        $this->command('uninstall', changes: ['confirm' => 1])->assertOk()->assertJsonPath('message', trans('extensions.extension_result.uninstall'));
         $this->assertDatabaseMissing('extensions', ['id' => $record->id]);
         $this->assertDatabaseMissing('plugins', ['id' => $plugin->id]);
         $this->assertSame(['saving', 'saved', 'saving', 'saved', 'saving', 'saved', 'saving', 'saved'], array_column($events, 0));
@@ -525,7 +525,8 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $route = route('admin.settings.extensions.plugins.store', $extension->id);
         $this->postJson($route, ['name' => 'Invalid', 'status' => 1, 'fields' => []])->assertUnprocessable();
         $this->assertSame([], $contexts);
-        $response = $this->postJson($route, ['name' => 'Safe name', 'status' => 1, 'fields' => ['label' => 'private-option', 'unknown' => 'discarded']])->assertOk();
+        $response = $this->postJson($route, ['name' => 'Safe name', 'status' => 1, 'fields' => ['label' => 'private-option', 'unknown' => 'discarded']])->assertOk()
+            ->assertJsonPath('message', trans('extensions.plugin_result.create'));
         $this->assertCount(2, $contexts);
         $this->assertSame(['extension_id', 'id', 'operation', 'user_id'], array_keys($contexts[0]));
         $plugin = $extension->plugins()->firstOrFail();
@@ -533,7 +534,8 @@ class ExtensionsTest extends ExtensionManagementTestCase
         $this->getJson(route('admin.settings.extensions.plugins.history', [$extension->id, $plugin->id]))->assertOk()->assertDontSee('private-option');
         $this->getJson(route('admin.settings.extensions.plugins.data', [$extension->id, 'draw' => 1, 'start' => 0, 'length' => 10]))->assertOk()->assertDontSee('private-option');
         $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertUnprocessable();
-        $disabled = $this->postJson(route('admin.settings.extensions.plugins.command', [$extension->id, $plugin->id, 'deactivate']), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertOk();
+        $disabled = $this->postJson(route('admin.settings.extensions.plugins.command', [$extension->id, $plugin->id, 'deactivate']), ['_version' => $response->json('data.version'), 'confirm' => 1])->assertOk()
+            ->assertJsonPath('message', trans('extensions.plugin_result.deactivate'));
         $this->deleteJson(route('admin.settings.extensions.plugins.delete', [$extension->id, $plugin->id]), ['_version' => $disabled->json('data.version'), 'confirm' => 1])
             ->assertUnprocessable()->assertJsonPath('message', trans('extensions.minimum_instance'));
         $this->postJson($route, ['name' => 'Surviving instance', 'status' => 0, 'fields' => ['label' => 'survivor']])->assertOk();

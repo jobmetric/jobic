@@ -133,10 +133,11 @@ export function bindArchive(form) {
         downloads.push(url);
         const link = form.querySelector(selector); link.href = url; link.download = filename;
     }
-    function render(report, expires = null, placed = false) {
+    function render(report, expires = null, placementMessage = '') {
+        const placed = Boolean(placementMessage);
         downloads.forEach(URL.revokeObjectURL); downloads = [];
         showStep(placed ? 'placed' : 'review');
-        form.querySelector('[data-review-title]').textContent = copy()[placed ? 'archive_placed' : 'archive_ready'];
+        form.querySelector('[data-review-title]').textContent = placed ? placementMessage : copy().archive_ready;
         form.querySelector('[data-review-expiry]').textContent = expires ? copy().review_expires.replace(':time', expires) : copy().placement_complete;
         const manifest = report.manifest;
         const values = {name: manifest.title, type: manifest.extension, version: manifest.version, mode: copy()[manifest.multiple ? 'multiple' : 'single'], count: number(report.file_count), size: `${number(report.total_bytes)} ${copy().bytes_unit}`};
@@ -183,11 +184,11 @@ export function bindArchive(form) {
             preview.classList.remove('is-revealing'); void preview.offsetWidth; preview.classList.add('is-revealing');
             return true;
         },
-        async placed(result) {
+        async placed(result, message) {
             await settle('success', copy().placement_complete);
             const version = form.elements.namedItem('_version');
             if (version && result.version) version.value = result.version;
-            review = null; input.value = ''; generation++; render(result.report, null, true);
+            review = null; input.value = ''; generation++; render(result.report, null, message);
         },
         async failed(confirmed, error) {
             const messages = [...new Set(Object.values(error.errors || {}).flatMap(value => [].concat(value)).filter(Boolean))];

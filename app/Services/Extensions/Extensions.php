@@ -522,7 +522,7 @@ class Extensions extends AbstractCrudService
         }
         Hooks::notify('jobic.extensions.lifecycle.saved', $context);
 
-        return Response::make(true, trans('extensions.saved'), ['version' => $this->version($namespace)]);
+        return Response::make(true, trans('extensions.extension_result.'.$operation), ['version' => $this->version($namespace)]);
     }
 
     /**
@@ -580,7 +580,7 @@ class Extensions extends AbstractCrudService
                     Hooks::notify('jobic.extensions.lifecycle.saved', ['namespace' => $entry['namespace'], 'operation' => $operation, 'user_id' => $userId]);
                 }
 
-                return Response::make(true, trans('extensions.saved'));
+                return Response::make(true, trans_choice('extensions.extension_batch_result.'.$operation, count($input['entries'])));
             }
             $completed = [];
             foreach ($input['entries'] as $entry) {
@@ -597,7 +597,7 @@ class Extensions extends AbstractCrudService
                 }
             }
 
-            return Response::make(true, trans('extensions.saved'), ['completed' => $completed]);
+            return Response::make(true, trans_choice('extensions.extension_batch_result.delete', count($completed)), ['completed' => $completed]);
         });
     }
 
@@ -874,7 +874,7 @@ class Extensions extends AbstractCrudService
                 app(Archive::class)->verify($review['manifest'], $base);
                 $this->promoteArchive($operation, $review['manifest'], $base, $candidate, $userId);
 
-                return Response::make(true, trans('extensions.archive_placed'), ['phase' => 'placed', 'report' => $report,
+                return Response::make(true, trans($operation === 'upgrade' ? 'extensions.extension_upgraded' : 'extensions.archive_placed'), ['phase' => 'placed', 'report' => $report,
                     'version' => $operation === 'upgrade' ? $this->version($candidate['namespace']) : null]);
             } finally {
                 File::deleteDirectory($stage);
@@ -1162,7 +1162,9 @@ class Extensions extends AbstractCrudService
 
         }
 
-        return $this->savePlugin($extensionId, $pluginId, $input + ['name' => $record->name, 'status' => $operation === 'activate' ? 1 : 0], $userId, $operation === 'delete');
+        $result = $this->savePlugin($extensionId, $pluginId, $input + ['name' => $record->name, 'status' => $operation === 'activate' ? 1 : 0], $userId, $operation === 'delete');
+
+        return Response::make(true, trans('extensions.plugin_result.'.$operation), $result->data);
     }
 
     /**
@@ -1305,7 +1307,7 @@ class Extensions extends AbstractCrudService
             $saved ? ['name' => $saved->name, 'status' => $saved->status] : []);
         DB::afterCommit(fn () => Hooks::notify('jobic.extensions.plugins.saved', $context));
 
-        return Response::make(true, trans('extensions.saved'), ['id' => $saved?->id,
+        return Response::make(true, trans('extensions.plugin_result.'.$context['operation']), ['id' => $saved?->id,
             'version' => $saved ? $this->pluginVersion($saved) : null,
             'save_url' => $saved ? route('admin.settings.extensions.plugins.update', [$extensionId, $saved->id]) : null,
             'edit_url' => $saved ? route('admin.settings.extensions.plugins.edit', [$extensionId, $saved->id]) : null]);
@@ -1346,7 +1348,7 @@ class Extensions extends AbstractCrudService
                         '_version' => $entry['_version'], 'confirm' => 1], $userId, $input['operation'] === 'delete');
                 }
 
-                return Response::make(true, trans('extensions.saved'));
+                return Response::make(true, trans_choice('extensions.plugin_batch_result.'.$input['operation'], $records->count()));
             });
         });
     }
