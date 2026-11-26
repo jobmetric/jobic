@@ -1,1 +1,5 @@
-{"schema":1,"positions":{"top":"site.extensions.slideshow","content":"site.extensions.articles"}}
+{
+    "schema": 1,
+    "positions": {"top": "site.extensions.slideshow", "content": "site.extensions.articles"},
+    "menu_views": {"mega": "site.menu_display.mega", "cards": "site.menu_display.cards", "tree": "site.menu_display.tree"}
+}

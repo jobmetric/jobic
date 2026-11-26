@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'menu_display' => [
+        'label' => 'Menu display',
+        'standard' => 'Standard navigation',
+        'mega' => 'Mega menu',
+        'cards' => 'Navigation cards',
+        'tree' => 'Collapsible tree',
+        'open' => 'Browse menu',
+        'visit' => 'Open link',
+    ],
     'menu_settings' => [
         'orientation' => 'Menu layout',
         'orientation_options' => ['horizontal' => 'Horizontal', 'vertical' => 'Vertical'],

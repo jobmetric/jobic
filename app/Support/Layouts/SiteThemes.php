@@ -7,6 +7,7 @@ namespace App\Support\Layouts;
 use App\Support\Extensions\Runtime;
 use JobMetric\Extension\Models\Extension;
 use JobMetric\Setting\Facades\Setting;
+use ReflectionClass;
 
 /**
  * Resolve standard Theme extensions and the website's active Theme selection.
@@ -70,6 +71,37 @@ class SiteThemes
         $key = $this->activeKey();
 
         return $key !== null ? ($this->available()[$key] ?? null) : null;
+    }
+
+    /**
+     * Return menu displays declared by the selected Theme with a matching Blade file.
+     *
+     * @return array<string, array{label: string, path: string}>
+     */
+    public function menuViews(): array
+    {
+        $theme = $this->active();
+        if ($theme === null) {
+            return [];
+        }
+
+        $declared = $this->manifest->read($theme->namespace)['menu_views'] ?? [];
+        $entry = (new ReflectionClass($theme->namespace))->getFileName();
+        $root = realpath(dirname((string) $entry));
+        $directory = $root === false ? false : realpath($root.'/resources/views/menus');
+        if ($directory === false || ! str_starts_with($directory, $root.DIRECTORY_SEPARATOR)) {
+            return [];
+        }
+
+        $views = [];
+        foreach ($declared as $key => $label) {
+            $path = realpath($directory.DIRECTORY_SEPARATOR.$key.'.blade.php');
+            if ($path !== false && dirname($path) === $directory && is_file($path)) {
+                $views[$key] = ['label' => trans($label), 'path' => $path];
+            }
+        }
+
+        return $views;
     }
 
     /**

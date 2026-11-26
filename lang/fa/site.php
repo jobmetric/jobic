@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'menu_display' => [
+        'label' => 'نوع نمایش منو',
+        'standard' => 'منوی استاندارد',
+        'mega' => 'مگامنو',
+        'cards' => 'منوی کارتی',
+        'tree' => 'منوی درختی بازشونده',
+        'open' => 'مرور منو',
+        'visit' => 'باز کردن پیوند',
+    ],
     'menu_settings' => [
         'orientation' => 'چیدمان منو',
         'orientation_options' => ['horizontal' => 'افقی', 'vertical' => 'عمودی'],

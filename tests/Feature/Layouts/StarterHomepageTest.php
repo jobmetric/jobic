@@ -9,11 +9,14 @@ use App\Services\Installation\Installation;
 use App\Support\Installation\Connections;
 use App\Support\Installation\Environment;
 use App\Support\Installation\State;
+use App\Support\Layouts\SiteThemes;
 use Database\Seeders\WebsiteInstallationSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 use JobMetric\Extension\Models\Extension;
+use JobMetric\Form\Http\Requests\FormBuilderRequest;
 use JobMetric\Layout\Models\LayoutPage;
 use JobMetric\Taxonomy\Models\Taxonomy;
 use Tests\TestCase;
@@ -72,6 +75,11 @@ class StarterHomepageTest extends TestCase
                 ->assertSee('starter-articles', false);
             $module = Extension::whereNamespace(JobicMenu::class)->sole();
             $this->assertTrue($module->info['multiple']);
+            $this->assertSame(['mega', 'cards', 'tree'], array_keys(app(SiteThemes::class)->menuViews()));
+            $form = new FormBuilderRequest(app(JobicMenu::class)->form());
+            $displayRules = ['menu_view' => $form->rules()['menu_view']];
+            $this->assertTrue(Validator::make(['menu_view' => 'cards'], $displayRules)->passes());
+            $this->assertFalse(Validator::make(['menu_view' => '../missing'], $displayRules)->passes());
 
             foreach (['Resources', 'Company'] as $ordering => $name) {
                 $menu = Taxonomy::create(['type' => 'menu', 'status' => true]);
@@ -80,13 +88,24 @@ class StarterHomepageTest extends TestCase
                 $item->translations()->create(['locale' => 'en', 'field' => 'name', 'value' => $name]);
                 $item->metas()->create(['key' => 'menu_link_driver', 'value' => 'external', 'is_json' => false]);
                 $item->metas()->create(['key' => 'menu_link_data', 'value' => '{"menu_link_url":"https://example.com/'.strtolower($name).'"}', 'is_json' => true]);
+                Taxonomy::create(['type' => $type, 'parent_id' => $item->id, 'status' => true]);
                 $hidden = Taxonomy::create(['type' => $type, 'status' => false]);
                 $hidden->translations()->create(['locale' => 'en', 'field' => 'name', 'value' => 'Hidden menu item']);
-                $instance = $module->plugins()->create(['name' => $name, 'status' => true, 'fields' => ['menu_id' => $menu->id]]);
+                $instance = $module->plugins()->create([
+                    'name' => $name, 'status' => true,
+                    'fields' => ['menu_id' => $menu->id, 'menu_view' => ['mega', 'cards'][$ordering]],
+                ]);
                 $assignment->layout->layoutPlugins()->create(['position' => 'content', 'ordering' => $ordering + 1, 'plugin_id' => $instance->id]);
+
+                $tree = app(JobicMenu::class)->handle(['menu_id' => $menu->id, 'menu_view' => 'tree']);
+                $this->assertStringContainsString('site-menu--tree', $tree);
+                $this->assertStringContainsString('<summary>'.$name.'</summary>', $tree);
+                $this->assertStringContainsString('class="site-menu site-menu--start"', app(JobicMenu::class)->handle(['menu_id' => $menu->id, 'menu_view' => '../missing']));
             }
 
             $this->get(route('home'))->assertOk()
+                ->assertSee('site-menu--mega', false)
+                ->assertSee('site-menu--cards', false)
                 ->assertSeeInOrder(['https://example.com/resources', 'https://example.com/company'])
                 ->assertDontSee('Hidden menu item');
         } finally {

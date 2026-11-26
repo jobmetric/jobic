@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Extensions\Module\JobicMenu;
 
+use App\Support\Layouts\SiteThemes;
 use App\Support\TaxonomyPresentation;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\View;
 use Illuminate\Validation\Rule;
 use JobMetric\CustomField\CustomFieldBuilder;
 use JobMetric\Extension\Contracts\AbstractExtension;
@@ -49,6 +51,19 @@ final class JobicMenu extends AbstractExtension
                         ->options($options)
                         ->validation(['required', 'integer', Rule::exists(Taxonomy::class, 'id')->where('type', 'menu')]);
                 });
+
+            $views = app(SiteThemes::class)->menuViews();
+            if ($views !== []) {
+                $tab->customField(function (CustomFieldBuilder $field) use ($views): void {
+                    $options = [['label' => __('site.menu_display.standard'), 'value' => '']];
+                    foreach ($views as $key => $view) {
+                        $options[] = ['label' => $view['label'], 'value' => $key];
+                    }
+
+                    $field::select()->name('menu_view')->label('site.menu_display.label')->options($options)
+                        ->validation(['nullable', Rule::in(array_keys($views))]);
+                });
+            }
 
             foreach ([
                 'orientation' => ['horizontal', 'vertical'],
@@ -99,7 +114,7 @@ final class JobicMenu extends AbstractExtension
             default => null,
         };
 
-        return view('site.modules.menu', [
+        $data = [
             'name' => TaxonomyPresentation::name($menu),
             'items' => $this->items($children, 0, $depth),
             'vertical' => ($options['orientation'] ?? null) === 'vertical',
@@ -109,7 +124,11 @@ final class JobicMenu extends AbstractExtension
                 default => 'start',
             },
             'showTitle' => ($options['show_title'] ?? null) === 'show',
-        ])->render();
+        ];
+        $display = (string) ($options['menu_view'] ?? '');
+        $path = $display === '' ? null : (app(SiteThemes::class)->menuViews()[$display]['path'] ?? null);
+
+        return ($path === null ? view('site.modules.menu', $data) : View::file($path, $data))->render();
     }
 
     /**

@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Read and validate the immutable layout-position manifest owned by a Theme extension.
+ * Read and validate the layout positions and display options owned by a Theme extension.
  */
 class ThemeManifest
 {
@@ -18,7 +18,7 @@ class ThemeManifest
      *
      * @param string $namespace
      *
-     * @return array{schema: int, positions: array<string, string>}|null
+     * @return array{schema: int, positions: array<string, string>, menu_views?: array<string, string>}|null
      */
     public function read(string $namespace): ?array
     {
@@ -43,7 +43,7 @@ class ThemeManifest
      *
      * @param string $path
      *
-     * @return array{schema: int, positions: array<string, string>}|null
+     * @return array{schema: int, positions: array<string, string>, menu_views?: array<string, string>}|null
      */
     public function readFile(string $path): ?array
     {
@@ -52,15 +52,21 @@ class ThemeManifest
                 return null;
             }
             $manifest = json_decode((string) file_get_contents($path), true, 32, JSON_THROW_ON_ERROR);
-            if (! is_array($manifest) || array_diff(array_keys($manifest), ['schema', 'positions']) !== []
+            if (! is_array($manifest) || array_diff(array_keys($manifest), ['schema', 'positions', 'menu_views']) !== []
                 || ($manifest['schema'] ?? null) !== 1 || ! is_array($manifest['positions'] ?? null)
                 || $manifest['positions'] === []) {
                 return null;
             }
-            foreach ($manifest['positions'] as $key => $label) {
-                if (! is_string($key) || preg_match('/^[a-z][a-z0-9_]*$/', $key) !== 1
-                    || ! is_string($label) || trim($label) === '') {
+            foreach (['positions', 'menu_views'] as $section) {
+                $entries = $manifest[$section] ?? [];
+                if (! is_array($entries) || (array_key_exists($section, $manifest) && $manifest[$section] === null)) {
                     return null;
+                }
+                foreach ($entries as $key => $label) {
+                    if (! is_string($key) || preg_match('/^[a-z][a-z0-9_]*$/', $key) !== 1
+                        || ! is_string($label) || trim($label) === '') {
+                        return null;
+                    }
                 }
             }
 

@@ -26,6 +26,14 @@ Themes render a position with an explicit registered page type:
 
 An unassigned page or empty position renders nothing. A failed Module is logged without its settings and does not stop the remaining page.
 
+A Theme can also declare an optional `menu_views` map in `layout.json`, for example
+`"menu_views":{"cards":"theme::menu.cards"}`. Each key has a matching
+`resources/views/menus/<key>.blade.php` relative to the directory containing the theme's entry class.
+The menu module offers the selected theme's available views plus its standard view.
+If the theme changes and the saved key is unavailable, the standard view is used.
+Theme views receive `name`, the nested `items` tree, `vertical`, `alignment`,
+and `showTitle`. Each item contains `label`, nullable `url`, `separator`, and `children`.
+
 ## Page types and Modules
 
 Post types can opt into a status allowlist with
