@@ -29,6 +29,7 @@ class BulkRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'confirm' => $this->routeIs('admin.settings.layouts.bulk.force_delete') ? ['required', 'accepted'] : ['exclude'],
             'entries' => ['required', 'array', 'min:1', 'max:100'],
             'entries.*.id' => ['required', 'integer', 'distinct'],
             'entries.*._version' => ['required', 'string', 'size:64'],

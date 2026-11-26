@@ -90,7 +90,7 @@ class PermissionsDriver implements ApplicationDriver
             ->addPermission('admin.settings.mail', 'roles.permissions.settings_mail', 'admin.settings.mail.edit', order: 46);
 
         $permissions->addPermission('admin.settings.layouts', 'layouts.title');
-        foreach (['view', 'manage', 'delete', 'restore'] as $operation) {
+        foreach (['view', 'manage', 'delete', 'restore', 'force_delete'] as $operation) {
             $permissions->addPermission('admin.settings.layouts.'.$operation, 'layouts.permissions.'.$operation,
                 $operation === 'view' ? 'admin.settings.layouts.index' : null, order: 47);
         }

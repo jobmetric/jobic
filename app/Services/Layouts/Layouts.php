@@ -13,6 +13,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use JobMetric\Extension\Models\Plugin;
+use JobMetric\Layout\Facades\Layout as LayoutService;
 use JobMetric\Layout\Models\Layout;
 use JobMetric\Layout\Models\LayoutPage;
 use JobMetric\PackageCore\Output\Response;
@@ -120,10 +121,25 @@ class Layouts
     public function bulk(array $entries, string $operation, int $userId): Response
     {
         DB::transaction(function () use ($entries, $operation, $userId): void {
-            foreach ($entries as $entry) {
+            $layouts = [];
+            foreach (collect($entries)->sortBy('id') as $entry) {
                 $layout = Layout::withTrashed()->lockForUpdate()->findOrFail($entry['id']);
                 if (! hash_equals($this->version($layout), $entry['_version'])) {
                     abort(409, trans('layouts.conflict'));
+                }
+                if ($operation === 'force_delete' && ! $layout->trashed()) {
+                    throw ValidationException::withMessages(['entries' => trans('layouts.force_delete_requires_trash')]);
+                }
+                $layouts[] = $layout;
+            }
+            foreach ($layouts as $layout) {
+                if ($operation === 'force_delete') {
+                    $context = ['operation' => $operation, 'layout_id' => $layout->id, 'user_id' => $userId];
+                    Hooks::lifecycle('jobic.settings.layouts.saving', $context);
+                    LayoutService::forceDelete($layout->id);
+                    abort_if(Layout::withTrashed()->whereKey($layout->id)->exists(), 409, trans('layouts.conflict'));
+                    DB::afterCommit(fn () => Hooks::notify('jobic.settings.layouts.saved', $context));
+                    continue;
                 }
                 if ($operation === 'restore') {
                     $this->restore($layout->id, $userId);
@@ -144,7 +160,9 @@ class Layouts
             }
         });
 
-        return Response::make(true, trans('layouts.bulk_saved'));
+        return Response::make(true, $operation === 'force_delete'
+            ? trans_choice('layouts.force_deleted', count($entries))
+            : trans('layouts.bulk_saved'));
     }
 
     /**

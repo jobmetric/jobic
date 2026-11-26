@@ -155,6 +155,7 @@ Route::middleware([
             Route::post('bulk/deactivate', 'bulkDeactivate')->middleware([EnsurePermission::class.':admin.settings.layouts.manage', 'throttle:30,1'])->name('bulk.deactivate');
             Route::post('bulk/delete', 'bulkDelete')->middleware([EnsurePermission::class.':admin.settings.layouts.delete', 'throttle:30,1'])->name('bulk.delete');
             Route::post('bulk/restore', 'bulkRestore')->middleware([EnsurePermission::class.':admin.settings.layouts.restore', 'throttle:30,1'])->name('bulk.restore');
+            Route::post('bulk/force-delete', 'bulkForceDelete')->middleware([EnsurePermission::class.':admin.settings.layouts.force_delete', 'throttle:30,1'])->name('bulk.force_delete');
             Route::get('{layout}/edit', 'edit')->whereNumber('layout')->middleware(EnsurePermission::class.':admin.settings.layouts.manage')->name('edit');
             Route::put('{layout}', 'update')->whereNumber('layout')->middleware([EnsurePermission::class.':admin.settings.layouts.manage', 'throttle:30,1'])->name('update');
             Route::delete('{layout}', 'destroy')->whereNumber('layout')->middleware([EnsurePermission::class.':admin.settings.layouts.delete', 'throttle:30,1'])->name('destroy');

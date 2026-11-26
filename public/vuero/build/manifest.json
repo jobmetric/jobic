@@ -96,12 +96,12 @@
       "_jquery-83fec99f.js"
     ]
   },
-  "_layouts-979299ef.js": {
+  "_layouts-b1cac009.js": {
     "css": [
       "assets/layouts-3ca53adc.css",
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/layouts-979299ef.js",
+    "file": "assets/layouts-b1cac009.js",
     "imports": [
       "_page-1cca34fb.js",
       "_icons-206ed4f5.js"
@@ -566,9 +566,9 @@
     "css": [
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/form-ede67a44.js",
+    "file": "assets/form-bddfb66b.js",
     "imports": [
-      "_layouts-979299ef.js",
+      "_layouts-b1cac009.js",
       "_page-1cca34fb.js",
       "_icons-206ed4f5.js",
       "_settings-63ec4cfb.js",
@@ -583,9 +583,9 @@
       "assets/extensions-list-fc344404.css",
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/index-82b36cc5.js",
+    "file": "assets/index-1b6de530.js",
     "imports": [
-      "_layouts-979299ef.js",
+      "_layouts-b1cac009.js",
       "_page-1cca34fb.js",
       "_settings-63ec4cfb.js",
       "_toast-bc3a4876.js",

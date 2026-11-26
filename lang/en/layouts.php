@@ -70,5 +70,9 @@ return [
     'page_type_conflict' => 'One of these page types already uses another active layout for this Theme.',
     'conflict' => 'This layout changed in another request. Refresh and try again.',
     'page_types' => ['home' => 'Home', 'post' => 'Post', 'page' => 'Page', 'taxonomy' => 'Taxonomy', 'tag' => 'Tag', 'brand' => 'Brand'],
-    'permissions' => ['view' => 'View layouts', 'manage' => 'Manage layouts', 'delete' => 'Delete layouts', 'restore' => 'Restore layouts'],
+    'force_delete' => 'Delete permanently',
+    'force_delete_confirm' => 'Permanently delete the selected layouts (:count)? This cannot be undone.',
+    'force_delete_requires_trash' => 'Only layouts in the trash can be permanently deleted.',
+    'force_deleted' => '{1} The layout was permanently deleted.|[2,*] :count layouts were permanently deleted.',
+    'permissions' => ['view' => 'View layouts', 'manage' => 'Manage layouts', 'delete' => 'Delete layouts', 'restore' => 'Restore layouts', 'force_delete' => 'Permanently delete layouts'],
 ];

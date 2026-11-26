@@ -65,6 +65,7 @@ export function toolbar(kind) {
             "deactivate",
             "delete",
             "restore",
+            "force_delete",
             "help",
         ]);
         actions.querySelectorAll("[data-crud-action]").forEach((node) => {

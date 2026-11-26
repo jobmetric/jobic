@@ -48,6 +48,8 @@ function initialize() {
         if (!states.has("deleted") && access.delete) actions.push("delete");
         if (states.size === 1 && states.has("deleted") && access.restore)
             actions.push("restore");
+        if (states.size === 1 && states.has("deleted") && access.force_delete)
+            actions.push("force_delete");
         return actions;
     };
     const selection = () => {
@@ -66,7 +68,7 @@ function initialize() {
             .querySelectorAll("[data-crud-toolbar] [data-crud-action]")
             .forEach((node) => {
                 if (
-                    ["activate", "deactivate", "delete", "restore"].includes(
+                    ["activate", "deactivate", "delete", "restore", "force_delete"].includes(
                         node.dataset.crudAction,
                     )
                 )
@@ -163,9 +165,10 @@ function initialize() {
             !row.deleted && access.manage
                 ? `<a class="crud-icon-button" href="${routes.index}/${row.id}/edit" aria-label="${escape(copy().edit)}" data-tooltip="${escape(copy().edit)}">${icon("edit")}</a>`
                 : "";
+        const deleteOperation = row.deleted ? "force_delete" : "delete";
         const menu =
-            !row.deleted && access.delete
-                ? `<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-operation="delete" data-id="${row.id}">${escape(copy().delete)}</button></div></details>`
+            access[deleteOperation]
+                ? `<details class="crud-dropdown"><summary class="crud-icon-button" aria-label="${escape(copy().more)}">${icon("more-horizontal")}</summary><div class="crud-dropdown__menu"><button type="button" data-operation="${deleteOperation}" data-id="${row.id}">${escape(copy()[deleteOperation])}</button></div></details>`
                 : "";
 
         return `<div class="crud-row-actions">${primaryMarkup}${editMarkup}${menu}</div>`;
@@ -375,21 +378,23 @@ function initialize() {
     async function mutate(entries, operation, button) {
         if (pending || loading || !availability(entries).includes(operation))
             return;
+        const permanent = operation === "force_delete";
         const confirmed = await showDialog({
             title: copy()[operation],
-            description: copy().batch_description.replace(
+            description: (permanent ? copy().force_delete_confirm : copy().batch_description).replace(
                 ":count",
                 entries.length,
             ),
             items: entries,
-            confirm: copy().confirm_operation,
+            confirm: permanent ? copy().force_delete : copy().confirm_operation,
         });
-        if (!confirmed) return;
+        if (!confirmed || pending || loading) return;
         pending = true;
         lock();
         const restore = loadingButton(button);
         try {
             const data = new FormData();
+            if (permanent) data.set("confirm", "1");
             entries.forEach((entry, index) => {
                 data.set(`entries[${index}][id]`, entry.id);
                 data.set(`entries[${index}][_version]`, entry._version);
@@ -421,7 +426,7 @@ function initialize() {
                     accordion: true,
                 });
             else if (
-                ["activate", "deactivate", "delete", "restore"].includes(action)
+                ["activate", "deactivate", "delete", "restore", "force_delete"].includes(action)
             )
                 mutate(
                     [...selected.values()],

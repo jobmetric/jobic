@@ -108,6 +108,20 @@ class LayoutController extends Controller
     }
 
     /**
+     * Permanently delete the confirmed selection of trashed layouts.
+     *
+     * @param BulkRequest $request
+     *
+     * @return JsonResponse
+     */
+    public function bulkForceDelete(BulkRequest $request): JsonResponse
+    {
+        $result = $this->layouts->bulk($request->validated()['entries'], 'force_delete', (int) $request->user()->id);
+
+        return response()->json($result, $result->status)->header('X-CSRF-TOKEN', csrf_token());
+    }
+
+    /**
      * Render the create form.
      *
      * @return View
@@ -223,12 +237,14 @@ class LayoutController extends Controller
                 'deactivate' => route('admin.settings.layouts.bulk.deactivate'),
                 'delete' => route('admin.settings.layouts.bulk.delete'),
                 'restore' => route('admin.settings.layouts.bulk.restore'),
+                'force_delete' => route('admin.settings.layouts.bulk.force_delete'),
             ],
         ]);
         Page::addLocalize('layoutAccess', [
             'manage' => app(AdminAccess::class)->allows(auth()->user(), 'admin.settings.layouts.manage'),
             'delete' => app(AdminAccess::class)->allows(auth()->user(), 'admin.settings.layouts.delete'),
             'restore' => app(AdminAccess::class)->allows(auth()->user(), 'admin.settings.layouts.restore'),
+            'force_delete' => app(AdminAccess::class)->allows(auth()->user(), 'admin.settings.layouts.force_delete'),
             'extensions_view' => app(AdminAccess::class)->allows(auth()->user(), 'admin.settings.extensions.view'),
             'has_themes' => $this->layouts->themes() !== [],
         ]);

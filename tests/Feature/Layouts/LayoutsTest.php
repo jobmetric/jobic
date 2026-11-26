@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Layouts;
 
+use App\Facades\Hooks;
 use App\Models\User;
 use App\Support\Layouts\PageTypeRegistry;
 use App\Support\Layouts\ThemeManifest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
+use JobMetric\Extension\Models\Extension;
 use JobMetric\Layout\Models\Layout;
+use JobMetric\Rolix\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -75,6 +79,64 @@ class LayoutsTest extends TestCase
         ])->assertOk()->assertJsonPath('ok', true);
 
         $this->assertFalse($layout->fresh()->status);
+    }
+
+    /** A permanent deletion preflights the selection and cleans up only owned records. */
+    public function test_permanent_deletion_requires_permission_confirmation_and_trashed_versions(): void
+    {
+        $layout = Layout::create(['name' => 'Trash', 'status' => true]);
+        $page = $layout->layoutPages()->create(['application' => 'test', 'page' => 'home']);
+        $extension = Extension::create(['extension' => 'Module', 'name' => 'Fixture', 'namespace' => 'Tests\\Fixture', 'info' => []]);
+        $plugin = $extension->plugins()->create(['name' => 'Reusable module', 'status' => true]);
+        $placement = $layout->layoutPlugins()->create(['position' => 'top', 'ordering' => 0, 'plugin_id' => $plugin->id]);
+        $active = Layout::create(['name' => 'Keep', 'status' => true]);
+        $layout->delete();
+        $url = route('admin.settings.layouts.bulk.force_delete');
+
+        $restricted = User::factory()->create();
+        $restricted->assignRole(Role::create([
+            'type' => 'system', 'name' => 'Soft deletion only', 'allow' => ['admin.settings.layouts'],
+            'deny' => ['admin.settings.layouts.force_delete'], 'is_super' => false,
+        ])->id);
+        $admin = User::factory()->create();
+        $entries = $this->actingAs($admin)->getJson(route('admin.settings.layouts.data', [
+            'draw' => 1, 'start' => 0, 'length' => 10,
+        ]))->assertOk()->json('data.data');
+        $entries = collect($entries)->mapWithKeys(fn (array $entry): array =>
+            [$entry['id'] => ['id' => $entry['id'], '_version' => $entry['version']]])->all();
+        $payload = ['entries' => [$entries[$layout->id]], 'confirm' => 1];
+
+        $this->actingAs($restricted)->postJson($url, $payload)->assertForbidden();
+        $this->actingAs($admin)->postJson($url, ['entries' => $payload['entries']])->assertUnprocessable()->assertJsonValidationErrors('confirm');
+        $this->postJson($url, ['entries' => [$entries[$layout->id], $entries[$active->id]], 'confirm' => 1])->assertUnprocessable();
+        $this->postJson($url, ['entries' => [['id' => $layout->id, '_version' => str_repeat('0', 64)]], 'confirm' => 1])->assertConflict();
+        $this->assertSoftDeleted($layout);
+
+        $events = [];
+        $veto = true;
+        Hooks::addAction('jobic.settings.layouts.saving', function (array $context) use (&$events, &$veto): void {
+            $events[] = ['saving', $context];
+            if ($veto) {
+                throw ValidationException::withMessages(['entries' => 'Deletion vetoed.']);
+            }
+        });
+        Hooks::addAction('jobic.settings.layouts.saved', function (array $context) use (&$events): void {
+            $events[] = ['saved', $context];
+        });
+
+        $this->postJson($url, $payload)->assertUnprocessable();
+        $this->assertSoftDeleted($layout);
+        $this->assertSame(['saving'], array_column($events, 0));
+        $events = [];
+        $veto = false;
+        $this->postJson($url, $payload)->assertOk()->assertJsonPath('message', trans_choice('layouts.force_deleted', 1));
+        $context = ['operation' => 'force_delete', 'layout_id' => $layout->id, 'user_id' => $admin->id];
+        $this->assertSame([['saving', $context], ['saved', $context]], $events);
+        $this->assertModelMissing($layout);
+        $this->assertModelMissing($page);
+        $this->assertModelMissing($placement);
+        $this->assertModelExists($plugin);
+        $this->assertModelExists($active);
     }
 
     /** Built-in layout page types are registered with translated labels. */
