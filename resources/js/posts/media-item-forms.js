@@ -20,6 +20,9 @@ export function bindMediaItemForms(form) {
         const selected = picker.querySelector('[data-media-selected]');
         const collection = picker.dataset.collection;
         const values = { ...JSON.parse(dialog.dataset.values) };
+        const preview = dialog.querySelector('[data-media-item-preview]');
+        const previewImage = preview.querySelector('img');
+        const previewCaption = preview.querySelector('figcaption');
         collections[collection] = values;
         const controls = [...dialog.querySelectorAll('[data-media-item-fields] [name]')].map((element) => {
             const name = element.name;
@@ -36,7 +39,7 @@ export function bindMediaItemForms(form) {
                 button.type = 'button';
                 button.dataset.mediaItemEdit = '';
                 button.setAttribute('aria-label', dialog.querySelector('h2').textContent.trim());
-                button.innerHTML = iconMarkup('settings', 16);
+                button.innerHTML = iconMarkup('copy', 16);
                 card.append(button);
             }
         };
@@ -47,7 +50,14 @@ export function bindMediaItemForms(form) {
             const button = event.target.closest('[data-media-item-edit]');
             if (!button) return;
             trigger = button;
-            activeId = button.closest('[data-media-id]').dataset.mediaId;
+            const card = button.closest('[data-media-id]');
+            activeId = card.dataset.mediaId;
+            const image = card.querySelector('img');
+            preview.hidden = !image;
+            if (image) {
+                previewImage.src = image.currentSrc || image.src;
+                previewCaption.textContent = image.alt;
+            }
             for (const { element, name, initial } of controls) {
                 const value = values[activeId]?.[name.replace(/\[\]$/, '')];
                 if (element.type === 'checkbox' || element.type === 'radio') {
