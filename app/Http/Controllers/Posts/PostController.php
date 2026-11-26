@@ -125,7 +125,7 @@ final class PostController extends Controller
             ])
             ->all();
 
-        $mediaCollections = $builder->getMediaCollections();
+        $hasFeaturedImage = $builder->hasBaseMedia();
         $operations = ['delete'];
         $workflowEnabled = PostTypeRegistry::getOption($type, 'workflow-enabled', true);
         $context = ['type' => $type];
@@ -164,7 +164,7 @@ final class PostController extends Controller
             ]),
             'activeLocale'       => LocaleCatalog::resolve(app()->getLocale()),
             'languages'          => $languages,
-            'hasMedia'           => $mediaCollections !== [],
+            'hasMedia'           => $hasFeaturedImage,
             'statuses'           => $statusLabels,
             'operations'         => $operations,
             'canUnlockEditLocks' => $canUnlockEditLocks,
@@ -221,7 +221,7 @@ final class PostController extends Controller
             'backUrl'      => $builder->getBackUrl(),
             'languages'    => $languages,
             'activeLocale' => LocaleCatalog::resolve(app()->getLocale()),
-            'hasMedia'     => $mediaCollections !== [],
+            'hasMedia'     => $hasFeaturedImage,
             'statusLabels' => $statusLabels,
             'listFilters'  => $listFilters,
         ]);
