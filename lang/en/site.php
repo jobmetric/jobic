@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'select_menu' => 'Select a menu',
     'carousel_previous' => 'Previous slide',
     'carousel_next' => 'Next slide',
     'carousel_go_to' => 'Go to slide :number',
@@ -19,6 +20,7 @@ return [
     'extensions' => [
     'theme' => 'Starter theme',
     'slideshow' => 'Slideshow',
+        'menu' => 'Menu',
     'articles' => 'Sample articles',
 ],
     'slides' => [['Welcome to your website', 'Use this space to introduce your site.'], ['Build your homepage', 'Arrange modules in the layout editor.'], ['Publish your first story', 'Start with a topic your readers care about.']],

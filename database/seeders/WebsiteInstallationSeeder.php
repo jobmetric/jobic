@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Extensions\Module\JobicMenu\JobicMenu;
 use App\Extensions\Module\JobicSlideshow\JobicSlideshow;
 use App\Extensions\Module\JobicStarterArticles\JobicStarterArticles;
 use App\Extensions\Theme\JobicStarterTheme\JobicStarterTheme;
@@ -23,6 +24,7 @@ class WebsiteInstallationSeeder extends Seeder
         $this->call(InstallationSeeder::class);
 
         $theme = $this->install(JobicStarterTheme::class);
+        $this->install(JobicMenu::class);
         $modules = [
             'top' => $this->install(JobicSlideshow::class),
             'content' => $this->install(JobicStarterArticles::class),

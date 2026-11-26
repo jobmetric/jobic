@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Layouts;
 
+use App\Extensions\Module\JobicMenu\JobicMenu;
 use App\Services\Installation\Installation;
 use App\Support\Installation\Connections;
 use App\Support\Installation\Environment;
@@ -12,7 +13,9 @@ use Database\Seeders\WebsiteInstallationSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use JobMetric\Extension\Models\Extension;
 use JobMetric\Layout\Models\LayoutPage;
+use JobMetric\Taxonomy\Models\Taxonomy;
 use Tests\TestCase;
 
 class StarterHomepageTest extends TestCase
@@ -67,6 +70,25 @@ class StarterHomepageTest extends TestCase
             $this->get(route('home'))->assertOk()
                 ->assertSee('starter-slideshow', false)
                 ->assertSee('starter-articles', false);
+            $module = Extension::whereNamespace(JobicMenu::class)->sole();
+            $this->assertTrue($module->info['multiple']);
+
+            foreach (['Resources', 'Company'] as $ordering => $name) {
+                $menu = Taxonomy::create(['type' => 'menu', 'status' => true]);
+                $type = 'menu_'.$menu->id;
+                $item = Taxonomy::create(['type' => $type, 'status' => true]);
+                $item->translations()->create(['locale' => 'en', 'field' => 'name', 'value' => $name]);
+                $item->metas()->create(['key' => 'menu_link_driver', 'value' => 'external', 'is_json' => false]);
+                $item->metas()->create(['key' => 'menu_link_data', 'value' => '{"menu_link_url":"https://example.com/'.strtolower($name).'"}', 'is_json' => true]);
+                $hidden = Taxonomy::create(['type' => $type, 'status' => false]);
+                $hidden->translations()->create(['locale' => 'en', 'field' => 'name', 'value' => 'Hidden menu item']);
+                $instance = $module->plugins()->create(['name' => $name, 'status' => true, 'fields' => ['menu_id' => $menu->id]]);
+                $assignment->layout->layoutPlugins()->create(['position' => 'content', 'ordering' => $ordering + 1, 'plugin_id' => $instance->id]);
+            }
+
+            $this->get(route('home'))->assertOk()
+                ->assertSeeInOrder(['https://example.com/resources', 'https://example.com/company'])
+                ->assertDontSee('Hidden menu item');
         } finally {
             DB::setDefaultConnection('sqlite');
             DB::purge('installation');

@@ -41,5 +41,6 @@ composer.phar
 /app/Extensions/Module/*
 /app/Extensions/Theme/*
 !/app/Extensions/Module/JobicSlideshow/
+!/app/Extensions/Module/JobicMenu/
 !/app/Extensions/Module/JobicStarterArticles/
 !/app/Extensions/Theme/JobicStarterTheme/
