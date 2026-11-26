@@ -65,6 +65,7 @@ return [
         'confirm' => 'confirmation',
         'fields' => 'settings',
         'menu_id' => 'menu',
+        'main_menu_id' => 'main menu',
         'menu_link_url' => 'destination URL',
         'menu_link_driver' => 'link type',
         'banner_id' => 'banner',

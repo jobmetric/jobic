@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'main_menu' => 'Main menu',
     'menu_display' => [
         'label' => 'Menu display',
         'standard' => 'Standard navigation',

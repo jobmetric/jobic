@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Layouts;
 
 use App\Extensions\Module\JobicMenu\JobicMenu;
+use App\Extensions\Theme\JobicStarterTheme\JobicStarterTheme;
 use App\Models\User;
+use App\Services\Extensions\Extensions;
 use App\Services\Installation\Installation;
 use App\Support\Installation\Connections;
 use App\Support\Installation\Environment;
@@ -118,6 +120,27 @@ class StarterHomepageTest extends TestCase
                     ->assertSee('value="'.$assignment->application.'" selected>'.$label.'</option>', false)
                     ->assertDontSee('>site.extensions.theme</option>', false);
             }
+
+            $headerMenu = Taxonomy::create(['type' => 'menu', 'status' => true]);
+            $headerMenu->translations()->create(['locale' => 'en', 'field' => 'name', 'value' => 'Header navigation']);
+            $headerItem = Taxonomy::create(['type' => 'menu_'.$headerMenu->id, 'status' => true]);
+            $headerItem->translations()->create(['locale' => 'en', 'field' => 'name', 'value' => 'Header link']);
+            $theme = Extension::whereNamespace(JobicStarterTheme::class)->sole();
+            $instance = $theme->plugins()->sole();
+            $route = route('admin.settings.extensions.plugins.update', [$theme->id, $instance->id]);
+            $settings = ['_version' => app(Extensions::class)->pluginVersion($instance), 'name' => $instance->name, 'status' => 1];
+
+            $this->get(route('admin.settings.extensions.plugins.edit', [$theme->id, $instance->id]))
+                ->assertOk()->assertSee('منوی اصلی')->assertSee('Header navigation');
+            $this->postJson($route, $settings + ['fields' => ['main_menu_id' => $headerItem->id]])
+                ->assertUnprocessable()->assertJsonValidationErrors('fields.main_menu_id');
+            $saved = $this->postJson($route, $settings + ['fields' => ['main_menu_id' => $headerMenu->id]])->assertOk();
+            $this->get(route('home'))->assertOk()
+                ->assertSeeInOrder(['class="site-header-menu"', 'Header link', '</header>', 'site-menu--mega'], false);
+
+            $settings['_version'] = $saved->json('data.version');
+            $this->postJson($route, $settings + ['fields' => ['main_menu_id' => null]])->assertOk();
+            $this->get(route('home'))->assertOk()->assertDontSee('class="site-header-menu"', false);
         } finally {
             DB::setDefaultConnection('sqlite');
             DB::purge('installation');

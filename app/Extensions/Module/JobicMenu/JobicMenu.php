@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Extensions\Module\JobicMenu;
 
 use App\Support\Layouts\SiteThemes;
-use App\Support\TaxonomyPresentation;
-use Illuminate\Support\Collection;
+use App\Support\MenuLinks\WebsiteMenus;
 use Illuminate\Support\Facades\View;
 use Illuminate\Validation\Rule;
 use JobMetric\CustomField\CustomFieldBuilder;
@@ -40,15 +39,8 @@ final class JobicMenu extends AbstractExtension
         return (new FormBuilder)->tab(function (TabBuilder $tab): void {
             $tab->id('menu')->label('site.extensions.menu')
                 ->customField(function (CustomFieldBuilder $field): void {
-                    $options = Taxonomy::query()->where('type', 'menu')->with('translations')
-                        ->orderBy('ordering')->orderBy('id')->get()
-                        ->map(fn (Taxonomy $menu): array => [
-                            'label' => TaxonomyPresentation::name($menu),
-                            'value' => (string) $menu->id,
-                        ])->all();
-
                     $field::select()->name('menu_id')->label('site.extensions.menu')
-                        ->options($options)
+                        ->options(app(WebsiteMenus::class)->options())
                         ->validation(['required', 'integer', Rule::exists(Taxonomy::class, 'id')->where('type', 'menu')]);
                 });
 
@@ -92,21 +84,6 @@ final class JobicMenu extends AbstractExtension
      */
     public function handle(array $options = []): ?string
     {
-        $menu = Taxonomy::query()->where('type', 'menu')->where('status', true)
-            ->with('translations')->find((int) ($options['menu_id'] ?? 0));
-        if ($menu === null) {
-            return null;
-        }
-
-        $children = Taxonomy::query()->where('type', 'menu_'.$menu->id)->where('status', true)
-            ->with(['translations', 'metas' => fn ($query) => $query->whereIn('key', ['menu_link_driver', 'menu_link_data'])])
-            ->orderBy('ordering')->orderBy('id')->get()
-            ->groupBy(fn (Taxonomy $item): int => (int) $item->parent_id);
-
-        if (! $children->has(0)) {
-            return null;
-        }
-
         $depth = match ((string) ($options['depth'] ?? 'all')) {
             '1' => 1,
             '2' => 2,
@@ -114,9 +91,12 @@ final class JobicMenu extends AbstractExtension
             default => null,
         };
 
-        $data = [
-            'name' => TaxonomyPresentation::name($menu),
-            'items' => $this->items($children, 0, $depth),
+        $menu = app(WebsiteMenus::class)->navigation((int) ($options['menu_id'] ?? 0), $depth);
+        if ($menu === null) {
+            return null;
+        }
+
+        $data = $menu + [
             'vertical' => ($options['orientation'] ?? null) === 'vertical',
             'alignment' => match ($options['alignment'] ?? null) {
                 'center' => 'center',
@@ -129,39 +109,5 @@ final class JobicMenu extends AbstractExtension
         $path = $display === '' ? null : (app(SiteThemes::class)->menuViews()[$display]['path'] ?? null);
 
         return ($path === null ? view('site.modules.menu', $data) : View::file($path, $data))->render();
-    }
-
-    /**
-     * Build a tree of labels and safe public destinations for the menu view.
-     *
-     * @param Collection<int, Collection<int, Taxonomy>> $children
-     * @param int $parent
-     * @param int|null $remainingLevels
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function items(Collection $children, int $parent, ?int $remainingLevels): array
-    {
-        if ($remainingLevels === 0) {
-            return [];
-        }
-
-        $nextLevel = $remainingLevels === null ? null : $remainingLevels - 1;
-
-        return $children->get($parent, collect())->map(function (Taxonomy $item) use ($children, $nextLevel): array {
-            $metadata = $item->metas->pluck('value', 'key');
-            $driver = $metadata->get('menu_link_driver');
-            $url = $driver === 'external'
-                ? (json_decode((string) $metadata->get('menu_link_data'), true)['menu_link_url'] ?? null)
-                : null;
-
-            return [
-                'label' => TaxonomyPresentation::name($item),
-                'url' => is_string($url) && filter_var($url, FILTER_VALIDATE_URL)
-                    && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true) ? $url : null,
-                'separator' => $driver === 'separator',
-                'children' => $this->items($children, $item->id, $nextLevel),
-            ];
-        })->values()->all();
     }
 }

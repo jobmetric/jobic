@@ -16,10 +16,11 @@ use Illuminate\View\View;
 class HomeController extends Controller
 {
     /**
-     * Prepare the homepage and resolve the active theme's declared positions.
+     * Prepare the homepage with the active theme's header and declared positions.
      *
      * @param SiteThemes $themes
      * @param ThemeManifest $manifest
+     *
      *
      * @return View
      */
@@ -33,6 +34,7 @@ class HomeController extends Controller
 
         return view('site.home', [
             'positions' => $theme ? array_keys($manifest->positions($theme->namespace)) : [],
+            'headerNavigation' => $themes->headerNavigation($theme),
         ]);
     }
 }

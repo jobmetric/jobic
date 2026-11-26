@@ -199,6 +199,7 @@ return [
         'confirm' => 'تأیید',
         'fields' => 'تنظیمات',
         'menu_id' => 'منو',
+        'main_menu_id' => 'منوی اصلی',
         'menu_link_url' => 'نشانی مقصد',
         'menu_link_driver' => 'نوع پیوند',
         'banner_id' => 'بنر',

@@ -6,7 +6,11 @@
 @section('body')
     <header class="site-home__header">
         <a href="{{ route('home') }}" aria-current="page"><x-brand /></a>
-        <span class="site-home__page-label">{{ __('site.home') }}</span>
+        @if($headerNavigation)
+            {!! $headerNavigation !!}
+        @else
+            <span class="site-home__page-label">{{ __('site.home') }}</span>
+        @endif
     </header>
     <main class="site-home__main" data-site-home>
         <h1 class="site-home__accessible-title">{{ config('app.name', 'Jobic') }}</h1>

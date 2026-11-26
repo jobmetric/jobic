@@ -34,6 +34,11 @@ If the theme changes and the saved key is unavailable, the standard view is used
 Theme views receive `name`, the nested `items` tree, `vertical`, `alignment`,
 and `showTitle`. Each item contains `label`, nullable `url`, `separator`, and `children`.
 
+The starter theme's instance settings can select a main menu for the public header.
+Themes that implement `App\Contracts\ThemeHeaderNavigation` receive their enabled
+instance settings to render this slot. Layout positions continue to render their
+own module instances independently.
+
 ## Page types and Modules
 
 Post types can opt into a status allowlist with

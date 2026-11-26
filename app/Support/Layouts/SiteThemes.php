@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layouts;
 
+use App\Contracts\ThemeHeaderNavigation;
 use App\Support\Extensions\Runtime;
 use JobMetric\Extension\Models\Extension;
 use JobMetric\Setting\Facades\Setting;
@@ -71,6 +72,27 @@ class SiteThemes
         $key = $this->activeKey();
 
         return $key !== null ? ($this->available()[$key] ?? null) : null;
+    }
+
+    /**
+     * Render the active theme's header navigation from its enabled instance.
+     *
+     * @param Extension|null $theme
+     *
+     * @return string|null
+     */
+    public function headerNavigation(?Extension $theme): ?string
+    {
+        if ($theme === null || ! is_subclass_of($theme->namespace, ThemeHeaderNavigation::class)) {
+            return null;
+        }
+
+        $instance = $theme->plugins()->where('status', true)->oldest('id')->first();
+        if ($instance === null) {
+            return null;
+        }
+
+        return app($theme->namespace)->headerNavigation($instance->fields?->getArrayCopy() ?? []);
     }
 
     /**

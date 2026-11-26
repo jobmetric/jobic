@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'main_menu' => 'منوی اصلی',
     'menu_display' => [
         'label' => 'نوع نمایش منو',
         'standard' => 'منوی استاندارد',
