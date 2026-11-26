@@ -66,7 +66,9 @@ class MediaManager
             };
             foreach ($required as $field) {
                 if (! isset($data[$field])) {
-                    throw ValidationException::withMessages([$field => __('validation.required', ['attribute' => $field])]);
+                    throw ValidationException::withMessages([$field => __('validation.required', [
+                        'attribute' => __("validation.attributes.$field"),
+                    ])]);
                 }
             }
 
@@ -118,7 +120,7 @@ class MediaManager
     {
         if (! $ids) {
             throw ValidationException::withMessages([
-                'ids' => __('validation.required', ['attribute' => 'ids']),
+                'ids' => __('validation.required', ['attribute' => __('validation.attributes.ids')]),
             ]);
         }
 

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Support\Application\ApplicationDriverManager;
+use App\Support\LocalizedValidator;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use JobMetric\CustomField\CustomFieldBuilder;
@@ -38,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Validator::resolver(fn ($translator, $data, $rules, $messages, $attributes): LocalizedValidator =>
+            new LocalizedValidator($translator, $data, $rules, $messages, $attributes));
+
         $this->app->make(ApplicationDriverManager::class)->boot();
     }
 

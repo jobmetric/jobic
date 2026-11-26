@@ -1287,7 +1287,8 @@ class Extensions extends AbstractCrudService
                 $complete = $input + ['fields' => (array) $record?->fields?->getArrayCopy()];
                 $rules = StorePluginRequest::rulesFor($complete, ['extension_id' => $extensionId]);
                 $rules = array_filter($rules, fn ($key) => $key === 'fields' || str_starts_with($key, 'fields.'), ARRAY_FILTER_USE_KEY);
-                Validator::make($complete, $rules)->validate();
+                $request = (new StorePluginRequest)->setExtensionId($extensionId);
+                Validator::make($complete, $rules, $request->messages(), $request->attributes())->validate();
             }
             $input = dto($input, $record ? UpdatePluginRequest::class : StorePluginRequest::class,
                 ['extension_id' => $extensionId, 'plugin' => $record]);

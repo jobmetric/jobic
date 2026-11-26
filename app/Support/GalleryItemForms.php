@@ -45,7 +45,9 @@ final class GalleryItemForms
     {
         foreach (array_keys($submitted) as $collection) {
             if (self::fields($type, (string) $collection) === []) {
-                throw ValidationException::withMessages(['media_item_metadata' => __('validation.prohibited')]);
+                throw ValidationException::withMessages(['media_item_metadata' => __('validation.prohibited', [
+                    'attribute' => __('posts.media_item_details'),
+                ])]);
             }
         }
 
@@ -57,7 +59,9 @@ final class GalleryItemForms
 
             $values = $submitted[$collection] ?? $existing[$collection] ?? [];
             if (! is_array($values)) {
-                throw ValidationException::withMessages(["media_item_metadata.$collection" => __('validation.array')]);
+                throw ValidationException::withMessages(["media_item_metadata.$collection" => __('validation.array', [
+                    'attribute' => __('posts.media_item_details'),
+                ])]);
             }
             $existing[$collection] = [];
 
@@ -65,12 +69,18 @@ final class GalleryItemForms
                 $path = "media_item_metadata.$collection.$id";
                 $names = array_map(static fn ($field): string => $field->params['name'], $fields);
                 $rules = [$path => ['array:'.implode(',', $names)]];
+                $attributes = [$path => __('posts.media_item_details')];
                 foreach ($fields as $field) {
-                    $rules[$path.'.'.$field->params['name']] = $field->validation ?? ['nullable', 'string', 'max:255'];
+                    $key = $path.'.'.$field->params['name'];
+                    $rules[$key] = $field->validation ?? ['nullable', 'string', 'max:255'];
+                    if (filled($field->label)) {
+                        $attributes[$key] = __($field->label);
+                    }
                 }
                 $item = Validator::make(
                     ['media_item_metadata' => [$collection => [$id => $values[$id] ?? []]]],
                     $rules,
+                    attributes: $attributes,
                 )->validate();
                 $existing[$collection][$id] = data_get($item, $path, []);
             }

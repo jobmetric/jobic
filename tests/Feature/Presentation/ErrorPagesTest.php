@@ -80,4 +80,24 @@ class ErrorPagesTest extends TestCase
         $this->postJson('/_error-validation')->assertUnprocessable()->assertJsonValidationErrors(['name']);
     }
 
+    public function test_persian_validation_preserves_nested_field_paths_and_translates_messages(): void
+    {
+        $this->withoutMiddleware(Install::class);
+        Route::post('/_localized-validation', function (\Illuminate\Http\Request $request) {
+            app()->setLocale('fa');
+            return $request->validate([
+                'entries.*.title' => ['required'],
+                'entries.*.unlisted_field' => ['required'],
+                'entries.*.custom_code' => ['required'],
+            ], attributes: ['entries.*.custom_code' => 'کد اختصاصی']);
+        });
+
+        $response = $this->postJson('/_localized-validation', ['entries' => [[]]])->assertUnprocessable();
+        $this->assertSame([
+            'entries.0.title' => ['وارد کردن عنوان الزامی است.'],
+            'entries.0.unlisted_field' => ['وارد کردن این فیلد الزامی است.'],
+            'entries.0.custom_code' => ['وارد کردن کد اختصاصی الزامی است.'],
+        ], $response->json('errors'));
+        $this->assertStringContainsString('(و 2 خطای دیگر)', $response->json('message'));
+    }
 }

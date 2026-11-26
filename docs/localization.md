@@ -1,5 +1,7 @@
 # Interface language registry
 
+Validation uses the request locale. Form requests and dynamic forms supply translated field labels for their context. The shared validator uses `validation.attributes` for common fields and a translated generic label for unknown fields, including nested input. Error keys retain their original paths for field binding and API clients. Add new field labels and rule wording to the supported locale catalogs.
+
 `App\Support\LocaleCatalog` reads active `jobmetric/laravel-language` rows for names, locale codes, direction and flag labels. Admin preferences, guest authentication/legal language requests, shared selectors and document direction use this catalog. Existing preferences pointing at inactive/deleted locales resolve to an active fallback. `config/localization.php` sets the translation fallback to English; missing catalogs fall back to those messages, not invented translations.
 
 The additive migration `2026_09_17_000001_seed_initial_interface_languages` inserts English and Persian only when absent. It preserves existing records and never recreates them during requests. Registry mutations cannot remove/deactivate the final active language; all rows are locked in a consistent order before the check and persistence. Direct external database writes must preserve the same invariant.
