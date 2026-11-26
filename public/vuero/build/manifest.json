@@ -222,21 +222,21 @@
       "_icons-206ed4f5.js"
     ]
   },
-  "_shared-7737014e.js": {
-    "css": [
-      "assets/crud-fields-769b5107.css"
-    ],
-    "file": "assets/shared-7737014e.js",
-    "imports": [
-      "_page-1cca34fb.js",
-      "_icons-206ed4f5.js"
-    ]
-  },
   "_shared-88369da9.js": {
     "css": [
       "assets/crud-fields-769b5107.css"
     ],
     "file": "assets/shared-88369da9.js",
+    "imports": [
+      "_page-1cca34fb.js",
+      "_icons-206ed4f5.js"
+    ]
+  },
+  "_shared-97ff0198.js": {
+    "css": [
+      "assets/crud-fields-769b5107.css"
+    ],
+    "file": "assets/shared-97ff0198.js",
     "imports": [
       "_page-1cca34fb.js",
       "_icons-206ed4f5.js"
@@ -349,7 +349,7 @@
     "src": "layouts.css"
   },
   "resources/css/posts.css": {
-    "file": "assets/posts-e1415a4c.css",
+    "file": "assets/posts-e28ab536.css",
     "isEntry": true,
     "src": "resources/css/posts.css"
   },
@@ -421,9 +421,9 @@
     "css": [
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/form-c9a2f72e.js",
+    "file": "assets/form-a7700607.js",
     "imports": [
-      "_shared-7737014e.js",
+      "_shared-97ff0198.js",
       "_page-1cca34fb.js",
       "_settings-63ec4cfb.js",
       "_toast-bc3a4876.js",
@@ -439,9 +439,9 @@
       "assets/extensions-list-fc344404.css",
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/index-8ab246b7.js",
+    "file": "assets/index-f1bc94f4.js",
     "imports": [
-      "_shared-7737014e.js",
+      "_shared-97ff0198.js",
       "_page-1cca34fb.js",
       "_settings-63ec4cfb.js",
       "_toast-bc3a4876.js",
@@ -508,14 +508,14 @@
     "src": "resources/js/kanban/boards.js"
   },
   "resources/js/kanban/index.css": {
-    "file": "assets/index-ca59877c.css",
+    "file": "assets/index-b72ab9c4.css",
     "src": "resources/js/kanban/index.css"
   },
   "resources/js/kanban/index.js": {
     "css": [
-      "assets/index-ca59877c.css"
+      "assets/index-b72ab9c4.css"
     ],
-    "file": "assets/index-542a902a.js",
+    "file": "assets/index-3643957b.js",
     "imports": [
       "_WorkflowToast-7fb3893a.js",
       "_page-1cca34fb.js",
@@ -685,7 +685,7 @@
     "css": [
       "assets/crud-fields-769b5107.css"
     ],
-    "file": "assets/form-e65fade6.js",
+    "file": "assets/form-94faac7f.js",
     "imports": [
       "resources/js/posts/editor-runtime.js",
       "resources/js/posts/editor-workbench.js",
